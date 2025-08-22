@@ -9,6 +9,8 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
+console.log('OpenAI API Key status:', openAIApiKey ? 'Found' : 'Not found');
+
 if (!openAIApiKey) {
   console.error('OPENAI_API_KEY not found in environment');
 }
@@ -41,6 +43,7 @@ serve(async (req) => {
     }
 
     if (!openAIApiKey) {
+      console.error('OpenAI API key not found when processing order:', finalOrderId);
       throw new Error('OpenAI API key not configured');
     }
 

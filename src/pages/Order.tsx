@@ -8,6 +8,7 @@ import { CheckCircle, Clock, CreditCard, Music, Download, Star } from "lucide-re
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { reprocessPaidOrders } from "@/utils/reprocessOrders";
 
 const Order = () => {
   const { orderId } = useParams();
@@ -84,13 +85,13 @@ const Order = () => {
   };
 
   const handlePayment = async () => {
-    toast({
-      title: 'Pagamento simulado',
-      description: 'Em breve integraremos com gateway de pagamento',
-    });
-
-    // Simulate payment completion
     try {
+      toast({
+        title: 'Processando pagamento...',
+        description: 'Aguarde um momento',
+      });
+
+      // Simulate payment completion
       const { error } = await supabase
         .from('orders')
         .update({ 
@@ -101,24 +102,6 @@ const Order = () => {
 
       if (error) throw error;
 
-      // Generate lyrics
-      console.log('Invoking generate-lyrics with orderId:', orderId);
-      const { data, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
-        body: { orderId }
-      });
-
-      console.log('Generate-lyrics response:', data, 'Error:', lyricsError);
-
-      if (lyricsError) {
-        console.error('Lyric generation error:', lyricsError);
-        toast({
-          title: 'Erro na geração de letras',
-          description: `Erro: ${lyricsError.message}. Tente novamente em alguns instantes`,
-          variant: 'destructive',
-        });
-        return;
-      }
-
       setOrder(prev => ({
         ...prev,
         payment_status: 'PAID',
@@ -127,12 +110,70 @@ const Order = () => {
 
       toast({
         title: 'Pagamento confirmado!',
-        description: 'Iniciando geração das letras...',
+        description: 'Gerando letras automaticamente...',
       });
 
+      // Small delay to ensure order is updated
+      setTimeout(async () => {
+        try {
+          console.log('Invoking generate-lyrics with orderId:', orderId);
+          const { data, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
+            body: { orderId }
+          });
+
+          console.log('Generate-lyrics response:', data, 'Error:', lyricsError);
+
+          if (lyricsError) {
+            console.error('Lyric generation error:', lyricsError);
+            toast({
+              title: 'Erro na geração de letras',
+              description: `Erro: ${lyricsError.message}. As letras serão geradas em breve automaticamente.`,
+              variant: 'destructive',
+            });
+          } else {
+            toast({
+              title: 'Letras geradas!',
+              description: 'Suas letras estão prontas para aprovação.',
+            });
+          }
+        } catch (lyricsError: any) {
+          console.error('Function call error:', lyricsError);
+          toast({
+            title: 'Letras em processamento',
+            description: 'As letras serão geradas automaticamente em alguns minutos.',
+          });
+        }
+      }, 1000);
+
     } catch (error: any) {
+      console.error('Payment error:', error);
       toast({
         title: 'Erro ao processar pagamento',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleReprocessOrders = async () => {
+    try {
+      toast({
+        title: 'Reprocessando pedidos...',
+        description: 'Gerando letras para pedidos pagos',
+      });
+
+      const result = await reprocessPaidOrders();
+      
+      toast({
+        title: 'Reprocessamento concluído!',
+        description: `${result.totalProcessed} pedidos processados com sucesso`,
+      });
+
+      // Refresh data
+      fetchOrderData();
+    } catch (error: any) {
+      toast({
+        title: 'Erro no reprocessamento',
         description: error.message,
         variant: 'destructive',
       });
@@ -310,6 +351,20 @@ const Order = () => {
                 Pagar Agora
               </Button>
             </div>
+          </Card>
+        )}
+
+        {/* Admin Tools - Temporary */}
+        {order.payment_status === 'PAID' && lyrics.length === 0 && (
+          <Card className="p-6 mb-8 border-orange-200 bg-orange-50">
+            <h3 className="font-semibold text-lg mb-4 text-orange-800">Ferramentas de Desenvolvimento</h3>
+            <p className="text-sm text-orange-600 mb-4">
+              Se as letras não foram geradas automaticamente, use o botão abaixo:
+            </p>
+            <Button onClick={handleReprocessOrders} variant="outline" className="border-orange-300">
+              <Music className="w-4 h-4 mr-2" />
+              Gerar Letras Manualmente
+            </Button>
           </Card>
         )}
 
