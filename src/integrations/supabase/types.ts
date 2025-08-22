@@ -14,7 +14,260 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      consents: {
+        Row: {
+          accepted_at: string
+          id: string
+          ip: string | null
+          order_id: string | null
+          type: Database["public"]["Enums"]["consent_type"]
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string
+          id?: string
+          ip?: string | null
+          order_id?: string | null
+          type: Database["public"]["Enums"]["consent_type"]
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string
+          id?: string
+          ip?: string | null
+          order_id?: string | null
+          type?: Database["public"]["Enums"]["consent_type"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consents_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_logs: {
+        Row: {
+          id: string
+          order_id: string | null
+          payload: Json
+          ts: string
+          type: string
+        }
+        Insert: {
+          id?: string
+          order_id?: string | null
+          payload: Json
+          ts?: string
+          type: string
+        }
+        Update: {
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          ts?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lyrics: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          id: string
+          order_id: string | null
+          prompt_json: Json
+          text: string
+          title: string
+          version: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          prompt_json: Json
+          text: string
+          title: string
+          version: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          prompt_json?: Json
+          text?: string
+          title?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lyrics_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          approved_lyric_id: string | null
+          created_at: string
+          duration_target_sec: number
+          id: string
+          occasion: string
+          payment_provider: string | null
+          payment_status: Database["public"]["Enums"]["payment_status"] | null
+          price_cents: number
+          status: Database["public"]["Enums"]["order_status"] | null
+          story_raw: string
+          story_summary: string | null
+          style: string
+          tone: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          approved_lyric_id?: string | null
+          created_at?: string
+          duration_target_sec: number
+          id?: string
+          occasion: string
+          payment_provider?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          price_cents: number
+          status?: Database["public"]["Enums"]["order_status"] | null
+          story_raw: string
+          story_summary?: string | null
+          style: string
+          tone: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          approved_lyric_id?: string | null
+          created_at?: string
+          duration_target_sec?: number
+          id?: string
+          occasion?: string
+          payment_provider?: string | null
+          payment_status?: Database["public"]["Enums"]["payment_status"] | null
+          price_cents?: number
+          status?: Database["public"]["Enums"]["order_status"] | null
+          story_raw?: string
+          story_summary?: string | null
+          style?: string
+          tone?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_approved_lyric"
+            columns: ["approved_lyric_id"]
+            isOneToOne: false
+            referencedRelation: "lyrics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          name: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tracks: {
+        Row: {
+          audio_url: string | null
+          cover_url: string | null
+          created_at: string
+          id: string
+          lyric_id: string | null
+          order_id: string | null
+          rights_plan: string | null
+          seed: string | null
+          status: Database["public"]["Enums"]["track_status"] | null
+          suno_ref: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_url?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          lyric_id?: string | null
+          order_id?: string | null
+          rights_plan?: string | null
+          seed?: string | null
+          status?: Database["public"]["Enums"]["track_status"] | null
+          suno_ref?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string | null
+          cover_url?: string | null
+          created_at?: string
+          id?: string
+          lyric_id?: string | null
+          order_id?: string | null
+          rights_plan?: string | null
+          seed?: string | null
+          status?: Database["public"]["Enums"]["track_status"] | null
+          suno_ref?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracks_lyric_id_fkey"
+            columns: ["lyric_id"]
+            isOneToOne: false
+            referencedRelation: "lyrics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tracks_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +276,19 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      consent_type: "LGPD" | "YouTube"
+      order_status:
+        | "DRAFT"
+        | "AWAITING_PAYMENT"
+        | "PAID"
+        | "LYRICS_DELIVERED"
+        | "WAITING_APPROVAL"
+        | "APPROVED"
+        | "GENERATING_TRACK"
+        | "TRACK_READY"
+        | "DELIVERED"
+      payment_status: "PENDING" | "PAID" | "FAILED" | "REFUNDED"
+      track_status: "QUEUED" | "GENERATING" | "READY" | "FAILED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +415,21 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      consent_type: ["LGPD", "YouTube"],
+      order_status: [
+        "DRAFT",
+        "AWAITING_PAYMENT",
+        "PAID",
+        "LYRICS_DELIVERED",
+        "WAITING_APPROVAL",
+        "APPROVED",
+        "GENERATING_TRACK",
+        "TRACK_READY",
+        "DELIVERED",
+      ],
+      payment_status: ["PENDING", "PAID", "FAILED", "REFUNDED"],
+      track_status: ["QUEUED", "GENERATING", "READY", "FAILED"],
+    },
   },
 } as const
