@@ -102,17 +102,21 @@ const Order = () => {
       if (error) throw error;
 
       // Generate lyrics
+      console.log('Invoking generate-lyrics with orderId:', orderId);
       const { data, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
         body: { orderId }
       });
+
+      console.log('Generate-lyrics response:', data, 'Error:', lyricsError);
 
       if (lyricsError) {
         console.error('Lyric generation error:', lyricsError);
         toast({
           title: 'Erro na geração de letras',
-          description: 'Tente novamente em alguns instantes',
+          description: `Erro: ${lyricsError.message}. Tente novamente em alguns instantes`,
           variant: 'destructive',
         });
+        return;
       }
 
       setOrder(prev => ({
