@@ -76,23 +76,32 @@ const Hero = () => {
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           {user ? (
-            <Link to="/briefing">
-              <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
-                Criar Minha Música
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
+            <>
+              <Link to="/dashboard">
+                <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+                  Meus Pedidos
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/briefing">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                  Nova Música
+                </Button>
+              </Link>
+            </>
           ) : (
-            <Link to="/auth">
-              <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
-                Criar Minha Música
-                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            <>
+              <Link to="/briefing">
+                <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+                  Criar Minha Música
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Button variant="glass" size="lg" className="text-lg px-8 py-6">
+                Ver Exemplos
               </Button>
-            </Link>
+            </>
           )}
-          <Button variant="glass" size="lg" className="text-lg px-8 py-6">
-            Ver Exemplos
-          </Button>
         </div>
         
         {/* Stats */}

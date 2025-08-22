@@ -66,6 +66,32 @@ const Briefing = () => {
   ];
 
   const nextStep = () => {
+    // Validate required fields for each step
+    if (currentStep === 1 && !formData.occasion) {
+      toast({
+        title: 'Campo obrigatório',
+        description: 'Por favor, selecione uma ocasião.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (currentStep === 2 && (!formData.style || !formData.tone || !formData.duration)) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha estilo, tom e duração.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (currentStep === 3 && !formData.story.trim()) {
+      toast({
+        title: 'Campo obrigatório',
+        description: 'Por favor, conte sua história.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     if (currentStep < 4) setCurrentStep(currentStep + 1);
   };
 
@@ -104,7 +130,7 @@ const Briefing = () => {
         description: 'Redirecionando para o pagamento...',
       });
 
-      // Redirect to order page
+      // Redirect to order page with correct URL format
       window.location.href = `/pedido/${data.order.id}`;
       
     } catch (error: any) {

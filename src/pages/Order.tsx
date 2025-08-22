@@ -25,12 +25,15 @@ const Order = () => {
 
   useEffect(() => {
     if (user && orderId) {
+      console.log('Loading order with ID:', orderId);
       fetchOrderData();
     }
   }, [user, orderId]);
 
   const fetchOrderData = async () => {
     try {
+      console.log('Fetching order with ID:', orderId);
+      
       // Fetch order
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
