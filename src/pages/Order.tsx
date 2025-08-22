@@ -162,16 +162,26 @@ const Order = () => {
         description: 'Gerando letras para pedidos pagos',
       });
 
-      const result = await reprocessPaidOrders();
+      // Call the reprocess function directly via Supabase
+      const { data, error } = await supabase.functions.invoke('reprocess-paid-orders', {
+        body: {}
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Erro ao reprocessar pedidos');
+      }
       
       toast({
         title: 'Reprocessamento concluído!',
-        description: `${result.totalProcessed} pedidos processados com sucesso`,
+        description: `${data.processed || 0} pedidos processados com sucesso`,
       });
 
-      // Refresh data
-      fetchOrderData();
+      // Refresh data after a short delay
+      setTimeout(() => {
+        fetchOrderData();
+      }, 2000);
     } catch (error: any) {
+      console.error('Reprocess error:', error);
       toast({
         title: 'Erro no reprocessamento',
         description: error.message,

@@ -1,18 +1,30 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { callOpenAI } from '../_shared/openai-helper.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+// Check required environment variables
+const requiredEnvs = {
+  'OPENAI_API_KEY': Deno.env.get('OPENAI_API_KEY'),
+  'SUPABASE_URL': Deno.env.get('SUPABASE_URL'),
+  'SUPABASE_SERVICE_ROLE_KEY': Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+};
 
-console.log('OpenAI API Key status:', openAIApiKey ? 'Found' : 'Not found');
+console.log('Environment check:', Object.keys(requiredEnvs).map(key => 
+  `${key}: ${requiredEnvs[key] ? 'FOUND' : 'MISSING'}`
+).join(', '));
 
-if (!openAIApiKey) {
-  console.error('OPENAI_API_KEY not found in environment');
+const missingEnvs = Object.entries(requiredEnvs)
+  .filter(([_, value]) => !value)
+  .map(([key, _]) => key);
+
+if (missingEnvs.length > 0) {
+  console.error('Missing required environment variables:', missingEnvs.join(', '));
 }
 
 serve(async (req) => {
@@ -39,12 +51,23 @@ serve(async (req) => {
     const finalOrderId = orderId || order_id;
 
     if (!finalOrderId) {
-      throw new Error('Order ID é obrigatório');
+      return new Response(JSON.stringify({ 
+        error: 'Order ID é obrigatório' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    if (!openAIApiKey) {
-      console.error('OpenAI API key not found when processing order:', finalOrderId);
-      throw new Error('OpenAI API key not configured');
+    // Check environment variables again for this request
+    if (missingEnvs.length > 0) {
+      console.error('Missing environment variables for order:', finalOrderId, missingEnvs);
+      return new Response(JSON.stringify({ 
+        error: `Missing configuration: ${missingEnvs.join(', ')}` 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Create service client to bypass RLS
@@ -68,56 +91,53 @@ serve(async (req) => {
 
     // Generate 3 lyric variations
     const lyrics = [];
-    const versions = ['A', 'B', 'C'];
+    const versions = [
+      { name: 'A', description: 'Foco na melodia e refrão cativante', temperature: 0.7 },
+      { name: 'B', description: 'Mais detalhes da história, versão narrativa', temperature: 0.8 },
+      { name: 'C', description: 'Versão mais emotional e intimista', temperature: 0.9 }
+    ];
+    
+    console.log(`Generating ${versions.length} lyric versions for order:`, finalOrderId);
     
     for (const version of versions) {
-      const prompt = createLyricPrompt(order, version);
+      console.log(`Generating version ${version.name}...`);
       
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            { 
-              role: 'system', 
-              content: 'Você é um compositor profissional especializado em criar letras originais e emocionantes. Sempre siga exatamente o formato solicitado.' 
-            },
-            { role: 'user', content: prompt }
-          ],
-          temperature: version === 'A' ? 0.7 : version === 'B' ? 0.8 : 0.9,
-          max_tokens: 1000,
-        }),
+      const systemPrompt = 'Você é um compositor profissional especializado em criar letras originais e emocionantes em português do Brasil. Crie letras com rimas e métrica simples, tom emotivo, duração 2:30-3:00 min. Sempre siga exatamente o formato solicitado.';
+      const userPrompt = createLyricPrompt(order, version.name);
+      
+      const openAIResult = await callOpenAI({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: version.temperature,
+        maxTokens: 1200
       });
-
-      const data = await response.json();
       
-      // Log da resposta para debug
-      console.log(`OpenAI API response for version ${version}:`, JSON.stringify(data));
-      
-      if (!response.ok) {
-        throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
+      if (!openAIResult.ok) {
+        console.error(`Failed to generate version ${version.name}:`, openAIResult.error);
+        throw new Error(`Erro ao gerar versão ${version.name}: ${openAIResult.error}`);
       }
       
-      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-        throw new Error(`Invalid OpenAI response format for version ${version}: ${JSON.stringify(data)}`);
-      }
-      
-      const lyricText = data.choices[0].message.content;
+      const lyricText = openAIResult.content!;
       
       // Extract title from the generated text
       const titleMatch = lyricText.match(/TÍTULO:\s*(.+)/i);
-      const title = titleMatch ? titleMatch[1].trim() : `${order.occasion} - Versão ${version}`;
+      const title = titleMatch ? titleMatch[1].trim() : `${order.occasion} - Versão ${version.name}`;
       
       lyrics.push({
-        version,
+        version: version.name,
         title,
         text: lyricText,
-        prompt_json: { prompt, temperature: version === 'A' ? 0.7 : version === 'B' ? 0.8 : 0.9 }
+        prompt_json: { 
+          prompt: userPrompt, 
+          temperature: version.temperature,
+          model: Deno.env.get('OPENAI_MODEL') || 'gpt-4o-mini',
+          usage: openAIResult.usage
+        }
       });
+      
+      console.log(`Version ${version.name} generated successfully: "${title}"`);
     }
 
     // Save lyrics to database
@@ -156,18 +176,34 @@ serve(async (req) => {
         payload: { lyrics_count: 3, versions: ['A', 'B', 'C'] }
       });
 
+    console.log(`Successfully generated and saved ${savedLyrics.length} lyrics for order:`, finalOrderId);
+    
     return new Response(JSON.stringify({ 
+      ok: true,
       success: true, 
       lyrics: savedLyrics,
-      message: '3 letras geradas com sucesso!' 
+      message: `${savedLyrics.length} letras geradas com sucesso!`,
+      orderId: finalOrderId
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Error in generate-lyrics function:', error);
+    
+    // Detailed error logging for debugging
+    if (error.message?.includes('OpenAI')) {
+      console.error('OpenAI-related error details:', {
+        orderId: orderId || order_id,
+        errorMessage: error.message,
+        timestamp: new Date().toISOString()
+      });
+    }
+    
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor' 
+      ok: false,
+      error: error.message || 'Erro interno do servidor',
+      timestamp: new Date().toISOString()
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -178,49 +214,61 @@ serve(async (req) => {
 function createLyricPrompt(order: any, version: string): string {
   const durationMinutes = Math.ceil(order.duration_target_sec / 60);
   
-  return `[Objetivo]
-Escreva uma letra ORIGINAL, cantável, com duração-alvo de ${durationMinutes} minutos, para ${order.occasion}, em estilo ${order.style}, tom ${order.tone}.
+  const versionSpecs = {
+    'A': { focus: 'Foco na melodia e refrão cativante', style: 'cativante e comercial' },
+    'B': { focus: 'Mais detalhes da história, versão narrativa', style: 'narrativa e detalhada' },
+    'C': { focus: 'Versão mais emocional e intimista', style: 'emocional e tocante' }
+  };
+  
+  const spec = versionSpecs[version] || versionSpecs['A'];
+  
+  return `[OBJETIVO]
+Escreva uma letra ORIGINAL e cantável em português do Brasil, com duração-alvo de ${durationMinutes} minutos, para ${order.occasion}, em estilo ${order.style}, tom ${order.tone}.
 
-[História do cliente]
+[HISTÓRIA DO CLIENTE]
 ${order.story_raw}
 
-[Regras específicas para versão ${version}]
-${version === 'A' ? '- Foco na melodia e refrão cativante' : 
-  version === 'B' ? '- Mais detalhes da história, versão narrativa' : 
-  '- Versão mais emotional e intimista'}
-- Versos curtos e cantáveis
+[REGRAS ESPECÍFICAS PARA VERSÃO ${version}]
+- ${spec.focus}
+- Versos curtos e cantáveis (máximo 4 linhas cada)
 - Refrão forte e repetível (hook marcante)
-- NUNCA cite artistas, marcas ou obras protegidas
+- Rimas naturais e fluidas
+- NUNCA cite artistas, marcas ou obras protegidas por direitos autorais
 - Linguagem apropriada para todas as idades
 - Inclua elementos específicos da história fornecida
+- Use métrica consistente para facilitar a composição musical
 
-[Formato de saída OBRIGATÓRIO]
+[FORMATO DE SAÍDA OBRIGATÓRIO]
 TÍTULO: [título criativo e marcante]
 
-V1:
-[primeiro verso - 4 linhas]
+VERSO 1:
+[4 linhas rimadas]
 
 PRÉ-REFRÃO:
-[transição - 2 linhas]
+[2 linhas de transição]
 
 REFRÃO:
-[refrão principal - 4 linhas]
+[4 linhas principais - o gancho da música]
 
-V2:
-[segundo verso - 4 linhas]
+VERSO 2:
+[4 linhas rimadas, continuando a história]
+
+PRÉ-REFRÃO:
+[2 linhas de transição - pode ser igual ou variação]
+
+REFRÃO:
+[4 linhas principais - repetir ou pequena variação]
 
 PONTE:
-[ponte/middle 8 - 2-4 linhas]
+[2-4 linhas diferentes, clímax emocional]
 
-REFRÃO:
-[refrão final com variação - 4 linhas]
+REFRÃO FINAL:
+[4 linhas - pode ter pequenas variações para finalizar]
 
 OUTRO:
-[finalização - 2 linhas]
+[2 linhas de finalização]
 
-Crie uma letra ${version === 'A' ? 'cativante e comercial' : 
-                version === 'B' ? 'narrativa e detalhada' : 
-                'emocional e tocante'}.`;
+Crie uma letra ${spec.style}, com elementos da história pessoal fornecida.`;
 }
 
 function summarizeStory(storyRaw: string): string {
