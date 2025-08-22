@@ -9,6 +9,10 @@ const corsHeaders = {
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
+if (!openAIApiKey) {
+  console.error('OPENAI_API_KEY not found in environment');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -34,6 +38,10 @@ serve(async (req) => {
 
     if (!finalOrderId) {
       throw new Error('Order ID é obrigatório');
+    }
+
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
     }
 
     // Create service client to bypass RLS
@@ -83,6 +91,18 @@ serve(async (req) => {
       });
 
       const data = await response.json();
+      
+      // Log da resposta para debug
+      console.log(`OpenAI API response for version ${version}:`, JSON.stringify(data));
+      
+      if (!response.ok) {
+        throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
+      }
+      
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        throw new Error(`Invalid OpenAI response format for version ${version}: ${JSON.stringify(data)}`);
+      }
+      
       const lyricText = data.choices[0].message.content;
       
       // Extract title from the generated text
