@@ -58,7 +58,7 @@ serve(async (req) => {
         duration_target_sec,
         story_raw,
         status: 'AWAITING_PAYMENT',
-        price_cents: 9700, // R$ 97.00
+        price_cents: 999, // R$ 9.99 (valor promocional, original R$ 30.00)
         payment_status: 'PENDING'
       })
       .select()

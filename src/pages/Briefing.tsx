@@ -104,8 +104,8 @@ const Briefing = () => {
         description: 'Redirecionando para o pagamento...',
       });
 
-      // Here would redirect to checkout page
-      console.log('Order created:', data);
+      // Redirect to order page
+      window.location.href = `/pedido/${data.order.id}`;
       
     } catch (error: any) {
       toast({
@@ -270,7 +270,11 @@ const Briefing = () => {
 
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Investimento</h4>
-                <div className="text-2xl font-bold gradient-text">R$ 97</div>
+                <div className="flex items-baseline gap-2">
+                  <div className="text-2xl font-bold gradient-text">R$ 9,99</div>
+                  <div className="text-sm text-muted-foreground line-through">R$ 30,00</div>
+                  <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">PROMOÇÃO</div>
+                </div>
                 <p className="text-sm text-muted-foreground">3 versões de letras + música finalizada</p>
               </Card>
             </div>
