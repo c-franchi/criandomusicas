@@ -10,7 +10,7 @@ export interface OpenAICallOptions {
   messages: OpenAIMessage[];
   temperature?: number;
   maxTokens?: number;
-  timeout?: number;
+  timeoutMs?: number;
 }
 
 export interface OpenAIResponse {
@@ -28,63 +28,87 @@ export async function callOpenAI(options: OpenAICallOptions): Promise<OpenAIResp
   }
 
   const model = options.model || Deno.env.get('OPENAI_MODEL') || 'gpt-4o-mini';
-  const timeout = options.timeout || 30000;
+  const timeoutMs = options.timeoutMs ?? 30000;
 
   console.log(`OpenAI call: model=${model}, messages=${options.messages.length}, temperature=${options.temperature}`);
 
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    const requestBody = {
+  const commonHeaders = {
+    'Authorization': `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
+  };
+
+  try {
+    // 1) Tenta Chat Completions primeiro
+    const completionsBody = {
       model,
       messages: options.messages,
-      ...(options.temperature !== undefined && { temperature: options.temperature }),
-      ...(options.maxTokens && { max_tokens: options.maxTokens })
+      ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+      ...(options.maxTokens ? { max_tokens: options.maxTokens } : {}),
     };
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    let response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody),
-      signal: controller.signal
+      headers: commonHeaders,
+      body: JSON.stringify(completionsBody),
+      signal: controller.signal,
     });
 
-    clearTimeout(timeoutId);
+    if (response.ok) {
+      clearTimeout(timer);
+      const data = await response.json();
+      const text = data?.choices?.[0]?.message?.content ?? '';
+      console.log(`OpenAI (chat) success: ${data?.usage?.total_tokens ?? '?'} tokens used`);
+      return { ok: true, content: text, usage: data?.usage };
+    }
+
+    // Log do erro da Chat Completions
+    const rawError = await response.text();
+    console.warn(`OpenAI chat completions failed: ${response.status} ${response.statusText} • ${rawError}`);
+
+    // 2) Fallback para Responses API se Chat Completions falhar
+    console.log('Attempting fallback to Responses API...');
+    const responsesBody = {
+      model,
+      input: options.messages.map(m => ({ role: m.role, content: m.content })),
+      ...(options.temperature !== undefined ? { temperature: options.temperature } : {}),
+      ...(options.maxTokens ? { max_output_tokens: options.maxTokens } : {}),
+    };
+
+    response = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      headers: commonHeaders,
+      body: JSON.stringify(responsesBody),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timer);
 
     if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`OpenAI API error: ${response.status} ${response.statusText}`, errorData);
-      return { 
-        ok: false, 
-        error: `OpenAI API error: ${response.status} ${response.statusText}` 
-      };
+      const fallbackError = await response.text();
+      console.error(`OpenAI responses API also failed: ${response.status} ${response.statusText} • ${fallbackError}`);
+      return { ok: false, error: `OpenAI error: ${response.status} ${response.statusText}` };
     }
 
     const data = await response.json();
+    // Responses API pode expor texto em output_text
+    const text = Array.isArray(data?.output_text) 
+      ? data.output_text.join('\n') 
+      : (data?.output_text ?? '');
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid OpenAI response format:', JSON.stringify(data));
-      return { ok: false, error: 'Invalid response format from OpenAI' };
-    }
+    console.log(`OpenAI (responses) success: fallback worked`);
+    return { ok: true, content: text, usage: data?.usage };
 
-    console.log(`OpenAI success: ${data.usage?.total_tokens || 0} tokens used`);
-    
-    return {
-      ok: true,
-      content: data.choices[0].message.content,
-      usage: data.usage
-    };
-  } catch (error) {
-    if (error.name === 'AbortError') {
+  } catch (error: any) {
+    clearTimeout(timer);
+    if (error?.name === 'AbortError') {
       console.error('OpenAI request timeout');
       return { ok: false, error: 'Request timeout' };
     }
     
     console.error('OpenAI request failed:', error);
-    return { ok: false, error: `Request failed: ${error.message}` };
+    return { ok: false, error: `Request failed: ${error?.message ?? 'unknown error'}` };
   }
 }

@@ -63,7 +63,8 @@ serve(async (req) => {
     if (missingEnvs.length > 0) {
       console.error('Missing environment variables for order:', finalOrderId, missingEnvs);
       return new Response(JSON.stringify({ 
-        error: `Missing configuration: ${missingEnvs.join(', ')}` 
+        ok: false,
+        error: `Missing configuration: ${missingEnvs.join(', ')}. Configure secrets with: supabase secrets set OPENAI_API_KEY="..." SUPABASE_URL="..." SUPABASE_SERVICE_ROLE_KEY="..."` 
       }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -111,7 +112,8 @@ serve(async (req) => {
           { role: 'user', content: userPrompt }
         ],
         temperature: version.temperature,
-        maxTokens: 1200
+        maxTokens: 1200,
+        timeoutMs: 60000 // Timeout aumentado para 60s
       });
       
       if (!openAIResult.ok) {
