@@ -1,23 +1,47 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, CheckCircle, Music } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Briefing = () => {
+  const { user, loading } = useAuth();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     occasion: "",
     style: "",
     tone: "",
     duration: "",
     story: "",
-    names: "",
-    consent: false
+    keywords: "",
+    lgpdConsent: false
   });
+
+  // Redirect if not authenticated
+  if (!loading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   const steps = [
     { number: 1, title: "Ocasião", description: "Para que momento é a música?" },
@@ -47,6 +71,51 @@ const Briefing = () => {
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.lgpdConsent) {
+      toast({
+        title: 'Consentimento necessário',
+        description: 'Por favor, aceite os termos para continuar.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('create-order', {
+        body: {
+          occasion: formData.occasion,
+          style: formData.style,
+          tone: formData.tone,
+          duration_target_sec: parseInt(formData.duration) * 60,
+          story_raw: formData.story + (formData.keywords ? `\n\nPalavras-chave: ${formData.keywords}` : ''),
+          lgpd_consent: formData.lgpdConsent
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Pedido criado!',
+        description: 'Redirecionando para o pagamento...',
+      });
+
+      // Here would redirect to checkout page
+      console.log('Order created:', data);
+      
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao criar pedido',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const renderStep = () => {
@@ -108,15 +177,18 @@ const Briefing = () => {
             </div>
 
             <div>
-              <Label htmlFor="duration" className="text-lg font-semibold">Duração aproximada (segundos)</Label>
+              <Label htmlFor="duration" className="text-lg font-semibold">Duração aproximada (minutos)</Label>
               <Input
                 id="duration"
                 type="number"
-                placeholder="Ex: 180 (3 minutos)"
+                placeholder="Ex: 3"
                 value={formData.duration}
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                 className="mt-2"
+                min="1"
+                max="10"
               />
+              <p className="text-sm text-muted-foreground mt-1">Entre 1 e 10 minutos</p>
             </div>
           </div>
         );
@@ -139,27 +211,25 @@ const Briefing = () => {
             </div>
 
             <div>
-              <Label htmlFor="names" className="text-lg font-semibold">Nomes importantes</Label>
+              <Label htmlFor="keywords" className="text-lg font-semibold">Palavras-chave importantes</Label>
               <p className="text-muted-foreground mb-2">
-                Nomes de pessoas que devem aparecer na música (opcional)
+                Nomes de pessoas, lugares ou palavras que devem aparecer na música (opcional)
               </p>
               <Input
-                id="names"
-                placeholder="Ex: Maria, João, Ana..."
-                value={formData.names}
-                onChange={(e) => setFormData({ ...formData, names: e.target.value })}
+                id="keywords"
+                placeholder="Ex: Maria, João, São Paulo, amor..."
+                value={formData.keywords}
+                onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
               />
             </div>
 
             <div className="flex items-start space-x-2">
-              <input
-                type="checkbox"
-                id="consent"
-                checked={formData.consent}
-                onChange={(e) => setFormData({ ...formData, consent: e.target.checked })}
-                className="mt-1"
+              <Checkbox
+                id="lgpdConsent"
+                checked={formData.lgpdConsent}
+                onCheckedChange={(checked) => setFormData({ ...formData, lgpdConsent: !!checked })}
               />
-              <Label htmlFor="consent" className="text-sm">
+              <Label htmlFor="lgpdConsent" className="text-sm">
                 Autorizo o uso dos meus dados para gerar minha música personalizada conforme a 
                 <a href="/privacidade" className="text-primary hover:underline ml-1">Política de Privacidade</a>.
               </Label>
@@ -187,15 +257,21 @@ const Briefing = () => {
               </Card>
 
               <Card className="p-4">
+                <h4 className="font-semibold mb-2">Duração</h4>
+                <Badge variant="secondary">{formData.duration} minutos</Badge>
+              </Card>
+
+              <Card className="p-4">
                 <h4 className="font-semibold mb-2">História</h4>
                 <p className="text-muted-foreground text-sm">
-                  {formData.story.slice(0, 200)}...
+                  {formData.story.slice(0, 200)}{formData.story.length > 200 ? '...' : ''}
                 </p>
               </Card>
 
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Investimento</h4>
                 <div className="text-2xl font-bold gradient-text">R$ 97</div>
+                <p className="text-sm text-muted-foreground">3 versões de letras + música finalizada</p>
               </Card>
             </div>
           </div>
@@ -274,8 +350,13 @@ const Briefing = () => {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button variant="hero" size="lg">
-              Finalizar Pedido
+            <Button 
+              variant="hero" 
+              size="lg" 
+              onClick={handleSubmit}
+              disabled={submitting || !formData.lgpdConsent}
+            >
+              {submitting ? 'Criando pedido...' : 'Finalizar Pedido'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           )}

@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Music, Sparkles, Headphones } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Music, Sparkles, Headphones, User, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@/assets/hero-music.jpg";
 
 const Hero = () => {
+  const { user, signOut } = useAuth();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
@@ -13,6 +18,32 @@ const Hero = () => {
       
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-background/80 to-accent/30" />
+      
+      {/* Auth Section */}
+      <div className="absolute top-6 right-6 z-20">
+        {user ? (
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              {user.email}
+            </Badge>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => signOut()}
+            >
+              Sair
+            </Button>
+          </div>
+        ) : (
+          <Link to="/auth">
+            <Button variant="outline" size="sm">
+              <User className="w-4 h-4 mr-2" />
+              Entrar
+            </Button>
+          </Link>
+        )}
+      </div>
       
       {/* Floating Elements */}
       <div className="absolute top-20 left-10 animate-float">
@@ -44,9 +75,21 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button variant="hero" size="lg" className="text-lg px-8 py-6" onClick={() => window.location.href = '/briefing'}>
-            Criar Minha Música
-          </Button>
+          {user ? (
+            <Link to="/briefing">
+              <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+                Criar Minha Música
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          ) : (
+            <Link to="/auth">
+              <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+                Criar Minha Música
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          )}
           <Button variant="glass" size="lg" className="text-lg px-8 py-6">
             Ver Exemplos
           </Button>
