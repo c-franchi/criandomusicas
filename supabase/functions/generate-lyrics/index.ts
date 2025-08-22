@@ -29,7 +29,12 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { orderId } = await req.json();
+    const { orderId, order_id } = await req.json();
+    const finalOrderId = orderId || order_id;
+
+    if (!finalOrderId) {
+      throw new Error('Order ID é obrigatório');
+    }
 
     // Create service client to bypass RLS
     const supabaseService = createClient(
@@ -42,7 +47,7 @@ serve(async (req) => {
     const { data: order, error: orderError } = await supabaseService
       .from('orders')
       .select('*')
-      .eq('id', orderId)
+      .eq('id', finalOrderId)
       .eq('user_id', user.id)
       .single();
 
@@ -97,7 +102,7 @@ serve(async (req) => {
       .from('lyrics')
       .insert(
         lyrics.map(lyric => ({
-          order_id: orderId,
+          order_id: finalOrderId,
           version: lyric.version,
           title: lyric.title,
           text: lyric.text,
@@ -117,13 +122,13 @@ serve(async (req) => {
         status: 'LYRICS_DELIVERED',
         story_summary: summarizeStory(order.story_raw)
       })
-      .eq('id', orderId);
+      .eq('id', finalOrderId);
 
     // Log event
     await supabaseService
       .from('event_logs')
       .insert({
-        order_id: orderId,
+        order_id: finalOrderId,
         type: 'LYRICS_GENERATED',
         payload: { lyrics_count: 3, versions: ['A', 'B', 'C'] }
       });

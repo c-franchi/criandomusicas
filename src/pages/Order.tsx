@@ -30,6 +30,16 @@ const Order = () => {
     }
   }, [user, orderId]);
 
+  // Polling for status changes after payment
+  useEffect(() => {
+    if (order?.status === 'PAID' && lyrics.length === 0) {
+      const interval = setInterval(() => {
+        fetchOrderData();
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [order?.status, lyrics.length]);
+
   const fetchOrderData = async () => {
     try {
       console.log('Fetching order with ID:', orderId);
@@ -92,9 +102,18 @@ const Order = () => {
       if (error) throw error;
 
       // Generate lyrics
-      await supabase.functions.invoke('generate-lyrics', {
-        body: { order_id: orderId }
+      const { data, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
+        body: { orderId }
       });
+
+      if (lyricsError) {
+        console.error('Lyric generation error:', lyricsError);
+        toast({
+          title: 'Erro na geração de letras',
+          description: 'Tente novamente em alguns instantes',
+          variant: 'destructive',
+        });
+      }
 
       setOrder(prev => ({
         ...prev,
@@ -118,12 +137,16 @@ const Order = () => {
 
   const approveLyric = async (lyricId: string) => {
     try {
-      await supabase.functions.invoke('approve-lyric', {
+      const { data, error } = await supabase.functions.invoke('approve-lyric', {
         body: { 
-          order_id: orderId,
-          lyric_id: lyricId 
+          orderId,
+          lyricId 
         }
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       toast({
         title: 'Letra aprovada!',
@@ -232,8 +255,16 @@ const Order = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">Seu Pedido</h1>
-          <p className="text-muted-foreground">#{order.id.slice(0, 8)}</p>
+          <div className="flex items-center justify-between mb-4">
+            <Button variant="outline" asChild>
+              <a href="/dashboard">← Meus Pedidos</a>
+            </Button>
+            <div className="text-center flex-1">
+              <h1 className="text-3xl font-bold mb-2">Seu Pedido</h1>
+              <p className="text-muted-foreground">#{order.id.slice(0, 8)}</p>
+            </div>
+            <div className="w-[120px]"></div>
+          </div>
         </div>
 
         {/* Status */}

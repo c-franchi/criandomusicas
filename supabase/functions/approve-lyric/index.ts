@@ -26,9 +26,12 @@ serve(async (req) => {
       throw new Error('Unauthorized');
     }
 
-    const { lyricId, orderId } = await req.json();
+    const { lyricId, lyric_id, orderId, order_id } = await req.json();
+    
+    const finalLyricId = lyricId || lyric_id;
+    const finalOrderId = orderId || order_id;
 
-    if (!lyricId || !orderId) {
+    if (!finalLyricId || !finalOrderId) {
       throw new Error('Lyric ID e Order ID são obrigatórios');
     }
 
@@ -43,7 +46,7 @@ serve(async (req) => {
     const { data: order, error: orderError } = await supabaseService
       .from('orders')
       .select('*')
-      .eq('id', orderId)
+      .eq('id', finalOrderId)
       .eq('user_id', user.id)
       .single();
 
@@ -55,8 +58,8 @@ serve(async (req) => {
     const { data: lyric, error: lyricError } = await supabaseService
       .from('lyrics')
       .select('*')
-      .eq('id', lyricId)
-      .eq('order_id', orderId)
+      .eq('id', finalLyricId)
+      .eq('order_id', finalOrderId)
       .single();
 
     if (lyricError || !lyric) {
@@ -67,23 +70,23 @@ serve(async (req) => {
     await supabaseService
       .from('lyrics')
       .update({ approved_at: new Date().toISOString() })
-      .eq('id', lyricId);
+      .eq('id', finalLyricId);
 
     // Update order with approved lyric
     await supabaseService
       .from('orders')
       .update({ 
-        approved_lyric_id: lyricId,
+        approved_lyric_id: finalLyricId,
         status: 'APPROVED'
       })
-      .eq('id', orderId);
+      .eq('id', finalOrderId);
 
     // Create track entry
     const { data: track, error: trackError } = await supabaseService
       .from('tracks')
       .insert({
-        order_id: orderId,
-        lyric_id: lyricId,
+        order_id: finalOrderId,
+        lyric_id: finalLyricId,
         status: 'QUEUED'
       })
       .select()
@@ -97,10 +100,10 @@ serve(async (req) => {
     await supabaseService
       .from('event_logs')
       .insert({
-        order_id: orderId,
+        order_id: finalOrderId,
         type: 'LYRIC_APPROVED',
         payload: { 
-          lyric_id: lyricId, 
+          lyric_id: finalLyricId, 
           version: lyric.version,
           track_id: track.id 
         }
