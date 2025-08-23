@@ -9,6 +9,7 @@ import Briefing from "./pages/Briefing";
 import Auth from "./pages/Auth";
 import Order from "./pages/Order";
 import Dashboard from "./pages/Dashboard";
+import TestOpenAI from "./pages/TestOpenAI";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
             <Route path="/briefing" element={<Briefing />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/test-openai" element={<TestOpenAI />} />
             <Route path="/pedido/:orderId" element={<Order />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
