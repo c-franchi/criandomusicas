@@ -20,17 +20,23 @@ const TestOpenAI = () => {
     try {
       const testMessage = story.trim() || "Diga apenas: OK";
       
+      console.log("Chamando função openai-health com:", { story: testMessage });
+      
       const { data, error: functionError } = await supabase.functions.invoke('openai-health', {
         body: { story: testMessage }
       });
 
+      console.log("Resposta da função:", { data, functionError });
+
       if (functionError) {
+        console.error("Erro da função:", functionError);
         setError(`Erro na função: ${functionError.message}`);
         return;
       }
 
       setResult(data);
     } catch (err: any) {
+      console.error("Erro de rede:", err);
       setError(`Erro de rede: ${err.message}`);
     } finally {
       setLoading(false);
