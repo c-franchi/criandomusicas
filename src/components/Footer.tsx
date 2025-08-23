@@ -1,8 +1,6 @@
 import { Music } from "lucide-react";
-
 const Footer = () => {
-  return (
-    <footer className="py-12 px-6 border-t border-border/50">
+  return <footer className="py-12 px-6 border-t border-border/50">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-4 gap-8">
           {/* Brand */}
@@ -40,11 +38,9 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
-          <p>&copy; 2024 SongStudio. Todos os direitos reservados.</p>
+          <p>© 2025 SongStudio. Todos os direitos reservados.</p>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
