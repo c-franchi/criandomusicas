@@ -10,7 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, CheckCircle, Music } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const Briefing = () => {
   const { user, loading } = useAuth();
@@ -112,26 +113,29 @@ const Briefing = () => {
     setSubmitting(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-order', {
-        body: {
-          occasion: formData.occasion,
-          style: formData.style,
-          tone: formData.tone,
-          duration_target_sec: parseInt(formData.duration) * 60,
-          story_raw: formData.story + (formData.keywords ? `\n\nPalavras-chave: ${formData.keywords}` : ''),
-          lgpd_consent: formData.lgpdConsent
-        }
+      const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      await setDoc(doc(db, "orders", orderId), {
+        userId: user?.uid,
+        occasion: formData.occasion,
+        style: formData.style,
+        tone: formData.tone,
+        durationTargetSec: parseInt(formData.duration) * 60,
+        storyRaw: formData.story + (formData.keywords ? `\n\nPalavras-chave: ${formData.keywords}` : ''),
+        status: "AWAITING_PAYMENT",
+        priceCents: 999,
+        lgpdConsent: formData.lgpdConsent,
+        createdAt: new Date(),
+        updatedAt: new Date()
       });
-
-      if (error) throw error;
 
       toast({
         title: 'Pedido criado!',
         description: 'Redirecionando para o pagamento...',
       });
 
-      // Redirect to order page with correct URL format
-      window.location.href = `/pedido/${data.order.id}`;
+      // Redirect to order page
+      window.location.href = `/pedido/${orderId}`;
       
     } catch (error: any) {
       toast({

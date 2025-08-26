@@ -7,16 +7,14 @@ import { Progress } from "@/components/ui/progress";
 import { CheckCircle, Clock, CreditCard, Music, Download, Star } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { reprocessPaidOrders } from "@/utils/reprocessOrders";
+import { doc, updateDoc, onSnapshot } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const Order = () => {
   const { orderId } = useParams();
   const { user, loading } = useAuth();
   const { toast } = useToast();
   const [order, setOrder] = useState<any>(null);
-  const [lyrics, setLyrics] = useState<any[]>([]);
-  const [tracks, setTracks] = useState<any[]>([]);
   const [loadingData, setLoadingData] = useState(true);
 
   // Redirect if not authenticated
@@ -27,62 +25,20 @@ const Order = () => {
   useEffect(() => {
     if (user && orderId) {
       console.log('Loading order with ID:', orderId);
-      fetchOrderData();
+      
+      // Set up real-time listener for the order
+      const unsubscribe = onSnapshot(doc(db, "orders", orderId), (doc) => {
+        if (doc.exists()) {
+          setOrder({ id: doc.id, ...doc.data() });
+        } else {
+          setOrder(null);
+        }
+        setLoadingData(false);
+      });
+
+      return () => unsubscribe();
     }
   }, [user, orderId]);
-
-  // Polling for status changes after payment
-  useEffect(() => {
-    if (order?.status === 'PAID' && lyrics.length === 0) {
-      const interval = setInterval(() => {
-        fetchOrderData();
-      }, 3000);
-      return () => clearInterval(interval);
-    }
-  }, [order?.status, lyrics.length]);
-
-  const fetchOrderData = async () => {
-    try {
-      console.log('Fetching order with ID:', orderId);
-      
-      // Fetch order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', orderId)
-        .single();
-
-      if (orderError) throw orderError;
-      setOrder(orderData);
-
-      // Fetch lyrics
-      const { data: lyricsData } = await supabase
-        .from('lyrics')
-        .select('*')
-        .eq('order_id', orderId)
-        .order('created_at', { ascending: true });
-
-      setLyrics(lyricsData || []);
-
-      // Fetch tracks
-      const { data: tracksData } = await supabase
-        .from('tracks')
-        .select('*')
-        .eq('order_id', orderId)
-        .order('created_at', { ascending: true });
-
-      setTracks(tracksData || []);
-
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao carregar pedido',
-        description: error.message,
-        variant: 'destructive',
-      });
-    } finally {
-      setLoadingData(false);
-    }
-  };
 
   const handlePayment = async () => {
     try {
@@ -92,127 +48,52 @@ const Order = () => {
       });
 
       // Simulate payment completion
-      const { error } = await supabase
-        .from('orders')
-        .update({ 
-          payment_status: 'PAID',
-          status: 'PAID'
-        })
-        .eq('id', orderId);
-
-      if (error) throw error;
-
-      setOrder(prev => ({
-        ...prev,
-        payment_status: 'PAID',
-        status: 'PAID'
-      }));
+      await updateDoc(doc(db, "orders", orderId!), {
+        status: 'PAID',
+        updatedAt: new Date()
+      });
 
       toast({
         title: 'Pagamento confirmado!',
         description: 'Gerando letras automaticamente...',
       });
 
-      // Small delay to ensure order is updated
-      setTimeout(async () => {
-        try {
-          console.log('Invoking generate-lyrics with orderId:', orderId);
-          const { data, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
-            body: { orderId }
-          });
+      // Call generate-lyrics function
+      try {
+        const response = await fetch("/api/generate-lyrics", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            orderId,
+            storyRaw: order.storyRaw,
+            style: order.style,
+            tone: order.tone,
+            durationTargetSec: order.durationTargetSec
+          }),
+        });
 
-          console.log('Generate-lyrics response:', data, 'Error:', lyricsError);
-
-          if (lyricsError) {
-            console.error('Lyric generation error:', lyricsError);
-            toast({
-              title: 'Erro na geração de letras',
-              description: `Erro: ${lyricsError.message}. As letras serão geradas em breve automaticamente.`,
-              variant: 'destructive',
-            });
-          } else {
-            toast({
-              title: 'Letras geradas!',
-              description: 'Suas letras estão prontas para aprovação.',
-            });
-          }
-        } catch (lyricsError: any) {
-          console.error('Function call error:', lyricsError);
+        const data = await response.json();
+        
+        if (data.ok) {
           toast({
-            title: 'Letras em processamento',
-            description: 'As letras serão geradas automaticamente em alguns minutos.',
+            title: 'Letras geradas!',
+            description: 'Suas letras estão prontas para aprovação.',
           });
+        } else {
+          throw new Error(data.error || 'Erro na geração de letras');
         }
-      }, 1000);
+      } catch (lyricsError: any) {
+        console.error('Function call error:', lyricsError);
+        toast({
+          title: 'Letras em processamento',
+          description: 'As letras serão geradas automaticamente em alguns minutos.',
+        });
+      }
 
     } catch (error: any) {
       console.error('Payment error:', error);
       toast({
         title: 'Erro ao processar pagamento',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const handleReprocessOrders = async () => {
-    try {
-      toast({
-        title: 'Reprocessando pedidos...',
-        description: 'Gerando letras para pedidos pagos',
-      });
-
-      // Call the reprocess function directly via Supabase
-      const { data, error } = await supabase.functions.invoke('reprocess-paid-orders', {
-        body: {}
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Erro ao reprocessar pedidos');
-      }
-      
-      toast({
-        title: 'Reprocessamento concluído!',
-        description: `${data.processed || 0} pedidos processados com sucesso`,
-      });
-
-      // Refresh data after a short delay
-      setTimeout(() => {
-        fetchOrderData();
-      }, 2000);
-    } catch (error: any) {
-      console.error('Reprocess error:', error);
-      toast({
-        title: 'Erro no reprocessamento',
-        description: error.message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const approveLyric = async (lyricId: string) => {
-    try {
-      const { data, error } = await supabase.functions.invoke('approve-lyric', {
-        body: { 
-          orderId,
-          lyricId 
-        }
-      });
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      toast({
-        title: 'Letra aprovada!',
-        description: 'Iniciando produção da música...',
-      });
-
-      // Refresh data
-      fetchOrderData();
-    } catch (error: any) {
-      toast({
-        title: 'Erro ao aprovar letra',
         description: error.message,
         variant: 'destructive',
       });
@@ -329,8 +210,8 @@ const Order = () => {
             <div>
               <h3 className="font-semibold text-lg">{statusInfo.text}</h3>
               <p className="text-sm text-muted-foreground">
-                {order.payment_status === 'PENDING' ? 'Aguardando confirmação do pagamento' : 
-                 order.status === 'COMPLETED' ? 'Sua música está pronta!' :
+                {order.status === 'AWAITING_PAYMENT' ? 'Aguardando confirmação do pagamento' : 
+                 order.status === 'DELIVERED' ? 'Sua música está pronta!' :
                  'Trabalhando na sua música personalizada'}
               </p>
             </div>
@@ -342,7 +223,7 @@ const Order = () => {
         </Card>
 
         {/* Payment Section */}
-        {order.payment_status === 'PENDING' && (
+        {order.status === 'AWAITING_PAYMENT' && (
           <Card className="p-6 mb-8">
             <h3 className="font-semibold text-lg mb-4">Pagamento</h3>
             <div className="flex items-center justify-between">
@@ -364,85 +245,44 @@ const Order = () => {
           </Card>
         )}
 
-        {/* Admin Tools - Temporary */}
-        {order.payment_status === 'PAID' && lyrics.length === 0 && (
-          <Card className="p-6 mb-8 border-orange-200 bg-orange-50">
-            <h3 className="font-semibold text-lg mb-4 text-orange-800">Ferramentas de Desenvolvimento</h3>
-            <p className="text-sm text-orange-600 mb-4">
-              Se as letras não foram geradas automaticamente, use o botão abaixo:
+        {/* Link to Lyrics Page */}
+        {order.status !== 'AWAITING_PAYMENT' && (
+          <Card className="p-6 mb-8">
+            <h3 className="font-semibold text-lg mb-4">Letras da Música</h3>
+            <p className="text-muted-foreground mb-4">
+              Acesse a página de letras para ver e aprovar as versões geradas.
             </p>
-            <Button onClick={handleReprocessOrders} variant="outline" className="border-orange-300">
-              <Music className="w-4 h-4 mr-2" />
-              Gerar Letras Manualmente
+            <Button asChild>
+              <a href={`/pedido/${order.id}/letras`}>
+                <Music className="w-4 h-4 mr-2" />
+                Ver e Gerenciar Letras
+              </a>
             </Button>
           </Card>
         )}
 
-        {/* Lyrics Section */}
-        {lyrics.length > 0 && (
-          <Card className="p-6 mb-8">
-            <h3 className="font-semibold text-lg mb-4">Versões das Letras</h3>
-            <div className="space-y-4">
-              {lyrics.map((lyric, index) => (
-                <div key={lyric.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium">{lyric.title}</h4>
-                    <Badge variant={lyric.approved_at ? "default" : "outline"}>
-                      Versão {index + 1}
-                    </Badge>
-                  </div>
-                  <div className="text-sm text-muted-foreground mb-3 whitespace-pre-wrap">
-                    {lyric.text.slice(0, 200)}...
-                  </div>
-                  {!order.approved_lyric_id && order.payment_status === 'PAID' && (
-                    <Button 
-                      onClick={() => approveLyric(lyric.id)}
-                      size="sm"
-                      variant="outline"
-                    >
-                      Aprovar Esta Versão
-                    </Button>
-                  )}
-                  {lyric.approved_at && (
-                    <div className="flex items-center gap-2 text-green-600 text-sm">
-                      <CheckCircle className="w-4 h-4" />
-                      Versão aprovada
-                    </div>
-                  )}
-                </div>
-              ))}
+        {/* Order Details */}
+        <Card className="p-6">
+          <h3 className="font-semibold text-lg mb-4">Detalhes do Pedido</h3>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-medium mb-1">Ocasião</h4>
+              <p className="text-muted-foreground">{order.occasion}</p>
             </div>
-          </Card>
-        )}
-
-        {/* Music Section */}
-        {tracks.length > 0 && (
-          <Card className="p-6">
-            <h3 className="font-semibold text-lg mb-4">Sua Música</h3>
-            <div className="space-y-4">
-              {tracks.map((track) => (
-                <div key={track.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium mb-1">Música Finalizada</h4>
-                      <Badge variant={track.status === 'COMPLETED' ? "default" : "outline"}>
-                        {track.status}
-                      </Badge>
-                    </div>
-                    {track.audio_url && (
-                      <Button asChild>
-                        <a href={track.audio_url} download>
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </a>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div>
+              <h4 className="font-medium mb-1">Estilo e Tom</h4>
+              <p className="text-muted-foreground">{order.style} • {order.tone}</p>
             </div>
-          </Card>
-        )}
+            <div>
+              <h4 className="font-medium mb-1">Duração Alvo</h4>
+              <p className="text-muted-foreground">{Math.round(order.durationTargetSec / 60)} minutos</p>
+            </div>
+            <div>
+              <h4 className="font-medium mb-1">História</h4>
+              <p className="text-muted-foreground whitespace-pre-wrap">{order.storyRaw}</p>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

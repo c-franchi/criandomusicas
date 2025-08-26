@@ -3,14 +3,11 @@ import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight, CheckCircle, Music, ExternalLink } from "lucide-react";
+import { ExternalLink, Music } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
@@ -31,13 +28,19 @@ const Dashboard = () => {
 
   const fetchOrders = async () => {
     try {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setOrders(data || []);
+      const q = query(
+        collection(db, "orders"),
+        where("userId", "==", user?.uid),
+        orderBy("createdAt", "desc")
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const ordersData = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      setOrders(ordersData);
     } catch (error: any) {
       toast({
         title: 'Erro ao carregar pedidos',
@@ -148,17 +151,17 @@ const Dashboard = () => {
                         {getStatusText(order.status)}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        Criado em {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                        Criado em {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('pt-BR') : 'Data não disponível'}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-primary mb-1">
-                      R$ {(order.price_cents / 100).toFixed(2).replace('.', ',')}
+                      R$ {((order.priceCents || 999) / 100).toFixed(2).replace('.', ',')}
                     </div>
                     <Button asChild variant="outline" size="sm">
-                      <a href={`/pedido/${order.id}`}>
-                        Ver Detalhes
+                      <a href={`/pedido/${order.id}/letras`}>
+                        Ver Letras
                         <ExternalLink className="w-4 h-4 ml-2" />
                       </a>
                     </Button>
@@ -168,8 +171,8 @@ const Dashboard = () => {
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">História:</h4>
                   <p className="text-sm text-muted-foreground">
-                    {order.story_raw.slice(0, 150)}
-                    {order.story_raw.length > 150 ? '...' : ''}
+                    {order.storyRaw?.slice(0, 150)}
+                    {order.storyRaw?.length > 150 ? '...' : ''}
                   </p>
                 </div>
               </Card>

@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Order from "./pages/Order";
 import Dashboard from "./pages/Dashboard";
 import TestOpenAI from "./pages/TestOpenAI";
+import OrderLyricsPage from "./pages/OrderLyricsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
+            <Route path="/pedido/:id/letras" element={<OrderLyricsPage />} />
             <Route path="/pedido/:orderId" element={<Order />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

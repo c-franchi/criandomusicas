@@ -1,151 +1,82 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
-const TestOpenAI = () => {
+type HealthOk = { ok: true; text: string };
+type HealthErr = { ok: false; name?: string; message?: string; status?: number; data?: any; error?: string };
+
+export default function TestOpenAI() {
   const [story, setStory] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [resp, setResp] = useState<HealthOk | HealthErr | null>(null);
 
-  const testConnection = async () => {
+  async function handleTest() {
     setLoading(true);
-    setError(null);
-    setResult(null);
-
+    setResp(null);
     try {
-      const testMessage = story.trim() || "Diga apenas: OK";
-      
-      console.log("Chamando função openai-health com:", { story: testMessage });
-      
-      const { data, error: functionError } = await supabase.functions.invoke('openai-health', {
-        body: { story: testMessage }
+      const r = await fetch("/api/openai-health", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ story }),
       });
-
-      console.log("Resposta da função:", { data, functionError });
-
-      if (functionError) {
-        console.error("Erro da função:", functionError);
-        setError(`Erro na função: ${functionError.message}`);
-        return;
-      }
-
-      setResult(data);
-    } catch (err: any) {
-      console.error("Erro de rede:", err);
-      setError(`Erro de rede: ${err.message}`);
+      const data = await r.json();
+      setResp(data);
+    } catch (e: any) {
+      setResp({ ok: false, message: e?.message || String(e) });
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const renderResult = () => {
-    if (!result && !error) return null;
-
-    const isSuccess = result?.ok === true;
-    const bgColor = isSuccess ? "bg-green-950/20 border-green-500/30" : "bg-red-950/20 border-red-500/30";
-    const iconColor = isSuccess ? "text-green-400" : "text-red-400";
-    const Icon = isSuccess ? CheckCircle : XCircle;
-
-    return (
-      <Card className={`mt-6 ${bgColor}`}>
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Icon className={`h-5 w-5 ${iconColor}`} />
-            {isSuccess ? "Conexão bem-sucedida" : "Falha na conexão"}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {error ? (
-            <div className="space-y-2">
-              <p className="text-red-400 font-medium">Erro:</p>
-              <pre className="bg-muted/50 p-3 rounded-md text-sm overflow-auto">
-                {error}
-              </pre>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {isSuccess && result.content && (
-                <div>
-                  <p className="text-green-400 font-medium mb-2">Resposta da IA:</p>
-                  <div className="bg-muted/50 p-3 rounded-md">
-                    <p className="text-foreground">{result.content}</p>
-                  </div>
-                </div>
-              )}
-              <div>
-                <p className="text-muted-foreground text-sm mb-2">Resposta completa (JSON):</p>
-                <pre className="bg-muted/50 p-3 rounded-md text-xs overflow-auto max-h-40">
-                  {JSON.stringify(result, null, 2)}
-                </pre>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
-  };
+  const ok = (resp as HealthOk)?.ok === true;
 
   return (
-    <div className="min-h-screen bg-background p-8">
-      <div className="max-w-2xl mx-auto">
-        <Card className="glass-card">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl gradient-text">
-              Teste de conexão OpenAI
-            </CardTitle>
-            <p className="text-muted-foreground">
-              Teste a comunicação com a API OpenAI através da Edge Function
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="story" className="text-sm font-medium text-foreground">
-                História de teste (opcional)
-              </label>
-              <Textarea
-                id="story"
-                placeholder="Se vazio, enviará apenas 'Diga apenas: OK' para testar a conexão básica..."
-                value={story}
-                onChange={(e) => setStory(e.target.value)}
-                className="min-h-[100px] resize-none"
-              />
-            </div>
+    <div style={{ maxWidth: 780, margin: "40px auto", padding: 24 }}>
+      <h1 style={{ marginBottom: 8 }}>Teste de conexão OpenAI</h1>
+      <p style={{ marginBottom: 16, opacity: 0.8 }}>
+        Teste a comunicação do front com a Cloud Function <code>/api/openai-health</code>.
+      </p>
 
-            <Button 
-              onClick={testConnection} 
-              disabled={loading}
-              className="w-full"
-              variant="hero"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Testando conexão...
-                </>
-              ) : (
-                "Testar conexão OpenAI"
-              )}
-            </Button>
+      <textarea
+        placeholder="História de teste (opcional)"
+        value={story}
+        onChange={(e) => setStory(e.target.value)}
+        rows={5}
+        style={{ width: "100%", padding: 12, borderRadius: 8, marginBottom: 12 }}
+      />
 
-            {loading && (
-              <div className="flex justify-center">
-                <Badge variant="secondary" className="animate-pulse">
-                  Aguardando resposta da OpenAI...
-                </Badge>
-              </div>
-            )}
+      <button
+        onClick={handleTest}
+        disabled={loading}
+        style={{
+          padding: "10px 16px",
+          borderRadius: 8,
+          background: loading ? "#999" : "#7c3aed",
+          color: "white",
+          border: "none",
+          cursor: loading ? "not-allowed" : "pointer",
+        }}
+      >
+        {loading ? "Testando..." : "Testar conexão OpenAI"}
+      </button>
 
-            {renderResult()}
-          </CardContent>
-        </Card>
-      </div>
+      {resp && (
+        <div
+          style={{
+            marginTop: 20,
+            padding: 16,
+            borderRadius: 12,
+            background: ok ? "rgba(16,185,129,.15)" : "rgba(239,68,68,.12)",
+            border: `1px solid ${ok ? "rgb(16,185,129)" : "rgb(239,68,68)"}`,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+          }}
+        >
+          <strong>{ok ? "✅ Sucesso" : "❌ Falha"}</strong>
+          <div style={{ marginTop: 8 }}>
+            <code>{JSON.stringify(resp, null, 2)}</code>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
+}
 
-export default TestOpenAI;
