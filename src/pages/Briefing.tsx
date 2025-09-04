@@ -139,14 +139,7 @@ const Briefing = () => {
         }
       }
     }
-    if (currentStep === 3 && !formData.story.trim()) {
-      toast({
-        title: 'Campo obrigatório',
-        description: 'Por favor, conte sua história.',
-        variant: 'destructive',
-      });
-      return;
-    }
+  // Passo 3 não exige mais história; será digitada na tela seguinte (CreateSong)
 
     if (currentStep < 4) setCurrentStep(currentStep + 1);
   };
@@ -180,7 +173,7 @@ const Briefing = () => {
         style: isFree ? "preferido" : effectiveStyle, // FREE envia "preferido"
         tone: isFree ? "preferido" : formData.tone,   // FREE envia "preferido"
         durationTargetSec: isFree ? 60 : parseInt(formData.duration) * 60,
-        storyRaw: formData.story,
+        storyRaw: "", // história será digitada na próxima tela
         plan: userPlan,
         lgpdConsent: formData.lgpdConsent
       };
@@ -339,17 +332,10 @@ const Briefing = () => {
         return (
           <div className="space-y-6">
             <div>
-              <Label htmlFor="story" className="text-lg font-semibold">Conte sua história</Label>
-              <p className="text-muted-foreground mb-4">
-                Quanto mais detalhes, melhor será a letra. Conte sobre pessoas, momentos, sentimentos...
+              <Label className="text-lg font-semibold">História</Label>
+              <p className="text-muted-foreground mt-2">
+                A sua história será escrita na próxima etapa, na tela "Criar Música". Lá você poderá usar modelos prontos ou digitar livremente.
               </p>
-              <Textarea
-                id="story"
-                placeholder="Era uma vez... Conte todos os detalhes da sua história especial."
-                value={formData.story}
-                onChange={(e) => setFormData({ ...formData, story: e.target.value })}
-                className="min-h-40"
-              />
             </div>
 
             <div className="flex items-start space-x-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -403,9 +389,7 @@ const Briefing = () => {
 
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">História</h4>
-                <p className="text-muted-foreground text-sm">
-                  {formData.story.slice(0, 200)}{formData.story.length > 200 ? '...' : ''}
-                </p>
+                <p className="text-muted-foreground text-sm">Será preenchida na próxima etapa (Criar Música).</p>
               </Card>
 
               <Card className="p-4">
