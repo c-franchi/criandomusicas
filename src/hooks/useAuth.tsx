@@ -2,11 +2,16 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { User, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
+interface AuthError {
+  code?: string;
+  message: string;
+}
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string, name?: string) => Promise<{ error: any }>;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name?: string) => Promise<{ error: AuthError | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -30,7 +35,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await createUserWithEmailAndPassword(auth, email, password);
       return { error: null };
     } catch (error) {
-      return { error };
+      const authError: AuthError = {
+        code: (error as any)?.code || 'unknown',
+        message: (error as any)?.message || 'An error occurred during sign up'
+      };
+      return { error: authError };
     }
   };
 
@@ -39,7 +48,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signInWithEmailAndPassword(auth, email, password);
       return { error: null };
     } catch (error) {
-      return { error };
+      const authError: AuthError = {
+        code: (error as any)?.code || 'unknown',
+        message: (error as any)?.message || 'An error occurred during sign in'
+      };
+      return { error: authError };
     }
   };
 

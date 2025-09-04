@@ -7,7 +7,7 @@ const ProcessSteps = () => {
     {
       icon: FileText,
       title: "Conte sua História",
-      description: "Compartilhe a ocasião, estilo musical e conte sua história em detalhes",
+      description: "Compartilhe a ocasião, estilo musical e conte qualquer história, homenagem ou momento especial",
       badge: "3 min"
     },
     {
@@ -18,8 +18,8 @@ const ProcessSteps = () => {
     },
     {
       icon: Music,
-      title: "3 Letras Únicas",
-      description: "Receba 3 versões de letras personalizadas. Escolha a favorita",
+      title: "2 Letras Personalizadas",
+      description: "Receba 2 versões de letras personalizadas. Escolha a favorita",
       badge: "IA"
     },
     {

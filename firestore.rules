@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+
+    match /users/{uid} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
+    }
+
+    match /orders/{orderId} {
+      allow create: if isSignedIn();
+      allow read, update: if isSignedIn(); // depois restringe para ownerId
+    }
+
+    match /orders/{orderId}/lyrics/{lyricId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /eventLogs/{logId} {
+      allow read, write: if isSignedIn();
+    }
+  }
+}

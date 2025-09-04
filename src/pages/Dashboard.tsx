@@ -9,22 +9,34 @@ import { useToast } from "@/hooks/use-toast";
 import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
+interface Order {
+  id: string;
+  status?: string;
+  createdAt?: any;
+  lyrics?: string;
+  musicUrl?: string;
+  [key: string]: any;
+}
+
 const Dashboard = () => {
   const { user, loading } = useAuth();
   const { toast } = useToast();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
-
-  // Redirect if not authenticated
-  if (!loading && !user) {
-    return <Navigate to="/auth" replace />;
-  }
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
-    if (user) {
+    if (!loading && !user) {
+      setShouldRedirect(true);
+    } else if (user) {
       fetchOrders();
     }
-  }, [user]);
+  }, [user, loading]);
+
+  // Redirect if not authenticated
+  if (shouldRedirect) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const fetchOrders = async () => {
     try {
@@ -41,10 +53,11 @@ const Dashboard = () => {
       }));
       
       setOrders(ordersData);
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: 'Erro ao carregar pedidos',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -115,7 +128,7 @@ const Dashboard = () => {
         {/* New Order Button */}
         <div className="mb-8 text-center">
           <Button asChild size="lg">
-            <a href="/briefing">
+            <a href="/create-song">
               <Music className="w-4 h-4 mr-2" />
               Criar Nova Música
             </a>
@@ -132,7 +145,7 @@ const Dashboard = () => {
                 Crie sua primeira música personalizada
               </p>
               <Button asChild>
-                <a href="/briefing">Começar Agora</a>
+                <a href="/create-song">Começar Agora</a>
               </Button>
             </Card>
           ) : (
@@ -160,8 +173,8 @@ const Dashboard = () => {
                       R$ {((order.priceCents || 999) / 100).toFixed(2).replace('.', ',')}
                     </div>
                     <Button asChild variant="outline" size="sm">
-                      <a href={`/pedido/${order.id}/letras`}>
-                        Ver Letras
+                      <a href={`/order/${order.id}`}>
+                        Ver Detalhes
                         <ExternalLink className="w-4 h-4 ml-2" />
                       </a>
                     </Button>

@@ -6,12 +6,14 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Briefing from "./pages/Briefing";
+import CreateSong from "./pages/CreateSong";
 import Auth from "./pages/Auth";
 import Order from "./pages/Order";
 import Dashboard from "./pages/Dashboard";
 import TestOpenAI from "./pages/TestOpenAI";
 import OrderLyricsPage from "./pages/OrderLyricsPage";
 import NotFound from "./pages/NotFound";
+import Planos from "./pages/Planos";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/briefing" element={<Briefing />} />
+            <Route path="/create-song" element={<CreateSong />} />
+            <Route path="/planos" element={<Planos />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/test-openai" element={<TestOpenAI />} />

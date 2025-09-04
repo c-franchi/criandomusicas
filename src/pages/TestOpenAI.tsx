@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 type HealthOk = { ok: true; text: string };
 type HealthErr = { ok: false; name?: string; message?: string; status?: number; data?: any; error?: string };
 
 export default function TestOpenAI() {
+  const navigate = useNavigate();
   const [story, setStory] = useState("");
   const [loading, setLoading] = useState(false);
   const [resp, setResp] = useState<HealthOk | HealthErr | null>(null);
@@ -27,9 +29,25 @@ export default function TestOpenAI() {
   }
 
   const ok = (resp as HealthOk)?.ok === true;
+  
 
   return (
     <div style={{ maxWidth: 780, margin: "40px auto", padding: 24 }}>
+      <button
+        onClick={() => navigate(-1)}
+        style={{
+          marginBottom: 16,
+          padding: "8px 16px",
+          borderRadius: 8,
+          background: "#6b7280",
+          color: "white",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        ← Voltar
+      </button>
+      
       <h1 style={{ marginBottom: 8 }}>Teste de conexão OpenAI</h1>
       <p style={{ marginBottom: 16, opacity: 0.8 }}>
         Teste a comunicação do front com a Cloud Function <code>/api/openai-health</code>.

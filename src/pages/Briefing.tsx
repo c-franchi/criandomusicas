@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -7,10 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight, CheckCircle, Music } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle, Music, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 const Briefing = () => {
@@ -18,15 +18,48 @@ const Briefing = () => {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
+  const [userPlan, setUserPlan] = useState<string>("free");
   const [formData, setFormData] = useState({
     occasion: "",
+  customOccasion: "",
     style: "",
+  customStyle: "",
     tone: "",
     duration: "",
     story: "",
-    keywords: "",
     lgpdConsent: false
   });
+
+  // Buscar plano do usuário
+  useEffect(() => {
+    // Restaurar progresso salvo do briefing, se existir
+    const saved = localStorage.getItem('briefingProgress');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed?.formData) setFormData(parsed.formData);
+        if (parsed?.currentStep) setCurrentStep(parsed.currentStep);
+      } catch {}
+    }
+
+    const fetchUserPlan = async () => {
+      if (user) {
+        try {
+          const userDoc = await getDoc(doc(db, "users", user.uid));
+          const userData = userDoc.data();
+          setUserPlan(userData?.plan || "free");
+        } catch (error) {
+          console.error("Erro ao buscar plano:", error);
+        }
+      }
+    };
+    fetchUserPlan();
+  }, [user]);
+
+  // Autosave do formulário a cada mudança
+  useEffect(() => {
+    localStorage.setItem('briefingProgress', JSON.stringify({ formData, currentStep }));
+  }, [formData, currentStep]);
 
   // Redirect if not authenticated
   if (!loading && !user) {
@@ -44,45 +77,67 @@ const Briefing = () => {
     );
   }
 
+  const isFree = userPlan === "free";
+
   const steps = [
     { number: 1, title: "Ocasião", description: "Para que momento é a música?" },
-    { number: 2, title: "Estilo", description: "Qual o estilo musical?" },
+    { number: 2, title: "Preferências", description: "Estilo, tom e duração" },
     { number: 3, title: "História", description: "Conte sua história" },
     { number: 4, title: "Revisão", description: "Confirme os dados" }
   ];
 
   const occasions = [
-    "Aniversário", "Casamento", "Formatura", "Empresa", "Igreja", 
+    "Aniversário", "Casamento", "Formatura", "Empresa", "Igreja",
     "Dia das Mães", "Dia dos Pais", "Natal", "Outro"
   ];
 
   const styles = [
-    "Sertanejo", "Pop", "Rock", "Worship", "Rap", "MPB", 
+    "Sertanejo", "Pop", "Rock", "Worship", "Rap", "MPB",
     "Forró", "Romântica", "Infantil", "Outro"
   ];
 
   const tones = [
-    "Emocionante", "Divertido", "Épico", "Romântico", 
+    "Emocionante", "Divertido", "Épico", "Romântico",
     "Inspirador", "Nostálgico", "Energético"
   ];
 
+  // Para FREE: só uma opção liberada (será ignorada pelo backend)
+  const unlockedStyle = isFree ? "Romântica" : formData.style;
+  const unlockedTone = isFree ? "Romântico" : formData.tone;
+
   const nextStep = () => {
     // Validate required fields for each step
-    if (currentStep === 1 && !formData.occasion) {
+  if (currentStep === 1 && (!formData.occasion || (formData.occasion === 'Outro' && !formData.customOccasion.trim()))) {
       toast({
         title: 'Campo obrigatório',
-        description: 'Por favor, selecione uma ocasião.',
+    description: 'Por favor, selecione uma ocasião e preencha o campo quando escolher "Outro".',
         variant: 'destructive',
       });
       return;
     }
-    if (currentStep === 2 && (!formData.style || !formData.tone || !formData.duration)) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha estilo, tom e duração.',
-        variant: 'destructive',
-      });
-      return;
+    if (currentStep === 2) {
+      if (isFree) {
+        // FREE só precisa da duração
+        if (!formData.duration) {
+          toast({
+            title: 'Campo obrigatório',
+            description: 'Por favor, defina a duração.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      } else {
+        // Outros planos precisam de tudo
+  const styleValid = formData.style && (formData.style !== 'Outro' || !!formData.customStyle.trim());
+  if (!styleValid || !formData.tone || !formData.duration) {
+          toast({
+            title: 'Campos obrigatórios',
+            description: 'Por favor, preencha estilo, tom e duração.',
+            variant: 'destructive',
+          });
+          return;
+        }
+      }
     }
     if (currentStep === 3 && !formData.story.trim()) {
       toast({
@@ -92,7 +147,7 @@ const Briefing = () => {
       });
       return;
     }
-    
+
     if (currentStep < 4) setCurrentStep(currentStep + 1);
   };
 
@@ -113,33 +168,34 @@ const Briefing = () => {
     setSubmitting(true);
 
     try {
-      const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
-      await setDoc(doc(db, "orders", orderId), {
-        userId: user?.uid,
-        occasion: formData.occasion,
-        style: formData.style,
-        tone: formData.tone,
-        durationTargetSec: parseInt(formData.duration) * 60,
-        storyRaw: formData.story + (formData.keywords ? `\n\nPalavras-chave: ${formData.keywords}` : ''),
-        status: "AWAITING_PAYMENT",
-        priceCents: 999,
-        lgpdConsent: formData.lgpdConsent,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      });
+      // Redirecionar para CreateSong com os dados do briefing
+      const effectiveOccasion = formData.occasion === 'Outro' && formData.customOccasion.trim()
+        ? formData.customOccasion.trim()
+        : formData.occasion;
+      const effectiveStyle = formData.style === 'Outro' && formData.customStyle.trim()
+        ? formData.customStyle.trim()
+        : formData.style;
+      const briefingData = {
+        occasion: effectiveOccasion,
+        style: isFree ? "preferido" : effectiveStyle, // FREE envia "preferido"
+        tone: isFree ? "preferido" : formData.tone,   // FREE envia "preferido"
+        durationTargetSec: isFree ? 60 : parseInt(formData.duration) * 60,
+        storyRaw: formData.story,
+        plan: userPlan,
+        lgpdConsent: formData.lgpdConsent
+      };
 
-      toast({
-        title: 'Pedido criado!',
-        description: 'Redirecionando para o pagamento...',
-      });
+      // Salvar no localStorage para passar para CreateSong
+      localStorage.setItem('briefingData', JSON.stringify(briefingData));
 
-      // Redirect to order page
-      window.location.href = `/pedido/${orderId}`;
-      
+  // Limpa progresso salvo para começar a geração
+  localStorage.removeItem('briefingProgress');
+  // Redirecionar para CreateSong
+      window.location.href = '/create-song';
+
     } catch (error: any) {
       toast({
-        title: 'Erro ao criar pedido',
+        title: 'Erro',
         description: error.message,
         variant: 'destructive',
       });
@@ -167,6 +223,18 @@ const Briefing = () => {
                   </Button>
                 ))}
               </div>
+              {formData.occasion === 'Outro' && (
+                <div className="mt-4">
+                  <Label htmlFor="customOccasion">Descreva a ocasião</Label>
+                  <Input
+                    id="customOccasion"
+                    placeholder="Ex: Bodas de Prata, Pedido de Namoro..."
+                    value={formData.customOccasion}
+                    onChange={(e) => setFormData({ ...formData, customOccasion: e.target.value })}
+                    className="mt-2"
+                  />
+                </div>
+              )}
             </div>
           </div>
         );
@@ -177,33 +245,69 @@ const Briefing = () => {
             <div>
               <Label className="text-lg font-semibold mb-4 block">Qual estilo musical você prefere?</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-                {styles.map((style) => (
-                  <Button
-                    key={style}
-                    variant={formData.style === style ? "default" : "outline"}
-                    onClick={() => setFormData({ ...formData, style })}
-                    className="h-auto p-4 text-left justify-start"
-                  >
-                    {style}
-                  </Button>
-                ))}
+                {styles.map((style) => {
+                  const isDisabled = isFree && style !== unlockedStyle;
+                  return (
+                    <Button
+                      key={style}
+                      variant={formData.style === style ? "default" : "outline"}
+                      onClick={() => !isDisabled && setFormData({ ...formData, style })}
+                      className={`h-auto p-4 text-left justify-start relative ${
+                        isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      disabled={isDisabled}
+                    >
+                      {style}
+                      {isDisabled && <Lock className="w-4 h-4 absolute top-2 right-2" />}
+                    </Button>
+                  );
+                })}
               </div>
+              {formData.style === 'Outro' && !isFree && (
+                <div className="mt-2">
+                  <Label htmlFor="customStyle">Descreva o estilo</Label>
+                  <Input
+                    id="customStyle"
+                    placeholder="Ex: Folk romântico, Samba, Bossa..."
+                    value={formData.customStyle}
+                    onChange={(e) => setFormData({ ...formData, customStyle: e.target.value })}
+                    className="mt-2"
+                  />
+                </div>
+              )}
+              {isFree && (
+                <p className="text-sm text-muted-foreground mb-4">
+                  Plano Free: O estilo será escolhido automaticamente baseado na sua história.
+                </p>
+              )}
             </div>
 
             <div>
               <Label className="text-lg font-semibold mb-4 block">Qual o tom da música?</Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
-                {tones.map((tone) => (
-                  <Button
-                    key={tone}
-                    variant={formData.tone === tone ? "default" : "outline"}
-                    onClick={() => setFormData({ ...formData, tone })}
-                    className="h-auto p-4 text-left justify-start"
-                  >
-                    {tone}
-                  </Button>
-                ))}
+                {tones.map((tone) => {
+                  const isDisabled = isFree && tone !== unlockedTone;
+                  return (
+                    <Button
+                      key={tone}
+                      variant={formData.tone === tone ? "default" : "outline"}
+                      onClick={() => !isDisabled && setFormData({ ...formData, tone })}
+                      className={`h-auto p-4 text-left justify-start relative ${
+                        isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      disabled={isDisabled}
+                    >
+                      {tone}
+                      {isDisabled && <Lock className="w-4 h-4 absolute top-2 right-2" />}
+                    </Button>
+                  );
+                })}
               </div>
+              {isFree && (
+                <p className="text-sm text-muted-foreground mb-4">
+                  Plano Free: O tom será escolhido automaticamente baseado na sua história.
+                </p>
+              )}
             </div>
 
             <div>
@@ -216,9 +320,17 @@ const Briefing = () => {
                 onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
                 className="mt-2"
                 min="1"
-                max="10"
+                max={isFree ? "1" : "10"}
+                disabled={isFree}
               />
-              <p className="text-sm text-muted-foreground mt-1">Entre 1 e 10 minutos</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isFree ? "até 1 minuto" : "Entre 1 e 10 minutos"}
+              </p>
+              {isFree && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Plano Free: Duração limitada a 1 minuto.
+                </p>
+              )}
             </div>
           </div>
         );
@@ -240,28 +352,16 @@ const Briefing = () => {
               />
             </div>
 
-            <div>
-              <Label htmlFor="keywords" className="text-lg font-semibold">Palavras-chave importantes</Label>
-              <p className="text-muted-foreground mb-2">
-                Nomes de pessoas, lugares ou palavras que devem aparecer na música (opcional)
-              </p>
-              <Input
-                id="keywords"
-                placeholder="Ex: Maria, João, São Paulo, amor..."
-                value={formData.keywords}
-                onChange={(e) => setFormData({ ...formData, keywords: e.target.value })}
-              />
-            </div>
-
-            <div className="flex items-start space-x-2">
+            <div className="flex items-start space-x-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <Checkbox
                 id="lgpdConsent"
                 checked={formData.lgpdConsent}
                 onCheckedChange={(checked) => setFormData({ ...formData, lgpdConsent: !!checked })}
               />
-              <Label htmlFor="lgpdConsent" className="text-sm">
-                Autorizo o uso dos meus dados para gerar minha música personalizada conforme a 
-                <a href="/privacidade" className="text-primary hover:underline ml-1">Política de Privacidade</a>.
+              <Label htmlFor="lgpdConsent" className="text-sm font-medium">
+                <strong>Autorizo o uso dos meus dados</strong> para gerar minha música personalizada conforme a{' '}
+                <a href="/privacidade" className="text-primary hover:underline">Política de Privacidade</a>.
+                <span className="text-red-500 ml-1">*</span>
               </Label>
             </div>
           </div>
@@ -271,7 +371,7 @@ const Briefing = () => {
         return (
           <div className="space-y-6">
             <h3 className="text-2xl font-semibold">Revisão do Pedido</h3>
-            
+
             <div className="grid gap-4">
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Ocasião</h4>
@@ -280,15 +380,25 @@ const Briefing = () => {
 
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Estilo e Tom</h4>
-                <div className="flex gap-2">
-                  <Badge>{formData.style}</Badge>
-                  <Badge variant="outline">{formData.tone}</Badge>
-                </div>
+                {isFree ? (
+                  <div className="text-sm text-muted-foreground">
+                    <p>Estilo: <strong>Escolhido automaticamente</strong></p>
+                    <p>Tom: <strong>Escolhido automaticamente</strong></p>
+                    <p className="text-xs mt-2">Baseado na sua história</p>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Badge>{formData.style === 'Outro' && formData.customStyle ? formData.customStyle : formData.style}</Badge>
+                    <Badge variant="outline">{formData.tone}</Badge>
+                  </div>
+                )}
               </Card>
 
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">Duração</h4>
-                <Badge variant="secondary">{formData.duration} minutos</Badge>
+                <Badge variant="secondary">
+                  {isFree ? "até 1 minuto" : `${formData.duration} minutos`}
+                </Badge>
               </Card>
 
               <Card className="p-4">
@@ -299,13 +409,17 @@ const Briefing = () => {
               </Card>
 
               <Card className="p-4">
-                <h4 className="font-semibold mb-2">Investimento</h4>
-                <div className="flex items-baseline gap-2">
-                  <div className="text-2xl font-bold gradient-text">R$ 9,99</div>
-                  <div className="text-sm text-muted-foreground line-through">R$ 30,00</div>
-                  <div className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">PROMOÇÃO</div>
+                <h4 className="font-semibold mb-2">Seu Plano</h4>
+                <div className="flex items-center gap-2">
+                  <Badge variant={isFree ? "secondary" : "default"}>
+                    {isFree ? "FREE" : userPlan.toUpperCase()}
+                  </Badge>
+                  {isFree && (
+                    <span className="text-xs text-muted-foreground">
+                      1 música • 2 versões • até 1 min
+                    </span>
+                  )}
                 </div>
-                <p className="text-sm text-muted-foreground">3 versões de letras + música finalizada</p>
               </Card>
             </div>
           </div>
@@ -384,13 +498,13 @@ const Briefing = () => {
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           ) : (
-            <Button 
-              variant="hero" 
-              size="lg" 
+            <Button
+              variant="hero"
+              size="lg"
               onClick={handleSubmit}
               disabled={submitting || !formData.lgpdConsent}
             >
-              {submitting ? 'Criando pedido...' : 'Finalizar Pedido'}
+              {submitting ? 'Processando...' : 'Criar Minha Música'}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           )}

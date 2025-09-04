@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /tracks/{allPaths=**} {
+      allow read: if true;                  // público p/ baixar as músicas
+      allow write: if request.auth != null; // só usuário logado pode enviar
+    }
+  }
+}

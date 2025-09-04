@@ -16,14 +16,12 @@ const Order = () => {
   const { toast } = useToast();
   const [order, setOrder] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
-
-  // Redirect if not authenticated
-  if (!loading && !user) {
-    return <Navigate to="/auth" replace />;
-  }
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   useEffect(() => {
-    if (user && orderId) {
+    if (!loading && !user) {
+      setShouldRedirect(true);
+    } else if (user && orderId) {
       console.log('Loading order with ID:', orderId);
       
       // Set up real-time listener for the order
@@ -109,6 +107,11 @@ const Order = () => {
         </div>
       </div>
     );
+  }
+
+  // Redirect if not authenticated
+  if (shouldRedirect) {
+    return <Navigate to="/auth" replace />;
   }
 
   if (!order) {

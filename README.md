@@ -4,6 +4,20 @@
 
 **URL**: https://lovable.dev/projects/3676c833-b0f1-419b-b262-3d304bb67457
 
+## Environment Variables
+
+### Firebase Functions
+
+The following environment variables are required for Firebase Functions:
+
+- `OPENAI_API_KEY`: Your OpenAI API key
+- `OPENAI_MODEL`: OpenAI model to use (optional, defaults to "gpt-4o")
+
+To set the OpenAI model, use:
+```bash
+firebase functions:config:set openai.model="gpt-4o"
+```
+
 ## How can I edit this code?
 
 There are several ways of editing your application.

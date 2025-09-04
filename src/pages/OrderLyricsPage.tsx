@@ -135,7 +135,7 @@ export default function OrderLyricsPage() {
             cursor: loadingGen ? "not-allowed" : "pointer",
           }}
         >
-          {loadingGen ? "Gerando..." : "Gerar 3 letras"}
+          {loadingGen ? "Gerando..." : "Gerar 2 letras"}
         </button>
 
         {error && <span style={{ color: "#ef4444" }}>Erro: {error}</span>}
@@ -143,7 +143,7 @@ export default function OrderLyricsPage() {
 
       {lyrics.length === 0 ? (
         <div style={{ padding: 16, border: "1px dashed #ccc", borderRadius: 12 }}>
-          Nenhuma letra ainda. Clique em "Gerar 3 letras".
+          Nenhuma letra ainda. Clique em "Gerar 2 letras".
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>

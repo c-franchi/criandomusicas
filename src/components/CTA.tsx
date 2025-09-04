@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowRight, Zap } from "lucide-react";
 const CTA = () => {
-  const benefits = ["3 versões de letras personalizadas", "Entrega em até 48 horas", "Música completa e profissional", "Envio direto no WhatsApp"];
+  const benefits = ["2 versões de letras personalizadas", "Entrega em até 48 horas", "Música completa e profissional", "Envio direto no WhatsApp"];
   return <section className="py-24 px-6 relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/20" />
@@ -20,7 +20,7 @@ const CTA = () => {
         
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
           Mais de 500 clientes já criaram suas músicas personalizadas. 
-          Sua história merece uma trilha sonora especial.
+          Transforme qualquer momento em uma trilha sonora inesquecível.
         </p>
         
         {/* Benefits */}
@@ -33,10 +33,10 @@ const CTA = () => {
         
         {/* Pricing */}
         <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 mb-8 max-w-md mx-auto">
-          <div className="text-4xl font-bold gradient-text mb-2">R$ 9,90</div>
+          <div className="text-4xl font-bold gradient-text mb-2">R$ 14,90</div>
           <div className="text-muted-foreground mb-4">Música completa personalizada</div>
           <div className="text-sm text-muted-foreground">
-            <span className="line-through">R$ 39,90</span> • Promoção limitada
+            <span className="line-through">R$ 29,90</span> • Promoção por tempo limitado
           </div>
         </div>
         
