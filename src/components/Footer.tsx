@@ -9,7 +9,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
                 <Music className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold gradient-text">SongStudio</span>
+              <span className="text-xl font-bold gradient-text">MusicStudio</span>
             </div>
             <p className="text-muted-foreground mb-4 max-w-md">
               Transformamos suas histórias mais especiais em músicas únicas e emocionantes. 

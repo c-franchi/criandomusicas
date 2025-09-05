@@ -33,10 +33,10 @@ const CTA = () => {
         
         {/* Pricing */}
         <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 mb-8 max-w-md mx-auto">
-          <div className="text-4xl font-bold gradient-text mb-2">R$ 14,90</div>
+          <div className="text-4xl font-bold gradient-text mb-2">R$ 9,90</div>
           <div className="text-muted-foreground mb-4">Música completa personalizada</div>
           <div className="text-sm text-muted-foreground">
-            <span className="line-through">R$ 29,90</span> • Promoção por tempo limitado
+            <span className="line-through">R$ 19,90</span> • Promoção por tempo limitado
           </div>
         </div>
         
@@ -46,9 +46,7 @@ const CTA = () => {
           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
         
-        <p className="text-sm text-muted-foreground mt-4">
-          ✨ Satisfação garantida ou seu dinheiro de volta
-        </p>
+        
       </div>
     </section>;
 };
