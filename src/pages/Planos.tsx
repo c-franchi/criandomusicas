@@ -62,57 +62,84 @@ const Planos = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-12 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card to-background py-12 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Crown className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold">Escolha Seu Plano</h1>
+        <div className="text-center mb-16">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="p-3 rounded-xl bg-gradient-to-r from-primary to-accent music-glow">
+              <Crown className="w-8 h-8 text-primary-foreground" />
+            </div>
+            <h1 className="text-4xl font-bold gradient-text">Escolha Seu Plano</h1>
           </div>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
             Transforme suas histórias em músicas incríveis. Escolha o plano ideal para você.
           </p>
         </div>
 
         {/* Plans Grid */}
-    <div className="grid md:grid-cols-3 gap-8 mb-12 items-stretch">
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-16">
           {PLANS.map((plan) => (
             <Card
               key={plan.id}
-      className={`relative h-full flex flex-col ${plan.id === "basic" ? "ring-2 ring-primary shadow-lg" : ""}`}
+              className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl glass-card ${
+                plan.id === "basic" 
+                  ? "ring-2 ring-primary music-glow border-primary/50" 
+                  : "border-border/50 hover:border-primary/30"
+              }`}
             >
               {plan.id === "basic" && (
-                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary">
+                <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold px-4 py-1">
                   Mais Popular
                 </Badge>
               )}
 
-              <CardHeader className="text-center">
-                <div className="flex justify-center mb-2">
-                  {getPlanIcon(plan.id)}
+              <CardHeader className="text-center pb-4">
+                <div className="flex justify-center mb-4">
+                  <div className={`p-4 rounded-2xl ${
+                    plan.id === "free" ? "bg-muted/50" :
+                    plan.id === "basic" ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                    "bg-gradient-to-r from-accent to-primary music-glow"
+                  }`}>
+                    {React.cloneElement(getPlanIcon(plan.id), {
+                      className: `w-8 h-8 ${
+                        plan.id === "free" ? "text-muted-foreground" : "text-white"
+                      }`
+                    })}
+                  </div>
                 </div>
-                <CardTitle className="text-2xl">{plan.title}</CardTitle>
-                <CardDescription className="text-3xl font-bold text-primary mt-2">
+                <CardTitle className="text-2xl mb-2 text-foreground">{plan.title}</CardTitle>
+                <CardDescription className="text-4xl font-bold gradient-text">
                   {plan.price}
                 </CardDescription>
+                {plan.id !== "free" && (
+                  <p className="text-muted-foreground text-sm mt-1">por mês</p>
+                )}
               </CardHeader>
 
-              <CardContent className="mt-auto">
-                <ul className="space-y-3 mb-6 flex-1">
+              <CardContent className="flex-1 flex flex-col">
+                <ul className="space-y-4 mb-8 flex-1">
                   {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm">{feature}</span>
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="p-1 rounded-full bg-primary/20 mt-0.5">
+                        <Check className="w-3 h-3 text-primary flex-shrink-0" />
+                      </div>
+                      <span className="text-foreground leading-relaxed">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
-                <div>
+                <div className="mt-auto">
                   <Button
                     onClick={() => handleSelectPlan(plan.id)}
-                    className="w-full"
-                    variant={plan.id === "basic" ? "default" : "outline"}
+                    className={`w-full py-3 font-semibold transition-all duration-300 ${
+                      plan.id === "basic" 
+                        ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white music-glow" 
+                        : plan.id === "pro"
+                        ? "bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
+                        : ""
+                    }`}
+                    variant={plan.id === "free" ? "outline" : "default"}
                   >
                     {plan.cta}
                   </Button>
@@ -123,13 +150,24 @@ const Planos = () => {
         </div>
 
         {/* Footer */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground mb-4">
-            💡 Todos os planos incluem entrega por WhatsApp e suporte técnico
-          </p>
-          <Button variant="ghost" onClick={() => navigate("/")}>
-            Voltar ao início
-          </Button>
+        <div className="text-center space-y-6">
+          <div className="p-6 rounded-2xl glass-card border border-border/50">
+            <p className="text-foreground font-medium mb-2">
+              🎵 Garantia de satisfação de 100%
+            </p>
+            <p className="text-muted-foreground">
+              Todos os planos incluem entrega por WhatsApp e suporte técnico especializado
+            </p>
+          </div>
+          
+          <div className="flex gap-4 justify-center">
+            <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
+              ← Voltar ao início
+            </Button>
+            <Button variant="ghost" onClick={() => navigate("/test-openai")} className="text-muted-foreground hover:text-foreground">
+              🔧 Testar OpenAI
+            </Button>
+          </div>
         </div>
       </div>
     </div>
