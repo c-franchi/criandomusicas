@@ -338,16 +338,17 @@ const Briefing = () => {
               </p>
             </div>
 
-            <div className="flex items-start space-x-2 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="flex items-start space-x-2 p-6 bg-card/50 border border-border rounded-xl backdrop-blur-sm">
               <Checkbox
                 id="lgpdConsent"
                 checked={formData.lgpdConsent}
                 onCheckedChange={(checked) => setFormData({ ...formData, lgpdConsent: !!checked })}
+                className="mt-0.5"
               />
-              <Label htmlFor="lgpdConsent" className="text-sm font-medium">
-                <strong>Autorizo o uso dos meus dados</strong> para gerar minha música personalizada conforme a{' '}
-                <a href="/privacidade" className="text-primary hover:underline">Política de Privacidade</a>.
-                <span className="text-red-500 ml-1">*</span>
+              <Label htmlFor="lgpdConsent" className="text-sm font-medium text-card-foreground leading-relaxed">
+                <strong className="text-primary">Autorizo o uso dos meus dados</strong> para gerar minha música personalizada conforme a{' '}
+                <a href="/privacidade" className="text-primary hover:text-accent transition-colors underline decoration-primary/30 hover:decoration-accent/50">Política de Privacidade</a>.
+                <span className="text-destructive ml-1 font-bold">*</span>
               </Label>
             </div>
           </div>

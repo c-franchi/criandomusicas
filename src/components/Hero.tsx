@@ -55,13 +55,13 @@ const Hero = () => {
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight px-0 my-[67px]">
           Conte sua{" "}
-          <span className="gradient-text">história</span>
+          <span className="gradient-text">história!</span>
           <br />
           A gente{" "}
-          <span className="gradient-text">compõe</span>
+          <span className="gradient-text">compõe;</span>
           <br />
           Você{" "}
-          <span className="gradient-text">emociona</span>
+          <span className="gradient-text">emociona.</span>
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">

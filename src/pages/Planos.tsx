@@ -97,18 +97,18 @@ const Planos = () => {
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-4">
                   <div className={`p-4 rounded-2xl ${
-                    plan.id === "free" ? "bg-muted/50" :
+                    plan.id === "free" ? "bg-secondary/50" :
                     plan.id === "basic" ? "bg-gradient-to-r from-primary to-accent music-glow" :
                     "bg-gradient-to-r from-accent to-primary music-glow"
                   }`}>
                     {React.cloneElement(getPlanIcon(plan.id), {
                       className: `w-8 h-8 ${
-                        plan.id === "free" ? "text-muted-foreground" : "text-white"
+                        plan.id === "free" ? "text-primary" : "text-white"
                       }`
                     })}
                   </div>
                 </div>
-                <CardTitle className="text-2xl mb-2 text-foreground">{plan.title}</CardTitle>
+                <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">{plan.title}</CardTitle>
                 <CardDescription className="text-4xl font-bold gradient-text">
                   {plan.price}
                 </CardDescription>
@@ -124,7 +124,7 @@ const Planos = () => {
                       <div className="p-1 rounded-full bg-primary/20 mt-0.5">
                         <Check className="w-3 h-3 text-primary flex-shrink-0" />
                       </div>
-                      <span className="text-foreground leading-relaxed">{feature}</span>
+                      <span className="text-card-foreground leading-relaxed font-medium">{feature}</span>
                     </li>
                   ))}
                 </ul>
