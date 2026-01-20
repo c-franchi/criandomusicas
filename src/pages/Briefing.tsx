@@ -8,6 +8,8 @@ import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Ch
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
+import { supabase } from "@/integrations/supabase/client";
+import WhatsAppModal from "@/components/WhatsAppModal";
 
 interface ChatMessage {
   id: string;
@@ -78,6 +80,8 @@ const Briefing = () => {
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
   const [stepHistory, setStepHistory] = useState<number[]>([]);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [pendingFinish, setPendingFinish] = useState(false);
   
   const initialFormData: BriefingFormData = {
     musicType: "",
@@ -665,6 +669,40 @@ const Briefing = () => {
     }, 300);
   };
 
+  const checkWhatsAppAndFinish = async () => {
+    // Verifica se o usuário já tem WhatsApp cadastrado
+    if (profile?.whatsapp) {
+      finishBriefing();
+      return;
+    }
+
+    // Verificar novamente do banco (pode ter sido atualizado)
+    if (user?.id) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('whatsapp')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data?.whatsapp) {
+        finishBriefing();
+        return;
+      }
+    }
+
+    // Não tem WhatsApp, mostrar modal
+    setPendingFinish(true);
+    setShowWhatsAppModal(true);
+  };
+
+  const handleWhatsAppConfirm = () => {
+    setShowWhatsAppModal(false);
+    if (pendingFinish) {
+      setPendingFinish(false);
+      finishBriefing();
+    }
+  };
+
   const finishBriefing = () => {
     const data = formData;
     
@@ -887,11 +925,21 @@ const Briefing = () => {
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Recomeçar
               </Button>
-              <Button onClick={finishBriefing} className="flex-1">
+              <Button onClick={checkWhatsAppAndFinish} className="flex-1">
                 <Check className="w-4 h-4 mr-2" />
                 Confirmar e Criar
               </Button>
             </div>
+
+            {/* WhatsApp Modal */}
+            {user?.id && (
+              <WhatsAppModal
+                open={showWhatsAppModal}
+                onOpenChange={setShowWhatsAppModal}
+                onConfirm={handleWhatsAppConfirm}
+                userId={user.id}
+              />
+            )}
           </div>
         </div>
       </div>

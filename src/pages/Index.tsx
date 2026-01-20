@@ -1,6 +1,6 @@
 import Hero from "@/components/Hero";
 import ProcessSteps from "@/components/ProcessSteps";
-import MusicShowcase from "@/components/MusicShowcase";
+import AudioSamples from "@/components/AudioSamples";
 import PricingPlans from "@/components/PricingPlans";
 import Testimonials from "@/components/Testimonials";
 import CTA from "@/components/CTA";
@@ -11,7 +11,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Hero />
       <ProcessSteps />
-      <MusicShowcase />
+      <AudioSamples />
       <PricingPlans />
       <Testimonials />
       <CTA />

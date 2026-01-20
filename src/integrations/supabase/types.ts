@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      audio_samples: {
+        Row: {
+          audio_url: string
+          cover_url: string | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean | null
+          occasion: string
+          sort_order: number | null
+          style: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          cover_url?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean | null
+          occasion: string
+          sort_order?: number | null
+          style: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          occasion?: string
+          sort_order?: number | null
+          style?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       consents: {
         Row: {
           consent_type: Database["public"]["Enums"]["consent_type"]

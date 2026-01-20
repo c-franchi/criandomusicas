@@ -17,8 +17,11 @@ import {
   FileText,
   Settings,
   Save,
-  DollarSign
+  DollarSign,
+  Copy,
+  Archive
 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
@@ -271,8 +274,12 @@ const AdminDashboard = () => {
     }
   };
 
+  // Separar pedidos ativos e concluídos
+  const activeOrders = orders.filter(o => !['COMPLETED', 'CANCELLED'].includes(o.status));
+  const completedOrders = orders.filter(o => ['COMPLETED', 'CANCELLED'].includes(o.status));
+
   // Filtrar pedidos
-  const filteredOrders = orders.filter(order => {
+  const filterOrders = (ordersList: AdminOrder[]) => ordersList.filter(order => {
     const matchesSearch = 
       order.lyric_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.music_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -284,12 +291,20 @@ const AdminDashboard = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const filteredActiveOrders = filterOrders(activeOrders);
+  const filteredCompletedOrders = filterOrders(completedOrders);
+
   // Contagens por status
   const statusCounts = {
     ready: orders.filter(o => o.status === 'LYRICS_APPROVED').length,
     generating: orders.filter(o => o.status === 'MUSIC_GENERATING').length,
-    completed: orders.filter(o => o.status === 'COMPLETED' || o.status === 'MUSIC_READY').length,
+    completed: completedOrders.length,
     total: orders.length
+  };
+
+  const copyToClipboard = (text: string, label: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ title: `${label} copiado!`, description: 'Pronto para colar no Suno/Udio' });
   };
 
   if (authLoading || roleLoading) {
@@ -540,110 +555,148 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Orders List */}
-        <div className="space-y-4">
-          {loadingOrders ? (
-            <div className="text-center py-12">
-              <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-              <p className="text-muted-foreground">Carregando pedidos...</p>
-            </div>
-          ) : filteredOrders.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Nenhum pedido encontrado</h3>
-              <p className="text-muted-foreground">
-                {searchTerm || filterStatus !== 'all' 
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Ainda não há pedidos no sistema'}
-              </p>
-            </Card>
-          ) : (
-            filteredOrders.map((order) => (
-              <Card key={order.id} className="p-6">
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-bold text-lg">
-                        {order.lyric_title || `Música ${order.music_type}`}
-                      </h3>
-                      <Badge className={getStatusColor(order.status)}>
-                        {getStatusIcon(order.status)}
-                        <span className="ml-1">{getStatusText(order.status)}</span>
-                      </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {order.music_style} • {order.music_type} • 
-                      {new Date(order.created_at).toLocaleDateString('pt-BR')}
-                    </p>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      ID do usuário: {order.user_id.slice(0, 8)}...
-                    </p>
-                    {order.story && (
-                      <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                        {order.story.slice(0, 200)}...
-                      </p>
-                    )}
-                    
-                    {/* Final Prompt for admin */}
-                    {order.final_prompt && (
-                      <details className="text-sm mt-3">
-                        <summary className="cursor-pointer text-primary hover:underline font-medium">
-                          📝 Ver Prompt Final (para Suno/Udio)
-                        </summary>
-                        <div className="mt-2 space-y-3">
-                          <div>
-                            <p className="text-xs text-muted-foreground mb-1 font-semibold">LETRA FONÉTICA (usada para geração):</p>
-                            <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-primary">
-                              {order.final_prompt}
-                            </pre>
-                          </div>
-                        </div>
-                      </details>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-col gap-2 min-w-[200px]">
-                    {/* Action buttons based on status */}
-                    {order.status === 'LYRICS_APPROVED' && (
-                      <Button 
-                        onClick={() => updateOrderStatus(order.id, 'MUSIC_GENERATING')}
-                        className="w-full"
-                      >
-                        <PlayCircle className="w-4 h-4 mr-2" />
-                        Iniciar Produção
-                      </Button>
-                    )}
-                    {order.status === 'MUSIC_GENERATING' && (
-                      <Button 
-                        onClick={() => updateOrderStatus(order.id, 'MUSIC_READY')}
-                        className="w-full"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Marcar como Pronta
-                      </Button>
-                    )}
-                    {order.status === 'MUSIC_READY' && (
-                      <Button 
-                        onClick={() => updateOrderStatus(order.id, 'COMPLETED')}
-                        className="w-full"
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        Marcar como Entregue
-                      </Button>
-                    )}
-                    
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/pedido/${order.id}`}>
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        Ver Detalhes
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
+        {/* Orders Tabs */}
+        <Tabs defaultValue="active" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="active">
+              🎯 Em Andamento ({filteredActiveOrders.length})
+            </TabsTrigger>
+            <TabsTrigger value="completed">
+              <Archive className="w-4 h-4 mr-1" />
+              Concluídos ({filteredCompletedOrders.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="space-y-4">
+            {loadingOrders ? (
+              <div className="text-center py-12">
+                <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+                <p className="text-muted-foreground">Carregando pedidos...</p>
+              </div>
+            ) : filteredActiveOrders.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Nenhum pedido em andamento</h3>
               </Card>
-            ))
-          )}
-        </div>
+            ) : (
+              filteredActiveOrders.map((order) => (
+                <Card key={order.id} className="p-6">
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-bold text-lg">
+                          {order.lyric_title || `Música ${order.music_type}`}
+                        </h3>
+                        <Badge className={getStatusColor(order.status)}>
+                          {getStatusIcon(order.status)}
+                          <span className="ml-1">{getStatusText(order.status)}</span>
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {order.music_style} • {order.music_type} • 
+                        {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                      
+                      {/* Final Prompt with copy buttons */}
+                      {order.final_prompt && (
+                        <details className="text-sm mt-3">
+                          <summary className="cursor-pointer text-primary hover:underline font-medium">
+                            📝 Ver Prompt Final (para Suno/Udio)
+                          </summary>
+                          <div className="mt-2 space-y-3">
+                            <div className="relative">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="absolute top-2 right-2"
+                                onClick={() => copyToClipboard(order.final_prompt!, 'Letra')}
+                              >
+                                <Copy className="w-3 h-3 mr-1" />
+                                Copiar
+                              </Button>
+                              <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-primary pr-20">
+                                {order.final_prompt}
+                              </pre>
+                            </div>
+                            {order.style_prompt && (
+                              <div className="relative">
+                                <p className="text-xs text-muted-foreground mb-1 font-semibold">ESTILO:</p>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="absolute top-6 right-2"
+                                  onClick={() => copyToClipboard(order.style_prompt!, 'Estilo')}
+                                >
+                                  <Copy className="w-3 h-3 mr-1" />
+                                  Copiar
+                                </Button>
+                                <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap pr-20">
+                                  {order.style_prompt}
+                                </pre>
+                              </div>
+                            )}
+                          </div>
+                        </details>
+                      )}
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 min-w-[200px]">
+                      {order.status === 'LYRICS_APPROVED' && (
+                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_GENERATING')} className="w-full">
+                          <PlayCircle className="w-4 h-4 mr-2" />
+                          Iniciar Produção
+                        </Button>
+                      )}
+                      {order.status === 'MUSIC_GENERATING' && (
+                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_READY')} className="w-full">
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar como Pronta
+                        </Button>
+                      )}
+                      {order.status === 'MUSIC_READY' && (
+                        <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} className="w-full">
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Marcar como Entregue
+                        </Button>
+                      )}
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/pedido/${order.id}`}>
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Ver Detalhes
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-4">
+            {filteredCompletedOrders.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Archive className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Nenhum pedido concluído</h3>
+              </Card>
+            ) : (
+              filteredCompletedOrders.map((order) => (
+                <Card key={order.id} className="p-4 opacity-75">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold">{order.lyric_title || `Música ${order.music_type}`}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {order.music_style} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <Badge className={getStatusColor(order.status)}>
+                      {getStatusText(order.status)}
+                    </Badge>
+                  </div>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

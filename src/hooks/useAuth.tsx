@@ -8,6 +8,7 @@ interface UserProfile {
   user_id: string;
   name: string | null;
   phone: string | null;
+  whatsapp: string | null;
   plan: string;
   songs_generated: number;
   created_at: string;
