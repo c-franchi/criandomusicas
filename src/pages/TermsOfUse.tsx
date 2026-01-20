@@ -79,18 +79,18 @@ const TermsOfUse = () => {
                 Queremos que você ame sua música! Por isso, oferecemos:
               </p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li><strong>Até 3 versões de letra:</strong> Se a primeira versão não agradar, geramos novas opções</li>
-                <li><strong>Ajustes na letra:</strong> Você pode solicitar modificações específicas antes da produção</li>
-                <li><strong>Nova produção musical:</strong> Se após as revisões permitidas você não estiver satisfeito com o áudio final, oferecemos uma nova produção</li>
+                <li><strong>2 versões de letra:</strong> Geramos duas opções para você escolher a que mais combina</li>
+                <li><strong>1 modificação opcional:</strong> Você pode solicitar ajustes na letra escolhida (apenas uma vez)</li>
+                <li><strong>Backup da original:</strong> Se não gostar da versão modificada, pode voltar para a original antes de aprovar</li>
               </ul>
             </div>
-            <div className="bg-yellow-500/10 p-4 rounded-lg border border-yellow-500/20 mt-4">
-              <h3 className="font-semibold mb-2">⚠️ Limitações da Garantia</h3>
+            <div className="bg-red-500/10 p-4 rounded-lg border border-red-500/20 mt-4">
+              <h3 className="font-semibold mb-2 text-red-500">⚠️ Política de Não Devolução</h3>
               <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li>Após a aprovação da letra pelo cliente, não são aceitas alterações na letra</li>
-                <li>Mudanças de briefing após o início da produção podem incorrer em custos adicionais</li>
-                <li>Não oferecemos reembolso após a entrega da música finalizada</li>
-                <li>A garantia não cobre preferências subjetivas após aprovação das etapas</li>
+                <li><strong>Após a aprovação da letra, não há devoluções ou reembolsos</strong></li>
+                <li>Revise com muita atenção antes de aprovar a letra final</li>
+                <li>Quanto mais detalhes você fornecer no briefing, melhor será o resultado</li>
+                <li>A garantia não cobre preferências subjetivas após aprovação</li>
               </ul>
             </div>
           </section>
