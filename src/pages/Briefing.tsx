@@ -177,17 +177,17 @@ const Briefing = () => {
   }, []);
 
   // Encontrar o step onde o usuário parou
+  // Novo fluxo: 0-musicType, 1-emotion, 2-emotionIntensity, 3-story, 4-mandatoryWords, 5-voiceType, 6-style, 7-rhythm, 8-atmosphere, 9-autoGenerateName, 10-songName
   const getSavedStep = (data: BriefingFormData): number => {
     if (!data.musicType) return 0;
     if (!data.emotion) return 1;
     if (!data.story) return 3;
-    if (data.hasMonologue && !data.monologuePosition) return 5;
-    if (!data.voiceType) return 6; // Novo step de voiceType
-    if (!data.style) return 8;
-    if (!data.rhythm) return 9;
-    if (!data.atmosphere) return 10;
-    if (!data.autoGenerateName && !data.songName) return 12;
-    return 13; // Vai para confirmação
+    if (!data.voiceType) return 5;
+    if (!data.style) return 6;
+    if (!data.rhythm) return 7;
+    if (!data.atmosphere) return 8;
+    if (!data.autoGenerateName && !data.songName) return 10;
+    return 11; // Vai para confirmação
   };
 
   const chatFlow: Omit<ChatMessage, 'id'>[] = [
@@ -224,23 +224,7 @@ const Briefing = () => {
       inputType: 'textarea',
       field: 'story'
     },
-    {
-      type: 'bot',
-      content: "Você quer que a música tenha um trecho falado/declamado (spoken word)?\n\nIsso é um momento onde ao invés de cantar, há uma parte narrada/recitada.",
-      inputType: 'yesno',
-      field: 'hasMonologue'
-    },
-    {
-      type: 'bot',
-      content: "Em qual parte da música você quer o trecho falado?",
-      inputType: 'options',
-      field: 'monologuePosition',
-      options: [
-        { id: "intro", label: "🎬 No início (Intro)", description: "Abre com declamação" },
-        { id: "bridge", label: "🌉 No meio (Bridge)", description: "Pausa emocional" },
-        { id: "outro", label: "🎤 No final (Outro)", description: "Fecha com impacto" }
-      ]
-    },
+    
     {
       type: 'bot',
       content: "Tem alguma palavra, nome ou frase que DEVE aparecer na letra? (opcional)\n\nSelecione as sugestões ou digite novas:",
@@ -255,6 +239,8 @@ const Briefing = () => {
       options: [
         { id: "masculina", label: "👨 Voz Masculina", description: "Cantor solo masculino" },
         { id: "feminina", label: "👩 Voz Feminina", description: "Cantora solo feminina" },
+        { id: "infantil_masc", label: "👦 Voz Infantil Masculina", description: "Criança menino" },
+        { id: "infantil_fem", label: "👧 Voz Infantil Feminina", description: "Criança menina" },
         { id: "dueto", label: "👫 Dueto", description: "Homem e mulher cantando juntos" },
         { id: "dupla_masc", label: "👬 Dupla Masculina", description: "Dois cantores" },
         { id: "dupla_fem", label: "👭 Dupla Feminina", description: "Duas cantoras" },
@@ -404,19 +390,14 @@ const Briefing = () => {
   };
 
   const getNextStep = (current: number, data: BriefingFormData): number => {
-    // chatFlow indexes:
+    // chatFlow indexes (atualizado sem monólogo):
     // 0: musicType, 1: emotion, 2: emotionIntensity, 3: story
-    // 4: hasMonologue, 5: monologuePosition, 6: mandatoryWords
-    // 7: voiceType, 8: style, 9: rhythm, 10: atmosphere
-    // 11: autoGenerateName, 12: songName
+    // 4: mandatoryWords, 5: voiceType, 6: style, 7: rhythm, 8: atmosphere
+    // 9: autoGenerateName, 10: songName
     
-    // Se não quer monólogo, pula a pergunta de posição
-    if (current === 4 && !data.hasMonologue) {
-      return 6; // Pula para mandatoryWords
-    }
     // Se escolheu gerar nome automaticamente, pula a pergunta de nome
-    if (current === 11 && data.autoGenerateName) {
-      return 13; // Fim - vai para confirmação
+    if (current === 9 && data.autoGenerateName) {
+      return 11; // Fim - vai para confirmação
     }
     return current + 1;
   };
@@ -811,6 +792,8 @@ const Briefing = () => {
       voiceType: {
         masculina: "👨 Voz Masculina",
         feminina: "👩 Voz Feminina",
+        infantil_masc: "👦 Voz Infantil Masculina",
+        infantil_fem: "👧 Voz Infantil Feminina",
         dueto: "👫 Dueto",
         dupla_masc: "👬 Dupla Masculina",
         dupla_fem: "👭 Dupla Feminina",
@@ -909,39 +892,34 @@ const Briefing = () => {
                   onEdit={() => handleEditField(3)} 
                 />
                 <ConfirmationItem 
-                  label="Trecho falado" 
-                  value={formData.hasMonologue ? `Sim - ${getFieldLabel('monologuePosition', formData.monologuePosition)}` : "Não"} 
-                  onEdit={() => handleEditField(4)} 
-                />
-                <ConfirmationItem 
                   label="Palavras obrigatórias" 
                   value={formData.mandatoryWords || "(nenhuma)"} 
-                  onEdit={() => handleEditField(6)} 
+                  onEdit={() => handleEditField(4)} 
                 />
                 <ConfirmationItem 
                   label="Tipo de voz" 
                   value={getFieldLabel('voiceType', formData.voiceType)} 
-                  onEdit={() => handleEditField(7)} 
+                  onEdit={() => handleEditField(5)} 
                 />
                 <ConfirmationItem 
                   label="Estilo" 
                   value={getFieldLabel('style', formData.style)} 
-                  onEdit={() => handleEditField(8)} 
+                  onEdit={() => handleEditField(6)} 
                 />
                 <ConfirmationItem 
                   label="Ritmo" 
                   value={getFieldLabel('rhythm', formData.rhythm)} 
-                  onEdit={() => handleEditField(9)} 
+                  onEdit={() => handleEditField(7)} 
                 />
                 <ConfirmationItem 
                   label="Atmosfera" 
                   value={getFieldLabel('atmosphere', formData.atmosphere)} 
-                  onEdit={() => handleEditField(10)} 
+                  onEdit={() => handleEditField(8)} 
                 />
                 <ConfirmationItem 
                   label="Nome da música" 
                   value={formData.autoGenerateName ? "Gerado pela IA" : formData.songName} 
-                  onEdit={() => handleEditField(11)} 
+                  onEdit={() => handleEditField(9)} 
                 />
               </div>
             </div>

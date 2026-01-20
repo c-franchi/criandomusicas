@@ -61,12 +61,34 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
 
     setSaving(true);
     try {
-      const { error } = await supabase
+      // Verificar se profile existe primeiro
+      const { data: existingProfile, error: selectError } = await supabase
         .from('profiles')
-        .update({ whatsapp })
-        .eq('user_id', userId);
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (selectError) {
+        console.error('Error checking profile:', selectError);
+        throw selectError;
+      }
+
+      if (!existingProfile) {
+        // Se não existe perfil, criar um novo
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({ user_id: userId, whatsapp });
+
+        if (insertError) throw insertError;
+      } else {
+        // Se existe, fazer update
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({ whatsapp, updated_at: new Date().toISOString() })
+          .eq('user_id', userId);
+
+        if (updateError) throw updateError;
+      }
 
       toast({
         title: "WhatsApp salvo!",

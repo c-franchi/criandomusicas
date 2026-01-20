@@ -28,10 +28,11 @@ const Footer = () => {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Suporte</h4>
+            <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2 text-muted-foreground">
               <li><a href="/termos" className="hover:text-primary transition-colors">Termos de Uso</a></li>
-              <li><a href="/privacidade" className="hover:text-primary transition-colors">Privacidade</a></li>
+              <li><a href="/privacidade" className="hover:text-primary transition-colors">Política de Privacidade</a></li>
+              <li><a href="/regras" className="hover:text-primary transition-colors">Regras de Criação</a></li>
               <li><a href="/contato" className="hover:text-primary transition-colors">Contato</a></li>
             </ul>
           </div>
