@@ -20,6 +20,9 @@ import AdminDashboard from "./pages/AdminDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Checkout from "./pages/Checkout";
 import Install from "./pages/Install";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfUse from "./pages/TermsOfUse";
+import MusicRules from "./pages/MusicRules";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +45,9 @@ const App = () => (
             <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
             <Route path="/checkout/:orderId" element={<Checkout />} />
             <Route path="/install" element={<Install />} />
+            <Route path="/privacidade" element={<PrivacyPolicy />} />
+            <Route path="/termos" element={<TermsOfUse />} />
+            <Route path="/regras" element={<MusicRules />} />
             <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
             <Route path="/pedido/:id/letras" element={<OrderLyricsPage />} />
