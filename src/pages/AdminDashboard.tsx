@@ -643,24 +643,25 @@ const AdminDashboard = () => {
       </AlertDialog>
 
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <Music className="w-5 h-5 text-primary" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center shadow-lg">
+                <Music className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
               <div>
-                <h1 className="font-bold text-xl">Painel Admin</h1>
-                <p className="text-sm text-muted-foreground">Gerenciar produção de músicas</p>
+                <h1 className="font-bold text-lg sm:text-xl gradient-text">Painel Admin</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground">Gerenciar produção de músicas</p>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => fetchPricing()}>
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Gerenciar Preços
+                  <Button variant="outline" size="sm" onClick={() => fetchPricing()} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                    <DollarSign className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Gerenciar Preços</span>
+                    <span className="sm:hidden">Preços</span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -755,80 +756,81 @@ const AdminDashboard = () => {
                 </DialogContent>
               </Dialog>
               
-              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders}>
-                <RefreshCw className={`w-4 h-4 mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
-                Atualizar
+              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <RefreshCw className={`w-4 h-4 sm:mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Atualizar</span>
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-green-500" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+          <Card className="p-3 sm:p-4 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{statusCounts.ready}</p>
-                <p className="text-sm text-muted-foreground">Prontos p/ Produção</p>
+                <p className="text-xl sm:text-2xl font-bold text-green-400">{statusCounts.ready}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Prontos p/ Produção</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                <PlayCircle className="w-5 h-5 text-yellow-500" />
+          <Card className="p-3 sm:p-4 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
+                <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{statusCounts.generating}</p>
-                <p className="text-sm text-muted-foreground">Em Produção</p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-400">{statusCounts.generating}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Em Produção</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <Music className="w-5 h-5 text-emerald-500" />
+          <Card className="p-3 sm:p-4 bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                <Music className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{statusCounts.completed}</p>
-                <p className="text-sm text-muted-foreground">Concluídos</p>
+                <p className="text-xl sm:text-2xl font-bold text-emerald-400">{statusCounts.completed}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Concluídos</p>
               </div>
             </div>
           </Card>
-          <Card className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary" />
+          <Card className="p-3 sm:p-4 bg-gradient-to-br from-primary/10 to-transparent border-primary/20 hover:border-primary/40 transition-colors">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{statusCounts.total}</p>
-                <p className="text-sm text-muted-foreground">Total de Pedidos</p>
+                <p className="text-xl sm:text-2xl font-bold text-primary">{statusCounts.total}</p>
+                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Total de Pedidos</p>
               </div>
             </div>
           </Card>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
-          <div className="relative flex-1">
+        <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Buscar por título, estilo, história..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9"
+              className="pl-9 bg-card/50 border-border/50 focus:border-primary/50"
             />
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
             <Button
               variant={filterStatus === 'all' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilterStatus('all')}
+              className="shrink-0 text-xs sm:text-sm px-2.5 sm:px-3"
             >
               Todos
             </Button>
@@ -836,6 +838,7 @@ const AdminDashboard = () => {
               variant={filterStatus === 'LYRICS_APPROVED' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilterStatus('LYRICS_APPROVED')}
+              className="shrink-0 text-xs sm:text-sm px-2.5 sm:px-3"
             >
               Prontos
             </Button>
@@ -843,6 +846,7 @@ const AdminDashboard = () => {
               variant={filterStatus === 'MUSIC_GENERATING' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilterStatus('MUSIC_GENERATING')}
+              className="shrink-0 text-xs sm:text-sm px-2.5 sm:px-3"
             >
               Em Produção
             </Button>
@@ -850,6 +854,7 @@ const AdminDashboard = () => {
               variant={filterStatus === 'COMPLETED' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setFilterStatus('COMPLETED')}
+              className="shrink-0 text-xs sm:text-sm px-2.5 sm:px-3"
             >
               Concluídos
             </Button>
@@ -857,18 +862,21 @@ const AdminDashboard = () => {
         </div>
 
         {/* Orders Tabs */}
-        <Tabs defaultValue="active" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="active">
-              🎯 Em Andamento ({filteredActiveOrders.length})
+        <Tabs defaultValue="active" className="space-y-3 sm:space-y-4">
+          <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex bg-card/50 border border-border/50 p-1 h-auto">
+            <TabsTrigger value="active" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <span className="sm:hidden">🎯 {filteredActiveOrders.length}</span>
+              <span className="hidden sm:inline">🎯 Em Andamento ({filteredActiveOrders.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="completed">
-              <Archive className="w-4 h-4 mr-1" />
-              Concluídos ({filteredCompletedOrders.length})
+            <TabsTrigger value="completed" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Archive className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Concluídos ({filteredCompletedOrders.length})</span>
+              <span className="sm:hidden ml-1">{filteredCompletedOrders.length}</span>
             </TabsTrigger>
-            <TabsTrigger value="audio">
-              <Headphones className="w-4 h-4 mr-1" />
-              Áudios de Exemplo
+            <TabsTrigger value="audio" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
+              <span className="hidden sm:inline">Áudios de Exemplo</span>
+              <span className="sm:hidden ml-1">Áudios</span>
             </TabsTrigger>
           </TabsList>
 
@@ -885,97 +893,100 @@ const AdminDashboard = () => {
               </Card>
             ) : (
               filteredActiveOrders.map((order) => (
-                <Card key={order.id} className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-bold text-lg">
-                          {order.lyric_title || `Música ${order.music_type}`}
-                        </h3>
-                        <Badge className={getStatusColor(order.status)}>
-                          {getStatusIcon(order.status)}
-                          <span className="ml-1">{getStatusText(order.status)}</span>
-                        </Badge>
+                <Card key={order.id} className="p-3 sm:p-5 bg-card/50 border-border/50 hover:border-primary/30 transition-colors">
+                  <div className="flex flex-col gap-3 sm:gap-4">
+                    {/* Header Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="font-bold text-sm sm:text-lg truncate">
+                            {order.lyric_title || `Música ${order.music_type}`}
+                          </h3>
+                          <Badge className={`${getStatusColor(order.status)} text-[10px] sm:text-xs shrink-0`}>
+                            {getStatusIcon(order.status)}
+                            <span className="ml-1">{getStatusText(order.status)}</span>
+                          </Badge>
+                        </div>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
+                          {order.music_style} • {order.music_type} • 
+                          {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {order.music_style} • {order.music_type} • 
-                        {new Date(order.created_at).toLocaleDateString('pt-BR')}
-                      </p>
-                      
-                      {/* Final Prompt with copy buttons - LYRICS first, then STYLE */}
-                      {order.final_prompt && (
-                        <details className="text-sm mt-3">
-                          <summary className="cursor-pointer text-primary hover:underline font-medium">
-                            📝 Ver Prompt Final (para Suno/Udio)
-                          </summary>
-                          <div className="mt-2 space-y-3">
-                            {/* LYRICS section first */}
+                    </div>
+                    
+                    {/* Final Prompt with copy buttons - LYRICS first, then STYLE */}
+                    {order.final_prompt && (
+                      <details className="text-xs sm:text-sm">
+                        <summary className="cursor-pointer text-primary hover:underline font-medium">
+                          📝 Ver Prompt Final (para Suno/Udio)
+                        </summary>
+                        <div className="mt-2 space-y-3">
+                          {/* LYRICS section first */}
+                          <div className="relative">
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">LETRA:</p>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
+                              onClick={() => copyToClipboard(order.final_prompt!, 'Letra')}
+                            >
+                              <Copy className="w-3 h-3 sm:mr-1" />
+                              <span className="hidden sm:inline">Copiar</span>
+                            </Button>
+                            <pre className="p-2 sm:p-3 bg-muted rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-primary pr-10 sm:pr-20">
+                              {order.final_prompt}
+                            </pre>
+                          </div>
+                          {/* STYLE section second */}
+                          {order.style_prompt && (
                             <div className="relative">
-                              <p className="text-xs text-muted-foreground mb-1 font-semibold">LETRA:</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">ESTILO:</p>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="absolute top-6 right-2"
-                                onClick={() => copyToClipboard(order.final_prompt!, 'Letra')}
+                                className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
+                                onClick={() => copyToClipboard(order.style_prompt!, 'Estilo')}
                               >
-                                <Copy className="w-3 h-3 mr-1" />
-                                Copiar
+                                <Copy className="w-3 h-3 sm:mr-1" />
+                                <span className="hidden sm:inline">Copiar</span>
                               </Button>
-                              <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-primary pr-20">
-                                {order.final_prompt}
+                              <pre className="p-2 sm:p-3 bg-muted rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap pr-10 sm:pr-20">
+                                {order.style_prompt}
                               </pre>
                             </div>
-                            {/* STYLE section second */}
-                            {order.style_prompt && (
-                              <div className="relative">
-                                <p className="text-xs text-muted-foreground mb-1 font-semibold">ESTILO:</p>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="absolute top-6 right-2"
-                                  onClick={() => copyToClipboard(order.style_prompt!, 'Estilo')}
-                                >
-                                  <Copy className="w-3 h-3 mr-1" />
-                                  Copiar
-                                </Button>
-                                <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap pr-20">
-                                  {order.style_prompt}
-                                </pre>
-                              </div>
-                            )}
-                          </div>
-                        </details>
-                      )}
-                    </div>
+                          )}
+                        </div>
+                      </details>
+                    )}
                     
-                    <div className="flex flex-col gap-2 min-w-[200px]">
+                    {/* Actions Row */}
+                    <div className="flex flex-wrap gap-2 pt-2 border-t border-border/30">
                       {order.status === 'LYRICS_APPROVED' && (
-                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_GENERATING')} className="w-full">
-                          <PlayCircle className="w-4 h-4 mr-2" />
+                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_GENERATING')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                          <PlayCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Iniciar Produção
                         </Button>
                       )}
                       {order.status === 'MUSIC_GENERATING' && (
-                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_READY')} className="w-full">
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Marcar como Pronta
+                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_READY')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          Marcar Pronta
                         </Button>
                       )}
                       {order.status === 'MUSIC_READY' && (
-                        <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} className="w-full">
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Marcar como Entregue
+                        <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          Marcar Entregue
                         </Button>
                       )}
-                      <Button variant="outline" size="sm" asChild>
+                      <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
                         <Link to={`/pedido/${order.id}`}>
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Ver Detalhes
+                          <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          Detalhes
                         </Link>
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => setDeleteOrderId(order.id)}>
-                        <Trash2 className="w-4 h-4 mr-2" />
-                        Apagar
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteOrderId(order.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10 px-2">
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </div>
@@ -984,28 +995,28 @@ const AdminDashboard = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="completed" className="space-y-4">
+          <TabsContent value="completed" className="space-y-3">
             {filteredCompletedOrders.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Archive className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Nenhum pedido concluído</h3>
+              <Card className="p-6 sm:p-8 text-center bg-card/30">
+                <Archive className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">Nenhum pedido concluído</h3>
               </Card>
             ) : (
               filteredCompletedOrders.map((order) => (
-                <Card key={order.id} className="p-4 opacity-75">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">{order.lyric_title || `Música ${order.music_type}`}</h3>
-                      <p className="text-sm text-muted-foreground">
+                <Card key={order.id} className="p-3 sm:p-4 bg-card/30 border-border/30 opacity-80 hover:opacity-100 transition-opacity">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">{order.lyric_title || `Música ${order.music_type}`}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {order.music_style} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(order.status)}>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge className={`${getStatusColor(order.status)} text-[10px] sm:text-xs`}>
                         {getStatusText(order.status)}
                       </Badge>
-                      <Button variant="ghost" size="sm" onClick={() => setDeleteOrderId(order.id)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteOrderId(order.id)} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                        <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />
                       </Button>
                     </div>
                   </div>
@@ -1015,8 +1026,8 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="audio" className="space-y-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Áudios de Exemplo</h3>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-lg font-semibold">Áudios de Exemplo</h3>
               <Dialog open={audioDialogOpen} onOpenChange={(open) => {
                 setAudioDialogOpen(open);
                 if (!open) {
@@ -1025,7 +1036,7 @@ const AdminDashboard = () => {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
+                  <Button size="sm" className="w-full sm:w-auto">
                     <Plus className="w-4 h-4 mr-2" />
                     Adicionar Áudio
                   </Button>
@@ -1187,51 +1198,51 @@ const AdminDashboard = () => {
                 <Music className="w-6 h-6 animate-spin text-primary mx-auto" />
               </div>
             ) : audioSamples.length === 0 ? (
-              <Card className="p-8 text-center">
-                <Headphones className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Nenhum áudio cadastrado</h3>
-                <p className="text-muted-foreground">Adicione áudios de exemplo para exibir na página inicial.</p>
+              <Card className="p-6 sm:p-8 text-center bg-card/30">
+                <Headphones className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+                <h3 className="text-lg sm:text-xl font-semibold mb-2">Nenhum áudio cadastrado</h3>
+                <p className="text-sm text-muted-foreground">Adicione áudios de exemplo para exibir na página inicial.</p>
               </Card>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid gap-3 sm:gap-4">
                 {audioSamples.map((audio) => (
-                  <Card key={audio.id} className={`p-4 ${!audio.is_active ? 'opacity-50' : ''}`}>
+                  <Card key={audio.id} className={`p-3 sm:p-4 bg-card/50 border-border/50 hover:border-primary/30 transition-colors ${!audio.is_active ? 'opacity-50' : ''}`}>
                     {/* Audio Player at Top */}
                     {audio.audio_url && (
-                      <div className="mb-3">
-                        <audio controls className="w-full h-10" src={audio.audio_url}>
+                      <div className="mb-2 sm:mb-3">
+                        <audio controls className="w-full h-8 sm:h-10" src={audio.audio_url}>
                           Áudio
                         </audio>
                       </div>
                     )}
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                      <div className="flex items-center gap-3 min-w-0">
                         {audio.cover_url ? (
-                          <img src={audio.cover_url} alt={audio.title} className="w-12 h-12 rounded object-cover" />
+                          <img src={audio.cover_url} alt={audio.title} className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover shrink-0" />
                         ) : (
-                          <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
-                            <Headphones className="w-6 h-6 text-muted-foreground" />
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                            <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
                           </div>
                         )}
-                        <div>
-                          <h4 className="font-semibold">{audio.title}</h4>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-sm sm:text-base truncate">{audio.title}</h4>
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {audio.style} • {audio.occasion}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant={audio.is_active ? 'default' : 'secondary'}>
+                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 self-end sm:self-center">
+                        <Badge variant={audio.is_active ? 'default' : 'secondary'} className="text-[10px] sm:text-xs">
                           {audio.is_active ? 'Ativo' : 'Inativo'}
                         </Badge>
                         <Button variant="ghost" size="sm" onClick={() => {
                           setEditingAudio(audio);
                           setAudioDialogOpen(true);
-                        }}>
-                          <Edit className="w-4 h-4" />
+                        }} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteAudioId(audio.id)}>
-                          <Trash2 className="w-4 h-4 text-destructive" />
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteAudioId(audio.id)} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />
                         </Button>
                       </div>
                     </div>
