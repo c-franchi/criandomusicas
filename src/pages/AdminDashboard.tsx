@@ -1022,7 +1022,7 @@ const AdminDashboard = () => {
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <Label>Limite de Usos</Label>
+                                  <Label>Quantidade de Vouchers</Label>
                                   <Input
                                     type="number"
                                     value={(editingVoucher || newVoucher).max_uses || ''}
@@ -1030,7 +1030,13 @@ const AdminDashboard = () => {
                                       ? setEditingVoucher({ ...editingVoucher, max_uses: e.target.value ? parseInt(e.target.value) : null })
                                       : setNewVoucher({ ...newVoucher, max_uses: e.target.value ? parseInt(e.target.value) : null })}
                                     placeholder="Ilimitado"
+                                    min={1}
                                   />
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {(editingVoucher || newVoucher).max_uses 
+                                      ? `Limite: ${(editingVoucher || newVoucher).max_uses} usos`
+                                      : 'Sem limite de quantidade'}
+                                  </p>
                                 </div>
                                 <div>
                                   <Label>Válido até</Label>
@@ -1041,6 +1047,11 @@ const AdminDashboard = () => {
                                       ? setEditingVoucher({ ...editingVoucher, valid_until: e.target.value || null })
                                       : setNewVoucher({ ...newVoucher, valid_until: e.target.value || null })}
                                   />
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {(editingVoucher || newVoucher).valid_until 
+                                      ? 'Expira na data definida'
+                                      : 'Sem data de expiração'}
+                                  </p>
                                 </div>
                               </div>
                               <div className="flex items-center gap-2">
@@ -1089,8 +1100,21 @@ const AdminDashboard = () => {
                                       {voucher.discount_type === 'percent' 
                                         ? `${voucher.discount_value}% off`
                                         : `R$ ${(voucher.discount_value / 100).toFixed(2).replace('.', ',')} off`}
-                                      {voucher.max_uses && ` • ${voucher.current_uses}/${voucher.max_uses} usos`}
                                     </p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      {voucher.max_uses ? (
+                                        <Badge variant={voucher.current_uses >= voucher.max_uses ? 'destructive' : 'outline'} className="text-xs">
+                                          {voucher.current_uses}/{voucher.max_uses} usos
+                                        </Badge>
+                                      ) : (
+                                        <Badge variant="outline" className="text-xs">Ilimitado</Badge>
+                                      )}
+                                      {voucher.valid_until && (
+                                        <Badge variant="outline" className="text-xs">
+                                          até {new Date(voucher.valid_until).toLocaleDateString('pt-BR')}
+                                        </Badge>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-1">
