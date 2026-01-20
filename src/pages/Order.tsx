@@ -228,24 +228,26 @@ const Order = () => {
 
         {/* Payment Section */}
         {order.status === 'AWAITING_PAYMENT' && (
-          <Card className="p-6 mb-6 border-orange-500/30 bg-orange-500/5">
+          <Card className="p-6 mb-6 border-orange-600/30 bg-orange-600/5">
             <h3 className="font-semibold text-lg mb-4">💳 Pagamento</h3>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="text-3xl font-bold">
-                    R$ {((order.amount || 999) / 100).toFixed(2).replace('.', ',')}
-                  </span>
-                  <span className="text-sm text-muted-foreground line-through">R$ 30,00</span>
-                  <Badge variant="secondary">67% OFF</Badge>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Pagamento seguro via Stripe
-                </p>
+            <div className="mb-4">
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-3xl font-bold">
+                  R$ {((order.amount || 990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </span>
+                <span className="text-sm text-muted-foreground line-through">R$ 29,90</span>
+                <Badge variant="secondary">67% OFF</Badge>
               </div>
+              <p className="text-sm text-muted-foreground mb-4">
+                Escolha a forma de pagamento
+              </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Button 
                 onClick={handlePayment} 
                 size="lg"
+                variant="default"
+                className="w-full"
                 disabled={processingPayment}
               >
                 {processingPayment ? (
@@ -256,11 +258,36 @@ const Order = () => {
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Pagar Agora
+                    Cartão de Crédito
+                  </>
+                )}
+              </Button>
+              <Button 
+                onClick={handlePayment} 
+                size="lg"
+                variant="outline"
+                className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                disabled={processingPayment}
+              >
+                {processingPayment ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" viewBox="0 0 512 512" fill="currentColor">
+                      <path d="M242.4 292.5c-3.9 4.3-9.4 6.7-15.1 6.7s-11.2-2.4-15.1-6.7l-64.5-70.5c-7.8-8.5-7.2-21.7 1.3-29.4 8.5-7.8 21.7-7.2 29.4 1.3l48.9 53.4 116.6-127.5c7.8-8.5 21-9 29.4-1.3 8.5 7.8 9 21 1.3 29.4l-132.2 144.6z"/>
+                      <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0zm0 464c-114.7 0-208-93.3-208-208S141.3 48 256 48s208 93.3 208 208-93.3 208-208 208z"/>
+                    </svg>
+                    PIX
                   </>
                 )}
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground mt-3 text-center">
+              Pagamento seguro via Stripe • Dados protegidos
+            </p>
           </Card>
         )}
 
@@ -309,7 +336,7 @@ const Order = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Valor</p>
                 <p className="font-medium">
-                  R$ {((order.amount || 999) / 100).toFixed(2).replace('.', ',')}
+                  R$ {((order.amount || 990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
             </div>
