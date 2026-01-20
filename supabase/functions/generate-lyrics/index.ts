@@ -20,6 +20,47 @@ interface BriefingData {
   restrictedWords: string;
   songName?: string;
   autoGenerateName?: boolean;
+  voiceType?: string;
+}
+
+interface Pronunciation {
+  term: string;
+  phonetic: string;
+}
+
+// Detectar termos que precisam de pronúncia fonética
+function detectCriticalTerms(text: string): string[] {
+  const patterns = [
+    /\b[A-Z]{2,}[0-9]*\b/g,                    // Siglas: NYV8, WEB3, ABC
+    /\b[A-Z]+[0-9]+[A-Z0-9]*\b/g,              // Letras+números: NYV8, W3C
+    /\b[A-Z][a-z]*[A-Z][a-zA-Z]*\b/g,          // CamelCase: iPhone, PowerBI
+    /\b[A-Z]{2,}[a-z]+\b/g,                    // Siglas com sufixo: POKERfi
+  ];
+  
+  const terms = new Set<string>();
+  patterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) {
+      matches.forEach(m => {
+        // Filtrar termos comuns que não precisam de pronúncia
+        if (!['EU', 'EUA', 'OK', 'TV', 'DVD', 'CD'].includes(m) && m.length >= 2) {
+          terms.add(m);
+        }
+      });
+    }
+  });
+  
+  return Array.from(terms);
+}
+
+// Aplicar pronúncias ao texto
+function applyPronunciations(text: string, pronunciations: Pronunciation[]): string {
+  let result = text;
+  pronunciations.forEach(({ term, phonetic }) => {
+    const regex = new RegExp(`\\b${term}\\b`, 'g');
+    result = result.replace(regex, phonetic);
+  });
+  return result;
 }
 
 function splitTwoLyrics(text: string): { v1: string; v2: string } {
@@ -77,10 +118,11 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, story, briefing } = await req.json() as {
+    const { orderId, story, briefing, pronunciations = [] } = await req.json() as {
       orderId: string;
       story: string;
       briefing: BriefingData;
+      pronunciations?: Pronunciation[];
     };
 
     console.log("generate-lyrics called with orderId:", orderId);
@@ -113,11 +155,31 @@ serve(async (req) => {
       mandatoryWords = '',
       restrictedWords = '',
       songName = '',
-      autoGenerateName = true
+      autoGenerateName = true,
+      voiceType = 'feminina'
     } = briefing || {};
+
+    // Detectar termos críticos nas palavras obrigatórias
+    const criticalTerms = detectCriticalTerms(mandatoryWords);
+    
+    // Verificar se há termos sem pronúncia definida
+    const missingPronunciations = criticalTerms.filter(
+      term => !pronunciations.some(p => p.term === term)
+    );
 
     // Build structure tags based on user selection
     const structureTags = structure.map(s => `[${s.charAt(0).toUpperCase() + s.slice(1)}]`).join(', ');
+
+    // Map voice type to Portuguese description
+    const voiceTypeMap: Record<string, string> = {
+      'masculina': 'voz masculina solo',
+      'feminina': 'voz feminina solo',
+      'dueto': 'dueto masculino e feminino',
+      'dupla_masc': 'dupla masculina',
+      'dupla_fem': 'dupla feminina',
+      'coral': 'coral/grupo vocal'
+    };
+    const voiceDescription = voiceTypeMap[voiceType] || 'voz feminina solo';
 
     const systemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : 'momentos especiais'}.
 
@@ -132,6 +194,7 @@ REGRAS OBRIGATÓRIAS:
 8. Capture a essência emocional da história fornecida
 9. Intensidade emocional: ${emotionIntensity}/5 - ${emotionIntensity <= 2 ? 'sutil' : emotionIntensity <= 3 ? 'moderada' : 'intensa'}
 10. ${autoGenerateName ? 'CRIE UM TÍTULO CRIATIVO E ÚNICO para cada versão da letra, baseado na história. O título deve vir na PRIMEIRA LINHA, antes do [Intro].' : `O título da música é: "${songName}". Use-o na primeira linha.`}
+11. A música será cantada por ${voiceDescription}. Adapte o tom e as referências de gênero adequadamente.
 
 ${hasMonologue ? `
 ⚠️ REGRA CRÍTICA DE MONÓLOGO:
@@ -188,6 +251,7 @@ DADOS DA MÚSICA:
 - Estilo musical: ${style}
 - Ritmo: ${rhythm}
 - Atmosfera: ${atmosphere}
+- Tipo de voz: ${voiceDescription}
 - Estrutura desejada: ${structure.join(', ')}
 - Incluir monólogo/declamação: ${hasMonologue ? `SIM - na seção ${monologuePosition}` : 'NÃO'}
 ${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
@@ -261,17 +325,40 @@ INSTRUÇÕES FINAIS:
     const l1 = extractTitleAndBody(v1, autoGenerateName ? undefined : songName);
     const l2 = extractTitleAndBody(v2, autoGenerateName ? undefined : songName);
 
+    // Gerar versões fonéticas se houver pronúncias definidas
+    let phonetic1 = null;
+    let phonetic2 = null;
+    
+    if (pronunciations.length > 0) {
+      phonetic1 = applyPronunciations(l1.body, pronunciations);
+      phonetic2 = applyPronunciations(l2.body, pronunciations);
+    }
+
     // Save to Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Insert lyrics
+    // Insert lyrics with phonetic versions
     const { data: insertedLyrics, error: insertError } = await supabase
       .from('lyrics')
       .insert([
-        { order_id: orderId, version: 'A', title: l1.title, body: l1.body, is_approved: false },
-        { order_id: orderId, version: 'B', title: l2.title, body: l2.body, is_approved: false }
+        { 
+          order_id: orderId, 
+          version: 'A', 
+          title: l1.title, 
+          body: l1.body, 
+          phonetic_body: phonetic1,
+          is_approved: false 
+        },
+        { 
+          order_id: orderId, 
+          version: 'B', 
+          title: l2.title, 
+          body: l2.body, 
+          phonetic_body: phonetic2,
+          is_approved: false 
+        }
       ])
       .select();
 
@@ -279,10 +366,20 @@ INSTRUÇÕES FINAIS:
       console.error("Error inserting lyrics:", insertError);
     }
 
-    // Update order status
+    // Update order status and save pronunciations
+    const updateData: Record<string, unknown> = { 
+      status: 'LYRICS_GENERATED', 
+      updated_at: new Date().toISOString(),
+      voice_type: voiceType
+    };
+    
+    if (pronunciations.length > 0) {
+      updateData.pronunciations = pronunciations;
+    }
+
     const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'LYRICS_GENERATED', updated_at: new Date().toISOString() })
+      .update(updateData)
       .eq('id', orderId);
 
     if (updateError) {
@@ -296,9 +393,22 @@ INSTRUÇÕES FINAIS:
         ok: true,
         message: "Letras geradas com sucesso",
         lyrics: [
-          { id: insertedLyrics?.[0]?.id || 'lyric-a', version: 'A', title: l1.title, text: l1.body },
-          { id: insertedLyrics?.[1]?.id || 'lyric-b', version: 'B', title: l2.title, text: l2.body }
+          { 
+            id: insertedLyrics?.[0]?.id || 'lyric-a', 
+            version: 'A', 
+            title: l1.title, 
+            text: l1.body,
+            phoneticText: phonetic1
+          },
+          { 
+            id: insertedLyrics?.[1]?.id || 'lyric-b', 
+            version: 'B', 
+            title: l2.title, 
+            text: l2.body,
+            phoneticText: phonetic2
+          }
         ],
+        criticalTerms: missingPronunciations,
         usedModel: "gemini-3-flash-preview"
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

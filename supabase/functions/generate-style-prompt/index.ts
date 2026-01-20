@@ -14,6 +14,46 @@ interface BriefingData {
   rhythm?: string;
   atmosphere?: string;
   hasMonologue?: boolean;
+  voiceType?: string;
+}
+
+interface Pronunciation {
+  term: string;
+  phonetic: string;
+}
+
+// Aplicar pronúncias ao texto
+function applyPronunciations(text: string, pronunciations: Pronunciation[]): string {
+  let result = text;
+  pronunciations.forEach(({ term, phonetic }) => {
+    const regex = new RegExp(`\\b${term}\\b`, 'g');
+    result = result.replace(regex, phonetic);
+  });
+  return result;
+}
+
+// Detectar termos críticos sem pronúncia
+function detectCriticalTerms(text: string): string[] {
+  const patterns = [
+    /\b[A-Z]{2,}[0-9]*\b/g,
+    /\b[A-Z]+[0-9]+[A-Z0-9]*\b/g,
+    /\b[A-Z][a-z]*[A-Z][a-zA-Z]*\b/g,
+    /\b[A-Z]{2,}[a-z]+\b/g,
+  ];
+  
+  const terms = new Set<string>();
+  patterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) {
+      matches.forEach(m => {
+        if (!['EU', 'EUA', 'OK', 'TV', 'DVD', 'CD'].includes(m) && m.length >= 2) {
+          terms.add(m);
+        }
+      });
+    }
+  });
+  
+  return Array.from(terms);
 }
 
 serve(async (req) => {
@@ -22,12 +62,14 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, lyricId, approvedLyrics, songTitle, briefing } = await req.json() as {
+    const { orderId, lyricId, approvedLyrics, phoneticLyrics, songTitle, briefing, pronunciations = [] } = await req.json() as {
       orderId: string;
       lyricId: string;
       approvedLyrics: string;
+      phoneticLyrics?: string;
       songTitle?: string;
       briefing: BriefingData;
+      pronunciations?: Pronunciation[];
     };
 
     console.log("generate-style-prompt called with orderId:", orderId);
@@ -35,6 +77,24 @@ serve(async (req) => {
     if (!orderId || !approvedLyrics) {
       return new Response(
         JSON.stringify({ ok: false, error: "Campos obrigatórios: orderId e approvedLyrics" }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Detectar termos críticos sem pronúncia
+    const criticalTerms = detectCriticalTerms(approvedLyrics);
+    const missingPronunciations = criticalTerms.filter(
+      term => !pronunciations.some(p => p.term === term)
+    );
+
+    // BLOQUEAR se houver termos sem pronúncia
+    if (missingPronunciations.length > 0) {
+      return new Response(
+        JSON.stringify({ 
+          ok: false, 
+          error: `Termo(s) detectado(s) sem pronúncia definida: ${missingPronunciations.join(', ')}. Defina a pronúncia antes de gerar a música.`,
+          missingPronunciations
+        }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -54,8 +114,17 @@ serve(async (req) => {
       style = 'pop',
       rhythm = 'moderado',
       atmosphere = 'festivo',
-      hasMonologue = false
+      hasMonologue = false,
+      voiceType = 'feminina'
     } = briefing || {};
+
+    // Gerar letra fonética se houver pronúncias
+    let lyricsForGeneration = approvedLyrics;
+    if (pronunciations.length > 0 && !phoneticLyrics) {
+      lyricsForGeneration = applyPronunciations(approvedLyrics, pronunciations);
+    } else if (phoneticLyrics) {
+      lyricsForGeneration = phoneticLyrics;
+    }
 
     // Map rhythm to BPM range
     const bpmMap: Record<string, string> = {
@@ -72,6 +141,17 @@ serve(async (req) => {
       'epico': 'Epic, orchestral elements, big drums, cinematic build-ups',
       'leve': 'Light, airy production, soft dynamics, gentle instrumentation'
     };
+
+    // Map voice type to vocal instructions
+    const voiceTypeMap: Record<string, string> = {
+      'masculina': 'Male solo vocalist, baritone to tenor range, warm timbre',
+      'feminina': 'Female solo vocalist, alto to soprano range, clear and expressive',
+      'dueto': 'Male and female duet, harmonizing voices, alternating verses and shared chorus',
+      'dupla_masc': 'Two male vocalists, harmony singing, Brazilian dupla sertaneja style',
+      'dupla_fem': 'Two female vocalists, harmony singing, blending voices',
+      'coral': 'Choir/group vocals, layered harmonies, anthemic feel'
+    };
+    const vocalStyle = voiceTypeMap[voiceType] || 'Female solo vocalist';
 
     const systemPrompt = `Você é um produtor musical profissional especializado em criar prompts técnicos para IAs de geração musical (Suno, Udio, etc).
 
@@ -91,7 +171,7 @@ FORMATO DE SAÍDA OBRIGATÓRIO (siga exatamente, em inglês):
 Genre: (gênero musical principal e subgênero, SEM nomes de artistas)
 Mood/Atmosphere: (clima emocional detalhado)
 Instrumentation: (instrumentos principais, separados por vírgula)
-Vocal Style: (tipo de voz e estilo vocal - descreva características, NÃO compare com artistas)
+Vocal Style: (${vocalStyle})
 Tempo: (BPM e feel)
 Key: (tonalidade sugerida)
 Production Notes: (notas técnicas de produção, mix, efeitos)
@@ -108,10 +188,11 @@ CONTEXTO DA MÚSICA:
 - Estilo musical: ${style}
 - Ritmo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
 - Atmosfera: ${atmosphere} (${atmosphereMap[atmosphere] || 'balanced production'})
+- Tipo de voz: ${vocalStyle}
 - Contém monólogo/spoken word: ${hasMonologue ? 'SIM - deve ter seções claramente faladas, não cantadas' : 'NÃO'}
 
 LETRA APROVADA (para contexto do mood e narrativa):
-${approvedLyrics.substring(0, 1500)}
+${lyricsForGeneration.substring(0, 1500)}
 
 LEMBRE-SE: 
 - NÃO mencione nomes de artistas, bandas ou músicas como referência
@@ -169,11 +250,11 @@ LEMBRE-SE:
 
     console.log("Style prompt generated successfully");
 
-    // Create final prompt combining style and approved lyrics
+    // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
     const finalPrompt = `${stylePrompt}
 
 [Lyrics]
-${approvedLyrics}`;
+${lyricsForGeneration}`;
 
     // Save to Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -188,6 +269,8 @@ ${approvedLyrics}`;
         final_prompt: finalPrompt,
         approved_lyric_id: lyricId,
         status: 'LYRICS_APPROVED',
+        voice_type: voiceType,
+        pronunciations: pronunciations.length > 0 ? pronunciations : null,
         updated_at: new Date().toISOString()
       })
       .eq('id', orderId);
@@ -196,15 +279,20 @@ ${approvedLyrics}`;
       console.error("Error updating order:", updateError);
     }
 
-    // Mark lyric as approved and update title if provided
+    // Mark lyric as approved and update phonetic body if needed
     if (lyricId) {
-      const updateData: Record<string, any> = { 
+      const updateData: Record<string, unknown> = { 
         is_approved: true, 
         approved_at: new Date().toISOString() 
       };
       
       if (songTitle) {
         updateData.title = songTitle;
+      }
+      
+      // Save phonetic version in lyrics table
+      if (lyricsForGeneration !== approvedLyrics) {
+        updateData.phonetic_body = lyricsForGeneration;
       }
       
       const { error: lyricError } = await supabase
@@ -222,7 +310,8 @@ ${approvedLyrics}`;
     return new Response(
       JSON.stringify({
         ok: true,
-        message: "Prompt de estilo gerado com sucesso"
+        message: "Prompt de estilo gerado com sucesso",
+        usedPhoneticLyrics: lyricsForGeneration !== approvedLyrics
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
