@@ -137,12 +137,6 @@ const Briefing = () => {
     },
     {
       type: 'bot',
-      content: "Algum assunto que NÃO pode ser mencionado? (opcional)\n\nEx: ex-namorados, trabalho, dinheiro...",
-      inputType: 'text',
-      field: 'restrictedWords'
-    },
-    {
-      type: 'bot',
       content: "Qual estilo musical você prefere?",
       inputType: 'options',
       field: 'style',
