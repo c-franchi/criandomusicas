@@ -10,15 +10,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowRight, CheckCircle, Music, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 
 const Briefing = () => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
-  const [userPlan, setUserPlan] = useState<string>("free");
   const [formData, setFormData] = useState({
     occasion: "",
     customOccasion: "",
@@ -29,9 +26,11 @@ const Briefing = () => {
     lgpdConsent: false
   });
 
-  // Buscar plano do usuário
+  // Buscar plano do usuário do profile (já vem do useAuth)
+  const userPlan = profile?.plan || "free";
+
+  // Restaurar progresso salvo do briefing, se existir
   useEffect(() => {
-    // Restaurar progresso salvo do briefing, se existir
     const saved = localStorage.getItem('briefingProgress');
     if (saved) {
       try {
@@ -40,20 +39,7 @@ const Briefing = () => {
         if (parsed?.currentStep) setCurrentStep(parsed.currentStep);
       } catch {}
     }
-
-    const fetchUserPlan = async () => {
-      if (user) {
-        try {
-          const userDoc = await getDoc(doc(db, "users", user.uid));
-          const userData = userDoc.data();
-          setUserPlan(userData?.plan || "free");
-        } catch (error) {
-          console.error("Erro ao buscar plano:", error);
-        }
-      }
-    };
-    fetchUserPlan();
-  }, [user]);
+  }, []);
 
   // Autosave do formulário a cada mudança
   useEffect(() => {

@@ -7,8 +7,7 @@ import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface LyricOption {
@@ -78,23 +77,23 @@ const CreateSong = () => {
     try {
       const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-      const response = await fetch("https://us-central1-sua-musica-8da85.cloudfunctions.net/generateLyrics", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user.uid,
-          plan: briefingData.plan,
+      // Chamar Edge Function do Supabase
+      const { data, error } = await supabase.functions.invoke('generate-lyrics', {
+        body: {
           orderId,
-          occasion: briefingData.occasion,
-          style: briefingData.style,
-          tone: briefingData.tone,
-          storyRaw: story
-        }),
+          briefing: {
+            occasion: briefingData.occasion,
+            style: briefingData.style,
+            tone: briefingData.tone,
+            storyRaw: story,
+            plan: briefingData.plan
+          }
+        }
       });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (response.status === 403 && data.code === "FREE_LIMIT_REACHED") {
+      if (data?.error === "FREE_LIMIT_REACHED") {
         toast.error("Limite do plano free atingido", {
           description: data.message,
         });
@@ -102,34 +101,28 @@ const CreateSong = () => {
         return;
       }
 
-      if (data.ok) {
-        // Aplicar sanitização defensiva às letras recebidas
-        const sanitizedLyrics: LyricOption[] = [
-          {
-            id: "lyric-a",
-            version: "A",
-            title: "Versão A",
-            text: sanitizeLyric(data.lyrics?.[0]?.text || "Letra não disponível"),
-          },
-          {
-            id: "lyric-b",
-            version: "B",
-            title: "Versão B",
-            text: sanitizeLyric(data.lyrics?.[1]?.text || "Letra não disponível"),
-          },
-        ];
+      // Aplicar sanitização defensiva às letras recebidas
+      const sanitizedLyrics: LyricOption[] = [
+        {
+          id: "lyric-a",
+          version: "A",
+          title: data.lyrics?.[0]?.title || "Versão A",
+          text: sanitizeLyric(data.lyrics?.[0]?.text || "Letra não disponível"),
+        },
+        {
+          id: "lyric-b",
+          version: "B",
+          title: data.lyrics?.[1]?.title || "Versão B",
+          text: sanitizeLyric(data.lyrics?.[1]?.text || "Letra não disponível"),
+        },
+      ];
 
-        setLyrics(sanitizedLyrics);
-        setUsedModel(data.usedModel || "gpt-4o");
-        setStep("select");
-        toast.success("Letras geradas com sucesso!", {
-          description: "Escolha a versão que mais combina com você",
-        });
-      } else {
-        toast.error(data.message || "Erro ao gerar letras", {
-          description: "Tente novamente ou entre em contato com o suporte",
-        });
-      }
+      setLyrics(sanitizedLyrics);
+      setUsedModel(data.usedModel || "gemini-3-flash");
+      setStep("select");
+      toast.success("Letras geradas com sucesso!", {
+        description: "Escolha a versão que mais combina com você",
+      });
     } catch (error) {
       console.error("Erro:", error);
       toast.error("Erro ao conectar com o servidor", {

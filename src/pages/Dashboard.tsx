@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,53 +6,36 @@ import { Badge } from "@/components/ui/badge";
 import { ExternalLink, Music } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Order {
   id: string;
   status?: string;
-  createdAt?: any;
-  lyrics?: string;
-  musicUrl?: string;
+  created_at?: string;
+  briefing?: any;
+  style_prompt?: string;
   [key: string]: any;
 }
 
 const Dashboard = () => {
-  const { user, loading } = useAuth();
+  const { user, profile, loading } = useAuth();
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      setShouldRedirect(true);
-    } else if (user) {
-      fetchOrders();
-    }
-  }, [user, loading]);
-
-  // Redirect if not authenticated
-  if (shouldRedirect) {
-    return <Navigate to="/auth" replace />;
-  }
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    if (!profile?.id) return;
+    
     try {
-      const q = query(
-        collection(db, "orders"),
-        where("userId", "==", user?.uid),
-        orderBy("createdAt", "desc")
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const ordersData = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      
-      setOrders(ordersData);
+      const { data, error } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setOrders(data || []);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -63,7 +46,20 @@ const Dashboard = () => {
     } finally {
       setLoadingOrders(false);
     }
-  };
+  }, [profile?.id, toast]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      setShouldRedirect(true);
+    } else if (profile) {
+      fetchOrders();
+    }
+  }, [user, profile, loading, fetchOrders]);
+
+  // Redirect if not authenticated
+  if (shouldRedirect) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {
@@ -154,17 +150,17 @@ const Dashboard = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-semibold text-lg mb-1">
-                      Música para {order.occasion}
+                      Música para {order.briefing?.occasion || 'Ocasião'}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {order.style} • {order.tone}
+                      {order.briefing?.style || 'Estilo'} • {order.briefing?.tone || 'Tom'}
                     </p>
                     <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(order.status)}>
-                        {getStatusText(order.status)}
+                      <Badge className={getStatusColor(order.status || 'DRAFT')}>
+                        {getStatusText(order.status || 'DRAFT')}
                       </Badge>
                       <span className="text-sm text-muted-foreground">
-                        Criado em {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString('pt-BR') : 'Data não disponível'}
+                        Criado em {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
                       </span>
                     </div>
                   </div>
@@ -184,8 +180,8 @@ const Dashboard = () => {
                 <div className="border-t pt-4">
                   <h4 className="font-medium mb-2">História:</h4>
                   <p className="text-sm text-muted-foreground">
-                    {order.storyRaw?.slice(0, 150)}
-                    {order.storyRaw?.length > 150 ? '...' : ''}
+                    {order.briefing?.storyRaw?.slice(0, 150) || 'Sem história'}
+                    {order.briefing?.storyRaw?.length > 150 ? '...' : ''}
                   </p>
                 </div>
               </Card>
