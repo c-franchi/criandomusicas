@@ -87,6 +87,7 @@ export type Database = {
           id: string
           is_approved: boolean
           order_id: string
+          phonetic_body: string | null
           title: string | null
           version: string
         }
@@ -97,6 +98,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           order_id: string
+          phonetic_body?: string | null
           title?: string | null
           version: string
         }
@@ -107,6 +109,7 @@ export type Database = {
           id?: string
           is_approved?: boolean
           order_id?: string
+          phonetic_body?: string | null
           title?: string | null
           version?: string
         }
@@ -138,6 +141,7 @@ export type Database = {
           music_style: string | null
           music_type: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          pronunciations: Json | null
           purpose: string | null
           restricted_words: string | null
           rhythm: string | null
@@ -148,6 +152,7 @@ export type Database = {
           tone: string | null
           updated_at: string
           user_id: string
+          voice_type: string | null
         }
         Insert: {
           amount?: number
@@ -166,6 +171,7 @@ export type Database = {
           music_style?: string | null
           music_type?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pronunciations?: Json | null
           purpose?: string | null
           restricted_words?: string | null
           rhythm?: string | null
@@ -176,6 +182,7 @@ export type Database = {
           tone?: string | null
           updated_at?: string
           user_id: string
+          voice_type?: string | null
         }
         Update: {
           amount?: number
@@ -194,6 +201,7 @@ export type Database = {
           music_style?: string | null
           music_type?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pronunciations?: Json | null
           purpose?: string | null
           restricted_words?: string | null
           rhythm?: string | null
@@ -204,6 +212,7 @@ export type Database = {
           tone?: string | null
           updated_at?: string
           user_id?: string
+          voice_type?: string | null
         }
         Relationships: [
           {

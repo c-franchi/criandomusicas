@@ -33,7 +33,35 @@ interface BriefingFormData {
   atmosphere: string;
   songName: string;
   autoGenerateName: boolean;
+  voiceType: string;
 }
+
+const BRIEFING_STORAGE_KEY = 'briefing_autosave';
+
+// Detectar termos técnicos que precisam de pronúncia
+const detectCriticalTerms = (text: string): string[] => {
+  const patterns = [
+    /\b[A-Z]{2,}[0-9]*\b/g,                    // Siglas: NYV8, WEB3, ABC
+    /\b[A-Z]+[0-9]+[A-Z0-9]*\b/g,              // Letras+números: NYV8, W3C
+    /\b[A-Z][a-z]*[A-Z][a-zA-Z]*\b/g,          // CamelCase: iPhone, PowerBI
+    /\b[A-Z]{2,}[a-z]+\b/g,                    // Siglas com sufixo: POKERfi
+  ];
+  
+  const terms = new Set<string>();
+  patterns.forEach(pattern => {
+    const matches = text.match(pattern);
+    if (matches) {
+      matches.forEach(m => {
+        // Filtrar termos comuns que não precisam de pronúncia
+        if (!['EU', 'EUA', 'OK', 'TV'].includes(m)) {
+          terms.add(m);
+        }
+      });
+    }
+  });
+  
+  return Array.from(terms);
+};
 
 const Briefing = () => {
   const { user, profile, loading } = useAuth();
@@ -51,7 +79,7 @@ const Briefing = () => {
   const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
   const [stepHistory, setStepHistory] = useState<number[]>([]);
   
-  const [formData, setFormData] = useState<BriefingFormData>({
+  const initialFormData: BriefingFormData = {
     musicType: "",
     emotion: "",
     emotionIntensity: 3,
@@ -65,8 +93,43 @@ const Briefing = () => {
     rhythm: "",
     atmosphere: "",
     songName: "",
-    autoGenerateName: true
+    autoGenerateName: true,
+    voiceType: ""
+  };
+
+  const [formData, setFormData] = useState<BriefingFormData>(() => {
+    // Restaurar do localStorage se existir
+    const saved = localStorage.getItem(BRIEFING_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return { ...initialFormData, ...parsed };
+      } catch {
+        return initialFormData;
+      }
+    }
+    return initialFormData;
   });
+  
+  const [hasSavedData, setHasSavedData] = useState(() => {
+    return !!localStorage.getItem(BRIEFING_STORAGE_KEY);
+  });
+
+  // Auto-save a cada mudança no formData
+  useEffect(() => {
+    const hasAnyData = Object.values(formData).some(v => 
+      typeof v === 'string' ? v.length > 0 : typeof v === 'boolean' ? v : v !== 3
+    );
+    if (hasAnyData) {
+      localStorage.setItem(BRIEFING_STORAGE_KEY, JSON.stringify(formData));
+      setHasSavedData(true);
+    }
+  }, [formData]);
+
+  const clearSavedBriefing = () => {
+    localStorage.removeItem(BRIEFING_STORAGE_KEY);
+    setHasSavedData(false);
+  };
 
   const userPlan = profile?.plan || "free";
 
@@ -86,13 +149,42 @@ const Briefing = () => {
     }
   }, [transcript, resetTranscript]);
 
-  // Iniciar chat
+  // Iniciar chat (mostrar opção de continuar se há dados salvos)
   useEffect(() => {
     const timer = setTimeout(() => {
-      addBotMessage(chatFlow[0]);
+      if (hasSavedData && formData.musicType) {
+        // Tem dados salvos, mostrar opção de continuar
+        const savedStep = getSavedStep(formData);
+        setMessages([{
+          id: 'msg-restore',
+          type: 'bot',
+          content: `Bem-vindo de volta! 👋\n\nVocê tem um briefing em andamento. Deseja continuar de onde parou ou começar um novo?`,
+          inputType: 'options',
+          options: [
+            { id: 'continue', label: '▶️ Continuar', description: 'Retomar de onde parei' },
+            { id: 'restart', label: '🔄 Recomeçar', description: 'Iniciar um novo briefing' }
+          ]
+        }]);
+      } else {
+        addBotMessage(chatFlow[0]);
+      }
     }, 500);
     return () => clearTimeout(timer);
   }, []);
+
+  // Encontrar o step onde o usuário parou
+  const getSavedStep = (data: BriefingFormData): number => {
+    if (!data.musicType) return 0;
+    if (!data.emotion) return 1;
+    if (!data.story) return 3;
+    if (data.hasMonologue && !data.monologuePosition) return 5;
+    if (!data.voiceType) return 6; // Novo step de voiceType
+    if (!data.style) return 8;
+    if (!data.rhythm) return 9;
+    if (!data.atmosphere) return 10;
+    if (!data.autoGenerateName && !data.songName) return 12;
+    return 13; // Vai para confirmação
+  };
 
   const chatFlow: Omit<ChatMessage, 'id'>[] = [
     {
@@ -150,6 +242,20 @@ const Briefing = () => {
       content: "Tem alguma palavra, nome ou frase que DEVE aparecer na letra? (opcional)\n\nSelecione as sugestões ou digite novas:",
       inputType: 'word-suggestions',
       field: 'mandatoryWords'
+    },
+    {
+      type: 'bot',
+      content: "Qual tipo de voz você prefere para sua música? 🎤",
+      inputType: 'options',
+      field: 'voiceType',
+      options: [
+        { id: "masculina", label: "👨 Voz Masculina", description: "Cantor solo masculino" },
+        { id: "feminina", label: "👩 Voz Feminina", description: "Cantora solo feminina" },
+        { id: "dueto", label: "👫 Dueto", description: "Homem e mulher cantando juntos" },
+        { id: "dupla_masc", label: "👬 Dupla Masculina", description: "Dois cantores" },
+        { id: "dupla_fem", label: "👭 Dupla Feminina", description: "Duas cantoras" },
+        { id: "coral", label: "🎶 Coral/Grupo", description: "Múltiplas vozes" }
+      ]
     },
     {
       type: 'bot',
@@ -294,13 +400,19 @@ const Briefing = () => {
   };
 
   const getNextStep = (current: number, data: BriefingFormData): number => {
+    // chatFlow indexes:
+    // 0: musicType, 1: emotion, 2: emotionIntensity, 3: story
+    // 4: hasMonologue, 5: monologuePosition, 6: mandatoryWords
+    // 7: voiceType, 8: style, 9: rhythm, 10: atmosphere
+    // 11: autoGenerateName, 12: songName
+    
     // Se não quer monólogo, pula a pergunta de posição
     if (current === 4 && !data.hasMonologue) {
       return 6; // Pula para mandatoryWords
     }
     // Se escolheu gerar nome automaticamente, pula a pergunta de nome
-    if (current === 10 && data.autoGenerateName) {
-      return 12; // Fim - vai para confirmação
+    if (current === 11 && data.autoGenerateName) {
+      return 13; // Fim - vai para confirmação
     }
     return current + 1;
   };
@@ -332,7 +444,29 @@ const Briefing = () => {
 
   const handleOptionSelect = (option: { id: string; label: string }) => {
     const currentMsg = messages[messages.length - 1];
-    if (!currentMsg?.field) return;
+    if (!currentMsg?.field) {
+      // Handler para continue/restart na tela inicial
+      if (option.id === 'continue') {
+        const savedStep = getSavedStep(formData);
+        setMessages([]);
+        if (savedStep >= chatFlow.length) {
+          showConfirmationScreen(formData);
+        } else {
+          setCurrentStep(savedStep);
+          setTimeout(() => addBotMessage(chatFlow[savedStep]), 300);
+        }
+        return;
+      }
+      if (option.id === 'restart') {
+        setFormData(initialFormData);
+        clearSavedBriefing();
+        setMessages([]);
+        setCurrentStep(0);
+        setTimeout(() => addBotMessage(chatFlow[0]), 300);
+        return;
+      }
+      return;
+    }
 
     const field = currentMsg.field;
     let displayValue = option.label;
@@ -534,6 +668,9 @@ const Briefing = () => {
   const finishBriefing = () => {
     const data = formData;
     
+    // Limpar auto-save ao finalizar
+    clearSavedBriefing();
+    
     // Salvar e navegar
     const briefingData = {
       musicType: data.musicType,
@@ -545,6 +682,7 @@ const Briefing = () => {
       monologuePosition: data.monologuePosition || 'bridge',
       mandatoryWords: data.mandatoryWords,
       restrictedWords: data.restrictedWords,
+      voiceType: data.voiceType,
       style: data.style === 'outros' ? data.customStyle : data.style,
       rhythm: data.rhythm,
       atmosphere: data.atmosphere,
@@ -593,6 +731,14 @@ const Briefing = () => {
         gospel: "🙏 Gospel/Worship",
         bossa: "🎹 Bossa Nova",
         outros: `✨ ${formData.customStyle}`
+      },
+      voiceType: {
+        masculina: "👨 Voz Masculina",
+        feminina: "👩 Voz Feminina",
+        dueto: "👫 Dueto",
+        dupla_masc: "👬 Dupla Masculina",
+        dupla_fem: "👭 Dupla Feminina",
+        coral: "🎶 Coral/Grupo"
       },
       rhythm: {
         lento: "🐢 Lento",
@@ -697,24 +843,29 @@ const Briefing = () => {
                   onEdit={() => handleEditField(6)} 
                 />
                 <ConfirmationItem 
+                  label="Tipo de voz" 
+                  value={getFieldLabel('voiceType', formData.voiceType)} 
+                  onEdit={() => handleEditField(7)} 
+                />
+                <ConfirmationItem 
                   label="Estilo" 
                   value={getFieldLabel('style', formData.style)} 
-                  onEdit={() => handleEditField(7)} 
+                  onEdit={() => handleEditField(8)} 
                 />
                 <ConfirmationItem 
                   label="Ritmo" 
                   value={getFieldLabel('rhythm', formData.rhythm)} 
-                  onEdit={() => handleEditField(8)} 
+                  onEdit={() => handleEditField(9)} 
                 />
                 <ConfirmationItem 
                   label="Atmosfera" 
                   value={getFieldLabel('atmosphere', formData.atmosphere)} 
-                  onEdit={() => handleEditField(9)} 
+                  onEdit={() => handleEditField(10)} 
                 />
                 <ConfirmationItem 
                   label="Nome da música" 
                   value={formData.autoGenerateName ? "Gerado pela IA" : formData.songName} 
-                  onEdit={() => handleEditField(10)} 
+                  onEdit={() => handleEditField(11)} 
                 />
               </div>
             </div>
@@ -727,22 +878,8 @@ const Briefing = () => {
                   setCurrentStep(0);
                   setMessages([]);
                   setStepHistory([]);
-                  setFormData({
-                    musicType: "",
-                    emotion: "",
-                    emotionIntensity: 3,
-                    story: "",
-                    hasMonologue: false,
-                    monologuePosition: "",
-                    mandatoryWords: "",
-                    restrictedWords: "",
-                    style: "",
-                    customStyle: "",
-                    rhythm: "",
-                    atmosphere: "",
-                    songName: "",
-                    autoGenerateName: true
-                  });
+                  setFormData(initialFormData);
+                  clearSavedBriefing();
                   setTimeout(() => addBotMessage(chatFlow[0]), 500);
                 }}
                 className="flex-1"

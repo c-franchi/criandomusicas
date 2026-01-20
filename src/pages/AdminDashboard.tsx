@@ -387,13 +387,18 @@ const AdminDashboard = () => {
                     
                     {/* Final Prompt for admin */}
                     {order.final_prompt && (
-                      <details className="text-sm">
-                        <summary className="cursor-pointer text-primary hover:underline">
-                          Ver Prompt Final (para Suno/Udio)
+                      <details className="text-sm mt-3">
+                        <summary className="cursor-pointer text-primary hover:underline font-medium">
+                          📝 Ver Prompt Final (para Suno/Udio)
                         </summary>
-                        <pre className="mt-2 p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap">
-                          {order.final_prompt}
-                        </pre>
+                        <div className="mt-2 space-y-3">
+                          <div>
+                            <p className="text-xs text-muted-foreground mb-1 font-semibold">LETRA FONÉTICA (usada para geração):</p>
+                            <pre className="p-3 bg-muted rounded-lg text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-primary">
+                              {order.final_prompt}
+                            </pre>
+                          </div>
+                        </div>
                       </details>
                     )}
                   </div>
