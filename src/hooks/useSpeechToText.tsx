@@ -63,6 +63,7 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
   const [transcript, setTranscript] = useState('');
   const { toast } = useToast();
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  const processedResultsRef = useRef<Set<string>>(new Set());
 
   // Check if Web Speech API is supported
   const isSupported = typeof window !== 'undefined' && 
@@ -78,21 +79,26 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
     
     const recognition = recognitionRef.current;
     recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.interimResults = false; // Only get final results to avoid duplicates
     recognition.lang = 'pt-BR';
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      let finalTranscript = '';
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          finalTranscript += result[0].transcript;
+      // Get only the latest result
+      const lastResultIndex = event.results.length - 1;
+      const result = event.results[lastResultIndex];
+      
+      if (result.isFinal) {
+        const transcriptText = result[0].transcript.trim();
+        // Create a unique key for this result to avoid duplicates
+        const resultKey = `${lastResultIndex}-${transcriptText}`;
+        
+        if (transcriptText && !processedResultsRef.current.has(resultKey)) {
+          processedResultsRef.current.add(resultKey);
+          setTranscript(prev => {
+            const separator = prev ? ' ' : '';
+            return prev + separator + transcriptText;
+          });
         }
-      }
-
-      if (finalTranscript) {
-        setTranscript(prev => prev + finalTranscript);
       }
     };
 
@@ -131,6 +137,7 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
 
     try {
       setTranscript('');
+      processedResultsRef.current.clear(); // Clear processed results on new recording
       recognitionRef.current.start();
       setIsListening(true);
     } catch (error) {
@@ -151,6 +158,7 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
 
   const resetTranscript = useCallback(() => {
     setTranscript('');
+    processedResultsRef.current.clear();
   }, []);
 
   return {

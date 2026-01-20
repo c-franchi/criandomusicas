@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Star, Zap } from "lucide-react";
+import { Check, Crown, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PLANS, Plan, getPlanInfo } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,14 +16,14 @@ const Planos = () => {
 
   const getPlanIcon = (planId: Plan) => {
     switch (planId) {
-      case "free":
-        return <Star className="w-6 h-6" />;
-      case "basic":
+      case "single":
         return <Zap className="w-6 h-6" />;
-      case "pro":
+      case "package":
+        return <Check className="w-6 h-6" />;
+      case "subscription":
         return <Crown className="w-6 h-6" />;
       default:
-        return <Star className="w-6 h-6" />;
+        return <Zap className="w-6 h-6" />;
     }
   };
 
@@ -84,36 +84,53 @@ const Planos = () => {
             <Card
               key={plan.id}
               className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl glass-card ${
-                plan.id === "basic" 
+                plan.id === "package" 
                   ? "ring-2 ring-primary music-glow border-primary/50" 
                   : "border-border/50 hover:border-primary/30"
               }`}
             >
-              {plan.id === "basic" && (
+              {plan.id === "package" && (
                 <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold px-4 py-1">
                   Mais Popular
+                </Badge>
+              )}
+
+              {plan.pricePromo && (
+                <Badge className="absolute -top-3 right-4 bg-destructive text-destructive-foreground px-3 py-1 animate-pulse">
+                  🔥 PROMOÇÃO
                 </Badge>
               )}
 
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-4">
                   <div className={`p-4 rounded-2xl ${
-                    plan.id === "free" ? "bg-secondary/50" :
-                    plan.id === "basic" ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                    plan.id === "single" ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                    plan.id === "package" ? "bg-gradient-to-r from-primary to-accent music-glow" :
                     "bg-gradient-to-r from-accent to-primary music-glow"
                   }`}>
                     {React.cloneElement(getPlanIcon(plan.id), {
-                      className: `w-8 h-8 ${
-                        plan.id === "free" ? "text-primary" : "text-white"
-                      }`
+                      className: "w-8 h-8 text-white"
                     })}
                   </div>
                 </div>
                 <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">{plan.title}</CardTitle>
-                <CardDescription className="text-4xl font-bold gradient-text">
-                  {plan.price}
-                </CardDescription>
-                {plan.id !== "free" && (
+                
+                {plan.pricePromo ? (
+                  <div className="space-y-1">
+                    <CardDescription className="text-xl line-through text-muted-foreground">
+                      {plan.price}
+                    </CardDescription>
+                    <CardDescription className="text-4xl font-bold text-green-500">
+                      {plan.pricePromo}
+                    </CardDescription>
+                  </div>
+                ) : (
+                  <CardDescription className="text-4xl font-bold gradient-text">
+                    {plan.price}
+                  </CardDescription>
+                )}
+                
+                {plan.isSubscription && (
                   <p className="text-muted-foreground text-sm mt-1">por mês</p>
                 )}
               </CardHeader>
@@ -134,13 +151,13 @@ const Planos = () => {
                   <Button
                     onClick={() => handleSelectPlan(plan.id)}
                     className={`w-full py-3 font-semibold transition-all duration-300 ${
-                      plan.id === "basic" 
+                      plan.id === "package" 
                         ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white music-glow" 
-                        : plan.id === "pro"
+                        : plan.id === "subscription"
                         ? "bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
                         : ""
                     }`}
-                    variant={plan.id === "free" ? "outline" : "default"}
+                    variant={plan.id === "single" && !plan.pricePromo ? "outline" : "default"}
                   >
                     {plan.cta}
                   </Button>
@@ -164,9 +181,6 @@ const Planos = () => {
           <div className="flex gap-4 justify-center">
             <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
               ← Voltar ao início
-            </Button>
-            <Button variant="ghost" onClick={() => navigate("/test-openai")} className="text-muted-foreground hover:text-foreground">
-              🔧 Testar OpenAI
             </Button>
           </div>
         </div>

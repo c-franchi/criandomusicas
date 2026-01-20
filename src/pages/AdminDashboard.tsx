@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Music, 
   Search, 
@@ -13,13 +14,23 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Users,
-  FileText
+  FileText,
+  Settings,
+  Save,
+  DollarSign
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AdminOrder {
   id: string;
@@ -36,6 +47,17 @@ interface AdminOrder {
   lyric_title?: string;
 }
 
+interface PricingConfig {
+  id: string;
+  name: string;
+  price_display: string;
+  price_cents: number;
+  price_promo_cents: number | null;
+  stripe_price_id: string | null;
+  is_active: boolean;
+  is_popular: boolean;
+}
+
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
@@ -44,6 +66,10 @@ const AdminDashboard = () => {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
+  const [loadingPricing, setLoadingPricing] = useState(false);
+  const [savingPricing, setSavingPricing] = useState(false);
+  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
 
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
@@ -96,11 +122,80 @@ const AdminDashboard = () => {
     }
   }, [toast]);
 
+  const fetchPricing = useCallback(async () => {
+    setLoadingPricing(true);
+    try {
+      const { data, error } = await supabase
+        .from('pricing_config')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setPricingConfigs(data || []);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao carregar preços',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingPricing(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
+      fetchPricing();
     }
-  }, [isAdmin, fetchOrders]);
+  }, [isAdmin, fetchOrders, fetchPricing]);
+
+  const updatePricingConfig = (id: string, field: keyof PricingConfig, value: any) => {
+    setPricingConfigs(prev => prev.map(config => 
+      config.id === id ? { ...config, [field]: value } : config
+    ));
+  };
+
+  const savePricingConfigs = async () => {
+    setSavingPricing(true);
+    try {
+      for (const config of pricingConfigs) {
+        // Update price_display based on price_cents
+        const priceDisplay = `R$ ${(config.price_cents / 100).toFixed(2).replace('.', ',')}`;
+        
+        const { error } = await supabase
+          .from('pricing_config')
+          .update({
+            price_display: priceDisplay,
+            price_cents: config.price_cents,
+            price_promo_cents: config.price_promo_cents,
+            stripe_price_id: config.stripe_price_id,
+            is_active: config.is_active,
+            is_popular: config.is_popular,
+          })
+          .eq('id', config.id);
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: 'Preços atualizados!',
+        description: 'Os novos preços já estão ativos.',
+      });
+      
+      setPricingDialogOpen(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao salvar preços',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingPricing(false);
+    }
+  };
 
   const updateOrderStatus = async (orderId: string, newStatus: "DRAFT" | "AWAITING_PAYMENT" | "PAID" | "BRIEFING_COMPLETE" | "LYRICS_PENDING" | "LYRICS_GENERATED" | "LYRICS_APPROVED" | "MUSIC_GENERATING" | "MUSIC_READY" | "COMPLETED" | "CANCELLED") => {
     try {
@@ -244,10 +339,111 @@ const AdminDashboard = () => {
                 <p className="text-sm text-muted-foreground">Gerenciar produção de músicas</p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders}>
-              <RefreshCw className={`w-4 h-4 mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
-              Atualizar
-            </Button>
+            <div className="flex gap-2">
+              <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" onClick={() => fetchPricing()}>
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Gerenciar Preços
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Settings className="w-5 h-5" />
+                      Gerenciar Preços dos Planos
+                    </DialogTitle>
+                    <DialogDescription>
+                      Altere os preços e configurações dos planos. As mudanças serão aplicadas imediatamente.
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  {loadingPricing ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Music className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : (
+                    <div className="space-y-6 mt-4">
+                      {pricingConfigs.map((config) => (
+                        <Card key={config.id} className="p-4">
+                          <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-semibold text-lg">{config.name}</h3>
+                            <div className="flex gap-2">
+                              <Badge variant={config.is_active ? "default" : "secondary"}>
+                                {config.is_active ? "Ativo" : "Inativo"}
+                              </Badge>
+                              {config.is_popular && (
+                                <Badge className="bg-primary">Popular</Badge>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label>Preço (centavos)</Label>
+                              <Input
+                                type="number"
+                                value={config.price_cents}
+                                onChange={(e) => updatePricingConfig(config.id, 'price_cents', parseInt(e.target.value) || 0)}
+                                placeholder="2990"
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                = R$ {(config.price_cents / 100).toFixed(2).replace('.', ',')}
+                              </p>
+                            </div>
+                            
+                            <div>
+                              <Label>Preço Promocional (centavos)</Label>
+                              <Input
+                                type="number"
+                                value={config.price_promo_cents || ''}
+                                onChange={(e) => updatePricingConfig(config.id, 'price_promo_cents', e.target.value ? parseInt(e.target.value) : null)}
+                                placeholder="990 (deixe vazio para sem promoção)"
+                              />
+                              {config.price_promo_cents && (
+                                <p className="text-xs text-green-500 mt-1">
+                                  Promoção: R$ {(config.price_promo_cents / 100).toFixed(2).replace('.', ',')}
+                                </p>
+                              )}
+                            </div>
+                            
+                            <div className="col-span-2">
+                              <Label>Stripe Price ID (opcional)</Label>
+                              <Input
+                                value={config.stripe_price_id || ''}
+                                onChange={(e) => updatePricingConfig(config.id, 'stripe_price_id', e.target.value || null)}
+                                placeholder="price_abc123 (deixe vazio para usar preço dinâmico)"
+                              />
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Se definido, usa o preço fixo do Stripe. Caso contrário, usa o preço configurado acima.
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
+                      
+                      <Button 
+                        onClick={savePricingConfigs} 
+                        className="w-full"
+                        disabled={savingPricing}
+                      >
+                        {savingPricing ? (
+                          <Music className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        Salvar Alterações
+                      </Button>
+                    </div>
+                  )}
+                </DialogContent>
+              </Dialog>
+              
+              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+            </div>
           </div>
         </div>
       </header>
@@ -378,6 +574,9 @@ const AdminDashboard = () => {
                     <p className="text-sm text-muted-foreground mb-2">
                       {order.music_style} • {order.music_type} • 
                       {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                    </p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      ID do usuário: {order.user_id.slice(0, 8)}...
                     </p>
                     {order.story && (
                       <p className="text-sm text-muted-foreground line-clamp-2 mb-3">

@@ -27,12 +27,12 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Get order ID from request body
-    const { orderId } = await req.json();
+    // Get order ID and plan ID from request body
+    const { orderId, planId = "single" } = await req.json();
     if (!orderId) {
       throw new Error("Order ID is required");
     }
-    logStep("Order ID received", { orderId });
+    logStep("Order ID received", { orderId, planId });
 
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization")!;
@@ -41,6 +41,23 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { email: user.email });
+
+    // Get pricing configuration from database
+    const { data: pricingConfig, error: pricingError } = await supabaseClient
+      .from('pricing_config')
+      .select('*')
+      .eq('id', planId)
+      .single();
+
+    if (pricingError || !pricingConfig) {
+      logStep("Pricing config not found, using default");
+    }
+
+    // Use promo price if available, otherwise regular price
+    const priceInCents = pricingConfig?.price_promo_cents || pricingConfig?.price_cents || 990;
+    const productName = pricingConfig?.name || "Música Personalizada";
+    
+    logStep("Using price", { priceInCents, productName });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -58,24 +75,45 @@ serve(async (req) => {
     // Get origin for redirect URLs
     const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
 
+    // Use existing price ID if available, or create inline price
+    let lineItems;
+    if (pricingConfig?.stripe_price_id) {
+      lineItems = [{ price: pricingConfig.stripe_price_id, quantity: 1 }];
+    } else {
+      // Create inline price data for dynamic pricing
+      lineItems = [{
+        price_data: {
+          currency: 'brl',
+          product_data: {
+            name: productName,
+            description: 'Uma música exclusiva criada com IA baseada na sua história'
+          },
+          unit_amount: priceInCents,
+        },
+        quantity: 1,
+      }];
+    }
+
     // Create a one-time payment session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [
-        {
-          price: "price_1SrgduCqEk0oYMYYNLuMHuDs", // Música Personalizada - R$ 9,99
-          quantity: 1,
-        },
-      ],
+      line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/pagamento-sucesso?order_id=${orderId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pedido/${orderId}`,
       metadata: {
         order_id: orderId,
-        user_id: user.id
+        user_id: user.id,
+        plan_id: planId
       }
     });
+
+    // Update order amount in database
+    await supabaseClient
+      .from('orders')
+      .update({ amount: priceInCents })
+      .eq('id', orderId);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
