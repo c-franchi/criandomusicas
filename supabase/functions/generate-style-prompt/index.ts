@@ -6,13 +6,30 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface BriefingData {
+  musicType?: string;
+  emotion?: string;
+  emotionIntensity?: number;
+  style?: string;
+  rhythm?: string;
+  atmosphere?: string;
+  hasMonologue?: boolean;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { orderId, lyricId, approvedLyrics, briefing } = await req.json();
+    const { orderId, lyricId, approvedLyrics, briefing } = await req.json() as {
+      orderId: string;
+      lyricId: string;
+      approvedLyrics: string;
+      briefing: BriefingData;
+    };
+
+    console.log("generate-style-prompt called with orderId:", orderId);
 
     if (!orderId || !approvedLyrics) {
       return new Response(
@@ -39,36 +56,59 @@ serve(async (req) => {
       hasMonologue = false
     } = briefing || {};
 
-    const systemPrompt = `Você é um produtor musical profissional especializado em criar prompts técnicos para IAs de geração musical.
+    // Map rhythm to BPM range
+    const bpmMap: Record<string, string> = {
+      'lento': '60-80 BPM (Ballad)',
+      'moderado': '90-110 BPM (Mid-tempo)',
+      'animado': '120-140 BPM (Upbeat)'
+    };
+
+    // Map atmosphere to production notes
+    const atmosphereMap: Record<string, string> = {
+      'intimo': 'Intimate, acoustic, minimal reverb, close-mic vocals',
+      'festivo': 'Celebratory, bright mix, energetic dynamics, choir-like backing vocals',
+      'melancolico': 'Melancholic, subtle pads, tasteful string arrangements, emotional dynamics',
+      'epico': 'Epic, orchestral elements, big drums, cinematic build-ups',
+      'leve': 'Light, airy production, soft dynamics, gentle instrumentation'
+    };
+
+    const systemPrompt = `Você é um produtor musical profissional especializado em criar prompts técnicos para IAs de geração musical (Suno, Udio, etc).
 
 Sua tarefa é criar um prompt de estilo musical detalhado e técnico que será usado para gerar a música.
 
-FORMATO DE SAÍDA OBRIGATÓRIO (siga exatamente):
+REGRAS:
+1. O prompt deve ser em INGLÊS (padrão da indústria musical)
+2. Seja específico com gêneros, subgêneros e referências
+3. Inclua detalhes técnicos de produção
+4. ${hasMonologue ? 'IMPORTANTE: A música contém trechos falados/declamados. Inclua instruções para spoken word sections.' : 'Não há trechos falados'}
+
+FORMATO DE SAÍDA OBRIGATÓRIO (siga exatamente, em inglês):
 
 [Style]
-Genre: (gênero musical principal e subgênero se aplicável)
+Genre: (gênero musical principal e subgênero)
 Mood/Atmosphere: (clima emocional detalhado)
-Instrumentation: (instrumentos principais separados por vírgula)
+Instrumentation: (instrumentos principais, separados por vírgula)
 Vocal Style: (tipo de voz e estilo vocal)
-Tempo: (BPM aproximado, ex: 90-100 BPM)
-Key: (tonalidade sugerida, ex: C Major, A minor)
-Production Notes: (notas técnicas de produção)
-${hasMonologue ? 'Spoken Word: (instruções para parte falada)' : ''}
+Tempo: (BPM e feel)
+Key: (tonalidade sugerida)
+Production Notes: (notas técnicas de produção, mix, efeitos)
+${hasMonologue ? 'Spoken Word: (instruções específicas para partes faladas - deve ser claramente diferenciado do canto)' : ''}
+Reference Artists: (2-3 artistas de referência para o estilo)
 
-Não inclua explicações, apenas o prompt técnico.`;
+Não inclua explicações, apenas o prompt técnico estruturado.`;
 
     const userPrompt = `Crie o prompt de estilo musical para esta música:
 
-CONTEXTO:
-- Tipo de música: ${musicType}
+CONTEXTO DA MÚSICA:
+- Tipo: ${musicType}
 - Emoção desejada: ${emotion} (intensidade ${emotionIntensity}/5)
 - Estilo musical: ${style}
-- Ritmo: ${rhythm}
-- Atmosfera: ${atmosphere}
-- Contém monólogo falado: ${hasMonologue ? 'SIM' : 'NÃO'}
+- Ritmo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
+- Atmosfera: ${atmosphere} (${atmosphereMap[atmosphere] || 'balanced production'})
+- Contém monólogo/spoken word: ${hasMonologue ? 'SIM - deve ter seções claramente faladas, não cantadas' : 'NÃO'}
 
-LETRA APROVADA (para contexto):
-${approvedLyrics.substring(0, 800)}...
+LETRA APROVADA (para contexto do mood e narrativa):
+${approvedLyrics.substring(0, 1500)}
 
 Crie um prompt técnico detalhado que capture perfeitamente a essência desta música.`;
 
@@ -86,7 +126,7 @@ Crie um prompt técnico detalhado que capture perfeitamente a essência desta m�
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 800,
+        max_tokens: 1000,
         temperature: 0.7,
       }),
     });
@@ -122,7 +162,9 @@ Crie um prompt técnico detalhado que capture perfeitamente a essência desta m�
       );
     }
 
-    // Create final prompt combining style and lyrics
+    console.log("Style prompt generated successfully");
+
+    // Create final prompt combining style and approved lyrics
     const finalPrompt = `${stylePrompt}
 
 [Lyrics]
@@ -140,7 +182,7 @@ ${approvedLyrics}`;
         style_prompt: stylePrompt,
         final_prompt: finalPrompt,
         approved_lyric_id: lyricId,
-        status: 'lyrics_approved',
+        status: 'LYRICS_APPROVED',
         updated_at: new Date().toISOString()
       })
       .eq('id', orderId);
@@ -151,11 +193,17 @@ ${approvedLyrics}`;
 
     // Mark lyric as approved
     if (lyricId) {
-      await supabase
+      const { error: lyricError } = await supabase
         .from('lyrics')
-        .update({ approved: true, approved_at: new Date().toISOString() })
+        .update({ is_approved: true, approved_at: new Date().toISOString() })
         .eq('id', lyricId);
+
+      if (lyricError) {
+        console.error("Error marking lyric as approved:", lyricError);
+      }
     }
+
+    console.log("Order updated with approved lyrics and style prompt");
 
     return new Response(
       JSON.stringify({
@@ -167,10 +215,11 @@ ${approvedLyrics}`;
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("generate-style-prompt error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
     return new Response(
-      JSON.stringify({ ok: false, error: error instanceof Error ? error.message : "Erro desconhecido" }),
+      JSON.stringify({ ok: false, error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }

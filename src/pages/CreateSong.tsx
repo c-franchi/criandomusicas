@@ -3,90 +3,98 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
+import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft, CheckCircle, Edit3, RefreshCw, Volume2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface LyricOption {
   id: string;
   version: string;
   title: string;
-  text: string;
+  body: string;
 }
+
+interface BriefingData {
+  musicType: string;
+  emotion: string;
+  emotionIntensity: number;
+  story: string;
+  structure: string[];
+  hasMonologue: boolean;
+  monologuePosition: string;
+  mandatoryWords: string;
+  restrictedWords: string;
+  style: string;
+  rhythm: string;
+  atmosphere: string;
+  plan: string;
+  lgpdConsent: boolean;
+}
+
+type Step = "loading" | "generating" | "select" | "editing" | "approved" | "producing" | "complete";
 
 const CreateSong = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [story, setStory] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<Step>("loading");
+  const [briefingData, setBriefingData] = useState<BriefingData | null>(null);
+  const [orderId, setOrderId] = useState<string | null>(null);
   const [lyrics, setLyrics] = useState<LyricOption[]>([]);
-  const [selectedLyric, setSelectedLyric] = useState<string | null>(null);
-  const [step, setStep] = useState<"input" | "select" | "confirm">("input");
-  const [usedModel, setUsedModel] = useState<string>("");
-  const [briefingData, setBriefingData] = useState<any>(null);
-  const promptSamples = [
-    {
-      id: 'romantic-serta',
-      title: 'Pedido Romântico (Sertanejo)',
-      text: 'Quero uma música sertaneja romântica para expressar meu amor pela [Nome], contando sobre como nos conhecemos em [lugar] e nossos planos para [futuro]. Tom emocionante, refrão marcante.'
-    },
-    {
-      id: 'wedding-pop',
-      title: 'Casamento (Pop)',
-      text: 'Música pop para casamento, celebrando nossa história desde [momento especial], citando amigos/família [nomes], tom inspirador e alegre, refrão para cantar junto.'
-    },
-    {
-      id: 'tribute-mom',
-      title: 'Homenagem para Mãe',
-      text: 'Letra emocionante para homenagear minha mãe [nome], falando de sua força, conselhos, e gratidão por [momentos]. Tom nostálgico e carinhoso.'
-    }
-  ];
+  const [selectedLyric, setSelectedLyric] = useState<LyricOption | null>(null);
+  const [editedLyric, setEditedLyric] = useState<string>("");
+  const [editInstructions, setEditInstructions] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [stylePrompt, setStylePrompt] = useState<string>("");
+  const [finalPrompt, setFinalPrompt] = useState<string>("");
 
   // Carregar dados do briefing
   useEffect(() => {
     const data = localStorage.getItem('briefingData');
-    if (data) {
-      const parsed = JSON.parse(data);
-      setBriefingData(parsed);
-      setStory(parsed.storyRaw || "");
-      localStorage.removeItem('briefingData'); // Limpar após usar
-    }
-    // Se veio direto sem briefing, mande para o briefing primeiro
     if (!data) {
       navigate('/briefing');
+      return;
     }
+    
+    const parsed = JSON.parse(data) as BriefingData;
+    setBriefingData(parsed);
+    localStorage.removeItem('briefingData');
+    
+    // Iniciar geração de letras automaticamente
+    generateLyrics(parsed);
   }, []);
 
-  // Sanitização defensiva
-  const sanitizeLyric = (text: string) => {
-    const banned = /(crie uma letra|escreva|faça uma letra|prompt|instrução)/i;
-    return text
-      .split(/\r?\n/)
-      .filter(l => !banned.test(l))
-      .join("\n")
-      .trim();
-  };
+  const generateLyrics = async (briefing: BriefingData) => {
+    if (!user) {
+      toast.error("Você precisa estar logado");
+      navigate('/auth');
+      return;
+    }
 
-  const handleGenerateLyrics = async () => {
-    if (!story.trim() || !user || !briefingData) return;
-
+    setStep("generating");
     setLoading(true);
+
     try {
-      // Criar order real no Supabase primeiro
+      // Criar order no Supabase
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
-          occasion: briefingData.occasion,
-          style: briefingData.style || 'preferido',
-          tone: briefingData.tone || 'preferido',
-          duration_target_sec: 180,
-          story_raw: story,
           status: 'DRAFT',
-          price_cents: 0
+          music_style: briefing.style,
+          emotion: briefing.emotion,
+          tone: briefing.rhythm,
+          music_structure: briefing.structure.join(','),
+          story: briefing.story,
+          music_type: briefing.musicType,
+          emotion_intensity: briefing.emotionIntensity,
+          rhythm: briefing.rhythm,
+          atmosphere: briefing.atmosphere,
+          has_monologue: briefing.hasMonologue,
+          monologue_position: briefing.monologuePosition,
+          mandatory_words: briefing.mandatoryWords,
+          restricted_words: briefing.restrictedWords
         })
         .select()
         .single();
@@ -96,137 +104,230 @@ const CreateSong = () => {
         throw new Error("Erro ao criar pedido. Tente novamente.");
       }
 
-      const orderId = orderData.id;
+      setOrderId(orderData.id);
 
-      // Chamar Edge Function do Supabase com payload correto
+      // Chamar Edge Function para gerar letras
       const { data, error } = await supabase.functions.invoke('generate-lyrics', {
         body: {
-          orderId,
-          story: story,
+          orderId: orderData.id,
+          story: briefing.story,
           briefing: {
-            musicType: briefingData.musicType || 'homenagem',
-            emotion: briefingData.emotion || 'alegria',
-            emotionIntensity: briefingData.emotionIntensity || 3,
-            style: briefingData.style || 'pop',
-            rhythm: briefingData.rhythm || 'moderado',
-            atmosphere: briefingData.atmosphere || 'festivo',
-            structure: briefingData.structure || ['verse', 'chorus'],
-            hasMonologue: briefingData.hasMonologue || false,
-            monologuePosition: briefingData.monologuePosition || '',
-            occasion: briefingData.occasion,
-            mandatoryWords: briefingData.mandatoryWords || '',
-            restrictedWords: briefingData.restrictedWords || ''
+            musicType: briefing.musicType,
+            emotion: briefing.emotion,
+            emotionIntensity: briefing.emotionIntensity,
+            style: briefing.style,
+            rhythm: briefing.rhythm,
+            atmosphere: briefing.atmosphere,
+            structure: briefing.structure,
+            hasMonologue: briefing.hasMonologue,
+            monologuePosition: briefing.monologuePosition,
+            mandatoryWords: briefing.mandatoryWords,
+            restrictedWords: briefing.restrictedWords
           }
         }
       });
 
       if (error) throw error;
 
-      if (data?.error === "FREE_LIMIT_REACHED") {
-        toast.error("Limite do plano free atingido", {
-          description: data.message,
-        });
-        navigate("/planos");
-        return;
+      if (!data?.ok) {
+        throw new Error(data?.error || "Erro ao gerar letras");
       }
 
-      // Aplicar sanitização defensiva às letras recebidas
-      const sanitizedLyrics: LyricOption[] = [
-        {
-          id: data.lyrics?.[0]?.id || "lyric-a",
-          version: "A",
-          title: data.lyrics?.[0]?.title || "Versão A",
-          text: sanitizeLyric(data.lyrics?.[0]?.text || "Letra não disponível"),
-        },
-        {
-          id: data.lyrics?.[1]?.id || "lyric-b",
-          version: "B",
-          title: data.lyrics?.[1]?.title || "Versão B",
-          text: sanitizeLyric(data.lyrics?.[1]?.text || "Letra não disponível"),
-        },
-      ];
+      // Processar letras recebidas
+      const generatedLyrics: LyricOption[] = data.lyrics.map((l: any, idx: number) => ({
+        id: l.id || `lyric-${idx}`,
+        version: String.fromCharCode(65 + idx), // A, B, C...
+        title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+        body: l.text || l.body || ""
+      }));
 
-      setLyrics(sanitizedLyrics);
-      setUsedModel(data.usedModel || "gemini-3-flash");
+      setLyrics(generatedLyrics);
       setStep("select");
       toast.success("Letras geradas com sucesso!", {
-        description: "Escolha a versão que mais combina com você",
+        description: "Escolha a versão que mais combina com você"
       });
+
     } catch (error) {
       console.error("Erro:", error);
-      const errorMessage = error instanceof Error ? error.message : "Verifique sua conexão e tente novamente";
-      toast.error("Erro ao gerar letras", {
-        description: errorMessage,
-      });
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      toast.error("Erro ao gerar letras", { description: errorMessage });
+      setStep("loading");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSelectLyric = (lyricId: string) => {
-    setSelectedLyric(lyricId);
-    setStep("confirm");
+  const handleSelectLyric = (lyric: LyricOption) => {
+    setSelectedLyric(lyric);
+    setEditedLyric(lyric.body);
+    setStep("editing");
   };
 
-  const handleConfirmSelection = () => {
-    // Aqui seria implementada a lógica para prosseguir com a música
-    toast.success("🎵 Música selecionada!", {
-      description: "Em breve você receberá sua música personalizada por WhatsApp.",
-      duration: 5000,
-    });
-    // Reset para nova criação
-    setStep("input");
-    setStory("");
-    setLyrics([]);
-    setSelectedLyric(null);
+  const handleApproveLyric = async () => {
+    if (!selectedLyric || !orderId || !briefingData) return;
+
+    setLoading(true);
+    setStep("approved");
+
+    try {
+      // Chamar Edge Function para gerar o Style Prompt
+      const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
+        body: {
+          orderId,
+          lyricId: selectedLyric.id,
+          approvedLyrics: editedLyric,
+          briefing: {
+            musicType: briefingData.musicType,
+            emotion: briefingData.emotion,
+            emotionIntensity: briefingData.emotionIntensity,
+            style: briefingData.style,
+            rhythm: briefingData.rhythm,
+            atmosphere: briefingData.atmosphere,
+            hasMonologue: briefingData.hasMonologue
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (!data?.ok) {
+        throw new Error(data?.error || "Erro ao gerar prompt de estilo");
+      }
+
+      setStylePrompt(data.stylePrompt);
+      setFinalPrompt(data.finalPrompt);
+      setStep("complete");
+
+      toast.success("🎵 Letra aprovada!", {
+        description: "Sua música está pronta para produção!"
+      });
+
+    } catch (error) {
+      console.error("Erro:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      toast.error("Erro ao aprovar letra", { description: errorMessage });
+      setStep("editing");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const handleRequestEdit = async () => {
+    if (!orderId || !briefingData || !editInstructions.trim()) {
+      toast.error("Descreva as alterações desejadas");
+      return;
+    }
+
+    setLoading(true);
+    setStep("generating");
+
+    try {
+      // Regenerar com as instruções de edição
+      const { data, error } = await supabase.functions.invoke('generate-lyrics', {
+        body: {
+          orderId,
+          story: `${briefingData.story}\n\n[INSTRUÇÕES DE AJUSTE DO USUÁRIO]: ${editInstructions}\n\n[LETRA ANTERIOR PARA REFERÊNCIA]:\n${editedLyric}`,
+          briefing: {
+            musicType: briefingData.musicType,
+            emotion: briefingData.emotion,
+            emotionIntensity: briefingData.emotionIntensity,
+            style: briefingData.style,
+            rhythm: briefingData.rhythm,
+            atmosphere: briefingData.atmosphere,
+            structure: briefingData.structure,
+            hasMonologue: briefingData.hasMonologue,
+            monologuePosition: briefingData.monologuePosition,
+            mandatoryWords: briefingData.mandatoryWords,
+            restrictedWords: briefingData.restrictedWords
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      if (!data?.ok) {
+        throw new Error(data?.error || "Erro ao regenerar letras");
+      }
+
+      const generatedLyrics: LyricOption[] = data.lyrics.map((l: any, idx: number) => ({
+        id: l.id || `lyric-${idx}`,
+        version: String.fromCharCode(65 + idx),
+        title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+        body: l.text || l.body || ""
+      }));
+
+      setLyrics(generatedLyrics);
+      setEditInstructions("");
+      setStep("select");
+      toast.success("Novas versões geradas!", {
+        description: "Escolha a versão que mais combina com você"
+      });
+
+    } catch (error) {
+      console.error("Erro:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      toast.error("Erro ao regenerar", { description: errorMessage });
+      setStep("editing");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Loading state
+  if (step === "loading" || step === "generating") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center p-8">
+          <div className="mx-auto w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6">
+            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">
+            {step === "generating" ? "Gerando suas letras..." : "Carregando..."}
+          </h2>
+          <p className="text-muted-foreground">
+            {step === "generating" 
+              ? "Nossa IA está criando versões únicas baseadas na sua história. Isso pode levar alguns segundos."
+              : "Preparando seu briefing..."
+            }
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  // Step 1: Select lyrics
   if (step === "select") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 p-4">
+      <div className="min-h-screen bg-background p-4">
         <div className="max-w-6xl mx-auto">
+          {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
-              Escolha Sua Música
-            </h1>
-            <p className="text-lg text-gray-600 mb-2">
-              Selecionamos duas versões especiais da sua história. Qual você prefere?
+            <Badge className="mb-4">Etapa 1 de 2</Badge>
+            <h1 className="text-3xl font-bold mb-2">Escolha Sua Letra</h1>
+            <p className="text-muted-foreground">
+              Geramos duas versões especiais da sua história. Qual você prefere?
             </p>
-            {usedModel && (
-              <div className="flex justify-center gap-4 text-sm text-muted-foreground">
-                <span>Gerado com: <strong>{usedModel}</strong></span>
-              </div>
-            )}
           </div>
 
+          {/* Lyrics Grid */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
             {lyrics.map((lyric) => (
               <Card
                 key={lyric.id}
-                className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
-                  selectedLyric === lyric.id
-                    ? "ring-2 ring-purple-500 shadow-lg"
-                    : "hover:shadow-md"
-                }`}
-                onClick={() => handleSelectLyric(lyric.id)}
+                className="cursor-pointer transition-all duration-300 hover:shadow-lg hover:border-primary/50"
+                onClick={() => handleSelectLyric(lyric)}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-xl text-purple-700">
-                      {lyric.title}
-                    </CardTitle>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
-                      Versão {lyric.version}
-                    </Badge>
+                    <CardTitle className="text-xl">{lyric.title}</CardTitle>
+                    <Badge variant="secondary">Versão {lyric.version}</Badge>
                   </div>
-                  <CardDescription>
-                    Clique para selecionar esta versão
-                  </CardDescription>
+                  <CardDescription>Clique para selecionar e revisar</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-                      {lyric.text}
+                  <div className="bg-muted/50 p-4 rounded-lg max-h-80 overflow-y-auto">
+                    <pre className="text-sm whitespace-pre-wrap font-mono">
+                      {lyric.body}
                     </pre>
                   </div>
                 </CardContent>
@@ -234,14 +335,11 @@ const CreateSong = () => {
             ))}
           </div>
 
+          {/* Back button */}
           <div className="text-center">
-            <Button
-              variant="outline"
-              onClick={() => setStep("input")}
-              className="mr-4"
-            >
+            <Button variant="outline" onClick={() => navigate('/briefing')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
+              Voltar ao Briefing
             </Button>
           </div>
         </div>
@@ -249,150 +347,222 @@ const CreateSong = () => {
     );
   }
 
-  if (step === "confirm") {
-    const selectedLyricData = lyrics.find(l => l.id === selectedLyric);
+  // Step 2: Edit/Approve lyrics
+  if (step === "editing") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 flex items-center justify-center p-4">
-        <Card className="max-w-2xl w-full">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Music className="w-8 h-8 text-green-600" />
-            </div>
-            <CardTitle className="text-2xl text-green-700">
-              Música Selecionada!
-            </CardTitle>
-            <CardDescription className="text-lg">
-              Você escolheu: <strong>{selectedLyricData?.title}</strong>
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center space-y-6">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-                {selectedLyricData?.text}
-              </pre>
-            </div>
-            <div className="space-y-4">
-              <p className="text-gray-600">
-                🎵 Sua música personalizada está sendo criada!
-                <br />
-                Em breve você receberá por WhatsApp.
-              </p>
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Badge className="mb-4">Etapa 1 de 2 - Revisão</Badge>
+            <h1 className="text-3xl font-bold mb-2">Revise Sua Letra</h1>
+            <p className="text-muted-foreground">
+              Aprove a letra ou solicite ajustes antes de produzir a música
+            </p>
+          </div>
+
+          {/* Selected Lyric */}
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>{selectedLyric?.title}</CardTitle>
+                <Badge>Versão {selectedLyric?.version}</Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted/50 p-4 rounded-lg mb-4">
+                <pre className="text-sm whitespace-pre-wrap font-mono">
+                  {editedLyric}
+                </pre>
+              </div>
+
+              {/* Edit Instructions */}
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-semibold mb-2 flex items-center gap-2">
+                  <Edit3 className="w-4 h-4" />
+                  Solicitar Ajustes (opcional)
+                </h4>
+                <Textarea
+                  placeholder="Descreva as alterações que deseja... Ex: 'Trocar a palavra X por Y', 'Deixar o refrão mais alegre', 'Adicionar o nome Maria no verso 2'..."
+                  value={editInstructions}
+                  onChange={(e) => setEditInstructions(e.target.value)}
+                  rows={3}
+                  className="mb-4"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              variant="outline"
+              onClick={() => setStep("select")}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Escolher Outra Versão
+            </Button>
+
+            {editInstructions.trim() && (
               <Button
-                onClick={handleConfirmSelection}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg"
+                variant="secondary"
+                onClick={handleRequestEdit}
+                disabled={loading}
               >
-                <Sparkles className="w-5 h-5 mr-2" />
-                Confirmar e Continuar
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Regenerar com Ajustes
               </Button>
-            </div>
-          </CardContent>
+            )}
+
+            <Button
+              onClick={handleApproveLyric}
+              disabled={loading}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-2" />
+              )}
+              Aprovar Letra e Produzir Música
+            </Button>
+          </div>
+
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            ⚠️ Após aprovar, a letra não poderá ser alterada durante a produção da música.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Approved state
+  if (step === "approved") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="max-w-md w-full text-center p-8">
+          <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
+            <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+          </div>
+          <h2 className="text-2xl font-bold mb-2">Preparando Produção...</h2>
+          <p className="text-muted-foreground">
+            Gerando o estilo musical perfeito para sua letra aprovada.
+          </p>
         </Card>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full">
-        <CardHeader className="text-center">
-          <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-4">
-            <Music className="w-8 h-8 text-purple-600" />
-          </div>
-          <CardTitle className="text-3xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Criar Música
-          </CardTitle>
-          <CardDescription className="text-lg">
-            Transforme sua história em uma música inesquecível
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {briefingData && (
-            <div className="bg-muted p-4 rounded-lg space-y-2">
-              <h4 className="font-semibold text-foreground">Seu Briefing:</h4>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p><strong>Ocasião:</strong> {briefingData.occasion}</p>
-                <p><strong>Plano:</strong> {briefingData.plan.toUpperCase()}</p>
-                {briefingData.plan !== 'free' && (
-                  <>
-                    <p><strong>Estilo:</strong> {briefingData.style}</p>
-                    <p><strong>Tom:</strong> {briefingData.tone}</p>
-                  </>
-                )}
-              </div>
+  // Complete - Ready for music production
+  if (step === "complete") {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Success Header */}
+          <div className="text-center mb-8">
+            <div className="mx-auto w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
+              <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
-          )}
-
-          <div>
-            <h4 className="font-semibold mb-2">Modelos de pedido</h4>
-            <Accordion type="single" collapsible>
-              {promptSamples.map((p) => (
-                <AccordionItem key={p.id} value={p.id}>
-                  <AccordionTrigger>{p.title}</AccordionTrigger>
-                  <AccordionContent>
-                    <div className="bg-white rounded-md p-3 text-sm text-gray-700">
-                      <div className="whitespace-pre-wrap">{p.text}</div>
-                      <div className="mt-3">
-                        <Button size="sm" variant="outline" onClick={() => setStory(p.text)}>Copiar para o campo</Button>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Conte sua história ou descreva a música que você quer:
-            </label>
-            <Textarea
-              placeholder="Conte qualquer história, homenagem, brincadeira ou momento especial que você quer transformar em música. Seja criativo!"
-              value={story}
-              onChange={(e) => setStory(e.target.value)}
-              rows={6}
-              className="w-full resize-none"
-            />
-            <p className="text-sm text-gray-500 mt-2">
-              Histórias de amor, homenagens, brincadeiras, conquistas... Tudo vira música! Quanto mais detalhes você fornecer, melhor será sua música.
+            <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+              ✓ Etapa 1 Concluída
+            </Badge>
+            <h1 className="text-3xl font-bold mb-2">Letra Aprovada!</h1>
+            <p className="text-muted-foreground">
+              Sua música está pronta para a Etapa 2: Produção Musical
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              variant="outline"
-              onClick={() => navigate('/briefing')}
-              className="flex-1"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Voltar ao Briefing
-            </Button>
-            <Button
-              onClick={handleGenerateLyrics}
-              disabled={loading || !story.trim()}
-              className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white py-3"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Gerando letras...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 mr-2" />
-                  Continuar
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </>
-              )}
-            </Button>
-          </div>
+          {/* Approved Lyric */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Music className="w-5 h-5" />
+                Letra Aprovada
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <pre className="text-sm whitespace-pre-wrap font-mono">
+                  {editedLyric}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="text-center text-sm text-gray-500">
-            <p>💡 Dica: Histórias com emoção geram músicas mais especiais!</p>
+          {/* Style Prompt Preview */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Volume2 className="w-5 h-5" />
+                Estilo Musical Gerado
+              </CardTitle>
+              <CardDescription>
+                Prompt técnico que será usado para produzir sua música
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <pre className="text-xs whitespace-pre-wrap font-mono text-muted-foreground">
+                  {stylePrompt}
+                </pre>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Next Steps */}
+          <Card className="mb-6 border-primary/50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Próximos Passos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Badge variant="outline">1</Badge>
+                <div>
+                  <p className="font-medium">Produção da Música</p>
+                  <p className="text-sm text-muted-foreground">
+                    Sua letra será transformada em áudio com o estilo definido
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Badge variant="outline">2</Badge>
+                <div>
+                  <p className="font-medium">Revisão e Entrega</p>
+                  <p className="text-sm text-muted-foreground">
+                    Você receberá a música finalizada por email/WhatsApp
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button variant="outline" onClick={() => navigate('/')}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar ao Início
+            </Button>
+            <Button
+              className="bg-gradient-to-r from-primary to-accent"
+              onClick={() => {
+                toast.info("🎵 Produção de música em desenvolvimento!", {
+                  description: "Em breve você poderá gerar o áudio automaticamente."
+                });
+              }}
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Iniciar Produção (Em Breve)
+            </Button>
           </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 };
 
 export default CreateSong;

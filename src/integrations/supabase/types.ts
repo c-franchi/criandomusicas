@@ -81,6 +81,7 @@ export type Database = {
       }
       lyrics: {
         Row: {
+          approved_at: string | null
           body: string
           created_at: string
           id: string
@@ -90,6 +91,7 @@ export type Database = {
           version: string
         }
         Insert: {
+          approved_at?: string | null
           body: string
           created_at?: string
           id?: string
@@ -99,6 +101,7 @@ export type Database = {
           version: string
         }
         Update: {
+          approved_at?: string | null
           body?: string
           created_at?: string
           id?: string
@@ -120,15 +123,24 @@ export type Database = {
       orders: {
         Row: {
           amount: number
+          approved_lyric_id: string | null
+          atmosphere: string | null
           created_at: string
           currency: string
           emotion: string | null
+          emotion_intensity: number | null
           final_prompt: string | null
+          has_monologue: boolean | null
           id: string
+          mandatory_words: string | null
+          monologue_position: string | null
           music_structure: string | null
           music_style: string | null
+          music_type: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           purpose: string | null
+          restricted_words: string | null
+          rhythm: string | null
           status: Database["public"]["Enums"]["order_status"]
           story: string | null
           style_prompt: string | null
@@ -139,15 +151,24 @@ export type Database = {
         }
         Insert: {
           amount?: number
+          approved_lyric_id?: string | null
+          atmosphere?: string | null
           created_at?: string
           currency?: string
           emotion?: string | null
+          emotion_intensity?: number | null
           final_prompt?: string | null
+          has_monologue?: boolean | null
           id?: string
+          mandatory_words?: string | null
+          monologue_position?: string | null
           music_structure?: string | null
           music_style?: string | null
+          music_type?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           purpose?: string | null
+          restricted_words?: string | null
+          rhythm?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
           style_prompt?: string | null
@@ -158,15 +179,24 @@ export type Database = {
         }
         Update: {
           amount?: number
+          approved_lyric_id?: string | null
+          atmosphere?: string | null
           created_at?: string
           currency?: string
           emotion?: string | null
+          emotion_intensity?: number | null
           final_prompt?: string | null
+          has_monologue?: boolean | null
           id?: string
+          mandatory_words?: string | null
+          monologue_position?: string | null
           music_structure?: string | null
           music_style?: string | null
+          music_type?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           purpose?: string | null
+          restricted_words?: string | null
+          rhythm?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
           style_prompt?: string | null
@@ -175,7 +205,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_approved_lyric_id_fkey"
+            columns: ["approved_lyric_id"]
+            isOneToOne: false
+            referencedRelation: "lyrics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
