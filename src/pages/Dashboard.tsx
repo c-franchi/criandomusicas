@@ -25,13 +25,13 @@ const Dashboard = () => {
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
   const fetchOrders = useCallback(async () => {
-    if (!profile?.id) return;
+    if (!user?.id) return;
     
     try {
       const { data, error } = await supabase
         .from('orders')
         .select('*')
-        .eq('user_id', profile.id)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -46,15 +46,15 @@ const Dashboard = () => {
     } finally {
       setLoadingOrders(false);
     }
-  }, [profile?.id, toast]);
+  }, [user?.id, toast]);
 
   useEffect(() => {
     if (!loading && !user) {
       setShouldRedirect(true);
-    } else if (profile) {
+    } else if (user) {
       fetchOrders();
     }
-  }, [user, profile, loading, fetchOrders]);
+  }, [user, loading, fetchOrders]);
 
   // Redirect if not authenticated
   if (shouldRedirect) {

@@ -4,11 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface UserProfile {
   id: string;
-  auth_id: string;
-  email: string;
+  user_id: string;
   name: string | null;
+  phone: string | null;
   plan: string;
   songs_generated: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface AuthContextType {
@@ -34,14 +36,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('auth_id', userId)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching profile:', error);
         return null;
       }
-      return data as UserProfile;
+      return data as UserProfile | null;
     } catch (error) {
       console.error('Error fetching profile:', error);
       return null;

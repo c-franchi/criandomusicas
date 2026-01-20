@@ -42,7 +42,7 @@ const Planos = () => {
       const { error } = await supabase
         .from('profiles')
         .update({ plan: planId })
-        .eq('auth_id', user.id);
+        .eq('user_id', user.id);
 
       if (error) throw error;
 
