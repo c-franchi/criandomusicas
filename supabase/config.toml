@@ -1,10 +1,1 @@
-project_id = "rsqgdfrjnuydcxzuucsz"
-
-[functions.generate-lyrics]
-verify_jwt = false
-
-[functions.generate-style-prompt]
-verify_jwt = false
-
-[functions.openai-health]
-verify_jwt = false
+project_id = "haiiaqzhuydsjujtdcnq"
