@@ -22,10 +22,11 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, lyricId, approvedLyrics, briefing } = await req.json() as {
+    const { orderId, lyricId, approvedLyrics, songTitle, briefing } = await req.json() as {
       orderId: string;
       lyricId: string;
       approvedLyrics: string;
+      songTitle?: string;
       briefing: BriefingData;
     };
 
@@ -76,26 +77,28 @@ serve(async (req) => {
 
 Sua tarefa é criar um prompt de estilo musical detalhado e técnico que será usado para gerar a música.
 
-REGRAS:
+REGRAS CRÍTICAS:
 1. O prompt deve ser em INGLÊS (padrão da indústria musical)
-2. Seja específico com gêneros, subgêneros e referências
+2. Seja específico com gêneros, subgêneros e características sonoras
 3. Inclua detalhes técnicos de produção
 4. ${hasMonologue ? 'IMPORTANTE: A música contém trechos falados/declamados. Inclua instruções para spoken word sections.' : 'Não há trechos falados'}
+5. ⚠️ NÃO MENCIONE NOMES DE ARTISTAS FAMOSOS OU BANDAS como referência (isso pode bloquear a geração no Suno/Udio)
+6. Em vez de artistas, descreva características sonoras específicas (tipo de voz, instrumentação, produção)
 
 FORMATO DE SAÍDA OBRIGATÓRIO (siga exatamente, em inglês):
 
 [Style]
-Genre: (gênero musical principal e subgênero)
+Genre: (gênero musical principal e subgênero, SEM nomes de artistas)
 Mood/Atmosphere: (clima emocional detalhado)
 Instrumentation: (instrumentos principais, separados por vírgula)
-Vocal Style: (tipo de voz e estilo vocal)
+Vocal Style: (tipo de voz e estilo vocal - descreva características, NÃO compare com artistas)
 Tempo: (BPM e feel)
 Key: (tonalidade sugerida)
 Production Notes: (notas técnicas de produção, mix, efeitos)
 ${hasMonologue ? 'Spoken Word: (instruções específicas para partes faladas - deve ser claramente diferenciado do canto)' : ''}
-Reference Artists: (2-3 artistas de referência para o estilo)
 
-Não inclua explicações, apenas o prompt técnico estruturado.`;
+Não inclua explicações, apenas o prompt técnico estruturado.
+NUNCA mencione nomes de artistas, bandas ou músicas específicas.`;
 
     const userPrompt = `Crie o prompt de estilo musical para esta música:
 
@@ -110,7 +113,9 @@ CONTEXTO DA MÚSICA:
 LETRA APROVADA (para contexto do mood e narrativa):
 ${approvedLyrics.substring(0, 1500)}
 
-Crie um prompt técnico detalhado que capture perfeitamente a essência desta música.`;
+LEMBRE-SE: 
+- NÃO mencione nomes de artistas, bandas ou músicas como referência
+- Descreva características sonoras específicas em vez de comparar com artistas`;
 
     console.log("Calling Lovable AI Gateway for style prompt generation...");
 
@@ -191,11 +196,20 @@ ${approvedLyrics}`;
       console.error("Error updating order:", updateError);
     }
 
-    // Mark lyric as approved
+    // Mark lyric as approved and update title if provided
     if (lyricId) {
+      const updateData: Record<string, any> = { 
+        is_approved: true, 
+        approved_at: new Date().toISOString() 
+      };
+      
+      if (songTitle) {
+        updateData.title = songTitle;
+      }
+      
       const { error: lyricError } = await supabase
         .from('lyrics')
-        .update({ is_approved: true, approved_at: new Date().toISOString() })
+        .update(updateData)
         .eq('id', lyricId);
 
       if (lyricError) {
@@ -208,9 +222,7 @@ ${approvedLyrics}`;
     return new Response(
       JSON.stringify({
         ok: true,
-        message: "Prompt de estilo gerado com sucesso",
-        stylePrompt,
-        finalPrompt
+        message: "Prompt de estilo gerado com sucesso"
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
