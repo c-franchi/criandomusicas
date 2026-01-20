@@ -84,12 +84,14 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in openai-health function:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorName = error instanceof Error ? error.name : 'Error';
     return new Response(JSON.stringify({ 
       ok: false, 
-      error: error.message,
-      name: error.name
+      error: errorMessage,
+      name: errorName
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
