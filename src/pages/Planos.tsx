@@ -6,13 +6,12 @@ import { Check, Crown, Star, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PLANS, Plan, getPlanInfo } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const Planos = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
 
   const getPlanIcon = (planId: Plan) => {
@@ -29,7 +28,7 @@ const Planos = () => {
   };
 
   const handleSelectPlan = async (planId: Plan) => {
-    if (!user) {
+    if (!user || !profile) {
       toast({
         title: "Erro",
         description: "Você precisa estar logado para escolher um plano.",
@@ -39,19 +38,21 @@ const Planos = () => {
     }
 
     try {
-      // Por enquanto, apenas simular a escolha (mock)
-      await setDoc(doc(db, "users", user.uid), {
-        plan: planId,
-        updatedAt: new Date(),
-      }, { merge: true });
+      // Atualizar plano no Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ plan: planId })
+        .eq('auth_id', user.id);
+
+      if (error) throw error;
 
       toast({
         title: "Plano selecionado!",
         description: `Você escolheu o plano ${getPlanInfo(planId)?.title}.`,
       });
 
-  // Redirecionar para o Briefing antes da criação
-  navigate("/briefing");
+      // Redirecionar para o Briefing antes da criação
+      navigate("/briefing");
     } catch (error) {
       toast({
         title: "Erro",
