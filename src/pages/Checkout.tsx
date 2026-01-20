@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock } from 'lucide-react';
+import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { supabase } from '@/integrations/supabase/client';
@@ -297,7 +297,7 @@ export default function Checkout() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
-          <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
+          <Music className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground">
             {processingVIP ? 'Processando acesso VIP...' : 'Carregando...'}
           </p>
@@ -475,7 +475,7 @@ export default function Checkout() {
                       disabled={validatingVoucher || !voucherCode.trim()}
                     >
                       {validatingVoucher ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <Music className="h-4 w-4 animate-spin" />
                       ) : (
                         <Tag className="h-4 w-4" />
                       )}
@@ -514,7 +514,7 @@ export default function Checkout() {
                             className="w-full"
                           >
                             {applyingVoucher ? (
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              <Music className="h-4 w-4 animate-spin mr-2" />
                             ) : (
                               <Sparkles className="h-4 w-4 mr-2" />
                             )}
@@ -562,7 +562,7 @@ export default function Checkout() {
                 variant="hero"
               >
                 {processingPayment ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Music className="h-5 w-5 animate-spin" />
                 ) : (
                   <CreditCard className="h-5 w-5" />
                 )}

@@ -10,8 +10,7 @@ import {
   Mail, 
   Save, 
   ArrowLeft,
-  Music,
-  Loader2
+  Music
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -203,7 +202,7 @@ const Profile = () => {
             >
               {saving ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Music className="w-4 h-4 mr-2 animate-spin" />
                   Salvando...
                 </>
               ) : (

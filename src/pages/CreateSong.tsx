@@ -4,7 +4,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download } from "lucide-react";
+import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle } from "lucide-react";
+import MusicLoadingSpinner from "@/components/MusicLoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -284,18 +285,14 @@ const CreateSong = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center p-8">
-          <div className="mx-auto w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">
-            {step === "generating" ? "Criando suas letras..." : "Carregando..."}
-          </h2>
-          <p className="text-muted-foreground">
-            {step === "generating" 
+          <MusicLoadingSpinner 
+            size="lg" 
+            message={step === "generating" ? "Criando suas letras..." : "Carregando..."}
+            description={step === "generating" 
               ? "Nossa IA está criando versões únicas baseadas na sua história. Isso pode levar alguns segundos."
               : "Preparando seu briefing..."
             }
-          </p>
+          />
         </Card>
       </div>
     );
@@ -402,6 +399,20 @@ const CreateSong = () => {
 
               {/* Edit Instructions */}
               <div className="border-t pt-4 mt-4">
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-4">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-semibold text-yellow-500 mb-1">Atenção: Alteração única!</p>
+                      <p className="text-muted-foreground">
+                        Você pode solicitar ajustes na letra <strong>apenas uma vez</strong>. 
+                        Esta etapa é <strong>opcional</strong> — se a letra já está do seu agrado, 
+                        pode aprovar diretamente.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Edit3 className="w-4 h-4" />
                   Solicitar Ajustes (opcional)
@@ -433,7 +444,11 @@ const CreateSong = () => {
                 onClick={handleRequestEdit}
                 disabled={loading}
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                {loading ? (
+                  <Music className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                )}
                 Regenerar com Ajustes
               </Button>
             )}
@@ -444,7 +459,7 @@ const CreateSong = () => {
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Music className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <CheckCircle className="w-4 h-4 mr-2" />
               )}
@@ -465,13 +480,11 @@ const CreateSong = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center p-8">
-          <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
-            <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">Finalizando...</h2>
-          <p className="text-muted-foreground">
-            Preparando sua música para produção.
-          </p>
+          <MusicLoadingSpinner 
+            size="lg" 
+            message="Finalizando..."
+            description="Preparando sua música para produção."
+          />
         </Card>
       </div>
     );
