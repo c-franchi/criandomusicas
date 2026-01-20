@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music } from "lucide-react";
+import { ExternalLink, Music, User, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,13 +13,17 @@ interface Order {
   id: string;
   status?: string;
   created_at?: string;
-  briefing?: any;
-  style_prompt?: string;
-  [key: string]: any;
+  music_type?: string;
+  music_style?: string;
+  story?: string;
+  approved_lyric_id?: string;
+  lyric_title?: string;
+  amount?: number;
 }
 
 const Dashboard = () => {
   const { user, profile, loading } = useAuth();
+  const { isAdmin } = useAdminRole(user?.id);
   const { toast } = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -30,12 +35,29 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('*')
+        .select('id, status, created_at, music_type, music_style, story, approved_lyric_id, amount')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setOrders(data || []);
+
+      // Fetch lyric titles for orders with approved lyrics
+      const ordersWithTitles = await Promise.all(
+        (data || []).map(async (order) => {
+          let lyric_title = null;
+          if (order.approved_lyric_id) {
+            const { data: lyricData } = await supabase
+              .from('lyrics')
+              .select('title')
+              .eq('id', order.approved_lyric_id)
+              .maybeSingle();
+            lyric_title = lyricData?.title;
+          }
+          return { ...order, lyric_title };
+        })
+      );
+
+      setOrders(ordersWithTitles);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -56,7 +78,6 @@ const Dashboard = () => {
     }
   }, [user, loading, fetchOrders]);
 
-  // Redirect if not authenticated
   if (shouldRedirect) {
     return <Navigate to="/auth" replace />;
   }
@@ -66,12 +87,14 @@ const Dashboard = () => {
       'DRAFT': 'Rascunho',
       'AWAITING_PAYMENT': 'Aguardando Pagamento',
       'PAID': 'Pago',
-      'LYRICS_DELIVERED': 'Letras Entregues',
-      'WAITING_APPROVAL': 'Aguardando Aprovação',
-      'APPROVED': 'Aprovado',
-      'GENERATING_TRACK': 'Gerando Música',
-      'TRACK_READY': 'Música Pronta',
-      'DELIVERED': 'Entregue'
+      'BRIEFING_COMPLETE': 'Briefing Completo',
+      'LYRICS_PENDING': 'Gerando Letras',
+      'LYRICS_GENERATED': 'Letras Geradas',
+      'LYRICS_APPROVED': 'Letras Aprovadas',
+      'MUSIC_GENERATING': 'Em Produção',
+      'MUSIC_READY': 'Música Pronta',
+      'COMPLETED': 'Entregue',
+      'CANCELLED': 'Cancelado'
     };
     return statusMap[status] || status;
   };
@@ -79,29 +102,28 @@ const Dashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'AWAITING_PAYMENT':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
       case 'PAID':
-      case 'LYRICS_DELIVERED':
-        return 'bg-blue-100 text-blue-800';
-      case 'WAITING_APPROVAL':
-        return 'bg-purple-100 text-purple-800';
-      case 'APPROVED':
-      case 'GENERATING_TRACK':
-        return 'bg-green-100 text-green-800';
-      case 'TRACK_READY':
-      case 'DELIVERED':
-        return 'bg-green-100 text-green-800';
+      case 'LYRICS_GENERATED':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'LYRICS_APPROVED':
+        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      case 'MUSIC_GENERATING':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'MUSIC_READY':
+      case 'COMPLETED':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   if (loading || loadingOrders) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p>Carregando seus pedidos...</p>
+          <p className="text-muted-foreground">Carregando seus pedidos...</p>
         </div>
       </div>
     );
@@ -111,23 +133,39 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Music className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold">Meus Pedidos</h1>
+        <div className="flex items-center justify-between mb-8">
+          <div className="text-center flex-1">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Music className="w-8 h-8 text-primary" />
+              <h1 className="text-3xl font-bold">Meus Pedidos</h1>
+            </div>
+            <p className="text-muted-foreground">
+              Acompanhe suas músicas personalizadas
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            Acompanhe suas músicas personalizadas
-          </p>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" asChild>
+              <Link to="/perfil" title="Meu Perfil">
+                <User className="w-4 h-4" />
+              </Link>
+            </Button>
+            {isAdmin && (
+              <Button variant="outline" size="icon" asChild>
+                <Link to="/admin" title="Painel Admin">
+                  <Settings className="w-4 h-4" />
+                </Link>
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* New Order Button */}
         <div className="mb-8 text-center">
           <Button asChild size="lg">
-            <a href="/create-song">
+            <Link to="/briefing">
               <Music className="w-4 h-4 mr-2" />
               Criar Nova Música
-            </a>
+            </Link>
           </Button>
         </div>
 
@@ -141,7 +179,7 @@ const Dashboard = () => {
                 Crie sua primeira música personalizada
               </p>
               <Button asChild>
-                <a href="/create-song">Começar Agora</a>
+                <Link to="/briefing">Começar Agora</Link>
               </Button>
             </Card>
           ) : (
@@ -150,10 +188,10 @@ const Dashboard = () => {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="font-semibold text-lg mb-1">
-                      Música para {order.briefing?.occasion || 'Ocasião'}
+                      {order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-2">
-                      {order.briefing?.style || 'Estilo'} • {order.briefing?.tone || 'Tom'}
+                      {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
                     </p>
                     <div className="flex items-center gap-2">
                       <Badge className={getStatusColor(order.status || 'DRAFT')}>
@@ -166,24 +204,26 @@ const Dashboard = () => {
                   </div>
                   <div className="text-right">
                     <div className="text-2xl font-bold text-primary mb-1">
-                      R$ {((order.priceCents || 999) / 100).toFixed(2).replace('.', ',')}
+                      R$ {((order.amount || 999) / 100).toFixed(2).replace('.', ',')}
                     </div>
                     <Button asChild variant="outline" size="sm">
-                      <a href={`/order/${order.id}`}>
+                      <Link to={`/pedido/${order.id}`}>
                         Ver Detalhes
                         <ExternalLink className="w-4 h-4 ml-2" />
-                      </a>
+                      </Link>
                     </Button>
                   </div>
                 </div>
                 
-                <div className="border-t pt-4">
-                  <h4 className="font-medium mb-2">História:</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {order.briefing?.storyRaw?.slice(0, 150) || 'Sem história'}
-                    {order.briefing?.storyRaw?.length > 150 ? '...' : ''}
-                  </p>
-                </div>
+                {order.story && (
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium mb-2">História:</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {order.story.slice(0, 150)}
+                      {order.story.length > 150 ? '...' : ''}
+                    </p>
+                  </div>
+                )}
               </Card>
             ))
           )}
