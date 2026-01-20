@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Music, 
   Search, 
@@ -19,7 +20,11 @@ import {
   Save,
   DollarSign,
   Copy,
-  Archive
+  Archive,
+  Trash2,
+  Plus,
+  Headphones,
+  Edit
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,6 +66,18 @@ interface PricingConfig {
   is_popular: boolean;
 }
 
+interface AudioSample {
+  id: string;
+  title: string;
+  description: string;
+  style: string;
+  occasion: string;
+  audio_url: string;
+  cover_url: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
@@ -73,6 +90,22 @@ const AdminDashboard = () => {
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
   const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+  
+  // Audio Samples
+  const [audioSamples, setAudioSamples] = useState<AudioSample[]>([]);
+  const [loadingAudio, setLoadingAudio] = useState(false);
+  const [audioDialogOpen, setAudioDialogOpen] = useState(false);
+  const [editingAudio, setEditingAudio] = useState<AudioSample | null>(null);
+  const [newAudio, setNewAudio] = useState<Partial<AudioSample>>({
+    title: '',
+    description: '',
+    style: '',
+    occasion: '',
+    audio_url: '',
+    cover_url: '',
+    is_active: true,
+    sort_order: 0
+  });
 
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
@@ -147,12 +180,35 @@ const AdminDashboard = () => {
     }
   }, [toast]);
 
+  const fetchAudioSamples = useCallback(async () => {
+    setLoadingAudio(true);
+    try {
+      const { data, error } = await supabase
+        .from('audio_samples')
+        .select('*')
+        .order('sort_order', { ascending: true });
+
+      if (error) throw error;
+      setAudioSamples(data || []);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao carregar áudios',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingAudio(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
       fetchPricing();
+      fetchAudioSamples();
     }
-  }, [isAdmin, fetchOrders, fetchPricing]);
+  }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples]);
 
   const updatePricingConfig = (id: string, field: keyof PricingConfig, value: any) => {
     setPricingConfigs(prev => prev.map(config => 
@@ -197,6 +253,98 @@ const AdminDashboard = () => {
       });
     } finally {
       setSavingPricing(false);
+    }
+  };
+
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm('Tem certeza que deseja apagar este pedido? Esta ação não pode ser desfeita.')) return;
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Pedido apagado',
+        description: 'O pedido foi removido com sucesso.',
+      });
+
+      fetchOrders();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao apagar pedido',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const saveAudioSample = async () => {
+    try {
+      const audioData = editingAudio || newAudio;
+      if (!audioData.title || !audioData.audio_url) {
+        toast({ title: 'Erro', description: 'Título e URL do áudio são obrigatórios.', variant: 'destructive' });
+        return;
+      }
+
+      if (editingAudio) {
+        const { error } = await supabase
+          .from('audio_samples')
+          .update({
+            title: audioData.title,
+            description: audioData.description || '',
+            style: audioData.style || '',
+            occasion: audioData.occasion || '',
+            audio_url: audioData.audio_url,
+            cover_url: audioData.cover_url || null,
+            is_active: audioData.is_active ?? true,
+            sort_order: audioData.sort_order || 0
+          })
+          .eq('id', editingAudio.id);
+
+        if (error) throw error;
+        toast({ title: 'Áudio atualizado!' });
+      } else {
+        const { error } = await supabase
+          .from('audio_samples')
+          .insert({
+            title: audioData.title,
+            description: audioData.description || '',
+            style: audioData.style || '',
+            occasion: audioData.occasion || '',
+            audio_url: audioData.audio_url,
+            cover_url: audioData.cover_url || null,
+            is_active: audioData.is_active ?? true,
+            sort_order: audioData.sort_order || 0
+          });
+
+        if (error) throw error;
+        toast({ title: 'Áudio adicionado!' });
+      }
+
+      setAudioDialogOpen(false);
+      setEditingAudio(null);
+      setNewAudio({ title: '', description: '', style: '', occasion: '', audio_url: '', cover_url: '', is_active: true, sort_order: 0 });
+      fetchAudioSamples();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao salvar áudio', description: errorMessage, variant: 'destructive' });
+    }
+  };
+
+  const deleteAudioSample = async (id: string) => {
+    if (!confirm('Tem certeza que deseja apagar este áudio?')) return;
+    try {
+      const { error } = await supabase.from('audio_samples').delete().eq('id', id);
+      if (error) throw error;
+      toast({ title: 'Áudio removido!' });
+      fetchAudioSamples();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao remover áudio', description: errorMessage, variant: 'destructive' });
     }
   };
 
@@ -565,6 +713,10 @@ const AdminDashboard = () => {
               <Archive className="w-4 h-4 mr-1" />
               Concluídos ({filteredCompletedOrders.length})
             </TabsTrigger>
+            <TabsTrigger value="audio">
+              <Headphones className="w-4 h-4 mr-1" />
+              Áudios de Exemplo
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="active" className="space-y-4">
@@ -597,18 +749,20 @@ const AdminDashboard = () => {
                         {new Date(order.created_at).toLocaleDateString('pt-BR')}
                       </p>
                       
-                      {/* Final Prompt with copy buttons */}
+                      {/* Final Prompt with copy buttons - LYRICS first, then STYLE */}
                       {order.final_prompt && (
                         <details className="text-sm mt-3">
                           <summary className="cursor-pointer text-primary hover:underline font-medium">
                             📝 Ver Prompt Final (para Suno/Udio)
                           </summary>
                           <div className="mt-2 space-y-3">
+                            {/* LYRICS section first */}
                             <div className="relative">
+                              <p className="text-xs text-muted-foreground mb-1 font-semibold">LETRA:</p>
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="absolute top-2 right-2"
+                                className="absolute top-6 right-2"
                                 onClick={() => copyToClipboard(order.final_prompt!, 'Letra')}
                               >
                                 <Copy className="w-3 h-3 mr-1" />
@@ -618,6 +772,7 @@ const AdminDashboard = () => {
                                 {order.final_prompt}
                               </pre>
                             </div>
+                            {/* STYLE section second */}
                             {order.style_prompt && (
                               <div className="relative">
                                 <p className="text-xs text-muted-foreground mb-1 font-semibold">ESTILO:</p>
@@ -665,6 +820,10 @@ const AdminDashboard = () => {
                           Ver Detalhes
                         </Link>
                       </Button>
+                      <Button variant="destructive" size="sm" onClick={() => deleteOrder(order.id)}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Apagar
+                      </Button>
                     </div>
                   </div>
                 </Card>
@@ -688,12 +847,173 @@ const AdminDashboard = () => {
                         {order.music_style} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
-                    <Badge className={getStatusColor(order.status)}>
-                      {getStatusText(order.status)}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge className={getStatusColor(order.status)}>
+                        {getStatusText(order.status)}
+                      </Badge>
+                      <Button variant="ghost" size="sm" onClick={() => deleteOrder(order.id)}>
+                        <Trash2 className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="audio" className="space-y-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Áudios de Exemplo</h3>
+              <Dialog open={audioDialogOpen} onOpenChange={(open) => {
+                setAudioDialogOpen(open);
+                if (!open) {
+                  setEditingAudio(null);
+                  setNewAudio({ title: '', description: '', style: '', occasion: '', audio_url: '', cover_url: '', is_active: true, sort_order: 0 });
+                }
+              }}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adicionar Áudio
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>{editingAudio ? 'Editar Áudio' : 'Adicionar Áudio'}</DialogTitle>
+                    <DialogDescription>
+                      {editingAudio ? 'Edite as informações do áudio de exemplo.' : 'Adicione um novo áudio de exemplo para a página inicial.'}
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-4 mt-4">
+                    <div>
+                      <Label>Título *</Label>
+                      <Input
+                        value={(editingAudio || newAudio).title || ''}
+                        onChange={(e) => editingAudio 
+                          ? setEditingAudio({ ...editingAudio, title: e.target.value })
+                          : setNewAudio({ ...newAudio, title: e.target.value })}
+                        placeholder="Ex: Canção de Aniversário"
+                      />
+                    </div>
+                    <div>
+                      <Label>Descrição</Label>
+                      <Textarea
+                        value={(editingAudio || newAudio).description || ''}
+                        onChange={(e) => editingAudio 
+                          ? setEditingAudio({ ...editingAudio, description: e.target.value })
+                          : setNewAudio({ ...newAudio, description: e.target.value })}
+                        placeholder="Descrição breve do áudio..."
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label>Estilo</Label>
+                        <Input
+                          value={(editingAudio || newAudio).style || ''}
+                          onChange={(e) => editingAudio 
+                            ? setEditingAudio({ ...editingAudio, style: e.target.value })
+                            : setNewAudio({ ...newAudio, style: e.target.value })}
+                          placeholder="Ex: Pop, Sertanejo"
+                        />
+                      </div>
+                      <div>
+                        <Label>Ocasião</Label>
+                        <Input
+                          value={(editingAudio || newAudio).occasion || ''}
+                          onChange={(e) => editingAudio 
+                            ? setEditingAudio({ ...editingAudio, occasion: e.target.value })
+                            : setNewAudio({ ...newAudio, occasion: e.target.value })}
+                          placeholder="Ex: Casamento, Aniversário"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label>URL do Áudio *</Label>
+                      <Input
+                        value={(editingAudio || newAudio).audio_url || ''}
+                        onChange={(e) => editingAudio 
+                          ? setEditingAudio({ ...editingAudio, audio_url: e.target.value })
+                          : setNewAudio({ ...newAudio, audio_url: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div>
+                      <Label>URL da Capa (opcional)</Label>
+                      <Input
+                        value={(editingAudio || newAudio).cover_url || ''}
+                        onChange={(e) => editingAudio 
+                          ? setEditingAudio({ ...editingAudio, cover_url: e.target.value })
+                          : setNewAudio({ ...newAudio, cover_url: e.target.value })}
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <div>
+                      <Label>Ordem</Label>
+                      <Input
+                        type="number"
+                        value={(editingAudio || newAudio).sort_order || 0}
+                        onChange={(e) => editingAudio 
+                          ? setEditingAudio({ ...editingAudio, sort_order: parseInt(e.target.value) || 0 })
+                          : setNewAudio({ ...newAudio, sort_order: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
+                    <Button onClick={saveAudioSample} className="w-full">
+                      <Save className="w-4 h-4 mr-2" />
+                      Salvar
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {loadingAudio ? (
+              <div className="text-center py-8">
+                <Music className="w-6 h-6 animate-spin text-primary mx-auto" />
+              </div>
+            ) : audioSamples.length === 0 ? (
+              <Card className="p-8 text-center">
+                <Headphones className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">Nenhum áudio cadastrado</h3>
+                <p className="text-muted-foreground">Adicione áudios de exemplo para exibir na página inicial.</p>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {audioSamples.map((audio) => (
+                  <Card key={audio.id} className={`p-4 ${!audio.is_active ? 'opacity-50' : ''}`}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        {audio.cover_url ? (
+                          <img src={audio.cover_url} alt={audio.title} className="w-12 h-12 rounded object-cover" />
+                        ) : (
+                          <div className="w-12 h-12 rounded bg-muted flex items-center justify-center">
+                            <Headphones className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-semibold">{audio.title}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {audio.style} • {audio.occasion}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={audio.is_active ? 'default' : 'secondary'}>
+                          {audio.is_active ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          setEditingAudio(audio);
+                          setAudioDialogOpen(true);
+                        }}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => deleteAudioSample(audio.id)}>
+                          <Trash2 className="w-4 h-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
             )}
           </TabsContent>
         </Tabs>
