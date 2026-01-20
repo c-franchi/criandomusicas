@@ -1,9 +1,56 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowRight, Zap } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface PricingConfig {
+  id: string;
+  name: string;
+  price_display: string;
+  price_cents: number;
+  price_promo_cents: number | null;
+}
+
 const CTA = () => {
-  const benefits = ["2 versões de letras personalizadas", "Entrega em até 48 horas", "Música completa e profissional", "Envio direto no WhatsApp"];
-  return <section className="py-24 px-6 relative overflow-hidden">
+  const navigate = useNavigate();
+  const [pricing, setPricing] = useState<PricingConfig | null>(null);
+  
+  useEffect(() => {
+    const fetchPricing = async () => {
+      const { data } = await supabase
+        .from('pricing_config')
+        .select('*')
+        .eq('id', 'single')
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (data) {
+        setPricing(data);
+      }
+    };
+    fetchPricing();
+  }, []);
+
+  const benefits = [
+    "2 versões de letras personalizadas", 
+    "Entrega em até 48 horas", 
+    "Música completa e profissional", 
+    "Envio direto no WhatsApp"
+  ];
+
+  // Calculate display values
+  const promoPrice = pricing?.price_promo_cents 
+    ? `R$ ${(pricing.price_promo_cents / 100).toFixed(2).replace('.', ',')}`
+    : null;
+  const originalPrice = pricing 
+    ? `R$ ${(pricing.price_cents / 100).toFixed(2).replace('.', ',')}`
+    : 'R$ 29,90';
+  const displayPrice = promoPrice || originalPrice;
+
+  return (
+    <section className="py-24 px-6 relative overflow-hidden">
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-accent/20" />
       
@@ -25,29 +72,38 @@ const CTA = () => {
         
         {/* Benefits */}
         <div className="grid sm:grid-cols-2 gap-4 mb-12 max-w-2xl mx-auto">
-          {benefits.map((benefit, index) => <div key={index} className="flex items-center gap-3 text-left">
+          {benefits.map((benefit, index) => (
+            <div key={index} className="flex items-center gap-3 text-left">
               <CheckCircle className="w-5 h-5 text-accent flex-shrink-0" />
               <span className="text-muted-foreground">{benefit}</span>
-            </div>)}
+            </div>
+          ))}
         </div>
         
         {/* Pricing */}
         <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 mb-8 max-w-md mx-auto">
-          <div className="text-4xl font-bold gradient-text mb-2">R$ 9,90</div>
+          <div className="text-4xl font-bold gradient-text mb-2">{displayPrice}</div>
           <div className="text-muted-foreground mb-4">Música completa personalizada</div>
-          <div className="text-sm text-muted-foreground">
-            <span className="line-through">R$ 19,90</span> • Promoção por tempo limitado
-          </div>
+          {promoPrice && (
+            <div className="text-sm text-muted-foreground">
+              <span className="line-through">{originalPrice}</span> • Promoção por tempo limitado
+            </div>
+          )}
         </div>
         
         {/* CTA Button */}
-        <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+        <Button 
+          variant="hero" 
+          size="lg" 
+          className="text-lg px-8 py-6 group"
+          onClick={() => navigate('/criar-musica')}
+        >
           Começar Agora
           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
-        
-        
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default CTA;
