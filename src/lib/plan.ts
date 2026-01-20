@@ -16,8 +16,8 @@ export const PLANS: PlanInfo[] = [
   {
     id: "single",
     title: "Música Única",
-    price: "R$ 29,90",
-    pricePromo: "R$ 9,90",
+    price: "R$ 47,90",
+    pricePromo: "R$ 19,90",
     limitSec: 180,
     features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte prioritário"],
     cta: "Criar Música"
@@ -25,19 +25,18 @@ export const PLANS: PlanInfo[] = [
   {
     id: "package",
     title: "Pacote 3 Músicas",
-    price: "R$ 49,90",
+    price: "R$ 99,90",
     limitSec: 180,
-    features: ["3 músicas completas", "2 letras personalizadas cada", "Economia de 16%", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte VIP"],
+    features: ["Até 3 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte VIP"],
     cta: "Pacote Popular"
   },
   {
     id: "subscription",
-    title: "Assinatura Mensal",
-    price: "R$ 69,90",
+    title: "Pacote 5 Músicas",
+    price: "R$ 109,90",
     limitSec: 300,
-    isSubscription: true,
-    features: ["Até 5 músicas por mês", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega instantânea", "Suporte 24/7", "Acesso antecipado", "Cancelamento a qualquer momento"],
-    cta: "Assinar Agora"
+    features: ["Até 5 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Suporte 24/7", "Prioridade na fila"],
+    cta: "Melhor Valor"
   },
 ];
 
