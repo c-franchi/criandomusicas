@@ -328,6 +328,7 @@ export default function Checkout() {
 
   const currentPrice = order.amount || 1990;
   const hasDiscount = order.discount_applied > 0;
+  const originalPrice = hasDiscount ? (currentPrice + order.discount_applied) : 1990;
 
   // PIX Waiting State
   if (showPixSection && pixConfirmed) {
@@ -343,10 +344,30 @@ export default function Checkout() {
               Após o pagamento, vamos confirmar em até 30 minutos e você receberá uma notificação.
             </p>
 
+            {/* QR Code First */}
+            <div className="bg-white p-4 rounded-xl mx-auto w-fit mb-6">
+              <img 
+                src="/images/pix-qrcode.jpg" 
+                alt="QR Code PIX" 
+                className="w-48 h-48 object-contain"
+              />
+            </div>
+
+            {/* Price and PIX Key */}
             <Card className="p-4 bg-muted/50 mb-6 text-left">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground">Valor a pagar:</span>
-                <span className="text-2xl font-bold text-primary">{formatPrice(currentPrice)}</span>
+              <div className="mb-4">
+                <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
+                <div className="flex items-center gap-2">
+                  {hasDiscount && (
+                    <span className="text-sm text-muted-foreground line-through">{formatPrice(originalPrice)}</span>
+                  )}
+                  <span className="text-2xl font-bold text-primary">{formatPrice(currentPrice)}</span>
+                  {hasDiscount && (
+                    <Badge variant="secondary" className="bg-success/20 text-success text-xs">
+                      -{formatPrice(order.discount_applied)}
+                    </Badge>
+                  )}
+                </div>
               </div>
               
               <div className="space-y-3">
@@ -365,12 +386,6 @@ export default function Checkout() {
                 </div>
               </div>
             </Card>
-
-            <img 
-              src="/images/pix-qrcode.jpg" 
-              alt="QR Code PIX" 
-              className="w-48 h-48 mx-auto rounded-lg border shadow-lg mb-6 object-contain"
-            />
 
             <div className="flex flex-col gap-3">
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
@@ -602,22 +617,41 @@ export default function Checkout() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* QR Code - Clean Display */}
               <div className="text-center">
-                <img 
-                  src="/images/pix-qrcode.jpg" 
-                  alt="QR Code PIX" 
-                  className="w-48 h-48 mx-auto rounded-lg border shadow-lg mb-4 object-contain"
-                />
+                <div className="bg-white p-4 rounded-xl mx-auto w-fit mb-3">
+                  <img 
+                    src="/images/pix-qrcode.jpg" 
+                    alt="QR Code PIX" 
+                    className="w-48 h-48 object-contain"
+                  />
+                </div>
                 <p className="text-sm text-muted-foreground">
-                  Escaneie o QR Code ou copie a chave PIX
+                  Escaneie o QR Code ou copie a chave PIX abaixo
                 </p>
               </div>
 
+              {/* Price with Discount Display */}
               <Card className="p-4 bg-muted/50">
                 <div className="space-y-3">
                   <div>
                     <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
-                    <p className="text-2xl font-bold text-primary">{formatPrice(currentPrice)}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {hasDiscount && (
+                        <span className="text-sm text-muted-foreground line-through">{formatPrice(originalPrice)}</span>
+                      )}
+                      <span className="text-2xl font-bold text-primary">{formatPrice(currentPrice)}</span>
+                      {hasDiscount && (
+                        <Badge variant="secondary" className="bg-success/20 text-success text-xs">
+                          -{formatPrice(order.discount_applied)}
+                        </Badge>
+                      )}
+                    </div>
+                    {hasDiscount && order.voucher_code && (
+                      <p className="text-xs text-success mt-1">
+                        Voucher {order.voucher_code} aplicado!
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
