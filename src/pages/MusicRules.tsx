@@ -169,21 +169,21 @@ const MusicRules = () => {
             <ul className="space-y-3 text-muted-foreground">
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-primary mt-1 shrink-0" />
-                <span><strong>Até 3 versões de letra:</strong> Se a primeira não agradar, geramos novas opções sem custo adicional</span>
+                <span><strong>2 versões de letra:</strong> Geramos duas opções para você escolher a que mais combina</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-primary mt-1 shrink-0" />
-                <span><strong>Revisões na letra:</strong> Você pode solicitar ajustes específicos antes de aprovar</span>
+                <span><strong>1 modificação opcional:</strong> Você pode solicitar ajustes na letra escolhida (apenas uma vez)</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle className="w-4 h-4 text-primary mt-1 shrink-0" />
-                <span><strong>Nova produção:</strong> Se não ficar satisfeito com o resultado final após esgotadas as revisões, fazemos uma nova produção</span>
+                <span><strong>Backup da original:</strong> Se não gostar da versão modificada, pode voltar para a original</span>
               </li>
             </ul>
-            <div className="mt-4 p-4 bg-muted/50 rounded-lg">
+            <div className="mt-4 p-4 bg-red-500/10 rounded-lg border border-red-500/20">
               <p className="text-sm text-muted-foreground">
-                <strong>Importante:</strong> Após aprovar a letra, não são aceitas alterações textuais. 
-                Revise com atenção antes de confirmar!
+                <strong className="text-red-500">⚠️ Importante:</strong> Após aprovar a letra, <strong>não há devoluções</strong>. 
+                Quanto mais informações você fornecer no briefing, melhor será a letra! Revise com atenção antes de confirmar.
               </p>
             </div>
           </Card>

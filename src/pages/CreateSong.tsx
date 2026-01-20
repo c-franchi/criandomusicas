@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle } from "lucide-react";
+import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle, Info, Undo2, Shield } from "lucide-react";
 import MusicLoadingSpinner from "@/components/MusicLoadingSpinner";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,7 +37,7 @@ interface BriefingData {
   lgpdConsent: boolean;
 }
 
-type Step = "loading" | "generating" | "select" | "editing" | "approved" | "complete";
+type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
 
 const CreateSong = () => {
   const navigate = useNavigate();
@@ -47,9 +47,12 @@ const CreateSong = () => {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [lyrics, setLyrics] = useState<LyricOption[]>([]);
   const [selectedLyric, setSelectedLyric] = useState<LyricOption | null>(null);
+  const [originalSelectedLyric, setOriginalSelectedLyric] = useState<LyricOption | null>(null);
+  const [modifiedLyric, setModifiedLyric] = useState<LyricOption | null>(null);
   const [editedLyric, setEditedLyric] = useState<string>("");
   const [editedTitle, setEditedTitle] = useState<string>("");
   const [editInstructions, setEditInstructions] = useState<string>("");
+  const [hasUsedModification, setHasUsedModification] = useState(false);
   const [loading, setLoading] = useState(false);
 
   // Carregar dados do briefing
@@ -141,7 +144,7 @@ const CreateSong = () => {
       // Processar letras recebidas
       const generatedLyrics: LyricOption[] = data.lyrics.map((l: any, idx: number) => ({
         id: l.id || `lyric-${idx}`,
-        version: String.fromCharCode(65 + idx), // A, B, C...
+        version: String.fromCharCode(65 + idx), // A, B
         title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
         body: l.text || l.body || ""
       }));
@@ -149,7 +152,7 @@ const CreateSong = () => {
       setLyrics(generatedLyrics);
       setStep("select");
       toast.success("Letras geradas com sucesso!", {
-        description: "Escolha a versão que mais combina com você"
+        description: "Escolha entre as 2 versões criadas para você"
       });
 
     } catch (error) {
@@ -164,9 +167,20 @@ const CreateSong = () => {
 
   const handleSelectLyric = (lyric: LyricOption) => {
     setSelectedLyric(lyric);
+    setOriginalSelectedLyric(lyric);
     setEditedLyric(lyric.body);
     setEditedTitle(lyric.title);
     setStep("editing");
+  };
+
+  const handleSelectModifiedOrOriginal = (useModified: boolean) => {
+    if (useModified && modifiedLyric) {
+      setEditedLyric(modifiedLyric.body);
+      setEditedTitle(modifiedLyric.title);
+    } else if (originalSelectedLyric) {
+      setEditedLyric(originalSelectedLyric.body);
+      setEditedTitle(originalSelectedLyric.title);
+    }
   };
 
   const handleApproveLyric = async () => {
@@ -211,7 +225,7 @@ const CreateSong = () => {
       console.error("Erro:", error);
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast.error("Erro ao aprovar letra", { description: errorMessage });
-      setStep("editing");
+      setStep(hasUsedModification ? "editing-modified" : "editing");
     } finally {
       setLoading(false);
     }
@@ -220,6 +234,11 @@ const CreateSong = () => {
   const handleRequestEdit = async () => {
     if (!orderId || !briefingData || !editInstructions.trim()) {
       toast.error("Descreva as alterações desejadas");
+      return;
+    }
+
+    if (hasUsedModification) {
+      toast.error("Você já utilizou sua única modificação");
       return;
     }
 
@@ -246,28 +265,34 @@ const CreateSong = () => {
             restrictedWords: briefingData.restrictedWords,
             songName: briefingData.songName,
             autoGenerateName: briefingData.autoGenerateName
-          }
+          },
+          isModification: true
         }
       });
 
       if (error) throw error;
 
       if (!data?.ok) {
-        throw new Error(data?.error || "Erro ao regenerar letras");
+        throw new Error(data?.error || "Erro ao regenerar letra");
       }
 
-      const generatedLyrics: LyricOption[] = data.lyrics.map((l: any, idx: number) => ({
-        id: l.id || `lyric-${idx}`,
-        version: String.fromCharCode(65 + idx),
-        title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
-        body: l.text || l.body || ""
-      }));
+      // Pegar primeira versão modificada
+      const modifiedLyricData: LyricOption = {
+        id: data.lyrics[0]?.id || `lyric-modified`,
+        version: "Modificada",
+        title: data.lyrics[0]?.title || editedTitle,
+        body: data.lyrics[0]?.text || data.lyrics[0]?.body || ""
+      };
 
-      setLyrics(generatedLyrics);
+      setModifiedLyric(modifiedLyricData);
+      setEditedLyric(modifiedLyricData.body);
+      setEditedTitle(modifiedLyricData.title);
+      setHasUsedModification(true);
       setEditInstructions("");
-      setStep("select");
-      toast.success("Novas versões geradas!", {
-        description: "Escolha a versão que mais combina com você"
+      setStep("editing-modified");
+      
+      toast.success("Letra modificada gerada!", {
+        description: "Você pode escolher entre a versão original ou a modificada"
       });
 
     } catch (error) {
@@ -289,7 +314,7 @@ const CreateSong = () => {
             size="lg" 
             message={step === "generating" ? "Criando suas letras..." : "Carregando..."}
             description={step === "generating" 
-              ? "Nossa IA está criando versões únicas baseadas na sua história. Isso pode levar alguns segundos."
+              ? "Nossa IA está criando 2 versões únicas baseadas na sua história. Isso pode levar alguns segundos."
               : "Preparando seu briefing..."
             }
           />
@@ -308,9 +333,25 @@ const CreateSong = () => {
             <Badge className="mb-4">Etapa 1 de 2</Badge>
             <h1 className="text-3xl font-bold mb-2">Escolha Sua Letra</h1>
             <p className="text-muted-foreground">
-              Geramos duas versões especiais da sua história. Qual você prefere?
+              Geramos <strong>2 versões</strong> especiais da sua história. Qual você prefere?
             </p>
           </div>
+
+          {/* Info Box - Importance of briefing */}
+          <Card className="mb-6 border-blue-500/30 bg-blue-500/5">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-blue-500 mb-1">💡 Dica Importante!</p>
+                  <p className="text-muted-foreground">
+                    Quanto mais detalhes você fornecer no briefing, melhor será a letra gerada! 
+                    Nomes, datas, lugares e momentos especiais fazem toda a diferença.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Lyrics Grid */}
           <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -350,7 +391,7 @@ const CreateSong = () => {
     );
   }
 
-  // Step 2: Edit/Approve lyrics
+  // Step 2: Edit/Approve lyrics (before modification)
   if (step === "editing") {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -360,7 +401,7 @@ const CreateSong = () => {
             <Badge className="mb-4">Etapa 1 de 2 - Revisão</Badge>
             <h1 className="text-3xl font-bold mb-2">Revise Sua Letra</h1>
             <p className="text-muted-foreground">
-              Aprove a letra ou solicite ajustes antes de produzir a música
+              Aprove a letra ou solicite <strong>uma única modificação</strong> antes de produzir
             </p>
           </div>
 
@@ -403,11 +444,11 @@ const CreateSong = () => {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <p className="font-semibold text-yellow-500 mb-1">Atenção: Alteração única!</p>
+                      <p className="font-semibold text-yellow-500 mb-1">⚠️ Atenção: Você pode modificar apenas UMA vez!</p>
                       <p className="text-muted-foreground">
-                        Você pode solicitar ajustes na letra <strong>apenas uma vez</strong>. 
-                        Esta etapa é <strong>opcional</strong> — se a letra já está do seu agrado, 
-                        pode aprovar diretamente.
+                        Esta etapa é <strong>opcional</strong>. Se a letra já está do seu agrado, 
+                        pode aprovar diretamente. Caso solicite modificação, você poderá escolher 
+                        entre a versão original e a modificada.
                       </p>
                     </div>
                   </div>
@@ -415,7 +456,7 @@ const CreateSong = () => {
                 
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Edit3 className="w-4 h-4" />
-                  Solicitar Ajustes (opcional)
+                  Solicitar Modificação (opcional - apenas 1 vez)
                 </h4>
                 <Textarea
                   placeholder="Descreva as alterações que deseja... Ex: 'Trocar a palavra X por Y', 'Deixar o refrão mais alegre', 'Adicionar o nome Maria no verso 2'..."
@@ -424,6 +465,22 @@ const CreateSong = () => {
                   rows={3}
                   className="mb-4"
                 />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* No refunds warning */}
+          <Card className="mb-6 border-red-500/30 bg-red-500/5">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-red-500 mb-1">Após aprovar a letra, não há devoluções</p>
+                  <p className="text-muted-foreground">
+                    Revise com atenção antes de confirmar. Depois de aprovada, a letra segue para produção 
+                    e não poderá ser alterada ou reembolsada.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -449,7 +506,7 @@ const CreateSong = () => {
                 ) : (
                   <RefreshCw className="w-4 h-4 mr-2" />
                 )}
-                Regenerar com Ajustes
+                Modificar Letra (1x)
               </Button>
             )}
 
@@ -466,10 +523,140 @@ const CreateSong = () => {
               Aprovar e Produzir Música
             </Button>
           </div>
+        </div>
+      </div>
+    );
+  }
 
-          <p className="text-center text-sm text-muted-foreground mt-4">
-            ⚠️ Após aprovar, a letra não poderá ser alterada durante a produção da música.
-          </p>
+  // Step 2B: After modification - choose between original and modified
+  if (step === "editing-modified") {
+    return (
+      <div className="min-h-screen bg-background p-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+              Modificação usada ✓
+            </Badge>
+            <h1 className="text-3xl font-bold mb-2">Escolha a Versão Final</h1>
+            <p className="text-muted-foreground">
+              Compare a versão <strong>original</strong> com a <strong>modificada</strong> e escolha qual aprovar
+            </p>
+          </div>
+
+          {/* Song Title */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Music className="w-5 h-5" />
+                Nome da Música
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Input
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Digite o nome da sua música..."
+                className="text-lg font-semibold"
+              />
+            </CardContent>
+          </Card>
+
+          {/* Compare versions */}
+          <div className="grid md:grid-cols-2 gap-6 mb-6">
+            {/* Original */}
+            <Card 
+              className={`cursor-pointer transition-all ${editedLyric === originalSelectedLyric?.body ? 'ring-2 ring-primary border-primary' : 'hover:border-primary/50'}`}
+              onClick={() => handleSelectModifiedOrOriginal(false)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Undo2 className="w-4 h-4" />
+                    Versão Original
+                  </CardTitle>
+                  <Badge variant="outline">Versão {originalSelectedLyric?.version}</Badge>
+                </div>
+                <CardDescription>Sua escolha inicial</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
+                  <pre className="text-sm whitespace-pre-wrap font-mono">
+                    {originalSelectedLyric?.body}
+                  </pre>
+                </div>
+                {editedLyric === originalSelectedLyric?.body && (
+                  <div className="mt-3 flex items-center gap-2 text-primary">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">Selecionada</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Modified */}
+            <Card 
+              className={`cursor-pointer transition-all ${editedLyric === modifiedLyric?.body ? 'ring-2 ring-primary border-primary' : 'hover:border-primary/50'}`}
+              onClick={() => handleSelectModifiedOrOriginal(true)}
+            >
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Versão Modificada
+                  </CardTitle>
+                  <Badge>Nova</Badge>
+                </div>
+                <CardDescription>Com suas alterações solicitadas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
+                  <pre className="text-sm whitespace-pre-wrap font-mono">
+                    {modifiedLyric?.body}
+                  </pre>
+                </div>
+                {editedLyric === modifiedLyric?.body && (
+                  <div className="mt-3 flex items-center gap-2 text-primary">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">Selecionada</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* No refunds warning */}
+          <Card className="mb-6 border-red-500/30 bg-red-500/5">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <Shield className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-red-500 mb-1">Após aprovar a letra, não há devoluções</p>
+                  <p className="text-muted-foreground">
+                    Esta é sua última chance de escolher. Depois de aprovada, a letra segue para produção 
+                    e não poderá ser alterada ou reembolsada.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              onClick={handleApproveLyric}
+              disabled={loading || !editedTitle.trim()}
+              size="lg"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+            >
+              {loading ? (
+                <Music className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4 mr-2" />
+              )}
+              Aprovar Versão Selecionada e Produzir
+            </Button>
+          </div>
         </div>
       </div>
     );
