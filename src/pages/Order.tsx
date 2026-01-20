@@ -4,17 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
 import { 
   CheckCircle, 
   Clock, 
   CreditCard, 
   Music, 
   ArrowLeft,
-  Loader2
+  Loader2,
+  QrCode,
+  Copy
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+// PIX Configuration
+const PIX_KEY = '14.389.841/0001-47';
+const PIX_NAME = 'Criando Músicas';
 
 interface OrderData {
   id: string;
@@ -27,6 +34,7 @@ interface OrderData {
   approved_lyric_id: string | null;
   amount: number;
   lyric_title?: string;
+  payment_method?: string | null;
 }
 
 const Order = () => {
@@ -36,6 +44,7 @@ const Order = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -125,7 +134,6 @@ const Order = () => {
       if (error) throw error;
 
       if (data?.url) {
-        // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else {
         throw new Error('URL de pagamento não recebida');
@@ -139,6 +147,13 @@ const Order = () => {
       });
       setProcessingPayment(false);
     }
+  };
+
+  const copyPixKey = () => {
+    navigator.clipboard.writeText(PIX_KEY);
+    setCopiedKey(true);
+    toast({ title: 'Chave PIX copiada!' });
+    setTimeout(() => setCopiedKey(false), 3000);
   };
 
   if (authLoading || loading) {
@@ -161,6 +176,11 @@ const Order = () => {
   }
 
   const getStatusInfo = () => {
+    // Check payment status first for PIX
+    if (order.payment_status === 'AWAITING_PIX') {
+      return { text: 'Aguardando Confirmação PIX', progress: 15, icon: Clock, color: 'text-yellow-500' };
+    }
+
     switch (order.status) {
       case 'DRAFT':
         return { text: 'Rascunho', progress: 10, icon: Clock, color: 'text-muted-foreground' };
@@ -214,7 +234,8 @@ const Order = () => {
             <div className="flex-1">
               <h3 className="font-semibold text-lg">{statusInfo.text}</h3>
               <p className="text-sm text-muted-foreground">
-                {order.status === 'AWAITING_PAYMENT' && 'Complete o pagamento para iniciar a produção'}
+                {order.payment_status === 'AWAITING_PIX' && 'Aguardando confirmação do pagamento PIX'}
+                {order.status === 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && 'Complete o pagamento para iniciar a produção'}
                 {order.status === 'MUSIC_GENERATING' && 'Sua música está sendo produzida...'}
                 {order.status === 'COMPLETED' && 'Sua música está pronta!'}
               </p>
@@ -226,17 +247,63 @@ const Order = () => {
           <Progress value={statusInfo.progress} />
         </Card>
 
+        {/* PIX Waiting Section */}
+        {order.payment_status === 'AWAITING_PIX' && (
+          <Card className="p-6 mb-6 border-yellow-600/30 bg-yellow-600/5">
+            <div className="flex items-center gap-3 mb-4">
+              <Clock className="w-6 h-6 text-yellow-500" />
+              <h3 className="font-semibold text-lg">Aguardando Confirmação PIX</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Após realizar o pagamento, nossa equipe irá confirmar em até 30 minutos. 
+              Você receberá uma notificação quando o pagamento for confirmado.
+            </p>
+            
+            <Card className="p-4 bg-muted/50 mb-4">
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
+                  <p className="text-2xl font-bold text-primary">
+                    R$ {((order.amount || 1990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{PIX_KEY}</code>
+                    <Button variant="outline" size="sm" onClick={copyPixKey}>
+                      {copiedKey ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Nome:</Label>
+                  <p className="font-medium">{PIX_NAME}</p>
+                </div>
+              </div>
+            </Card>
+
+            <div className="text-center">
+              <img 
+                src="/images/pix-qrcode.jpg" 
+                alt="QR Code PIX" 
+                className="w-40 h-40 mx-auto rounded-lg border shadow-lg object-contain"
+              />
+            </div>
+          </Card>
+        )}
+
         {/* Payment Section */}
-        {order.status === 'AWAITING_PAYMENT' && (
+        {order.status === 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && (
           <Card className="p-6 mb-6 border-orange-600/30 bg-orange-600/5">
             <h3 className="font-semibold text-lg mb-4">💳 Pagamento</h3>
             <div className="mb-4">
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-3xl font-bold">
-                  R$ {((order.amount || 990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  R$ {((order.amount || 1990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </span>
-                <span className="text-sm text-muted-foreground line-through">R$ 29,90</span>
-                <Badge variant="secondary">67% OFF</Badge>
+                <span className="text-sm text-muted-foreground line-through">R$ 47,90</span>
+                <Badge variant="secondary">PROMOÇÃO</Badge>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
                 Escolha a forma de pagamento
@@ -263,36 +330,25 @@ const Order = () => {
                 )}
               </Button>
               <Button 
-                onClick={handlePayment} 
+                asChild
                 size="lg"
                 variant="outline"
                 className="w-full border-emerald-600 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950"
-                disabled={processingPayment}
               >
-                {processingPayment ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processando...
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4 mr-2" viewBox="0 0 512 512" fill="currentColor">
-                      <path d="M242.4 292.5c-3.9 4.3-9.4 6.7-15.1 6.7s-11.2-2.4-15.1-6.7l-64.5-70.5c-7.8-8.5-7.2-21.7 1.3-29.4 8.5-7.8 21.7-7.2 29.4 1.3l48.9 53.4 116.6-127.5c7.8-8.5 21-9 29.4-1.3 8.5 7.8 9 21 1.3 29.4l-132.2 144.6z"/>
-                      <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0zm0 464c-114.7 0-208-93.3-208-208S141.3 48 256 48s208 93.3 208 208-93.3 208-208 208z"/>
-                    </svg>
-                    PIX
-                  </>
-                )}
+                <Link to={`/checkout/${order.id}`}>
+                  <QrCode className="w-4 h-4 mr-2" />
+                  PIX
+                </Link>
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-3 text-center">
-              Pagamento seguro via Stripe • Dados protegidos
+              Pagamento seguro • Dados protegidos
             </p>
           </Card>
         )}
 
         {/* Actions */}
-        {order.status !== 'AWAITING_PAYMENT' && (
+        {order.status !== 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && (
           <Card className="p-6 mb-6">
             <h3 className="font-semibold text-lg mb-4">Ações</h3>
             <div className="space-y-3">
@@ -336,7 +392,7 @@ const Order = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Valor</p>
                 <p className="font-medium">
-                  R$ {((order.amount || 990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  R$ {((order.amount || 1990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                 </p>
               </div>
             </div>

@@ -75,6 +75,8 @@ interface AdminOrder {
   final_prompt: string | null;
   style_prompt: string | null;
   approved_lyric_id: string | null;
+  payment_status?: string;
+  payment_method?: string;
   user_email?: string;
   lyric_title?: string;
 }
@@ -174,12 +176,14 @@ const AdminDashboard = () => {
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
     try {
-      // Fetch orders with approved lyrics
+      // Fetch orders with approved lyrics and payment info
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select(`
           id,
           status,
+          payment_status,
+          payment_method,
           created_at,
           music_type,
           music_style,
@@ -617,7 +621,6 @@ const AdminDashboard = () => {
         description: `Pedido atualizado para: ${getStatusText(newStatus)}`,
       });
 
-      // Update local state immediately
       setOrders(prev => prev.map(o => 
         o.id === orderId ? { ...o, status: newStatus } : o
       ));
@@ -631,7 +634,42 @@ const AdminDashboard = () => {
     }
   };
 
-  const getStatusText = (status: string) => {
+  // Confirm PIX payment
+  const confirmPixPayment = async (orderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          payment_status: 'PAID', 
+          status: 'LYRICS_PENDING' 
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      toast({
+        title: '✅ Pagamento PIX confirmado!',
+        description: 'O pedido foi liberado para geração de letras.',
+      });
+
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, payment_status: 'PAID', status: 'LYRICS_PENDING' } : o
+      ));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao confirmar pagamento',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const getStatusText = (status: string, paymentStatus?: string) => {
+    // Check for PIX status first
+    if (paymentStatus === 'AWAITING_PIX') {
+      return 'Aguardando PIX';
+    }
     const statusMap: Record<string, string> = {
       'DRAFT': 'Rascunho',
       'AWAITING_PAYMENT': 'Aguardando Pagamento',
@@ -648,7 +686,11 @@ const AdminDashboard = () => {
     return statusMap[status] || status;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string, paymentStatus?: string) => {
+    // Check for PIX status first
+    if (paymentStatus === 'AWAITING_PIX') {
+      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+    }
     switch (status) {
       case 'LYRICS_APPROVED':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
@@ -692,6 +734,11 @@ const AdminDashboard = () => {
       order.music_style?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.story?.toLowerCase().includes(searchTerm.toLowerCase());
     
+    // Handle AWAITING_PIX filter
+    if (filterStatus === 'AWAITING_PIX') {
+      return matchesSearch && order.payment_status === 'AWAITING_PIX';
+    }
+    
     const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
     
     return matchesSearch && matchesStatus;
@@ -705,7 +752,8 @@ const AdminDashboard = () => {
     ready: orders.filter(o => o.status === 'LYRICS_APPROVED').length,
     generating: orders.filter(o => o.status === 'MUSIC_GENERATING').length,
     completed: completedOrders.length,
-    total: orders.length
+    total: orders.length,
+    awaitingPix: orders.filter(o => o.payment_status === 'AWAITING_PIX').length
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -1229,6 +1277,16 @@ const AdminDashboard = () => {
             >
               Concluídos
             </Button>
+            {statusCounts.awaitingPix > 0 && (
+              <Button
+                variant={filterStatus === 'AWAITING_PIX' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setFilterStatus('AWAITING_PIX')}
+                className="shrink-0 text-xs sm:text-sm px-2.5 sm:px-3 border-yellow-500/50 text-yellow-500"
+              >
+                🔔 PIX ({statusCounts.awaitingPix})
+              </Button>
+            )}
           </div>
         </div>
 
