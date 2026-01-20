@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import Checkout from "./pages/Checkout";
+import Install from "./pages/Install";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
             <Route path="/checkout/:orderId" element={<Checkout />} />
+            <Route path="/install" element={<Install />} />
             <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
             <Route path="/pedido/:id/letras" element={<OrderLyricsPage />} />

@@ -117,3 +117,65 @@ export const NotificationToggle = () => {
     </Button>
   );
 };
+
+// Banner component for Dashboard
+export const NotificationBanner = () => {
+  const { user } = useAuth();
+  const { isSupported, isSubscribed, isLoading, permission, subscribe } = usePushNotifications();
+  const [dismissed, setDismissed] = useState(false);
+
+  if (!user || !isSupported || isSubscribed || permission === 'denied' || dismissed) {
+    return null;
+  }
+
+  // Check if banner was dismissed recently (24h)
+  const dismissedKey = `notification_banner_dismissed_${user.id}`;
+  const dismissedAt = localStorage.getItem(dismissedKey);
+  if (dismissedAt && Date.now() - parseInt(dismissedAt) < 24 * 60 * 60 * 1000) {
+    return null;
+  }
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    localStorage.setItem(dismissedKey, Date.now().toString());
+  };
+
+  const handleSubscribe = async () => {
+    const success = await subscribe();
+    if (success) {
+      setDismissed(true);
+    }
+  };
+
+  return (
+    <Card className="mb-6 p-4 border-primary/30 bg-primary/5">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+          <Bell className="w-5 h-5 text-primary" />
+        </div>
+        <div className="flex-1">
+          <h4 className="font-semibold text-sm">Ative as notificações</h4>
+          <p className="text-xs text-muted-foreground">
+            Seja notificado quando sua música estiver pronta!
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            onClick={handleSubscribe}
+            disabled={isLoading}
+          >
+            {isLoading ? 'Ativando...' : 'Ativar'}
+          </Button>
+          <Button 
+            size="sm" 
+            variant="ghost" 
+            onClick={handleDismiss}
+          >
+            <X className="w-4 h-4" />
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+};

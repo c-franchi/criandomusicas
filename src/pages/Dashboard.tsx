@@ -3,11 +3,12 @@ import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Bell, Download } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationBanner } from "@/components/PushNotificationPrompt";
 
 interface Order {
   id: string;
@@ -132,6 +133,9 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background py-12 px-6">
       <div className="max-w-4xl mx-auto">
+        {/* Notification Banner */}
+        <NotificationBanner />
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="text-center flex-1">
@@ -144,6 +148,11 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" asChild title="Instalar App">
+              <Link to="/install">
+                <Download className="w-4 h-4" />
+              </Link>
+            </Button>
             <Button variant="outline" size="icon" asChild>
               <Link to="/perfil" title="Meu Perfil">
                 <User className="w-4 h-4" />
