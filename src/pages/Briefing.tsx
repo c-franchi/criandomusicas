@@ -280,7 +280,11 @@ const Briefing = () => {
 
     addUserMessage(displayValue);
 
-    const nextStep = getNextStep(currentStep, { ...formData, [field]: value });
+    const updatedFormData = field === 'autoGenerateName' 
+      ? { ...formData, autoGenerateName: option.id === 'auto', songName: '' }
+      : { ...formData, [field]: option.id };
+    
+    const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
@@ -288,7 +292,7 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      finishBriefing({ ...formData, [field]: value } as BriefingFormData);
+      finishBriefing(updatedFormData as BriefingFormData);
     }
   };
 
