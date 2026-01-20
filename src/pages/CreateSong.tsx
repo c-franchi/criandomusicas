@@ -75,18 +75,47 @@ const CreateSong = () => {
 
     setLoading(true);
     try {
-      const orderId = `order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      // Criar order real no Supabase primeiro
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          occasion: briefingData.occasion,
+          style: briefingData.style || 'preferido',
+          tone: briefingData.tone || 'preferido',
+          duration_target_sec: 180,
+          story_raw: story,
+          status: 'DRAFT',
+          price_cents: 0
+        })
+        .select()
+        .single();
 
-      // Chamar Edge Function do Supabase
+      if (orderError) {
+        console.error("Erro ao criar order:", orderError);
+        throw new Error("Erro ao criar pedido. Tente novamente.");
+      }
+
+      const orderId = orderData.id;
+
+      // Chamar Edge Function do Supabase com payload correto
       const { data, error } = await supabase.functions.invoke('generate-lyrics', {
         body: {
           orderId,
+          story: story,
           briefing: {
+            musicType: briefingData.musicType || 'homenagem',
+            emotion: briefingData.emotion || 'alegria',
+            emotionIntensity: briefingData.emotionIntensity || 3,
+            style: briefingData.style || 'pop',
+            rhythm: briefingData.rhythm || 'moderado',
+            atmosphere: briefingData.atmosphere || 'festivo',
+            structure: briefingData.structure || ['verse', 'chorus'],
+            hasMonologue: briefingData.hasMonologue || false,
+            monologuePosition: briefingData.monologuePosition || '',
             occasion: briefingData.occasion,
-            style: briefingData.style,
-            tone: briefingData.tone,
-            storyRaw: story,
-            plan: briefingData.plan
+            mandatoryWords: briefingData.mandatoryWords || '',
+            restrictedWords: briefingData.restrictedWords || ''
           }
         }
       });
@@ -104,13 +133,13 @@ const CreateSong = () => {
       // Aplicar sanitização defensiva às letras recebidas
       const sanitizedLyrics: LyricOption[] = [
         {
-          id: "lyric-a",
+          id: data.lyrics?.[0]?.id || "lyric-a",
           version: "A",
           title: data.lyrics?.[0]?.title || "Versão A",
           text: sanitizeLyric(data.lyrics?.[0]?.text || "Letra não disponível"),
         },
         {
-          id: "lyric-b",
+          id: data.lyrics?.[1]?.id || "lyric-b",
           version: "B",
           title: data.lyrics?.[1]?.title || "Versão B",
           text: sanitizeLyric(data.lyrics?.[1]?.text || "Letra não disponível"),
@@ -125,8 +154,9 @@ const CreateSong = () => {
       });
     } catch (error) {
       console.error("Erro:", error);
-      toast.error("Erro ao conectar com o servidor", {
-        description: "Verifique sua conexão e tente novamente",
+      const errorMessage = error instanceof Error ? error.message : "Verifique sua conexão e tente novamente";
+      toast.error("Erro ao gerar letras", {
+        description: errorMessage,
       });
     } finally {
       setLoading(false);
