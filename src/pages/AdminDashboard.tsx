@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { 
   Music, 
   Search, 
@@ -25,7 +26,11 @@ import {
   Plus,
   Headphones,
   Edit,
-  Upload
+  Upload,
+  Tag,
+  Percent,
+  Gift,
+  Calendar
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -51,6 +56,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AdminOrder {
   id: string;
@@ -90,6 +102,20 @@ interface AudioSample {
   sort_order: number;
 }
 
+interface Voucher {
+  id: string;
+  code: string;
+  discount_type: string;
+  discount_value: number;
+  max_uses: number | null;
+  current_uses: number;
+  valid_from: string;
+  valid_until: string | null;
+  plan_ids: string[] | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
@@ -101,7 +127,8 @@ const AdminDashboard = () => {
   const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
-  const [pricingDialogOpen, setPricingDialogOpen] = useState(false);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio'>('pricing');
   
   // Audio Samples
   const [audioSamples, setAudioSamples] = useState<AudioSample[]>([]);
@@ -123,9 +150,26 @@ const AdminDashboard = () => {
   const audioInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
+  // Vouchers
+  const [vouchers, setVouchers] = useState<Voucher[]>([]);
+  const [loadingVouchers, setLoadingVouchers] = useState(false);
+  const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
+  const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
+  const [newVoucher, setNewVoucher] = useState<Partial<Voucher>>({
+    code: '',
+    discount_type: 'percent',
+    discount_value: 10,
+    max_uses: null,
+    valid_until: null,
+    plan_ids: null,
+    is_active: true
+  });
+  const [savingVoucher, setSavingVoucher] = useState(false);
+
   // Confirmation dialogs
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
   const [deleteAudioId, setDeleteAudioId] = useState<string | null>(null);
+  const [deleteVoucherId, setDeleteVoucherId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
@@ -222,13 +266,110 @@ const AdminDashboard = () => {
     }
   }, [toast]);
 
+  const fetchVouchers = useCallback(async () => {
+    setLoadingVouchers(true);
+    try {
+      const { data, error } = await supabase
+        .from('vouchers')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setVouchers(data || []);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao carregar vouchers',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingVouchers(false);
+    }
+  }, [toast]);
+
+  const saveVoucher = async () => {
+    setSavingVoucher(true);
+    try {
+      const voucherData = editingVoucher || newVoucher;
+      if (!voucherData.code || !voucherData.discount_value) {
+        toast({ title: 'Erro', description: 'Código e valor do desconto são obrigatórios.', variant: 'destructive' });
+        return;
+      }
+
+      if (editingVoucher) {
+        const { error } = await supabase
+          .from('vouchers')
+          .update({
+            code: voucherData.code?.toUpperCase(),
+            discount_type: voucherData.discount_type,
+            discount_value: voucherData.discount_value,
+            max_uses: voucherData.max_uses,
+            valid_until: voucherData.valid_until,
+            plan_ids: voucherData.plan_ids,
+            is_active: voucherData.is_active ?? true,
+          })
+          .eq('id', editingVoucher.id);
+
+        if (error) throw error;
+        toast({ title: 'Voucher atualizado!', description: 'As alterações foram salvas.' });
+      } else {
+        const { error } = await supabase
+          .from('vouchers')
+          .insert({
+            code: voucherData.code?.toUpperCase(),
+            discount_type: voucherData.discount_type || 'percent',
+            discount_value: voucherData.discount_value,
+            max_uses: voucherData.max_uses,
+            valid_until: voucherData.valid_until,
+            plan_ids: voucherData.plan_ids,
+            is_active: voucherData.is_active ?? true,
+            created_by: user?.id,
+          });
+
+        if (error) throw error;
+        toast({ title: 'Voucher criado!', description: 'O novo voucher está ativo.' });
+      }
+
+      setVoucherDialogOpen(false);
+      setEditingVoucher(null);
+      setNewVoucher({ code: '', discount_type: 'percent', discount_value: 10, max_uses: null, valid_until: null, plan_ids: null, is_active: true });
+      fetchVouchers();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao salvar voucher', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setSavingVoucher(false);
+    }
+  };
+
+  const confirmDeleteVoucher = async () => {
+    if (!deleteVoucherId) return;
+    try {
+      const { error } = await supabase
+        .from('vouchers')
+        .delete()
+        .eq('id', deleteVoucherId);
+
+      if (error) throw error;
+      toast({ title: 'Voucher apagado', description: 'O voucher foi removido.' });
+      setVouchers(prev => prev.filter(v => v.id !== deleteVoucherId));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao apagar voucher', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setDeleteVoucherId(null);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
       fetchPricing();
       fetchAudioSamples();
+      fetchVouchers();
     }
-  }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples]);
+  }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples, fetchVouchers]);
 
   const updatePricingConfig = (id: string, field: keyof PricingConfig, value: any) => {
     setPricingConfigs(prev => prev.map(config => 
@@ -263,7 +404,7 @@ const AdminDashboard = () => {
         description: 'Os novos preços já estão ativos.',
       });
       
-      setPricingDialogOpen(false);
+      setConfigDialogOpen(false);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -642,6 +783,24 @@ const AdminDashboard = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Voucher Delete Confirmation */}
+      <AlertDialog open={!!deleteVoucherId} onOpenChange={(open) => !open && setDeleteVoucherId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja apagar este voucher?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteVoucher} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Header */}
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
@@ -656,103 +815,315 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
-              <Dialog open={pricingDialogOpen} onOpenChange={setPricingDialogOpen}>
+              <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => fetchPricing()} className="flex-1 sm:flex-none text-xs sm:text-sm">
-                    <DollarSign className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Gerenciar Preços</span>
-                    <span className="sm:hidden">Preços</span>
+                  <Button variant="outline" size="sm" onClick={() => { fetchPricing(); fetchVouchers(); }} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                    <Settings className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Configurações</span>
+                    <span className="sm:hidden">Config</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                       <Settings className="w-5 h-5" />
-                      Gerenciar Preços dos Planos
+                      Configurações do Sistema
                     </DialogTitle>
                     <DialogDescription>
-                      Altere os preços e configurações dos planos. As mudanças serão aplicadas imediatamente.
+                      Gerencie preços, vouchers e áudios de exemplo.
                     </DialogDescription>
                   </DialogHeader>
                   
-                  {loadingPricing ? (
-                    <div className="flex items-center justify-center py-8">
-                      <Music className="w-6 h-6 animate-spin text-primary" />
-                    </div>
-                  ) : (
-                    <div className="space-y-6 mt-4">
-                      {pricingConfigs.map((config) => (
-                        <Card key={config.id} className="p-4">
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold text-lg">{config.name}</h3>
-                            <div className="flex gap-2">
-                              <Badge variant={config.is_active ? "default" : "secondary"}>
-                                {config.is_active ? "Ativo" : "Inativo"}
-                              </Badge>
-                              {config.is_popular && (
-                                <Badge className="bg-primary">Popular</Badge>
-                              )}
+                  <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)} className="mt-4">
+                    <TabsList className="grid grid-cols-3 w-full">
+                      <TabsTrigger value="pricing" className="text-xs sm:text-sm">
+                        <DollarSign className="w-4 h-4 mr-1" />
+                        Preços
+                      </TabsTrigger>
+                      <TabsTrigger value="vouchers" className="text-xs sm:text-sm">
+                        <Gift className="w-4 h-4 mr-1" />
+                        Vouchers
+                      </TabsTrigger>
+                      <TabsTrigger value="audio" className="text-xs sm:text-sm">
+                        <Headphones className="w-4 h-4 mr-1" />
+                        Áudios
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    {/* PRICING TAB */}
+                    <TabsContent value="pricing" className="space-y-4 mt-4">
+                      {loadingPricing ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Music className="w-6 h-6 animate-spin text-primary" />
+                        </div>
+                      ) : (
+                        <>
+                          {pricingConfigs.map((config) => (
+                            <Card key={config.id} className="p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold">{config.name}</h3>
+                                <Badge variant={config.is_active ? "default" : "secondary"}>
+                                  {config.is_active ? "Ativo" : "Inativo"}
+                                </Badge>
+                              </div>
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <Label className="text-xs">Preço (centavos)</Label>
+                                  <Input
+                                    type="number"
+                                    value={config.price_cents}
+                                    onChange={(e) => updatePricingConfig(config.id, 'price_cents', parseInt(e.target.value) || 0)}
+                                    className="h-9"
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    = R$ {(config.price_cents / 100).toFixed(2).replace('.', ',')}
+                                  </p>
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Preço Promo (centavos)</Label>
+                                  <Input
+                                    type="number"
+                                    value={config.price_promo_cents || ''}
+                                    onChange={(e) => updatePricingConfig(config.id, 'price_promo_cents', e.target.value ? parseInt(e.target.value) : null)}
+                                    className="h-9"
+                                  />
+                                  {config.price_promo_cents && (
+                                    <p className="text-xs text-success">
+                                      Promo: R$ {(config.price_promo_cents / 100).toFixed(2).replace('.', ',')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                          <Button onClick={savePricingConfigs} className="w-full" disabled={savingPricing}>
+                            {savingPricing ? <Music className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                            Salvar Preços
+                          </Button>
+                        </>
+                      )}
+                    </TabsContent>
+                    
+                    {/* VOUCHERS TAB */}
+                    <TabsContent value="vouchers" className="space-y-4 mt-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold">Cupons de Desconto</h3>
+                        <Dialog open={voucherDialogOpen} onOpenChange={(open) => {
+                          setVoucherDialogOpen(open);
+                          if (!open) {
+                            setEditingVoucher(null);
+                            setNewVoucher({ code: '', discount_type: 'percent', discount_value: 10, max_uses: null, valid_until: null, plan_ids: null, is_active: true });
+                          }
+                        }}>
+                          <DialogTrigger asChild>
+                            <Button size="sm">
+                              <Plus className="w-4 h-4 mr-1" />
+                              Novo Voucher
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader>
+                              <DialogTitle>{editingVoucher ? 'Editar Voucher' : 'Novo Voucher'}</DialogTitle>
+                            </DialogHeader>
+                            <div className="space-y-4 mt-4">
+                              <div>
+                                <Label>Código *</Label>
+                                <Input
+                                  value={(editingVoucher || newVoucher).code || ''}
+                                  onChange={(e) => editingVoucher 
+                                    ? setEditingVoucher({ ...editingVoucher, code: e.target.value.toUpperCase() })
+                                    : setNewVoucher({ ...newVoucher, code: e.target.value.toUpperCase() })}
+                                  placeholder="DESCONTO10"
+                                  className="uppercase"
+                                />
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Tipo de Desconto</Label>
+                                  <Select
+                                    value={(editingVoucher || newVoucher).discount_type || 'percent'}
+                                    onValueChange={(v) => editingVoucher 
+                                      ? setEditingVoucher({ ...editingVoucher, discount_type: v })
+                                      : setNewVoucher({ ...newVoucher, discount_type: v as any })}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="percent">Porcentagem (%)</SelectItem>
+                                      <SelectItem value="fixed">Valor Fixo (R$)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div>
+                                  <Label>Valor *</Label>
+                                  <Input
+                                    type="number"
+                                    value={(editingVoucher || newVoucher).discount_value || ''}
+                                    onChange={(e) => editingVoucher 
+                                      ? setEditingVoucher({ ...editingVoucher, discount_value: parseInt(e.target.value) || 0 })
+                                      : setNewVoucher({ ...newVoucher, discount_value: parseInt(e.target.value) || 0 })}
+                                    placeholder={(editingVoucher || newVoucher).discount_type === 'percent' ? '10' : '500'}
+                                  />
+                                  <p className="text-xs text-muted-foreground">
+                                    {(editingVoucher || newVoucher).discount_type === 'percent' 
+                                      ? `${(editingVoucher || newVoucher).discount_value || 0}% de desconto`
+                                      : `R$ ${(((editingVoucher || newVoucher).discount_value || 0) / 100).toFixed(2).replace('.', ',')} de desconto`}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Limite de Usos</Label>
+                                  <Input
+                                    type="number"
+                                    value={(editingVoucher || newVoucher).max_uses || ''}
+                                    onChange={(e) => editingVoucher 
+                                      ? setEditingVoucher({ ...editingVoucher, max_uses: e.target.value ? parseInt(e.target.value) : null })
+                                      : setNewVoucher({ ...newVoucher, max_uses: e.target.value ? parseInt(e.target.value) : null })}
+                                    placeholder="Ilimitado"
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Válido até</Label>
+                                  <Input
+                                    type="date"
+                                    value={(editingVoucher || newVoucher).valid_until?.split('T')[0] || ''}
+                                    onChange={(e) => editingVoucher 
+                                      ? setEditingVoucher({ ...editingVoucher, valid_until: e.target.value || null })
+                                      : setNewVoucher({ ...newVoucher, valid_until: e.target.value || null })}
+                                  />
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Switch
+                                  checked={(editingVoucher || newVoucher).is_active ?? true}
+                                  onCheckedChange={(checked) => editingVoucher 
+                                    ? setEditingVoucher({ ...editingVoucher, is_active: checked })
+                                    : setNewVoucher({ ...newVoucher, is_active: checked })}
+                                />
+                                <Label>Voucher ativo</Label>
+                              </div>
+                              <Button onClick={saveVoucher} className="w-full" disabled={savingVoucher}>
+                                {savingVoucher ? <Music className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                                Salvar
+                              </Button>
                             </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label>Preço (centavos)</Label>
-                              <Input
-                                type="number"
-                                value={config.price_cents}
-                                onChange={(e) => updatePricingConfig(config.id, 'price_cents', parseInt(e.target.value) || 0)}
-                                placeholder="2990"
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                = R$ {(config.price_cents / 100).toFixed(2).replace('.', ',')}
-                              </p>
-                            </div>
-                            
-                            <div>
-                              <Label>Preço Promocional (centavos)</Label>
-                              <Input
-                                type="number"
-                                value={config.price_promo_cents || ''}
-                                onChange={(e) => updatePricingConfig(config.id, 'price_promo_cents', e.target.value ? parseInt(e.target.value) : null)}
-                                placeholder="990 (deixe vazio para sem promoção)"
-                              />
-                              {config.price_promo_cents && (
-                                <p className="text-xs text-green-500 mt-1">
-                                  Promoção: R$ {(config.price_promo_cents / 100).toFixed(2).replace('.', ',')}
-                                </p>
-                              )}
-                            </div>
-                            
-                            <div className="col-span-2">
-                              <Label>Stripe Price ID (opcional)</Label>
-                              <Input
-                                value={config.stripe_price_id || ''}
-                                onChange={(e) => updatePricingConfig(config.id, 'stripe_price_id', e.target.value || null)}
-                                placeholder="price_abc123 (deixe vazio para usar preço dinâmico)"
-                              />
-                              <p className="text-xs text-muted-foreground mt-1">
-                                Se definido, usa o preço fixo do Stripe. Caso contrário, usa o preço configurado acima.
-                              </p>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
+                          </DialogContent>
+                        </Dialog>
+                      </div>
                       
-                      <Button 
-                        onClick={savePricingConfigs} 
-                        className="w-full"
-                        disabled={savingPricing}
-                      >
-                        {savingPricing ? (
-                          <Music className="w-4 h-4 animate-spin mr-2" />
-                        ) : (
-                          <Save className="w-4 h-4 mr-2" />
-                        )}
-                        Salvar Alterações
-                      </Button>
-                    </div>
-                  )}
+                      {loadingVouchers ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Music className="w-6 h-6 animate-spin text-primary" />
+                        </div>
+                      ) : vouchers.length === 0 ? (
+                        <Card className="p-6 text-center">
+                          <Gift className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                          <p className="text-muted-foreground">Nenhum voucher cadastrado</p>
+                        </Card>
+                      ) : (
+                        <div className="space-y-2">
+                          {vouchers.map((voucher) => (
+                            <Card key={voucher.id} className={`p-3 ${!voucher.is_active ? 'opacity-50' : ''}`}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    {voucher.discount_type === 'percent' ? (
+                                      <Percent className="w-5 h-5 text-primary" />
+                                    ) : (
+                                      <DollarSign className="w-5 h-5 text-primary" />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <p className="font-mono font-bold">{voucher.code}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      {voucher.discount_type === 'percent' 
+                                        ? `${voucher.discount_value}% off`
+                                        : `R$ ${(voucher.discount_value / 100).toFixed(2).replace('.', ',')} off`}
+                                      {voucher.max_uses && ` • ${voucher.current_uses}/${voucher.max_uses} usos`}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge variant={voucher.is_active ? 'default' : 'secondary'} className="text-xs">
+                                    {voucher.is_active ? 'Ativo' : 'Inativo'}
+                                  </Badge>
+                                  <Button variant="ghost" size="sm" onClick={() => {
+                                    setEditingVoucher(voucher);
+                                    setVoucherDialogOpen(true);
+                                  }} className="h-8 w-8 p-0">
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => setDeleteVoucherId(voucher.id)} className="h-8 w-8 p-0">
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                    
+                    {/* AUDIO TAB */}
+                    <TabsContent value="audio" className="space-y-4 mt-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="font-semibold">Áudios de Exemplo</h3>
+                        <Button size="sm" onClick={() => { setEditingAudio(null); setAudioDialogOpen(true); }}>
+                          <Plus className="w-4 h-4 mr-1" />
+                          Novo Áudio
+                        </Button>
+                      </div>
+                      
+                      {loadingAudio ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Music className="w-6 h-6 animate-spin text-primary" />
+                        </div>
+                      ) : audioSamples.length === 0 ? (
+                        <Card className="p-6 text-center">
+                          <Headphones className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                          <p className="text-muted-foreground">Nenhum áudio cadastrado</p>
+                        </Card>
+                      ) : (
+                        <div className="space-y-2">
+                          {audioSamples.map((audio) => (
+                            <Card key={audio.id} className={`p-3 ${!audio.is_active ? 'opacity-50' : ''}`}>
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  {audio.cover_url ? (
+                                    <img src={audio.cover_url} alt={audio.title} className="w-10 h-10 rounded object-cover" />
+                                  ) : (
+                                    <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
+                                      <Headphones className="w-5 h-5 text-muted-foreground" />
+                                    </div>
+                                  )}
+                                  <div>
+                                    <p className="font-semibold text-sm">{audio.title}</p>
+                                    <p className="text-xs text-muted-foreground">{audio.style} • {audio.occasion}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Badge variant={audio.is_active ? 'default' : 'secondary'} className="text-xs">
+                                    {audio.is_active ? 'Ativo' : 'Inativo'}
+                                  </Badge>
+                                  <Button variant="ghost" size="sm" onClick={() => {
+                                    setEditingAudio(audio);
+                                    setAudioDialogOpen(true);
+                                  }} className="h-8 w-8 p-0">
+                                    <Edit className="w-4 h-4" />
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => setDeleteAudioId(audio.id)} className="h-8 w-8 p-0">
+                                    <Trash2 className="w-4 h-4 text-destructive" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
                 </DialogContent>
               </Dialog>
               
@@ -863,7 +1234,7 @@ const AdminDashboard = () => {
 
         {/* Orders Tabs */}
         <Tabs defaultValue="active" className="space-y-3 sm:space-y-4">
-          <TabsList className="w-full sm:w-auto grid grid-cols-3 sm:flex bg-card/50 border border-border/50 p-1 h-auto">
+          <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex bg-card/50 border border-border/50 p-1 h-auto">
             <TabsTrigger value="active" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <span className="sm:hidden">🎯 {filteredActiveOrders.length}</span>
               <span className="hidden sm:inline">🎯 Em Andamento ({filteredActiveOrders.length})</span>
@@ -872,11 +1243,6 @@ const AdminDashboard = () => {
               <Archive className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
               <span className="hidden sm:inline">Concluídos ({filteredCompletedOrders.length})</span>
               <span className="sm:hidden ml-1">{filteredCompletedOrders.length}</span>
-            </TabsTrigger>
-            <TabsTrigger value="audio" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
-              <span className="hidden sm:inline">Áudios de Exemplo</span>
-              <span className="sm:hidden ml-1">Áudios</span>
             </TabsTrigger>
           </TabsList>
 
@@ -1022,233 +1388,6 @@ const AdminDashboard = () => {
                   </div>
                 </Card>
               ))
-            )}
-          </TabsContent>
-
-          <TabsContent value="audio" className="space-y-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 sm:mb-4">
-              <h3 className="text-base sm:text-lg font-semibold">Áudios de Exemplo</h3>
-              <Dialog open={audioDialogOpen} onOpenChange={(open) => {
-                setAudioDialogOpen(open);
-                if (!open) {
-                  setEditingAudio(null);
-                  setNewAudio({ title: '', description: '', style: '', occasion: '', audio_url: '', cover_url: '', is_active: true, sort_order: 0 });
-                }
-              }}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="w-full sm:w-auto">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adicionar Áudio
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader>
-                    <DialogTitle>{editingAudio ? 'Editar Áudio' : 'Adicionar Áudio'}</DialogTitle>
-                    <DialogDescription>
-                      {editingAudio ? 'Edite as informações do áudio de exemplo.' : 'Adicione um novo áudio de exemplo para a página inicial.'}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 mt-4">
-                    <div>
-                      <Label>Título *</Label>
-                      <Input
-                        value={(editingAudio || newAudio).title || ''}
-                        onChange={(e) => editingAudio 
-                          ? setEditingAudio({ ...editingAudio, title: e.target.value })
-                          : setNewAudio({ ...newAudio, title: e.target.value })}
-                        placeholder="Ex: Canção de Aniversário"
-                      />
-                    </div>
-                    <div>
-                      <Label>Descrição</Label>
-                      <Textarea
-                        value={(editingAudio || newAudio).description || ''}
-                        onChange={(e) => editingAudio 
-                          ? setEditingAudio({ ...editingAudio, description: e.target.value })
-                          : setNewAudio({ ...newAudio, description: e.target.value })}
-                        placeholder="Descrição breve do áudio..."
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Estilo</Label>
-                        <Input
-                          value={(editingAudio || newAudio).style || ''}
-                          onChange={(e) => editingAudio 
-                            ? setEditingAudio({ ...editingAudio, style: e.target.value })
-                            : setNewAudio({ ...newAudio, style: e.target.value })}
-                          placeholder="Ex: Pop, Sertanejo"
-                        />
-                      </div>
-                      <div>
-                        <Label>Ocasião</Label>
-                        <Input
-                          value={(editingAudio || newAudio).occasion || ''}
-                          onChange={(e) => editingAudio 
-                            ? setEditingAudio({ ...editingAudio, occasion: e.target.value })
-                            : setNewAudio({ ...newAudio, occasion: e.target.value })}
-                          placeholder="Ex: Casamento, Aniversário"
-                        />
-                      </div>
-                    </div>
-                    
-                    {/* Audio Upload */}
-                    <div>
-                      <Label>Arquivo de Áudio *</Label>
-                      <div className="flex gap-2 mt-1">
-                        <Input
-                          value={(editingAudio || newAudio).audio_url || ''}
-                          onChange={(e) => editingAudio 
-                            ? setEditingAudio({ ...editingAudio, audio_url: e.target.value })
-                            : setNewAudio({ ...newAudio, audio_url: e.target.value })}
-                          placeholder="URL do áudio ou faça upload"
-                          className="flex-1"
-                        />
-                        <input
-                          type="file"
-                          ref={audioInputRef}
-                          accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/aac,audio/m4a,audio/*,video/mp4,video/*"
-                          className="hidden"
-                          onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0])}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => audioInputRef.current?.click()}
-                          disabled={uploadingAudio}
-                        >
-                          {uploadingAudio ? (
-                            <Music className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Upload className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                      {(editingAudio || newAudio).audio_url && (
-                        <audio controls className="w-full mt-2" src={(editingAudio || newAudio).audio_url}>
-                          Seu navegador não suporta áudio.
-                        </audio>
-                      )}
-                    </div>
-                    
-                    {/* Cover Upload */}
-                    <div>
-                      <Label>Imagem de Capa (opcional)</Label>
-                      <div className="flex gap-2 mt-1">
-                        <Input
-                          value={(editingAudio || newAudio).cover_url || ''}
-                          onChange={(e) => editingAudio 
-                            ? setEditingAudio({ ...editingAudio, cover_url: e.target.value })
-                            : setNewAudio({ ...newAudio, cover_url: e.target.value })}
-                          placeholder="URL da capa ou faça upload"
-                          className="flex-1"
-                        />
-                        <input
-                          type="file"
-                          ref={coverInputRef}
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => e.target.files?.[0] && handleCoverUpload(e.target.files[0])}
-                        />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => coverInputRef.current?.click()}
-                          disabled={uploadingCover}
-                        >
-                          {uploadingCover ? (
-                            <Music className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <Upload className="w-4 h-4" />
-                          )}
-                        </Button>
-                      </div>
-                      {(editingAudio || newAudio).cover_url && (
-                        <img 
-                          src={(editingAudio || newAudio).cover_url || ''} 
-                          alt="Capa" 
-                          className="w-20 h-20 object-cover rounded mt-2"
-                        />
-                      )}
-                    </div>
-                    
-                    <div>
-                      <Label>Ordem</Label>
-                      <Input
-                        type="number"
-                        value={(editingAudio || newAudio).sort_order || 0}
-                        onChange={(e) => editingAudio 
-                          ? setEditingAudio({ ...editingAudio, sort_order: parseInt(e.target.value) || 0 })
-                          : setNewAudio({ ...newAudio, sort_order: parseInt(e.target.value) || 0 })}
-                      />
-                    </div>
-                    <Button onClick={saveAudioSample} className="w-full">
-                      <Save className="w-4 h-4 mr-2" />
-                      Salvar
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            {loadingAudio ? (
-              <div className="text-center py-8">
-                <Music className="w-6 h-6 animate-spin text-primary mx-auto" />
-              </div>
-            ) : audioSamples.length === 0 ? (
-              <Card className="p-6 sm:p-8 text-center bg-card/30">
-                <Headphones className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
-                <h3 className="text-lg sm:text-xl font-semibold mb-2">Nenhum áudio cadastrado</h3>
-                <p className="text-sm text-muted-foreground">Adicione áudios de exemplo para exibir na página inicial.</p>
-              </Card>
-            ) : (
-              <div className="grid gap-3 sm:gap-4">
-                {audioSamples.map((audio) => (
-                  <Card key={audio.id} className={`p-3 sm:p-4 bg-card/50 border-border/50 hover:border-primary/30 transition-colors ${!audio.is_active ? 'opacity-50' : ''}`}>
-                    {/* Audio Player at Top */}
-                    {audio.audio_url && (
-                      <div className="mb-2 sm:mb-3">
-                        <audio controls className="w-full h-8 sm:h-10" src={audio.audio_url}>
-                          Áudio
-                        </audio>
-                      </div>
-                    )}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {audio.cover_url ? (
-                          <img src={audio.cover_url} alt={audio.title} className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover shrink-0" />
-                        ) : (
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                            <Headphones className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <h4 className="font-semibold text-sm sm:text-base truncate">{audio.title}</h4>
-                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                            {audio.style} • {audio.occasion}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 self-end sm:self-center">
-                        <Badge variant={audio.is_active ? 'default' : 'secondary'} className="text-[10px] sm:text-xs">
-                          {audio.is_active ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                        <Button variant="ghost" size="sm" onClick={() => {
-                          setEditingAudio(audio);
-                          setAudioDialogOpen(true);
-                        }} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
-                          <Edit className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleteAudioId(audio.id)} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
-                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
             )}
           </TabsContent>
         </Tabs>
