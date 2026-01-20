@@ -2,13 +2,18 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift } from 'lucide-react';
+import { Loader2, Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+
+// PIX Configuration
+const PIX_KEY = '14.389.841/0001-47';
+const PIX_NAME = 'Criando Músicas';
 
 interface OrderData {
   id: string;
@@ -21,6 +26,7 @@ interface OrderData {
   amount: number;
   voucher_code: string | null;
   discount_applied: number;
+  payment_method: string | null;
 }
 
 interface VoucherValidation {
@@ -52,6 +58,9 @@ export default function Checkout() {
   const [applyingVoucher, setApplyingVoucher] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [processingVIP, setProcessingVIP] = useState(false);
+  const [showPixSection, setShowPixSection] = useState(false);
+  const [pixConfirmed, setPixConfirmed] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
 
   // Fetch order data
   useEffect(() => {
@@ -59,6 +68,15 @@ export default function Checkout() {
       if (!orderId || !user) return;
 
       try {
+        // Fetch pricing first
+        const { data: pricingData } = await supabase
+          .from('pricing_config')
+          .select('price_cents, price_promo_cents')
+          .eq('id', 'single')
+          .single();
+        
+        const basePrice = pricingData?.price_promo_cents || pricingData?.price_cents || 1990;
+
         const { data, error } = await supabase
           .from('orders')
           .select('*')
@@ -79,6 +97,18 @@ export default function Checkout() {
           return;
         }
 
+        // If awaiting PIX, show waiting state
+        if (data.payment_status === 'AWAITING_PIX') {
+          setShowPixSection(true);
+          setPixConfirmed(true);
+        }
+
+        // If amount is 0, set base price
+        if (data.amount === 0) {
+          await supabase.from('orders').update({ amount: basePrice }).eq('id', orderId);
+          data.amount = basePrice;
+        }
+
         setOrder(data);
       } catch (error) {
         console.error('Error fetching order:', error);
@@ -97,7 +127,7 @@ export default function Checkout() {
   // Auto-process VIP access
   useEffect(() => {
     const processVIPAccess = async () => {
-      if (!vipLoading && isVIP && order && user && !processingVIP) {
+      if (!vipLoading && isVIP && order && user && !processingVIP && order.payment_status !== 'AWAITING_PIX') {
         setProcessingVIP(true);
         toast.info('Acesso VIP detectado! Liberando geração de música...');
         
@@ -165,12 +195,10 @@ export default function Checkout() {
         toast.success(data.message);
 
         if (data.is_free) {
-          // Voucher covers 100% - redirect to create song
           setTimeout(() => {
             navigate(`/criar-musica?orderId=${order.id}`);
           }, 1500);
         } else {
-          // Update order with discount
           setOrder(prev => prev ? {
             ...prev,
             amount: data.final_price,
@@ -191,12 +219,16 @@ export default function Checkout() {
     }
   };
 
-  const handlePayment = async () => {
+  // Handle card payment via Stripe
+  const handleCardPayment = async () => {
     if (!order) return;
 
     setProcessingPayment(true);
 
     try {
+      // Update payment method to card
+      await supabase.from('orders').update({ payment_method: 'card' }).eq('id', order.id);
+
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: { orderId: order.id, planId: 'single' },
       });
@@ -213,6 +245,48 @@ export default function Checkout() {
       toast.error('Erro ao processar pagamento');
       setProcessingPayment(false);
     }
+  };
+
+  // Handle PIX payment selection
+  const handlePixPayment = async () => {
+    if (!order) return;
+
+    setShowPixSection(true);
+
+    try {
+      // Update order to AWAITING_PIX status
+      const { error } = await supabase
+        .from('orders')
+        .update({
+          payment_method: 'pix',
+          payment_status: 'AWAITING_PIX'
+        })
+        .eq('id', order.id);
+
+      if (error) throw error;
+
+      setOrder({
+        ...order,
+        payment_method: 'pix',
+        payment_status: 'AWAITING_PIX'
+      });
+    } catch (error) {
+      console.error('PIX update error:', error);
+    }
+  };
+
+  // Copy PIX key to clipboard
+  const copyPixKey = () => {
+    navigator.clipboard.writeText(PIX_KEY);
+    setCopiedKey(true);
+    toast.success('Chave PIX copiada!');
+    setTimeout(() => setCopiedKey(false), 3000);
+  };
+
+  // Confirm PIX payment was made
+  const confirmPixPayment = () => {
+    setPixConfirmed(true);
+    toast.success('Aguardando confirmação do pagamento PIX (até 30 minutos)');
   };
 
   const formatPrice = (cents: number) => {
@@ -252,8 +326,66 @@ export default function Checkout() {
     );
   }
 
-  const currentPrice = order.amount || 990;
+  const currentPrice = order.amount || 1990;
   const hasDiscount = order.discount_applied > 0;
+
+  // PIX Waiting State
+  if (showPixSection && pixConfirmed) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
+        <div className="max-w-lg mx-auto">
+          <Card className="text-center p-6">
+            <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
+              <Clock className="w-8 h-8 text-yellow-500" />
+            </div>
+            <h2 className="text-2xl font-bold mb-2">Aguardando Confirmação PIX</h2>
+            <p className="text-muted-foreground mb-6">
+              Após o pagamento, vamos confirmar em até 30 minutos e você receberá uma notificação.
+            </p>
+
+            <Card className="p-4 bg-muted/50 mb-6 text-left">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground">Valor a pagar:</span>
+                <span className="text-2xl font-bold text-primary">{formatPrice(currentPrice)}</span>
+              </div>
+              
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
+                  <div className="flex items-center gap-2 mt-1">
+                    <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{PIX_KEY}</code>
+                    <Button variant="outline" size="sm" onClick={copyPixKey}>
+                      {copiedKey ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                    </Button>
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-xs text-muted-foreground">Nome:</Label>
+                  <p className="font-medium">{PIX_NAME}</p>
+                </div>
+              </div>
+            </Card>
+
+            <img 
+              src="/images/pix-qrcode.jpg" 
+              alt="QR Code PIX" 
+              className="w-48 h-48 mx-auto rounded-lg border shadow-lg mb-6 object-contain"
+            />
+
+            <div className="flex flex-col gap-3">
+              <Button variant="outline" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar ao Dashboard
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Acompanhe o status do seu pedido no Dashboard
+              </p>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
@@ -304,144 +436,221 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
-        {/* Voucher Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Gift className="h-5 w-5 text-accent" />
-              Tem um voucher?
-            </CardTitle>
-            <CardDescription>
-              Insira seu código de desconto
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {hasDiscount ? (
-              <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg border border-success/30">
-                <CheckCircle className="h-5 w-5 text-success" />
-                <div>
-                  <p className="font-medium text-success">Voucher aplicado!</p>
-                  <p className="text-sm text-muted-foreground">
-                    Código: {order.voucher_code} • Desconto: {formatPrice(order.discount_applied)}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Digite o código do voucher"
-                    value={voucherCode}
-                    onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-                    className="uppercase"
-                    disabled={validatingVoucher || applyingVoucher}
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={validateVoucher}
-                    disabled={validatingVoucher || !voucherCode.trim()}
-                  >
-                    {validatingVoucher ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Tag className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-
-                {voucherResult && (
-                  <div className={`p-4 rounded-lg border ${
-                    voucherResult.valid 
-                      ? 'bg-success/10 border-success/30' 
-                      : 'bg-destructive/10 border-destructive/30'
-                  }`}>
-                    {voucherResult.valid ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle className="h-5 w-5 text-success" />
-                          <span className="font-medium text-success">Voucher válido!</span>
-                        </div>
-                        <div className="text-sm space-y-1">
-                          <p>
-                            <span className="text-muted-foreground">Desconto:</span>{' '}
-                            {voucherResult.voucher?.discount_type === 'percent' 
-                              ? `${voucherResult.voucher?.discount_value}%`
-                              : formatPrice(voucherResult.discount_amount)}
-                          </p>
-                          <p>
-                            <span className="text-muted-foreground">Preço final:</span>{' '}
-                            <span className="font-bold text-lg">
-                              {voucherResult.is_free ? 'GRÁTIS!' : formatPrice(voucherResult.final_price)}
-                            </span>
-                          </p>
-                        </div>
-                        <Button 
-                          onClick={applyVoucher} 
-                          disabled={applyingVoucher}
-                          className="w-full"
-                        >
-                          {applyingVoucher ? (
-                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                          ) : (
-                            <Sparkles className="h-4 w-4 mr-2" />
-                          )}
-                          {voucherResult.is_free ? 'Gerar Música Grátis' : 'Aplicar Desconto'}
-                        </Button>
-                      </div>
-                    ) : (
-                      <p className="text-destructive">{voucherResult.error}</p>
-                    )}
+        {/* Voucher Section - Only show if not in PIX mode */}
+        {!showPixSection && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Gift className="h-5 w-5 text-accent" />
+                Tem um voucher?
+              </CardTitle>
+              <CardDescription>
+                Insira seu código de desconto
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {hasDiscount ? (
+                <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg border border-success/30">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <div>
+                    <p className="font-medium text-success">Voucher aplicado!</p>
+                    <p className="text-sm text-muted-foreground">
+                      Código: {order.voucher_code} • Desconto: {formatPrice(order.discount_applied)}
+                    </p>
                   </div>
-                )}
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Payment Section */}
-        <Card className="border-primary/30">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-primary" />
-                Total a Pagar
-              </span>
-              <div className="text-right">
-                {hasDiscount && (
-                  <p className="text-sm text-muted-foreground line-through">
-                    {formatPrice(990)}
-                  </p>
-                )}
-                <p className="text-2xl font-bold text-primary">
-                  {formatPrice(currentPrice)}
-                </p>
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={handlePayment}
-              disabled={processingPayment}
-              className="w-full h-12 text-lg"
-              variant="hero"
-            >
-              {processingPayment ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  Processando...
-                </>
+                </div>
               ) : (
                 <>
-                  <CreditCard className="h-5 w-5 mr-2" />
-                  Pagar com Cartão ou PIX
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Digite o código do voucher"
+                      value={voucherCode}
+                      onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+                      className="uppercase"
+                      disabled={validatingVoucher || applyingVoucher}
+                    />
+                    <Button
+                      variant="outline"
+                      onClick={validateVoucher}
+                      disabled={validatingVoucher || !voucherCode.trim()}
+                    >
+                      {validatingVoucher ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Tag className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
+
+                  {voucherResult && (
+                    <div className={`p-4 rounded-lg border ${
+                      voucherResult.valid 
+                        ? 'bg-success/10 border-success/30' 
+                        : 'bg-destructive/10 border-destructive/30'
+                    }`}>
+                      {voucherResult.valid ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-success" />
+                            <span className="font-medium text-success">Voucher válido!</span>
+                          </div>
+                          <div className="text-sm space-y-1">
+                            <p>
+                              <span className="text-muted-foreground">Desconto:</span>{' '}
+                              {voucherResult.voucher?.discount_type === 'percent' 
+                                ? `${voucherResult.voucher?.discount_value}%`
+                                : formatPrice(voucherResult.discount_amount)}
+                            </p>
+                            <p>
+                              <span className="text-muted-foreground">Preço final:</span>{' '}
+                              <span className="font-bold text-lg">
+                                {voucherResult.is_free ? 'GRÁTIS!' : formatPrice(voucherResult.final_price)}
+                              </span>
+                            </p>
+                          </div>
+                          <Button 
+                            onClick={applyVoucher} 
+                            disabled={applyingVoucher}
+                            className="w-full"
+                          >
+                            {applyingVoucher ? (
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            ) : (
+                              <Sparkles className="h-4 w-4 mr-2" />
+                            )}
+                            {voucherResult.is_free ? 'Gerar Música Grátis' : 'Aplicar Desconto'}
+                          </Button>
+                        </div>
+                      ) : (
+                        <p className="text-destructive">{voucherResult.error}</p>
+                      )}
+                    </div>
+                  )}
                 </>
               )}
-            </Button>
-            <p className="text-xs text-center text-muted-foreground mt-3">
-              Pagamento seguro via Stripe. Aceitamos cartões e PIX.
-            </p>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Payment Section */}
+        {!showPixSection && (
+          <Card className="border-primary/30">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  Forma de Pagamento
+                </span>
+                <div className="text-right">
+                  {hasDiscount && (
+                    <p className="text-sm text-muted-foreground line-through">
+                      {formatPrice(1990)}
+                    </p>
+                  )}
+                  <p className="text-2xl font-bold text-primary">
+                    {formatPrice(currentPrice)}
+                  </p>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Card Payment */}
+              <Button
+                onClick={handleCardPayment}
+                disabled={processingPayment}
+                className="w-full h-14 justify-start gap-4"
+                variant="hero"
+              >
+                {processingPayment ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  <CreditCard className="h-5 w-5" />
+                )}
+                <div className="flex-1 text-left">
+                  <p className="font-medium">Cartão de Crédito</p>
+                  <p className="text-xs opacity-80">Pagamento seguro via Stripe</p>
+                </div>
+              </Button>
+
+              {/* PIX Payment */}
+              <Button
+                onClick={handlePixPayment}
+                variant="outline"
+                className="w-full h-14 justify-start gap-4 border-2 border-emerald-600/50 hover:border-emerald-600 hover:bg-emerald-600/10"
+              >
+                <QrCode className="h-5 w-5 text-emerald-600" />
+                <div className="flex-1 text-left">
+                  <p className="font-medium">PIX</p>
+                  <p className="text-xs text-muted-foreground">Pagamento instantâneo</p>
+                </div>
+              </Button>
+
+              <p className="text-xs text-center text-muted-foreground mt-3">
+                Pagamento seguro • Dados protegidos
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* PIX Payment Details */}
+        {showPixSection && !pixConfirmed && (
+          <Card className="border-emerald-600/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <QrCode className="h-5 w-5 text-emerald-600" />
+                Pagamento via PIX
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <img 
+                  src="/images/pix-qrcode.jpg" 
+                  alt="QR Code PIX" 
+                  className="w-48 h-48 mx-auto rounded-lg border shadow-lg mb-4 object-contain"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Escaneie o QR Code ou copie a chave PIX
+                </p>
+              </div>
+
+              <Card className="p-4 bg-muted/50">
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
+                    <p className="text-2xl font-bold text-primary">{formatPrice(currentPrice)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{PIX_KEY}</code>
+                      <Button variant="outline" size="sm" onClick={copyPixKey}>
+                        {copiedKey ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Nome:</Label>
+                    <p className="font-medium">{PIX_NAME}</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Button className="w-full" onClick={confirmPixPayment}>
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Já Fiz o Pagamento PIX
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                className="w-full" 
+                onClick={() => setShowPixSection(false)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Voltar às opções de pagamento
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Security badges */}
         <div className="flex justify-center gap-4">
