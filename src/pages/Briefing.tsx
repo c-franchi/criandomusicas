@@ -21,11 +21,10 @@ const Briefing = () => {
   const [userPlan, setUserPlan] = useState<string>("free");
   const [formData, setFormData] = useState({
     occasion: "",
-  customOccasion: "",
+    customOccasion: "",
     style: "",
-  customStyle: "",
+    customStyle: "",
     tone: "",
-    duration: "",
     story: "",
     lgpdConsent: false
   });
@@ -81,7 +80,7 @@ const Briefing = () => {
 
   const steps = [
     { number: 1, title: "Ocasião", description: "Para que momento é a música?" },
-    { number: 2, title: "Preferências", description: "Estilo, tom e duração" },
+    { number: 2, title: "Preferências", description: "Estilo e tom" },
     { number: 3, title: "História", description: "Conte sua história" },
     { number: 4, title: "Revisão", description: "Confirme os dados" }
   ];
@@ -116,23 +115,13 @@ const Briefing = () => {
       return;
     }
     if (currentStep === 2) {
-      if (isFree) {
-        // FREE só precisa da duração
-        if (!formData.duration) {
-          toast({
-            title: 'Campo obrigatório',
-            description: 'Por favor, defina a duração.',
-            variant: 'destructive',
-          });
-          return;
-        }
-      } else {
-        // Outros planos precisam de tudo
-  const styleValid = formData.style && (formData.style !== 'Outro' || !!formData.customStyle.trim());
-  if (!styleValid || !formData.tone || !formData.duration) {
+      if (!isFree) {
+        // Planos pagos precisam de estilo e tom
+        const styleValid = formData.style && (formData.style !== 'Outro' || !!formData.customStyle.trim());
+        if (!styleValid || !formData.tone) {
           toast({
             title: 'Campos obrigatórios',
-            description: 'Por favor, preencha estilo, tom e duração.',
+            description: 'Por favor, preencha estilo e tom.',
             variant: 'destructive',
           });
           return;
@@ -170,10 +159,9 @@ const Briefing = () => {
         : formData.style;
       const briefingData = {
         occasion: effectiveOccasion,
-        style: isFree ? "preferido" : effectiveStyle, // FREE envia "preferido"
-        tone: isFree ? "preferido" : formData.tone,   // FREE envia "preferido"
-        durationTargetSec: isFree ? 60 : parseInt(formData.duration) * 60,
-        storyRaw: "", // história será digitada na próxima tela
+        style: isFree ? "preferido" : effectiveStyle,
+        tone: isFree ? "preferido" : formData.tone,
+        storyRaw: "",
         plan: userPlan,
         lgpdConsent: formData.lgpdConsent
       };
@@ -303,28 +291,6 @@ const Briefing = () => {
               )}
             </div>
 
-            <div>
-              <Label htmlFor="duration" className="text-lg font-semibold">Duração aproximada (minutos)</Label>
-              <Input
-                id="duration"
-                type="number"
-                placeholder="Ex: 3"
-                value={formData.duration}
-                onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                className="mt-2"
-                min="1"
-                max={isFree ? "1" : "10"}
-                disabled={isFree}
-              />
-              <p className="text-sm text-muted-foreground mt-1">
-                {isFree ? "até 1 minuto" : "Entre 1 e 10 minutos"}
-              </p>
-              {isFree && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Plano Free: Duração limitada a 1 minuto.
-                </p>
-              )}
-            </div>
           </div>
         );
 
@@ -381,12 +347,6 @@ const Briefing = () => {
                 )}
               </Card>
 
-              <Card className="p-4">
-                <h4 className="font-semibold mb-2">Duração</h4>
-                <Badge variant="secondary">
-                  {isFree ? "até 1 minuto" : `${formData.duration} minutos`}
-                </Badge>
-              </Card>
 
               <Card className="p-4">
                 <h4 className="font-semibold mb-2">História</h4>
