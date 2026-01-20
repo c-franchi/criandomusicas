@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Music, Send, Bot, User, ArrowRight, Loader2 } from "lucide-react";
+import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
 
 interface ChatMessage {
   id: string;
@@ -15,7 +15,7 @@ interface ChatMessage {
   content: string;
   options?: { id: string; label: string; description?: string }[];
   field?: keyof BriefingFormData;
-  inputType?: 'text' | 'textarea' | 'options' | 'intensity' | 'yesno';
+  inputType?: 'text' | 'textarea' | 'options' | 'intensity' | 'yesno' | 'options-with-other' | 'word-suggestions';
 }
 
 interface BriefingFormData {
@@ -28,6 +28,7 @@ interface BriefingFormData {
   mandatoryWords: string;
   restrictedWords: string;
   style: string;
+  customStyle: string;
   rhythm: string;
   atmosphere: string;
   songName: string;
@@ -39,11 +40,17 @@ const Briefing = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } = useSpeechToText();
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
+  const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
+  const [stepHistory, setStepHistory] = useState<number[]>([]);
+  
   const [formData, setFormData] = useState<BriefingFormData>({
     musicType: "",
     emotion: "",
@@ -54,6 +61,7 @@ const Briefing = () => {
     mandatoryWords: "",
     restrictedWords: "",
     style: "",
+    customStyle: "",
     rhythm: "",
     atmosphere: "",
     songName: "",
@@ -68,7 +76,15 @@ const Briefing = () => {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, showConfirmation]);
+
+  // Atualizar input com transcrição de voz
+  useEffect(() => {
+    if (transcript) {
+      setInputValue(prev => prev + transcript);
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
 
   // Iniciar chat
   useEffect(() => {
@@ -131,14 +147,14 @@ const Briefing = () => {
     },
     {
       type: 'bot',
-      content: "Tem alguma palavra, nome ou frase que DEVE aparecer na letra? (opcional)\n\nEx: Maria, amor da minha vida, nosso lugar especial...",
-      inputType: 'text',
+      content: "Tem alguma palavra, nome ou frase que DEVE aparecer na letra? (opcional)\n\nSelecione as sugestões ou digite novas:",
+      inputType: 'word-suggestions',
       field: 'mandatoryWords'
     },
     {
       type: 'bot',
       content: "Qual estilo musical você prefere?",
-      inputType: 'options',
+      inputType: 'options-with-other',
       field: 'style',
       options: [
         { id: "sertanejo", label: "🤠 Sertanejo" },
@@ -149,7 +165,8 @@ const Briefing = () => {
         { id: "forro", label: "🎺 Forró" },
         { id: "pagode", label: "🪘 Pagode" },
         { id: "gospel", label: "🙏 Gospel/Worship" },
-        { id: "bossa", label: "🎹 Bossa Nova" }
+        { id: "bossa", label: "🎹 Bossa Nova" },
+        { id: "outros", label: "✨ Outros" }
       ]
     },
     {
@@ -215,6 +232,37 @@ const Briefing = () => {
     ];
   };
 
+  // Extrair palavras-chave da história para sugestões
+  const extractKeywords = (story: string): string[] => {
+    if (!story) return [];
+    
+    // Palavras comuns para ignorar
+    const stopWords = ['a', 'o', 'e', 'de', 'da', 'do', 'que', 'em', 'para', 'com', 'um', 'uma', 'os', 'as', 'no', 'na', 'por', 'mais', 'mas', 'foi', 'ser', 'tem', 'seu', 'sua', 'ele', 'ela', 'isso', 'esse', 'essa', 'como', 'quando', 'muito', 'nos', 'já', 'eu', 'também', 'só', 'pelo', 'pela', 'até', 'isso', 'ela', 'entre', 'depois', 'sem', 'mesmo', 'aos', 'ter', 'seus', 'quem', 'nas', 'me', 'esse', 'eles', 'você', 'tinha', 'foram', 'essa', 'num', 'nem', 'suas', 'meu', 'às', 'minha', 'têm', 'numa', 'pelos', 'elas', 'qual', 'nós', 'lhe', 'deles', 'essas', 'esses', 'pelas', 'este', 'dele', 'tu', 'te', 'vocês', 'vos', 'lhes', 'meus', 'minhas', 'teu', 'tua', 'teus', 'tuas', 'nosso', 'nossa', 'nossos', 'nossas', 'dela', 'delas', 'esta', 'estes', 'estas', 'aquele', 'aquela', 'aqueles', 'aquelas', 'isto', 'aquilo', 'estou', 'está', 'estamos', 'estão', 'estive', 'esteve', 'estivemos', 'estiveram', 'estava', 'estávamos', 'estavam', 'estivera', 'estivéramos', 'esteja', 'estejamos', 'estejam', 'estivesse', 'estivéssemos', 'estivessem', 'estiver', 'estivermos', 'estiverem', 'hei', 'há', 'havemos', 'hão', 'houve', 'houvemos', 'houveram', 'houvera', 'houvéramos', 'haja', 'hajamos', 'hajam', 'houvesse', 'houvéssemos', 'houvessem', 'houver', 'houvermos', 'houverem', 'houverei', 'houverá', 'houveremos', 'houverão', 'houveria', 'houveríamos', 'houveriam', 'sou', 'somos', 'são', 'era', 'éramos', 'eram', 'fui', 'fomos', 'foram', 'fora', 'fôramos', 'seja', 'sejamos', 'sejam', 'fosse', 'fôssemos', 'fossem', 'for', 'formos', 'forem', 'serei', 'será', 'seremos', 'serão', 'seria', 'seríamos', 'seriam', 'tenho', 'temos', 'tinha', 'tínhamos', 'tinham', 'tive', 'teve', 'tivemos', 'tiveram', 'tivera', 'tivéramos', 'tenha', 'tenhamos', 'tenham', 'tivesse', 'tivéssemos', 'tivessem', 'tiver', 'tivermos', 'tiverem', 'terei', 'terá', 'teremos', 'terão', 'teria', 'teríamos', 'teriam'];
+    
+    const words = story
+      .toLowerCase()
+      .replace(/[^\w\sáàâãéèêíïóôõöúçñ]/g, ' ')
+      .split(/\s+/)
+      .filter(word => word.length > 2 && !stopWords.includes(word));
+    
+    // Encontrar nomes próprios (começam com maiúscula no texto original)
+    const properNouns = story
+      .split(/\s+/)
+      .filter(word => /^[A-ZÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇÑ][a-záàâãéèêíïóôõöúçñ]+/.test(word) && word.length > 2)
+      .map(w => w.replace(/[^\wáàâãéèêíïóôõöúçñ]/g, ''));
+    
+    // Contar frequência
+    const wordCount: Record<string, number> = {};
+    words.forEach(word => {
+      wordCount[word] = (wordCount[word] || 0) + 1;
+    });
+    
+    // Priorizar nomes próprios e palavras mais frequentes
+    const uniqueWords = [...new Set([...properNouns, ...Object.keys(wordCount).sort((a, b) => wordCount[b] - wordCount[a])])];
+    
+    return uniqueWords.slice(0, 8);
+  };
+
   const addBotMessage = (msg: Omit<ChatMessage, 'id'>) => {
     setIsTyping(true);
     setTimeout(() => {
@@ -251,10 +299,35 @@ const Briefing = () => {
       return 6; // Pula para mandatoryWords
     }
     // Se escolheu gerar nome automaticamente, pula a pergunta de nome
-    if (current === 11 && data.autoGenerateName) {
-      return 13; // Fim
+    if (current === 10 && data.autoGenerateName) {
+      return 12; // Fim - vai para confirmação
     }
     return current + 1;
+  };
+
+  const handleGoBack = () => {
+    if (stepHistory.length === 0) return;
+    
+    // Remover a última mensagem do bot e a resposta do usuário
+    setMessages(prev => {
+      const newMessages = [...prev];
+      // Remover últimas 2 mensagens (resposta + pergunta atual se existir)
+      if (newMessages.length >= 2) {
+        newMessages.pop(); // Remove última mensagem
+        newMessages.pop(); // Remove penúltima
+      }
+      return newMessages;
+    });
+    
+    const previousStep = stepHistory[stepHistory.length - 1];
+    setStepHistory(prev => prev.slice(0, -1));
+    setCurrentStep(previousStep);
+    setShowCustomStyleInput(false);
+    setSelectedSuggestions([]);
+    
+    setTimeout(() => {
+      addBotMessage(chatFlow[previousStep]);
+    }, 300);
   };
 
   const handleOptionSelect = (option: { id: string; label: string }) => {
@@ -263,6 +336,12 @@ const Briefing = () => {
 
     const field = currentMsg.field;
     let displayValue = option.label;
+
+    // Handle style "outros" option
+    if (field === 'style' && option.id === 'outros') {
+      setShowCustomStyleInput(true);
+      return;
+    }
 
     // Handle special cases
     if (field === 'autoGenerateName') {
@@ -273,6 +352,7 @@ const Briefing = () => {
     }
 
     addUserMessage(displayValue);
+    setStepHistory(prev => [...prev, currentStep]);
 
     const updatedFormData = field === 'autoGenerateName' 
       ? { ...formData, autoGenerateName: option.id === 'auto', songName: '' }
@@ -286,7 +366,33 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      finishBriefing(updatedFormData as BriefingFormData);
+      showConfirmationScreen(updatedFormData as BriefingFormData);
+    }
+  };
+
+  const handleCustomStyleSubmit = () => {
+    const customStyle = inputValue.trim();
+    if (!customStyle) {
+      toast({
+        title: 'Digite o estilo musical',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setFormData(prev => ({ ...prev, style: 'outros', customStyle }));
+    addUserMessage(`✨ ${customStyle}`);
+    setInputValue("");
+    setShowCustomStyleInput(false);
+    setStepHistory(prev => [...prev, currentStep]);
+
+    const nextStep = currentStep + 1;
+    setCurrentStep(nextStep);
+
+    if (nextStep < chatFlow.length) {
+      setTimeout(() => {
+        addBotMessage(chatFlow[nextStep]);
+      }, 500);
     }
   };
 
@@ -296,6 +402,7 @@ const Briefing = () => {
 
     setFormData(prev => ({ ...prev, [currentMsg.field!]: yes }));
     addUserMessage(yes ? "✅ Sim" : "❌ Não");
+    setStepHistory(prev => [...prev, currentStep]);
 
     const nextStep = getNextStep(currentStep, { ...formData, [currentMsg.field]: yes });
     setCurrentStep(nextStep);
@@ -305,7 +412,7 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      finishBriefing({ ...formData, [currentMsg.field]: yes } as BriefingFormData);
+      showConfirmationScreen({ ...formData, [currentMsg.field]: yes } as BriefingFormData);
     }
   };
 
@@ -313,6 +420,39 @@ const Briefing = () => {
     setFormData(prev => ({ ...prev, emotionIntensity: value }));
     const labels = ['Muito sutil', 'Sutil', 'Moderada', 'Intensa', 'Muito intensa'];
     addUserMessage(`${value}/5 - ${labels[value - 1]}`);
+    setStepHistory(prev => [...prev, currentStep]);
+
+    const nextStep = currentStep + 1;
+    setCurrentStep(nextStep);
+
+    if (nextStep < chatFlow.length) {
+      setTimeout(() => {
+        addBotMessage(chatFlow[nextStep]);
+      }, 500);
+    }
+  };
+
+  const handleSuggestionToggle = (word: string) => {
+    setSelectedSuggestions(prev => 
+      prev.includes(word) 
+        ? prev.filter(w => w !== word)
+        : [...prev, word]
+    );
+  };
+
+  const handleWordSuggestionsSubmit = () => {
+    const manualWords = inputValue.trim();
+    const allWords = [...selectedSuggestions];
+    if (manualWords) {
+      allWords.push(...manualWords.split(',').map(w => w.trim()).filter(Boolean));
+    }
+    
+    const finalValue = allWords.join(', ');
+    setFormData(prev => ({ ...prev, mandatoryWords: finalValue }));
+    addUserMessage(finalValue || "(nenhum)");
+    setInputValue("");
+    setSelectedSuggestions([]);
+    setStepHistory(prev => [...prev, currentStep]);
 
     const nextStep = currentStep + 1;
     setCurrentStep(nextStep);
@@ -356,6 +496,7 @@ const Briefing = () => {
 
     setFormData(prev => ({ ...prev, [field]: value }));
     setInputValue("");
+    setStepHistory(prev => [...prev, currentStep]);
 
     const nextStep = getNextStep(currentStep, { ...formData, [field]: value });
     setCurrentStep(nextStep);
@@ -365,45 +506,121 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      finishBriefing({ ...formData, [field]: value } as BriefingFormData);
+      showConfirmationScreen({ ...formData, [field]: value } as BriefingFormData);
     }
   };
 
-  const finishBriefing = (data: BriefingFormData) => {
+  const showConfirmationScreen = (data: BriefingFormData) => {
+    setFormData(data);
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
-      setMessages(prev => [...prev, {
-        id: `msg-${Date.now()}`,
-        type: 'bot',
-        content: `Perfeito! 🎉\n\nResumo da sua música:\n• Tipo: ${data.musicType}\n• Emoção: ${data.emotion}\n• Estilo: ${data.style}\n• Ritmo: ${data.rhythm}\n${data.hasMonologue ? '• Com trecho declamado' : ''}\n${data.songName ? `• Nome: ${data.songName}` : '• Nome: gerado pela IA'}\n\nVou criar duas versões da letra para você escolher!`
-      }]);
+      setShowConfirmation(true);
+    }, 800);
+  };
 
-      // Salvar e navegar
-      setTimeout(() => {
-        const briefingData = {
-          musicType: data.musicType,
-          emotion: data.emotion,
-          emotionIntensity: data.emotionIntensity,
-          story: data.story,
-          structure: ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
-          hasMonologue: data.hasMonologue,
-          monologuePosition: data.monologuePosition || 'bridge',
-          mandatoryWords: data.mandatoryWords,
-          restrictedWords: data.restrictedWords,
-          style: data.style,
-          rhythm: data.rhythm,
-          atmosphere: data.atmosphere,
-          songName: data.songName,
-          autoGenerateName: data.autoGenerateName,
-          plan: userPlan,
-          lgpdConsent: true
-        };
+  const handleEditField = (step: number) => {
+    setShowConfirmation(false);
+    setCurrentStep(step);
+    setStepHistory([]);
+    setMessages([]);
+    
+    // Reiniciar desde o início até o step desejado
+    setTimeout(() => {
+      addBotMessage(chatFlow[step]);
+    }, 300);
+  };
 
-        localStorage.setItem('briefingData', JSON.stringify(briefingData));
-        navigate('/create-song');
-      }, 2000);
-    }, 1000);
+  const finishBriefing = () => {
+    const data = formData;
+    
+    // Salvar e navegar
+    const briefingData = {
+      musicType: data.musicType,
+      emotion: data.emotion,
+      emotionIntensity: data.emotionIntensity,
+      story: data.story,
+      structure: ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
+      hasMonologue: data.hasMonologue,
+      monologuePosition: data.monologuePosition || 'bridge',
+      mandatoryWords: data.mandatoryWords,
+      restrictedWords: data.restrictedWords,
+      style: data.style === 'outros' ? data.customStyle : data.style,
+      rhythm: data.rhythm,
+      atmosphere: data.atmosphere,
+      songName: data.songName,
+      autoGenerateName: data.autoGenerateName,
+      plan: userPlan,
+      lgpdConsent: true
+    };
+
+    localStorage.setItem('briefingData', JSON.stringify(briefingData));
+    navigate('/create-song');
+  };
+
+  const getFieldLabel = (field: string, value: string | boolean | number): string => {
+    const labelMaps: Record<string, Record<string, string>> = {
+      musicType: {
+        homenagem: "🎁 Homenagem",
+        romantica: "❤️ Romântica",
+        motivacional: "💪 Motivacional",
+        infantil: "🎈 Infantil",
+        religiosa: "✝️ Religiosa",
+        parodia: "🎭 Paródia/Humor"
+      },
+      emotion: {
+        alegria: "😊 Alegria",
+        saudade: "💭 Saudade",
+        gratidao: "🙏 Gratidão",
+        amor: "❤️ Amor",
+        esperanca: "🌈 Esperança",
+        nostalgia: "📷 Nostalgia",
+        superacao: "💪 Superação",
+        zoeira: "😂 Zoeira Leve",
+        sarcastico: "😏 Sarcástico",
+        ironico: "🙃 Irônico",
+        critica: "🎭 Crítica Humorada",
+        absurdo: "🤪 Absurdo Total"
+      },
+      style: {
+        sertanejo: "🤠 Sertanejo",
+        pop: "🎵 Pop",
+        rock: "🎸 Rock",
+        mpb: "🇧🇷 MPB",
+        rap: "🎤 Rap/Hip-Hop",
+        forro: "🎺 Forró",
+        pagode: "🪘 Pagode",
+        gospel: "🙏 Gospel/Worship",
+        bossa: "🎹 Bossa Nova",
+        outros: `✨ ${formData.customStyle}`
+      },
+      rhythm: {
+        lento: "🐢 Lento",
+        moderado: "🚶 Moderado",
+        animado: "🏃 Animado"
+      },
+      atmosphere: {
+        intimo: "🕯️ Íntimo",
+        festivo: "🎉 Festivo",
+        melancolico: "🌧️ Melancólico",
+        epico: "🏔️ Épico",
+        leve: "☁️ Leve"
+      },
+      monologuePosition: {
+        intro: "🎬 Intro",
+        bridge: "🌉 Bridge",
+        outro: "🎤 Outro"
+      }
+    };
+
+    if (typeof value === 'boolean') {
+      return value ? "Sim" : "Não";
+    }
+    if (typeof value === 'number') {
+      const labels = ['Muito sutil', 'Sutil', 'Moderada', 'Intensa', 'Muito intensa'];
+      return `${value}/5 - ${labels[value - 1]}`;
+    }
+    return labelMaps[field]?.[value] || value || "(nenhum)";
   };
 
   if (!loading && !user) {
@@ -422,13 +639,138 @@ const Briefing = () => {
   }
 
   const currentBotMessage = messages[messages.length - 1];
-  const showInput = currentBotMessage?.type === 'bot' && currentBotMessage?.inputType;
+  const showInput = currentBotMessage?.type === 'bot' && currentBotMessage?.inputType && !showConfirmation;
+  const suggestedKeywords = extractKeywords(formData.story);
+
+  // Tela de confirmação
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+          <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Music className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-semibold">Confirme seu Briefing</h1>
+              <p className="text-sm text-muted-foreground">Revise antes de criar sua música</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+            <div className="bg-muted rounded-2xl p-6 space-y-4">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                🎵 Resumo da sua música
+              </h2>
+              
+              <div className="space-y-3">
+                <ConfirmationItem 
+                  label="Tipo" 
+                  value={getFieldLabel('musicType', formData.musicType)} 
+                  onEdit={() => handleEditField(0)} 
+                />
+                <ConfirmationItem 
+                  label="Emoção" 
+                  value={getFieldLabel('emotion', formData.emotion)} 
+                  onEdit={() => handleEditField(1)} 
+                />
+                <ConfirmationItem 
+                  label="Intensidade" 
+                  value={getFieldLabel('emotionIntensity', formData.emotionIntensity)} 
+                  onEdit={() => handleEditField(2)} 
+                />
+                <ConfirmationItem 
+                  label="História" 
+                  value={formData.story.length > 100 ? formData.story.substring(0, 100) + "..." : formData.story} 
+                  onEdit={() => handleEditField(3)} 
+                />
+                <ConfirmationItem 
+                  label="Trecho falado" 
+                  value={formData.hasMonologue ? `Sim - ${getFieldLabel('monologuePosition', formData.monologuePosition)}` : "Não"} 
+                  onEdit={() => handleEditField(4)} 
+                />
+                <ConfirmationItem 
+                  label="Palavras obrigatórias" 
+                  value={formData.mandatoryWords || "(nenhuma)"} 
+                  onEdit={() => handleEditField(6)} 
+                />
+                <ConfirmationItem 
+                  label="Estilo" 
+                  value={getFieldLabel('style', formData.style)} 
+                  onEdit={() => handleEditField(7)} 
+                />
+                <ConfirmationItem 
+                  label="Ritmo" 
+                  value={getFieldLabel('rhythm', formData.rhythm)} 
+                  onEdit={() => handleEditField(8)} 
+                />
+                <ConfirmationItem 
+                  label="Atmosfera" 
+                  value={getFieldLabel('atmosphere', formData.atmosphere)} 
+                  onEdit={() => handleEditField(9)} 
+                />
+                <ConfirmationItem 
+                  label="Nome da música" 
+                  value={formData.autoGenerateName ? "Gerado pela IA" : formData.songName} 
+                  onEdit={() => handleEditField(10)} 
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowConfirmation(false);
+                  setCurrentStep(0);
+                  setMessages([]);
+                  setStepHistory([]);
+                  setFormData({
+                    musicType: "",
+                    emotion: "",
+                    emotionIntensity: 3,
+                    story: "",
+                    hasMonologue: false,
+                    monologuePosition: "",
+                    mandatoryWords: "",
+                    restrictedWords: "",
+                    style: "",
+                    customStyle: "",
+                    rhythm: "",
+                    atmosphere: "",
+                    songName: "",
+                    autoGenerateName: true
+                  });
+                  setTimeout(() => addBotMessage(chatFlow[0]), 500);
+                }}
+                className="flex-1"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Recomeçar
+              </Button>
+              <Button onClick={finishBriefing} className="flex-1">
+                <Check className="w-4 h-4 mr-2" />
+                Confirmar e Criar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+          {stepHistory.length > 0 && (
+            <Button variant="ghost" size="icon" onClick={handleGoBack} className="mr-1">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
             <Music className="w-5 h-5 text-primary" />
           </div>
@@ -509,6 +851,103 @@ const Briefing = () => {
               </div>
             )}
 
+            {/* Options with Other */}
+            {currentBotMessage.inputType === 'options-with-other' && currentBotMessage.options && !showCustomStyleInput && (
+              <div className="flex flex-wrap gap-2">
+                {currentBotMessage.options.map((option) => (
+                  <Button
+                    key={option.id}
+                    variant="outline"
+                    onClick={() => handleOptionSelect(option)}
+                    className="h-auto py-2 px-4"
+                  >
+                    <span>{option.label}</span>
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {/* Custom style input */}
+            {showCustomStyleInput && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Digite o estilo musical desejado:</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Ex: Lo-fi, Indie, Eletrônica..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleCustomStyleSubmit();
+                      }
+                    }}
+                  />
+                  <Button onClick={handleCustomStyleSubmit}>
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowCustomStyleInput(false)}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" /> Voltar às opções
+                </Button>
+              </div>
+            )}
+
+            {/* Word suggestions */}
+            {currentBotMessage.inputType === 'word-suggestions' && (
+              <div className="space-y-3">
+                {suggestedKeywords.length > 0 && (
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-2">Sugestões da sua história:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedKeywords.map((word) => (
+                        <Badge
+                          key={word}
+                          variant={selectedSuggestions.includes(word) ? "default" : "outline"}
+                          className="cursor-pointer"
+                          onClick={() => handleSuggestionToggle(word)}
+                        >
+                          {selectedSuggestions.includes(word) && <Check className="w-3 h-3 mr-1" />}
+                          {word}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Adicione mais palavras (separadas por vírgula)"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleWordSuggestionsSubmit();
+                      }
+                    }}
+                  />
+                  <Button onClick={handleWordSuggestionsSubmit}>
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  onClick={() => {
+                    setInputValue("");
+                    setSelectedSuggestions([]);
+                    handleWordSuggestionsSubmit();
+                  }}
+                >
+                  Pular esta etapa <ArrowRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            )}
+
             {/* Yes/No */}
             {currentBotMessage.inputType === 'yesno' && (
               <div className="flex gap-3">
@@ -547,46 +986,67 @@ const Briefing = () => {
 
             {/* Text input */}
             {(currentBotMessage.inputType === 'text' || currentBotMessage.inputType === 'textarea') && (
-              <div className="flex gap-2">
-                {currentBotMessage.inputType === 'textarea' ? (
-                  <Textarea
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Digite aqui..."
-                    rows={3}
-                    className="flex-1 resize-none"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleTextSubmit();
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  {currentBotMessage.inputType === 'textarea' ? (
+                    <Textarea
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="Digite ou use o microfone..."
+                      rows={3}
+                      className="flex-1 resize-none"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleTextSubmit();
+                        }
+                      }}
+                    />
+                  ) : (
+                    <Input
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder={
+                        currentBotMessage.field === 'mandatoryWords' || currentBotMessage.field === 'restrictedWords'
+                          ? "Digite ou pressione Enter para pular"
+                          : "Digite aqui..."
                       }
-                    }}
-                  />
-                ) : (
-                  <Input
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    placeholder={
-                      currentBotMessage.field === 'mandatoryWords' || currentBotMessage.field === 'restrictedWords'
-                        ? "Digite ou pressione Enter para pular"
-                        : "Digite aqui..."
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        handleTextSubmit();
-                      }
-                    }}
-                  />
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleTextSubmit();
+                        }
+                      }}
+                    />
+                  )}
+                  
+                  {/* Botão de microfone para campos de texto longo */}
+                  {isSupported && currentBotMessage.inputType === 'textarea' && (
+                    <Button
+                      variant={isListening ? "destructive" : "outline"}
+                      size="icon"
+                      onClick={isListening ? stopListening : startListening}
+                      className="flex-shrink-0"
+                    >
+                      {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    </Button>
+                  )}
+                  
+                  <Button onClick={handleTextSubmit}>
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                {isListening && (
+                  <p className="text-sm text-primary animate-pulse">
+                    🎤 Ouvindo... fale agora
+                  </p>
                 )}
-                <Button onClick={handleTextSubmit}>
-                  <Send className="w-4 h-4" />
-                </Button>
               </div>
             )}
 
             {/* Skip button for optional fields */}
-            {(currentBotMessage.field === 'mandatoryWords' || currentBotMessage.field === 'restrictedWords') && (
+            {(currentBotMessage.field === 'restrictedWords') && (
               <Button
                 variant="ghost"
                 className="w-full mt-2 text-muted-foreground"
@@ -604,5 +1064,18 @@ const Briefing = () => {
     </div>
   );
 };
+
+// Componente auxiliar para itens de confirmação
+const ConfirmationItem = ({ label, value, onEdit }: { label: string; value: string; onEdit: () => void }) => (
+  <div className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+    <div className="flex-1">
+      <span className="text-sm text-muted-foreground">{label}:</span>
+      <p className="font-medium">{value}</p>
+    </div>
+    <Button variant="ghost" size="sm" onClick={onEdit}>
+      <Edit className="w-4 h-4" />
+    </Button>
+  </div>
+);
 
 export default Briefing;
