@@ -23,7 +23,7 @@ const PricingPlans = () => {
     price: "R$ 0",
     description: "Perfeito para experimentar",
     icon: <Star className="w-6 h-6" />,
-    features: ["1 música por dia", "Letra personalizada", "Qualidade padrão", "Acesso básico"],
+    features: ["1 música por mês", "Letra personalizada", "Qualidade padrão", "Acesso básico"],
     buttonText: "Começar Grátis",
     buttonVariant: "outline"
   }, {

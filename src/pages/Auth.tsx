@@ -89,7 +89,7 @@ const Auth = () => {
           
           <div className="flex items-center justify-center gap-2 mb-4">
             <Music className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold gradient-text">SongStudio</h1>
+            <h1 className="text-2xl font-bold gradient-text">Criando Músicas</h1>
           </div>
           <p className="text-muted-foreground">
             Entre ou crie sua conta para começar
