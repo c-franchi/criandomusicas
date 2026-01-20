@@ -9,6 +9,7 @@ import Briefing from "./pages/Briefing";
 import CreateSong from "./pages/CreateSong";
 import Auth from "./pages/Auth";
 import Order from "./pages/Order";
+import OrderTracking from "./pages/OrderTracking";
 import Dashboard from "./pages/Dashboard";
 import TestOpenAI from "./pages/TestOpenAI";
 import OrderLyricsPage from "./pages/OrderLyricsPage";
@@ -16,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import Planos from "./pages/Planos";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,8 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/perfil" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
+            <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
             <Route path="/pedido/:id/letras" element={<OrderLyricsPage />} />
             <Route path="/pedido/:orderId" element={<Order />} />
