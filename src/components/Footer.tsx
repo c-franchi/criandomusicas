@@ -9,7 +9,7 @@ const Footer = () => {
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
                 <Music className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold gradient-text">MusicStudio</span>
+              <span className="text-xl font-bold gradient-text">Criando Músicas</span>
             </div>
             <p className="text-muted-foreground mb-4 max-w-md">
               Transformamos suas histórias mais especiais em músicas únicas e emocionantes. 
@@ -38,7 +38,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
-          <p>© 2025 SongStudio. Todos os direitos reservados.</p>
+          <p>© 2025 Criando Músicas. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>;
