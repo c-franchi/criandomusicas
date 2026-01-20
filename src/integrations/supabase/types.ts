@@ -183,6 +183,7 @@ export type Database = {
           music_structure: string | null
           music_style: string | null
           music_type: string | null
+          payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           pronunciations: Json | null
           purpose: string | null
@@ -215,6 +216,7 @@ export type Database = {
           music_structure?: string | null
           music_style?: string | null
           music_type?: string | null
+          payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           pronunciations?: Json | null
           purpose?: string | null
@@ -247,6 +249,7 @@ export type Database = {
           music_structure?: string | null
           music_style?: string | null
           music_type?: string | null
+          payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           pronunciations?: Json | null
           purpose?: string | null
@@ -530,7 +533,12 @@ export type Database = {
         | "MUSIC_READY"
         | "COMPLETED"
         | "CANCELLED"
-      payment_status: "PENDING" | "PAID" | "FAILED" | "REFUNDED"
+      payment_status:
+        | "PENDING"
+        | "PAID"
+        | "FAILED"
+        | "REFUNDED"
+        | "AWAITING_PIX"
       track_status: "QUEUED" | "GENERATING" | "READY" | "FAILED"
     }
     CompositeTypes: {
@@ -674,7 +682,7 @@ export const Constants = {
         "COMPLETED",
         "CANCELLED",
       ],
-      payment_status: ["PENDING", "PAID", "FAILED", "REFUNDED"],
+      payment_status: ["PENDING", "PAID", "FAILED", "REFUNDED", "AWAITING_PIX"],
       track_status: ["QUEUED", "GENERATING", "READY", "FAILED"],
     },
   },
