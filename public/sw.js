@@ -1,0 +1,79 @@
+// Service Worker for Push Notifications
+self.addEventListener('push', function(event) {
+  if (!event.data) {
+    console.log('Push event but no data');
+    return;
+  }
+
+  let data;
+  try {
+    data = event.data.json();
+  } catch (e) {
+    data = {
+      title: 'Criando Músicas',
+      body: event.data.text(),
+      icon: '/favicon.png',
+      badge: '/favicon.png'
+    };
+  }
+
+  const options = {
+    body: data.body || 'Nova notificação',
+    icon: data.icon || '/favicon.png',
+    badge: data.badge || '/favicon.png',
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || '/',
+      order_id: data.data?.order_id
+    },
+    actions: [
+      {
+        action: 'open',
+        title: 'Abrir',
+        icon: '/favicon.png'
+      }
+    ],
+    tag: 'criando-musicas-notification',
+    renotify: true
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'Criando Músicas', options)
+  );
+});
+
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
+
+  const url = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then(function(clientList) {
+        // Check if there's already a window open
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            client.navigate(url);
+            return client.focus();
+          }
+        }
+        // Otherwise open a new window
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      })
+  );
+});
+
+// Background sync for offline actions
+self.addEventListener('sync', function(event) {
+  if (event.tag === 'sync-notifications') {
+    event.waitUntil(syncNotifications());
+  }
+});
+
+async function syncNotifications() {
+  // Placeholder for syncing any pending actions when back online
+  console.log('Syncing notifications...');
+}
