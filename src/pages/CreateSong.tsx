@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft, CheckCircle, Edit3, RefreshCw, Volume2 } from "lucide-react";
+import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -29,11 +30,13 @@ interface BriefingData {
   style: string;
   rhythm: string;
   atmosphere: string;
+  songName: string;
+  autoGenerateName: boolean;
   plan: string;
   lgpdConsent: boolean;
 }
 
-type Step = "loading" | "generating" | "select" | "editing" | "approved" | "producing" | "complete";
+type Step = "loading" | "generating" | "select" | "editing" | "approved" | "complete";
 
 const CreateSong = () => {
   const navigate = useNavigate();
@@ -44,10 +47,9 @@ const CreateSong = () => {
   const [lyrics, setLyrics] = useState<LyricOption[]>([]);
   const [selectedLyric, setSelectedLyric] = useState<LyricOption | null>(null);
   const [editedLyric, setEditedLyric] = useState<string>("");
+  const [editedTitle, setEditedTitle] = useState<string>("");
   const [editInstructions, setEditInstructions] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [stylePrompt, setStylePrompt] = useState<string>("");
-  const [finalPrompt, setFinalPrompt] = useState<string>("");
 
   // Carregar dados do briefing
   useEffect(() => {
@@ -122,7 +124,9 @@ const CreateSong = () => {
             hasMonologue: briefing.hasMonologue,
             monologuePosition: briefing.monologuePosition,
             mandatoryWords: briefing.mandatoryWords,
-            restrictedWords: briefing.restrictedWords
+            restrictedWords: briefing.restrictedWords,
+            songName: briefing.songName,
+            autoGenerateName: briefing.autoGenerateName
           }
         }
       });
@@ -160,6 +164,7 @@ const CreateSong = () => {
   const handleSelectLyric = (lyric: LyricOption) => {
     setSelectedLyric(lyric);
     setEditedLyric(lyric.body);
+    setEditedTitle(lyric.title);
     setStep("editing");
   };
 
@@ -170,12 +175,13 @@ const CreateSong = () => {
     setStep("approved");
 
     try {
-      // Chamar Edge Function para gerar o Style Prompt
+      // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
       const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
         body: {
           orderId,
           lyricId: selectedLyric.id,
           approvedLyrics: editedLyric,
+          songTitle: editedTitle,
           briefing: {
             musicType: briefingData.musicType,
             emotion: briefingData.emotion,
@@ -194,8 +200,6 @@ const CreateSong = () => {
         throw new Error(data?.error || "Erro ao gerar prompt de estilo");
       }
 
-      setStylePrompt(data.stylePrompt);
-      setFinalPrompt(data.finalPrompt);
       setStep("complete");
 
       toast.success("🎵 Letra aprovada!", {
@@ -238,7 +242,9 @@ const CreateSong = () => {
             hasMonologue: briefingData.hasMonologue,
             monologuePosition: briefingData.monologuePosition,
             mandatoryWords: briefingData.mandatoryWords,
-            restrictedWords: briefingData.restrictedWords
+            restrictedWords: briefingData.restrictedWords,
+            songName: briefingData.songName,
+            autoGenerateName: briefingData.autoGenerateName
           }
         }
       });
@@ -282,7 +288,7 @@ const CreateSong = () => {
             <Loader2 className="w-8 h-8 text-primary animate-spin" />
           </div>
           <h2 className="text-2xl font-bold mb-2">
-            {step === "generating" ? "Gerando suas letras..." : "Carregando..."}
+            {step === "generating" ? "Criando suas letras..." : "Carregando..."}
           </h2>
           <p className="text-muted-foreground">
             {step === "generating" 
@@ -361,11 +367,29 @@ const CreateSong = () => {
             </p>
           </div>
 
+          {/* Song Title */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Music className="w-5 h-5" />
+                Nome da Música
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Input
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                placeholder="Digite o nome da sua música..."
+                className="text-lg font-semibold"
+              />
+            </CardContent>
+          </Card>
+
           {/* Selected Lyric */}
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>{selectedLyric?.title}</CardTitle>
+                <CardTitle>Letra</CardTitle>
                 <Badge>Versão {selectedLyric?.version}</Badge>
               </div>
             </CardHeader>
@@ -416,7 +440,7 @@ const CreateSong = () => {
 
             <Button
               onClick={handleApproveLyric}
-              disabled={loading}
+              disabled={loading || !editedTitle.trim()}
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
             >
               {loading ? (
@@ -424,7 +448,7 @@ const CreateSong = () => {
               ) : (
                 <CheckCircle className="w-4 h-4 mr-2" />
               )}
-              Aprovar Letra e Produzir Música
+              Aprovar e Produzir Música
             </Button>
           </div>
 
@@ -444,9 +468,9 @@ const CreateSong = () => {
           <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mb-6">
             <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
           </div>
-          <h2 className="text-2xl font-bold mb-2">Preparando Produção...</h2>
+          <h2 className="text-2xl font-bold mb-2">Finalizando...</h2>
           <p className="text-muted-foreground">
-            Gerando o estilo musical perfeito para sua letra aprovada.
+            Preparando sua música para produção.
           </p>
         </Card>
       </div>
@@ -477,8 +501,9 @@ const CreateSong = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Music className="w-5 h-5" />
-                Letra Aprovada
+                {editedTitle}
               </CardTitle>
+              <CardDescription>Letra aprovada</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted/50 p-4 rounded-lg">
@@ -489,72 +514,39 @@ const CreateSong = () => {
             </CardContent>
           </Card>
 
-          {/* Style Prompt Preview */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Volume2 className="w-5 h-5" />
-                Estilo Musical Gerado
-              </CardTitle>
-              <CardDescription>
-                Prompt técnico que será usado para produzir sua música
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted/50 p-4 rounded-lg">
-                <pre className="text-xs whitespace-pre-wrap font-mono text-muted-foreground">
-                  {stylePrompt}
-                </pre>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Next Steps */}
-          <Card className="mb-6 border-primary/50">
+          <Card className="mb-6 border-primary/50 bg-primary/5">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
                 Próximos Passos
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Badge variant="outline">1</Badge>
-                <div>
-                  <p className="font-medium">Produção da Música</p>
-                  <p className="text-sm text-muted-foreground">
-                    Sua letra será transformada em áudio com o estilo definido
-                  </p>
-                </div>
+            <CardContent className="space-y-3">
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</div>
+                <span>Letra personalizada aprovada</span>
               </div>
-              <div className="flex items-start gap-3">
-                <Badge variant="outline">2</Badge>
-                <div>
-                  <p className="font-medium">Revisão e Entrega</p>
-                  <p className="text-sm text-muted-foreground">
-                    Você receberá a música finalizada por email/WhatsApp
-                  </p>
-                </div>
+              <div className="flex items-center gap-3 text-muted-foreground">
+                <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</div>
+                <span>Estilo musical configurado</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm">2</div>
+                <span className="font-medium">Produção da música (em breve)</span>
               </div>
             </CardContent>
           </Card>
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" onClick={() => navigate('/')}>
+            <Button variant="outline" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Início
+              Ir para Dashboard
             </Button>
-            <Button
-              className="bg-gradient-to-r from-primary to-accent"
-              onClick={() => {
-                toast.info("🎵 Produção de música em desenvolvimento!", {
-                  description: "Em breve você poderá gerar o áudio automaticamente."
-                });
-              }}
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Iniciar Produção (Em Breve)
+            <Button disabled className="bg-gradient-to-r from-primary to-purple-600">
+              <Music className="w-4 h-4 mr-2" />
+              Produzir Música (Em Breve)
             </Button>
           </div>
         </div>

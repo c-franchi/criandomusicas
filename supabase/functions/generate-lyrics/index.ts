@@ -18,6 +18,8 @@ interface BriefingData {
   monologuePosition: string;
   mandatoryWords: string;
   restrictedWords: string;
+  songName?: string;
+  autoGenerateName?: boolean;
 }
 
 function splitTwoLyrics(text: string): { v1: string; v2: string } {
@@ -42,8 +44,13 @@ function splitTwoLyrics(text: string): { v1: string; v2: string } {
   return { v1: paras.slice(0, mid).join("\n\n").trim(), v2: paras.slice(mid).join("\n\n").trim() };
 }
 
-function extractTitleAndBody(raw: string): { title: string; body: string } {
+function extractTitleAndBody(raw: string, providedTitle?: string): { title: string; body: string } {
   const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  
+  // If title was provided by user, use it
+  if (providedTitle && providedTitle.trim()) {
+    return { title: providedTitle.trim(), body: raw.trim() };
+  }
   
   // Look for a title line (not a tag like [Intro])
   let titleIdx = -1;
@@ -61,7 +68,7 @@ function extractTitleAndBody(raw: string): { title: string; body: string } {
     return { title, body };
   }
   
-  return { title: "Letra Personalizada", body: raw.trim() };
+  return { title: "Música Personalizada", body: raw.trim() };
 }
 
 serve(async (req) => {
@@ -104,7 +111,9 @@ serve(async (req) => {
       hasMonologue = false,
       monologuePosition = 'bridge',
       mandatoryWords = '',
-      restrictedWords = ''
+      restrictedWords = '',
+      songName = '',
+      autoGenerateName = true
     } = briefing || {};
 
     // Build structure tags based on user selection
@@ -122,6 +131,7 @@ REGRAS OBRIGATÓRIAS:
 7. A letra deve ter entre 150-300 palavras para ~2-3 minutos de música
 8. Capture a essência emocional da história fornecida
 9. Intensidade emocional: ${emotionIntensity}/5 - ${emotionIntensity <= 2 ? 'sutil' : emotionIntensity <= 3 ? 'moderada' : 'intensa'}
+10. ${autoGenerateName ? 'CRIE UM TÍTULO CRIATIVO E ÚNICO para cada versão da letra, baseado na história. O título deve vir na PRIMEIRA LINHA, antes do [Intro].' : `O título da música é: "${songName}". Use-o na primeira linha.`}
 
 ${hasMonologue ? `
 ⚠️ REGRA CRÍTICA DE MONÓLOGO:
@@ -140,6 +150,8 @@ Texto falado...
 ` : ''}
 
 FORMATO DE SAÍDA OBRIGATÓRIO:
+
+TÍTULO DA MÚSICA (primeira linha, sem colchetes)
 
 [Intro]
 (2-4 versos de abertura)
@@ -180,6 +192,7 @@ DADOS DA MÚSICA:
 - Incluir monólogo/declamação: ${hasMonologue ? `SIM - na seção ${monologuePosition}` : 'NÃO'}
 ${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
 ${restrictedWords ? `- Palavras/assuntos proibidos: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `- Nome da música: ${songName}` : '- Crie um título criativo para cada versão'}
 
 HISTÓRIA/CONTEXTO BASE (use fielmente):
 ${story}
@@ -188,6 +201,7 @@ INSTRUÇÕES FINAIS:
 - Crie DUAS versões DIFERENTES mas baseadas na mesma história
 - Separe as duas versões com uma linha contendo apenas: ---
 - Cada versão deve ser completa e independente
+- ${autoGenerateName ? 'Cada versão deve ter um título criativo diferente na primeira linha' : `Use o título "${songName}" para ambas as versões`}
 - NÃO inclua comentários, explicações ou metadados
 - APENAS as letras com as tags estruturadas`;
 
@@ -244,8 +258,8 @@ INSTRUÇÕES FINAIS:
     console.log("AI Response received, processing lyrics...");
 
     const { v1, v2 } = splitTwoLyrics(content);
-    const l1 = extractTitleAndBody(v1);
-    const l2 = extractTitleAndBody(v2);
+    const l1 = extractTitleAndBody(v1, autoGenerateName ? undefined : songName);
+    const l2 = extractTitleAndBody(v2, autoGenerateName ? undefined : songName);
 
     // Save to Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
