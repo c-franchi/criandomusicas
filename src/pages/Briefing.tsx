@@ -57,7 +57,14 @@ const Briefing = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed?.formData) setFormData(parsed.formData);
+        if (parsed?.formData) {
+          // Garantir que structure seja sempre um array
+          setFormData({
+            ...formData,
+            ...parsed.formData,
+            structure: Array.isArray(parsed.formData.structure) ? parsed.formData.structure : []
+          });
+        }
         if (parsed?.currentStep) setCurrentStep(parsed.currentStep);
       } catch {}
     }
