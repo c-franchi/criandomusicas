@@ -43,6 +43,14 @@
     --gradient-secondary: linear-gradient(180deg, hsl(240 20% 8%), hsl(240 15% 3%));
     --gradient-hero: linear-gradient(135deg, hsl(259 100% 65% / 0.1), hsl(315 100% 70% / 0.1));
     
+    /* Status colors for semantic usage */
+    --status-success: 142 76% 36%;
+    --status-success-foreground: 0 0% 98%;
+    --status-warning: 38 92% 50%;
+    --status-warning-foreground: 240 15% 3%;
+    --status-info: 199 89% 48%;
+    --status-info-foreground: 0 0% 98%;
+    
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(259 100% 65% / 0.3);
     --shadow-card: 0 10px 30px -10px hsl(240 15% 3% / 0.5);
