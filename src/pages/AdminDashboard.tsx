@@ -1383,6 +1383,26 @@ const AdminDashboard = () => {
                       </details>
                     )}
                     
+                    {/* PIX Confirmation Alert */}
+                    {order.payment_status === 'AWAITING_PIX' && (
+                      <div className="flex items-center gap-2 p-2 sm:p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
+                        <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs sm:text-sm font-medium text-yellow-400">Aguardando confirmação do PIX</p>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground">Verifique o pagamento e confirme manualmente</p>
+                        </div>
+                        <Button 
+                          onClick={() => confirmPixPayment(order.id)} 
+                          size="sm" 
+                          className="bg-yellow-500 hover:bg-yellow-600 text-black shrink-0 text-xs sm:text-sm"
+                        >
+                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                          <span className="hidden sm:inline">Confirmar PIX</span>
+                          <span className="sm:hidden">Confirmar</span>
+                        </Button>
+                      </div>
+                    )}
+                    
                     {/* Actions Row */}
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-border/30">
                       {order.status === 'LYRICS_APPROVED' && (
