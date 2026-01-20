@@ -18,6 +18,7 @@ import Planos from "./pages/Planos";
 import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/AdminDashboard";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import Checkout from "./pages/Checkout";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/perfil" element={<Profile />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
+            <Route path="/checkout/:orderId" element={<Checkout />} />
             <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
             <Route path="/pedido/:id/letras" element={<OrderLyricsPage />} />

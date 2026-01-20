@@ -1,1 +1,25 @@
 project_id = "haiiaqzhuydsjujtdcnq"
+
+[functions.create-payment]
+verify_jwt = false
+
+[functions.verify-payment]
+verify_jwt = false
+
+[functions.generate-lyrics]
+verify_jwt = false
+
+[functions.generate-style-prompt]
+verify_jwt = false
+
+[functions.openai-health]
+verify_jwt = false
+
+[functions.elevenlabs-scribe-token]
+verify_jwt = false
+
+[functions.validate-voucher]
+verify_jwt = false
+
+[functions.apply-voucher]
+verify_jwt = false

@@ -172,6 +172,7 @@ export type Database = {
           atmosphere: string | null
           created_at: string
           currency: string
+          discount_applied: number | null
           emotion: string | null
           emotion_intensity: number | null
           final_prompt: string | null
@@ -195,6 +196,7 @@ export type Database = {
           updated_at: string
           user_id: string
           voice_type: string | null
+          voucher_code: string | null
         }
         Insert: {
           amount?: number
@@ -202,6 +204,7 @@ export type Database = {
           atmosphere?: string | null
           created_at?: string
           currency?: string
+          discount_applied?: number | null
           emotion?: string | null
           emotion_intensity?: number | null
           final_prompt?: string | null
@@ -225,6 +228,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           voice_type?: string | null
+          voucher_code?: string | null
         }
         Update: {
           amount?: number
@@ -232,6 +236,7 @@ export type Database = {
           atmosphere?: string | null
           created_at?: string
           currency?: string
+          discount_applied?: number | null
           emotion?: string | null
           emotion_intensity?: number | null
           final_prompt?: string | null
@@ -255,6 +260,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           voice_type?: string | null
+          voucher_code?: string | null
         }
         Relationships: [
           {
@@ -403,6 +409,96 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      voucher_redemptions: {
+        Row: {
+          discount_applied: number
+          id: string
+          order_id: string | null
+          redeemed_at: string | null
+          user_id: string
+          voucher_id: string
+        }
+        Insert: {
+          discount_applied: number
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string | null
+          user_id: string
+          voucher_id: string
+        }
+        Update: {
+          discount_applied?: number
+          id?: string
+          order_id?: string | null
+          redeemed_at?: string | null
+          user_id?: string
+          voucher_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voucher_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voucher_redemptions_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vouchers: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          current_uses: number | null
+          discount_type: string
+          discount_value: number
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          plan_ids: string[] | null
+          stripe_coupon_id: string | null
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          discount_type: string
+          discount_value: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          plan_ids?: string[] | null
+          stripe_coupon_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          discount_type?: string
+          discount_value?: number
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          plan_ids?: string[] | null
+          stripe_coupon_id?: string | null
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }

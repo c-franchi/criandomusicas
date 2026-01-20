@@ -703,13 +703,13 @@ const Briefing = () => {
     }
   };
 
-  const finishBriefing = () => {
+  const finishBriefing = async () => {
     const data = formData;
     
     // Limpar auto-save ao finalizar
     clearSavedBriefing();
     
-    // Salvar e navegar
+    // Criar ordem no banco primeiro
     const briefingData = {
       musicType: data.musicType,
       emotion: data.emotion,
@@ -730,8 +730,46 @@ const Briefing = () => {
       lgpdConsent: true
     };
 
-    localStorage.setItem('briefingData', JSON.stringify(briefingData));
-    navigate('/create-song');
+    // Criar ordem no Supabase
+    try {
+      const { data: orderData, error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user?.id,
+          status: 'AWAITING_PAYMENT',
+          payment_status: 'PENDING',
+          music_type: briefingData.musicType,
+          music_style: briefingData.style,
+          emotion: briefingData.emotion,
+          emotion_intensity: briefingData.emotionIntensity,
+          story: briefingData.story,
+          has_monologue: briefingData.hasMonologue,
+          monologue_position: briefingData.monologuePosition,
+          mandatory_words: briefingData.mandatoryWords,
+          restricted_words: briefingData.restrictedWords,
+          voice_type: briefingData.voiceType,
+          rhythm: briefingData.rhythm,
+          atmosphere: briefingData.atmosphere,
+          music_structure: JSON.stringify(briefingData.structure),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Salvar dados completos no localStorage para uso posterior
+      localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
+      
+      // Redirecionar para checkout
+      navigate(`/checkout/${orderData.id}`);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: 'Erro ao criar pedido',
+        description: 'Tente novamente.',
+        variant: 'destructive'
+      });
+    }
   };
 
   const getFieldLabel = (field: string, value: string | boolean | number): string => {
