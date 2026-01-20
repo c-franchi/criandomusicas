@@ -16,27 +16,52 @@ interface BriefingData {
   structure: string[];
   hasMonologue: boolean;
   monologuePosition: string;
-  occasion: string;
   mandatoryWords: string;
   restrictedWords: string;
 }
 
 function splitTwoLyrics(text: string): { v1: string; v2: string } {
+  // Try splitting by delimiter
   const byDelimiter = text.split(/\n\s*---+\s*\n/);
   if (byDelimiter.length >= 2) {
     return { v1: byDelimiter[0].trim(), v2: byDelimiter[1].trim() };
   }
+  
+  // Try splitting by version markers
+  const versionMatch = text.match(/(?:versão\s*[ab12]|version\s*[ab12])/gi);
+  if (versionMatch && versionMatch.length >= 2) {
+    const parts = text.split(/versão\s*[ab12]|version\s*[ab12]/gi).filter(p => p.trim());
+    if (parts.length >= 2) {
+      return { v1: parts[0].trim(), v2: parts[1].trim() };
+    }
+  }
+  
+  // Fallback: split by paragraphs
   const paras = text.split(/\n{2,}/);
   const mid = Math.max(1, Math.floor(paras.length / 2));
   return { v1: paras.slice(0, mid).join("\n\n").trim(), v2: paras.slice(mid).join("\n\n").trim() };
 }
 
-function extractTitleAndBody(raw: string) {
-  const lines = raw.split(/\r?\n/).map(l => l.trim());
-  const titleIdx = lines.findIndex(l => l && !/^#|^\[|^\d+\./.test(l));
-  const title = titleIdx >= 0 ? lines[titleIdx] : "Letra";
-  const body = lines.filter((_, i) => i !== titleIdx).join("\n").trim();
-  return { title: title.slice(0, 120), text: body };
+function extractTitleAndBody(raw: string): { title: string; body: string } {
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+  
+  // Look for a title line (not a tag like [Intro])
+  let titleIdx = -1;
+  for (let i = 0; i < Math.min(5, lines.length); i++) {
+    const line = lines[i];
+    if (line && !line.startsWith('[') && !line.startsWith('#') && line.length < 100) {
+      titleIdx = i;
+      break;
+    }
+  }
+  
+  if (titleIdx >= 0) {
+    const title = lines[titleIdx].replace(/^["']|["']$/g, '').slice(0, 120);
+    const body = lines.filter((_, i) => i !== titleIdx).join('\n').trim();
+    return { title, body };
+  }
+  
+  return { title: "Letra Personalizada", body: raw.trim() };
 }
 
 serve(async (req) => {
@@ -50,6 +75,8 @@ serve(async (req) => {
       story: string;
       briefing: BriefingData;
     };
+
+    console.log("generate-lyrics called with orderId:", orderId);
 
     if (!orderId || !story) {
       return new Response(
@@ -75,22 +102,42 @@ serve(async (req) => {
       atmosphere = 'festivo',
       structure = ['verse', 'chorus'],
       hasMonologue = false,
-      monologuePosition = '',
+      monologuePosition = 'bridge',
       mandatoryWords = '',
       restrictedWords = ''
     } = briefing || {};
 
-    const systemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas.
+    // Build structure tags based on user selection
+    const structureTags = structure.map(s => `[${s.charAt(0).toUpperCase() + s.slice(1)}]`).join(', ');
+
+    const systemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : 'momentos especiais'}.
 
 REGRAS OBRIGATÓRIAS:
-1. Gere APENAS a letra final, sem comentários ou explicações
-2. Use tags estruturadas obrigatórias: [Intro], [Verse 1], [Chorus], [Verse 2], [Bridge], [Outro]
-3. ${hasMonologue ? `INCLUA OBRIGATORIAMENTE a tag [monologue] na ${monologuePosition || 'bridge'} com texto FALADO, NÃO cantado` : 'Não inclua monólogo'}
-4. Palavras obrigatórias DEVEM aparecer naturalmente na letra
-5. Palavras restritas NÃO PODEM aparecer em hipótese alguma
+1. Gere APENAS a letra final, sem comentários, explicações ou metadados
+2. Use OBRIGATORIAMENTE as tags estruturadas: ${structureTags}
+3. ${hasMonologue ? `INCLUA OBRIGATORIAMENTE a tag [monologue] ou [spoken word] na seção ${monologuePosition}. O texto dentro dessa tag deve ser FALADO/DECLAMADO, NÃO cantado. Nunca misture monólogo com [Verse], [Chorus] ou [Bridge].` : 'NÃO inclua monólogo ou spoken word'}
+4. ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS que devem aparecer: ${mandatoryWords}` : 'Nenhuma palavra obrigatória específica'}
+5. ${restrictedWords ? `Palavras/assuntos PROIBIDOS que NÃO podem aparecer: ${restrictedWords}` : 'Nenhuma restrição específica'}
 6. Mantenha métrica e rima coerentes para canto
-7. A letra deve ter entre 150-250 palavras para ~2-3 minutos de música
+7. A letra deve ter entre 150-300 palavras para ~2-3 minutos de música
 8. Capture a essência emocional da história fornecida
+9. Intensidade emocional: ${emotionIntensity}/5 - ${emotionIntensity <= 2 ? 'sutil' : emotionIntensity <= 3 ? 'moderada' : 'intensa'}
+
+${hasMonologue ? `
+⚠️ REGRA CRÍTICA DE MONÓLOGO:
+- SEMPRE use a tag [monologue] ou [spoken word] para trechos declamados
+- TODO o texto falado DEVE estar DENTRO dessa tag
+- NUNCA trate declamação como verso cantado
+- NUNCA misture declamação com outras seções
+
+✅ CORRETO:
+[monologue]
+"Texto declamado aqui..."
+
+❌ ERRADO:
+[Verse]
+Texto falado...
+` : ''}
 
 FORMATO DE SAÍDA OBRIGATÓRIO:
 
@@ -101,22 +148,25 @@ FORMATO DE SAÍDA OBRIGATÓRIO:
 (4-6 versos narrativos)
 
 [Chorus]
-(4-6 versos - refrão principal, memorável)
+(4-6 versos - refrão principal, memorável e fácil de cantar)
 
-${hasMonologue ? `[monologue]
-(texto declamado/falado, NÃO cantado - 2-4 frases emocionais)
-
-` : ''}[Verse 2]
+${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 (4-6 versos desenvolvendo a história)
 
-[Bridge]
+`}${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
+(texto declamado/falado, NÃO cantado - 2-4 frases emocionais entre aspas)
+
+` : `[Bridge]
 (2-4 versos de transição emocional)
 
-[Chorus]
+`}[Chorus]
 (repetição do refrão)
 
 [Outro]
-(2-4 versos de encerramento)`;
+(2-4 versos de encerramento)${hasMonologue && monologuePosition === 'outro' ? `
+
+[monologue]
+(texto declamado final entre aspas)` : ''}`;
 
     const userPrompt = `Crie DUAS versões de letra completas para uma música personalizada.
 
@@ -127,18 +177,19 @@ DADOS DA MÚSICA:
 - Ritmo: ${rhythm}
 - Atmosfera: ${atmosphere}
 - Estrutura desejada: ${structure.join(', ')}
-- Incluir monólogo: ${hasMonologue ? `SIM, na seção ${monologuePosition}` : 'NÃO'}
-- Palavras obrigatórias: ${mandatoryWords || 'nenhuma específica'}
-- Palavras proibidas: ${restrictedWords || 'nenhuma específica'}
+- Incluir monólogo/declamação: ${hasMonologue ? `SIM - na seção ${monologuePosition}` : 'NÃO'}
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras/assuntos proibidos: ${restrictedWords}` : ''}
 
 HISTÓRIA/CONTEXTO BASE (use fielmente):
 ${story}
 
-IMPORTANTE:
-- Crie duas versões DIFERENTES mas baseadas na mesma história
+INSTRUÇÕES FINAIS:
+- Crie DUAS versões DIFERENTES mas baseadas na mesma história
 - Separe as duas versões com uma linha contendo apenas: ---
 - Cada versão deve ser completa e independente
-- Não inclua comentários, apenas as letras`;
+- NÃO inclua comentários, explicações ou metadados
+- APENAS as letras com as tags estruturadas`;
 
     console.log("Calling Lovable AI Gateway for lyrics generation...");
 
@@ -154,8 +205,8 @@ IMPORTANTE:
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        max_tokens: 2500,
-        temperature: 0.9,
+        max_tokens: 3000,
+        temperature: 0.85,
       }),
     });
 
@@ -205,38 +256,45 @@ IMPORTANTE:
     const { data: insertedLyrics, error: insertError } = await supabase
       .from('lyrics')
       .insert([
-        { order_id: orderId, version: 1, title: l1.title, text: l1.text, approved: false },
-        { order_id: orderId, version: 2, title: l2.title, text: l2.text, approved: false }
+        { order_id: orderId, version: 'A', title: l1.title, body: l1.body, is_approved: false },
+        { order_id: orderId, version: 'B', title: l2.title, body: l2.body, is_approved: false }
       ])
       .select();
 
     if (insertError) {
       console.error("Error inserting lyrics:", insertError);
-      // Still return the lyrics even if DB insert fails
     }
 
     // Update order status
-    await supabase
+    const { error: updateError } = await supabase
       .from('orders')
-      .update({ status: 'lyrics_generated', updated_at: new Date().toISOString() })
+      .update({ status: 'LYRICS_GENERATED', updated_at: new Date().toISOString() })
       .eq('id', orderId);
+
+    if (updateError) {
+      console.error("Error updating order status:", updateError);
+    }
+
+    console.log("Lyrics saved successfully");
 
     return new Response(
       JSON.stringify({
         ok: true,
         message: "Letras geradas com sucesso",
         lyrics: [
-          { id: insertedLyrics?.[0]?.id || '1', version: 1, title: l1.title, text: l1.text },
-          { id: insertedLyrics?.[1]?.id || '2', version: 2, title: l2.title, text: l2.text }
-        ]
+          { id: insertedLyrics?.[0]?.id || 'lyric-a', version: 'A', title: l1.title, text: l1.body },
+          { id: insertedLyrics?.[1]?.id || 'lyric-b', version: 'B', title: l2.title, text: l2.body }
+        ],
+        usedModel: "gemini-3-flash-preview"
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("generate-lyrics error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
     return new Response(
-      JSON.stringify({ ok: false, error: error instanceof Error ? error.message : "Erro desconhecido" }),
+      JSON.stringify({ ok: false, error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
