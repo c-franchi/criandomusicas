@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -24,7 +24,8 @@ import {
   Trash2,
   Plus,
   Headphones,
-  Edit
+  Edit,
+  Upload
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,7 +39,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AdminOrder {
   id: string;
@@ -106,6 +118,14 @@ const AdminDashboard = () => {
     is_active: true,
     sort_order: 0
   });
+  const [uploadingAudio, setUploadingAudio] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  // Confirmation dialogs
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const [deleteAudioId, setDeleteAudioId] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
@@ -256,13 +276,13 @@ const AdminDashboard = () => {
     }
   };
 
-  const deleteOrder = async (orderId: string) => {
-    if (!confirm('Tem certeza que deseja apagar este pedido? Esta ação não pode ser desfeita.')) return;
+  const confirmDeleteOrder = async () => {
+    if (!deleteOrderId) return;
     try {
       const { error } = await supabase
         .from('orders')
         .delete()
-        .eq('id', orderId);
+        .eq('id', deleteOrderId);
 
       if (error) throw error;
 
@@ -271,7 +291,7 @@ const AdminDashboard = () => {
         description: 'O pedido foi removido com sucesso.',
       });
 
-      fetchOrders();
+      setOrders(prev => prev.filter(o => o.id !== deleteOrderId));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -279,6 +299,80 @@ const AdminDashboard = () => {
         description: errorMessage,
         variant: 'destructive',
       });
+    } finally {
+      setDeleteOrderId(null);
+    }
+  };
+
+  // Upload audio file to storage
+  const handleAudioUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingAudio(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `audios/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('audio-samples')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('audio-samples')
+        .getPublicUrl(filePath);
+
+      const audioUrl = publicUrlData.publicUrl;
+
+      if (editingAudio) {
+        setEditingAudio({ ...editingAudio, audio_url: audioUrl });
+      } else {
+        setNewAudio({ ...newAudio, audio_url: audioUrl });
+      }
+
+      toast({ title: 'Áudio enviado!', description: 'O arquivo foi enviado com sucesso.' });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao enviar áudio', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setUploadingAudio(false);
+    }
+  };
+
+  // Upload cover image to storage
+  const handleCoverUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingCover(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `covers/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('audio-samples')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('audio-samples')
+        .getPublicUrl(filePath);
+
+      const coverUrl = publicUrlData.publicUrl;
+
+      if (editingAudio) {
+        setEditingAudio({ ...editingAudio, cover_url: coverUrl });
+      } else {
+        setNewAudio({ ...newAudio, cover_url: coverUrl });
+      }
+
+      toast({ title: 'Capa enviada!', description: 'A imagem foi enviada com sucesso.' });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao enviar capa', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setUploadingCover(false);
     }
   };
 
@@ -306,9 +400,17 @@ const AdminDashboard = () => {
           .eq('id', editingAudio.id);
 
         if (error) throw error;
-        toast({ title: 'Áudio atualizado!' });
+        
+        // Update local state immediately
+        setAudioSamples(prev => prev.map(a => 
+          a.id === editingAudio.id 
+            ? { ...a, ...audioData, cover_url: audioData.cover_url || null } as AudioSample
+            : a
+        ));
+        
+        toast({ title: 'Áudio atualizado!', description: 'As informações foram salvas.' });
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('audio_samples')
           .insert({
             title: audioData.title,
@@ -319,32 +421,44 @@ const AdminDashboard = () => {
             cover_url: audioData.cover_url || null,
             is_active: audioData.is_active ?? true,
             sort_order: audioData.sort_order || 0
-          });
+          })
+          .select()
+          .single();
 
         if (error) throw error;
-        toast({ title: 'Áudio adicionado!' });
+        
+        // Add to local state immediately
+        if (data) {
+          setAudioSamples(prev => [...prev, data]);
+        }
+        
+        toast({ title: 'Áudio adicionado!', description: 'O novo áudio está disponível.' });
       }
 
       setAudioDialogOpen(false);
       setEditingAudio(null);
       setNewAudio({ title: '', description: '', style: '', occasion: '', audio_url: '', cover_url: '', is_active: true, sort_order: 0 });
-      fetchAudioSamples();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({ title: 'Erro ao salvar áudio', description: errorMessage, variant: 'destructive' });
     }
   };
 
-  const deleteAudioSample = async (id: string) => {
-    if (!confirm('Tem certeza que deseja apagar este áudio?')) return;
+  const confirmDeleteAudio = async () => {
+    if (!deleteAudioId) return;
     try {
-      const { error } = await supabase.from('audio_samples').delete().eq('id', id);
+      const { error } = await supabase.from('audio_samples').delete().eq('id', deleteAudioId);
       if (error) throw error;
-      toast({ title: 'Áudio removido!' });
-      fetchAudioSamples();
+      
+      // Remove from local state immediately
+      setAudioSamples(prev => prev.filter(a => a.id !== deleteAudioId));
+      
+      toast({ title: 'Áudio removido!', description: 'O áudio foi excluído com sucesso.' });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({ title: 'Erro ao remover áudio', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setDeleteAudioId(null);
     }
   };
 
@@ -362,7 +476,10 @@ const AdminDashboard = () => {
         description: `Pedido atualizado para: ${getStatusText(newStatus)}`,
       });
 
-      fetchOrders();
+      // Update local state immediately
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, status: newStatus } : o
+      ));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -489,6 +606,42 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Delete Order Confirmation */}
+      <AlertDialog open={!!deleteOrderId} onOpenChange={(open) => !open && setDeleteOrderId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja apagar este pedido? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Audio Confirmation */}
+      <AlertDialog open={!!deleteAudioId} onOpenChange={(open) => !open && setDeleteAudioId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja apagar este áudio de exemplo?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteAudio} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -820,7 +973,7 @@ const AdminDashboard = () => {
                           Ver Detalhes
                         </Link>
                       </Button>
-                      <Button variant="destructive" size="sm" onClick={() => deleteOrder(order.id)}>
+                      <Button variant="destructive" size="sm" onClick={() => setDeleteOrderId(order.id)}>
                         <Trash2 className="w-4 h-4 mr-2" />
                         Apagar
                       </Button>
@@ -851,7 +1004,7 @@ const AdminDashboard = () => {
                       <Badge className={getStatusColor(order.status)}>
                         {getStatusText(order.status)}
                       </Badge>
-                      <Button variant="ghost" size="sm" onClick={() => deleteOrder(order.id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteOrderId(order.id)}>
                         <Trash2 className="w-4 h-4 text-destructive" />
                       </Button>
                     </div>
@@ -927,26 +1080,89 @@ const AdminDashboard = () => {
                         />
                       </div>
                     </div>
+                    
+                    {/* Audio Upload */}
                     <div>
-                      <Label>URL do Áudio *</Label>
-                      <Input
-                        value={(editingAudio || newAudio).audio_url || ''}
-                        onChange={(e) => editingAudio 
-                          ? setEditingAudio({ ...editingAudio, audio_url: e.target.value })
-                          : setNewAudio({ ...newAudio, audio_url: e.target.value })}
-                        placeholder="https://..."
-                      />
+                      <Label>Arquivo de Áudio *</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Input
+                          value={(editingAudio || newAudio).audio_url || ''}
+                          onChange={(e) => editingAudio 
+                            ? setEditingAudio({ ...editingAudio, audio_url: e.target.value })
+                            : setNewAudio({ ...newAudio, audio_url: e.target.value })}
+                          placeholder="URL do áudio ou faça upload"
+                          className="flex-1"
+                        />
+                        <input
+                          type="file"
+                          ref={audioInputRef}
+                          accept="audio/*"
+                          className="hidden"
+                          onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0])}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => audioInputRef.current?.click()}
+                          disabled={uploadingAudio}
+                        >
+                          {uploadingAudio ? (
+                            <Music className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Upload className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {(editingAudio || newAudio).audio_url && (
+                        <audio controls className="w-full mt-2" src={(editingAudio || newAudio).audio_url}>
+                          Seu navegador não suporta áudio.
+                        </audio>
+                      )}
                     </div>
+                    
+                    {/* Cover Upload */}
                     <div>
-                      <Label>URL da Capa (opcional)</Label>
-                      <Input
-                        value={(editingAudio || newAudio).cover_url || ''}
-                        onChange={(e) => editingAudio 
-                          ? setEditingAudio({ ...editingAudio, cover_url: e.target.value })
-                          : setNewAudio({ ...newAudio, cover_url: e.target.value })}
-                        placeholder="https://..."
-                      />
+                      <Label>Imagem de Capa (opcional)</Label>
+                      <div className="flex gap-2 mt-1">
+                        <Input
+                          value={(editingAudio || newAudio).cover_url || ''}
+                          onChange={(e) => editingAudio 
+                            ? setEditingAudio({ ...editingAudio, cover_url: e.target.value })
+                            : setNewAudio({ ...newAudio, cover_url: e.target.value })}
+                          placeholder="URL da capa ou faça upload"
+                          className="flex-1"
+                        />
+                        <input
+                          type="file"
+                          ref={coverInputRef}
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => e.target.files?.[0] && handleCoverUpload(e.target.files[0])}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => coverInputRef.current?.click()}
+                          disabled={uploadingCover}
+                        >
+                          {uploadingCover ? (
+                            <Music className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Upload className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
+                      {(editingAudio || newAudio).cover_url && (
+                        <img 
+                          src={(editingAudio || newAudio).cover_url || ''} 
+                          alt="Capa" 
+                          className="w-20 h-20 object-cover rounded mt-2"
+                        />
+                      )}
                     </div>
+                    
                     <div>
                       <Label>Ordem</Label>
                       <Input
@@ -994,6 +1210,11 @@ const AdminDashboard = () => {
                           <p className="text-sm text-muted-foreground">
                             {audio.style} • {audio.occasion}
                           </p>
+                          {audio.audio_url && (
+                            <audio controls className="h-8 mt-1" src={audio.audio_url}>
+                              Áudio
+                            </audio>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1006,7 +1227,7 @@ const AdminDashboard = () => {
                         }}>
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => deleteAudioSample(audio.id)}>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleteAudioId(audio.id)}>
                           <Trash2 className="w-4 h-4 text-destructive" />
                         </Button>
                       </div>
