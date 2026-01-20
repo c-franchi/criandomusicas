@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Music, Sparkles, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -21,14 +21,12 @@ interface LyricOption {
 const CreateSong = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { toast } = useToast();
   const [story, setStory] = useState("");
   const [loading, setLoading] = useState(false);
   const [lyrics, setLyrics] = useState<LyricOption[]>([]);
   const [selectedLyric, setSelectedLyric] = useState<string | null>(null);
   const [step, setStep] = useState<"input" | "select" | "confirm">("input");
   const [usedModel, setUsedModel] = useState<string>("");
-  const [durationEnforcedSec, setDurationEnforcedSec] = useState<number>(0);
   const [briefingData, setBriefingData] = useState<any>(null);
   const promptSamples = [
     {
@@ -90,7 +88,6 @@ const CreateSong = () => {
           occasion: briefingData.occasion,
           style: briefingData.style,
           tone: briefingData.tone,
-          durationTargetSec: briefingData.durationTargetSec,
           storyRaw: story
         }),
       });
@@ -98,10 +95,8 @@ const CreateSong = () => {
       const data = await response.json();
 
       if (response.status === 403 && data.code === "FREE_LIMIT_REACHED") {
-        toast({
-          title: "Limite do plano free atingido",
+        toast.error("Limite do plano free atingido", {
           description: data.message,
-          variant: "destructive",
         });
         navigate("/planos");
         return;
@@ -126,14 +121,20 @@ const CreateSong = () => {
 
         setLyrics(sanitizedLyrics);
         setUsedModel(data.usedModel || "gpt-4o");
-        setDurationEnforcedSec(data.durationEnforcedSec || 60);
         setStep("select");
+        toast.success("Letras geradas com sucesso!", {
+          description: "Escolha a versão que mais combina com você",
+        });
       } else {
-        alert(`Erro: ${data.message || "Erro ao gerar letras"}`);
+        toast.error(data.message || "Erro ao gerar letras", {
+          description: "Tente novamente ou entre em contato com o suporte",
+        });
       }
     } catch (error) {
       console.error("Erro:", error);
-      alert("Erro ao conectar com o servidor");
+      toast.error("Erro ao conectar com o servidor", {
+        description: "Verifique sua conexão e tente novamente",
+      });
     } finally {
       setLoading(false);
     }
@@ -146,7 +147,10 @@ const CreateSong = () => {
 
   const handleConfirmSelection = () => {
     // Aqui seria implementada a lógica para prosseguir com a música
-    alert("✅ Música selecionada! Em breve você receberá sua música personalizada.");
+    toast.success("🎵 Música selecionada!", {
+      description: "Em breve você receberá sua música personalizada por WhatsApp.",
+      duration: 5000,
+    });
     // Reset para nova criação
     setStep("input");
     setStory("");
@@ -166,9 +170,8 @@ const CreateSong = () => {
               Selecionamos duas versões especiais da sua história. Qual você prefere?
             </p>
             {usedModel && (
-              <div className="flex justify-center gap-4 text-sm text-gray-500">
+              <div className="flex justify-center gap-4 text-sm text-muted-foreground">
                 <span>Gerado com: <strong>{usedModel}</strong></span>
-                <span>Duração alvo: <strong>{durationEnforcedSec}s</strong></span>
               </div>
             )}
           </div>
@@ -281,9 +284,9 @@ const CreateSong = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {briefingData && (
-            <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-              <h4 className="font-semibold text-blue-800">Seu Briefing:</h4>
-              <div className="text-sm text-blue-700 space-y-1">
+            <div className="bg-muted p-4 rounded-lg space-y-2">
+              <h4 className="font-semibold text-foreground">Seu Briefing:</h4>
+              <div className="text-sm text-muted-foreground space-y-1">
                 <p><strong>Ocasião:</strong> {briefingData.occasion}</p>
                 <p><strong>Plano:</strong> {briefingData.plan.toUpperCase()}</p>
                 {briefingData.plan !== 'free' && (
@@ -292,7 +295,6 @@ const CreateSong = () => {
                     <p><strong>Tom:</strong> {briefingData.tone}</p>
                   </>
                 )}
-                <p><strong>Duração:</strong> {briefingData.durationTargetSec}s</p>
               </div>
             </div>
           )}
