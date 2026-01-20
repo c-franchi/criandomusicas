@@ -1,0 +1,188 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+
+function urlBase64ToUint8Array(base64String: string): Uint8Array {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export const usePushNotifications = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [isSupported, setIsSupported] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+
+  // Check if push notifications are supported
+  useEffect(() => {
+    const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    setIsSupported(supported);
+    
+    if (supported) {
+      setPermission(Notification.permission);
+    }
+  }, []);
+
+  // Check if user is already subscribed
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (!isSupported || !user) return;
+
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        
+        if (subscription) {
+          // Verify subscription exists in database
+          const { data } = await supabase
+            .from('push_subscriptions')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('endpoint', subscription.endpoint)
+            .eq('is_active', true)
+            .maybeSingle();
+          
+          setIsSubscribed(!!data);
+        } else {
+          setIsSubscribed(false);
+        }
+      } catch (error) {
+        console.error('Error checking subscription:', error);
+      }
+    };
+
+    checkSubscription();
+  }, [isSupported, user]);
+
+  const subscribe = useCallback(async () => {
+    if (!isSupported || !user || !VAPID_PUBLIC_KEY) {
+      toast({
+        title: 'Notificações não disponíveis',
+        description: 'Seu navegador não suporta notificações push ou a chave VAPID não está configurada.',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    setIsLoading(true);
+    try {
+      // Request permission
+      const permissionResult = await Notification.requestPermission();
+      setPermission(permissionResult);
+
+      if (permissionResult !== 'granted') {
+        toast({
+          title: 'Permissão negada',
+          description: 'Você precisa permitir notificações para receber atualizações.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      // Get service worker registration
+      const registration = await navigator.serviceWorker.ready;
+
+      // Subscribe to push
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
+      });
+
+      const subscriptionJson = subscription.toJSON();
+      
+      // Save to database
+      const { error } = await supabase
+        .from('push_subscriptions')
+        .upsert({
+          user_id: user.id,
+          endpoint: subscriptionJson.endpoint!,
+          p256dh: subscriptionJson.keys!.p256dh,
+          auth: subscriptionJson.keys!.auth,
+          is_active: true
+        }, {
+          onConflict: 'user_id,endpoint'
+        });
+
+      if (error) throw error;
+
+      setIsSubscribed(true);
+      toast({
+        title: '🔔 Notificações ativadas!',
+        description: 'Você receberá atualizações sobre seus pedidos.'
+      });
+      return true;
+    } catch (error) {
+      console.error('Error subscribing to push:', error);
+      toast({
+        title: 'Erro ao ativar notificações',
+        description: 'Tente novamente mais tarde.',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isSupported, user, toast]);
+
+  const unsubscribe = useCallback(async () => {
+    if (!user) return false;
+
+    setIsLoading(true);
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+
+      if (subscription) {
+        await subscription.unsubscribe();
+
+        // Deactivate in database
+        await supabase
+          .from('push_subscriptions')
+          .update({ is_active: false })
+          .eq('user_id', user.id)
+          .eq('endpoint', subscription.endpoint);
+      }
+
+      setIsSubscribed(false);
+      toast({
+        title: 'Notificações desativadas',
+        description: 'Você não receberá mais notificações push.'
+      });
+      return true;
+    } catch (error) {
+      console.error('Error unsubscribing:', error);
+      toast({
+        title: 'Erro ao desativar notificações',
+        description: 'Tente novamente mais tarde.',
+        variant: 'destructive'
+      });
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user, toast]);
+
+  return {
+    isSupported,
+    isSubscribed,
+    isLoading,
+    permission,
+    subscribe,
+    unsubscribe
+  };
+};
