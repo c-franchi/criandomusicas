@@ -1096,7 +1096,7 @@ const AdminDashboard = () => {
                         <input
                           type="file"
                           ref={audioInputRef}
-                          accept="audio/*"
+                          accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,audio/aac,audio/m4a,audio/*,video/mp4,video/*"
                           className="hidden"
                           onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0])}
                         />
@@ -1196,6 +1196,14 @@ const AdminDashboard = () => {
               <div className="grid gap-4">
                 {audioSamples.map((audio) => (
                   <Card key={audio.id} className={`p-4 ${!audio.is_active ? 'opacity-50' : ''}`}>
+                    {/* Audio Player at Top */}
+                    {audio.audio_url && (
+                      <div className="mb-3">
+                        <audio controls className="w-full h-10" src={audio.audio_url}>
+                          Áudio
+                        </audio>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         {audio.cover_url ? (
@@ -1210,11 +1218,6 @@ const AdminDashboard = () => {
                           <p className="text-sm text-muted-foreground">
                             {audio.style} • {audio.occasion}
                           </p>
-                          {audio.audio_url && (
-                            <audio controls className="h-8 mt-1" src={audio.audio_url}>
-                              Áudio
-                            </audio>
-                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
