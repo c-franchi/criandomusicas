@@ -2,10 +2,16 @@ import { ArrowLeft, Music, CheckCircle, XCircle, AlertTriangle, Shield } from "l
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-
+import SEO from "@/components/SEO";
 const MusicRules = () => {
   return (
     <div className="min-h-screen bg-background py-12 px-6">
+      <SEO 
+        canonical="/regras"
+        title="Regras de Criação Musical"
+        description="Conheça as diretrizes para criar sua música personalizada. Dicas para um briefing perfeito, tipos de música permitidos e nossa garantia de satisfação."
+        keywords="como criar música personalizada, regras música IA, dicas briefing musical, tipos de música, garantia satisfação"
+      />
       <div className="max-w-4xl mx-auto">
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/">

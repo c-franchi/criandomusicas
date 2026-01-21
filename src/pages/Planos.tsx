@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PlanTypeToggle from "@/components/PlanTypeToggle";
+import SEO from "@/components/SEO";
 
 // Helper function to calculate instrumental price (20% off)
 const getInstrumentalPrice = (originalPrice: string): string => {
@@ -89,6 +90,12 @@ const Planos = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background py-12 px-6">
+      <SEO 
+        canonical="/planos"
+        title="Planos e Preços"
+        description="Escolha o plano ideal para criar sua música personalizada. Opções a partir de R$ 47,90 com entrega em até 48h. Pacotes para músicas vocais e instrumentais."
+        keywords="planos música personalizada, preços música IA, pacote músicas, assinatura música, quanto custa música personalizada"
+      />
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

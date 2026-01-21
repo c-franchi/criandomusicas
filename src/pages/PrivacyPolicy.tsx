@@ -1,10 +1,19 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
+import SEO from "@/components/SEO";
 const PrivacyPolicy = () => {
+  const currentDate = new Date().toISOString();
+  
   return (
     <div className="min-h-screen bg-background py-12 px-6">
+      <SEO 
+        canonical="/privacidade"
+        title="Política de Privacidade"
+        description="Saiba como a Criando Músicas coleta, utiliza e protege seus dados pessoais em conformidade com a LGPD. Transparência e segurança para você."
+        keywords="política de privacidade, LGPD, proteção de dados, privacidade criandomusicas"
+        updatedAt={currentDate}
+      />
       <div className="max-w-4xl mx-auto">
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/">

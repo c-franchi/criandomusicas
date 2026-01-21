@@ -184,7 +184,7 @@ const InstrumentalShowcase = () => {
                     <div className="relative h-48">
                       <img 
                         src={sample.coverUrl}
-                        alt={`Música instrumental: ${sample.title}`}
+                        alt={`Música instrumental ${sample.style}: ${sample.title} - ${sample.description}`}
                         className={`w-full h-full object-cover transition-all duration-500 ${
                           isPlaying ? 'scale-110 brightness-75' : 'group-hover:scale-105'
                         }`}
