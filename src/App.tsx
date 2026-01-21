@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { usePWAUpdate } from "@/hooks/usePWAUpdate";
 import Index from "./pages/Index";
 import Briefing from "./pages/Briefing";
 import CreateSong from "./pages/CreateSong";
@@ -27,10 +28,17 @@ import MusicRules from "./pages/MusicRules";
 
 const queryClient = new QueryClient();
 
+// PWA Update Handler Component
+const PWAUpdateHandler = () => {
+  usePWAUpdate();
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+        <PWAUpdateHandler />
         <Toaster />
         <Sonner />
         <BrowserRouter>

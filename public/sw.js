@@ -77,3 +77,28 @@ async function syncNotifications() {
   // Placeholder for syncing any pending actions when back online
   console.log('Syncing notifications...');
 }
+
+// Force update on new version
+self.addEventListener('install', function(event) {
+  console.log('Service Worker installing...');
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+  console.log('Service Worker activating...');
+  event.waitUntil(
+    Promise.all([
+      // Take control of all clients immediately
+      clients.claim(),
+      // Clear old caches
+      caches.keys().then(function(cacheNames) {
+        return Promise.all(
+          cacheNames.map(function(cacheName) {
+            console.log('Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          })
+        );
+      })
+    ])
+  );
+});
