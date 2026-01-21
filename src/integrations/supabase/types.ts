@@ -219,6 +219,9 @@ export type Database = {
           final_prompt: string | null
           has_monologue: boolean | null
           id: string
+          instrumentation_notes: string | null
+          instruments: string[] | null
+          is_instrumental: boolean | null
           mandatory_words: string | null
           monologue_position: string | null
           music_ready_at: string | null
@@ -232,6 +235,8 @@ export type Database = {
           restricted_words: string | null
           review_notification_sent: boolean | null
           rhythm: string | null
+          solo_instrument: string | null
+          solo_moment: string | null
           status: Database["public"]["Enums"]["order_status"]
           story: string | null
           style_prompt: string | null
@@ -254,6 +259,9 @@ export type Database = {
           final_prompt?: string | null
           has_monologue?: boolean | null
           id?: string
+          instrumentation_notes?: string | null
+          instruments?: string[] | null
+          is_instrumental?: boolean | null
           mandatory_words?: string | null
           monologue_position?: string | null
           music_ready_at?: string | null
@@ -267,6 +275,8 @@ export type Database = {
           restricted_words?: string | null
           review_notification_sent?: boolean | null
           rhythm?: string | null
+          solo_instrument?: string | null
+          solo_moment?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
           style_prompt?: string | null
@@ -289,6 +299,9 @@ export type Database = {
           final_prompt?: string | null
           has_monologue?: boolean | null
           id?: string
+          instrumentation_notes?: string | null
+          instruments?: string[] | null
+          is_instrumental?: boolean | null
           mandatory_words?: string | null
           monologue_position?: string | null
           music_ready_at?: string | null
@@ -302,6 +315,8 @@ export type Database = {
           restricted_words?: string | null
           review_notification_sent?: boolean | null
           rhythm?: string | null
+          solo_instrument?: string | null
+          solo_moment?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
           style_prompt?: string | null
