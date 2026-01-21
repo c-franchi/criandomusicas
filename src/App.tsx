@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { usePWAUpdate } from "@/hooks/usePWAUpdate";
 import PageLoader from "@/components/PageLoader";
+import UpdateBanner from "@/components/UpdateBanner";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -37,10 +38,18 @@ const VideoUpload = lazy(() => import("./pages/VideoUpload"));
 
 const queryClient = new QueryClient();
 
-// PWA Update Handler Component
+// PWA Update Handler Component with visual banner
 const PWAUpdateHandler = () => {
-  usePWAUpdate();
-  return null;
+  const { showUpdateBanner, forceUpdate, dismissBanner } = usePWAUpdate();
+  
+  if (!showUpdateBanner) return null;
+  
+  return (
+    <UpdateBanner 
+      onUpdate={forceUpdate} 
+      onDismiss={dismissBanner} 
+    />
+  );
 };
 
 const App = () => (
