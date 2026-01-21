@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ReviewForm from "@/components/ReviewForm";
 
 interface OrderData {
   id: string;
@@ -48,6 +49,13 @@ interface TrackData {
   status: string;
 }
 
+interface ReviewData {
+  id: string;
+  rating: number;
+  comment: string | null;
+  is_public: boolean;
+}
+
 const OrderDetails = () => {
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
@@ -55,9 +63,20 @@ const OrderDetails = () => {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [lyrics, setLyrics] = useState<LyricData[]>([]);
   const [track, setTrack] = useState<TrackData | null>(null);
+  const [review, setReview] = useState<ReviewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+
+  const fetchReview = useCallback(async () => {
+    if (!orderId) return;
+    const { data } = await supabase
+      .from('reviews')
+      .select('id, rating, comment, is_public')
+      .eq('order_id', orderId)
+      .maybeSingle();
+    setReview(data);
+  }, [orderId]);
 
   // Fetch order data
   useEffect(() => {
@@ -94,6 +113,9 @@ const OrderDetails = () => {
           .maybeSingle();
 
         setTrack(trackData);
+
+        // Fetch existing review
+        await fetchReview();
       } catch (err) {
         console.error('Error fetching order:', err);
         toast({
@@ -109,7 +131,7 @@ const OrderDetails = () => {
     if (user) {
       fetchOrderData();
     }
-  }, [user, orderId, toast]);
+  }, [user, orderId, toast, fetchReview]);
 
   // Real-time subscription for order updates
   useEffect(() => {
@@ -344,6 +366,16 @@ const OrderDetails = () => {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Review Form - Show when music is ready */}
+        {isMusicReady && user && (
+          <ReviewForm
+            orderId={orderId!}
+            userId={user.id}
+            existingReview={review || undefined}
+            onReviewSubmitted={fetchReview}
+          />
         )}
 
         {/* Lyrics Section */}
