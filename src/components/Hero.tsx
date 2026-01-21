@@ -11,9 +11,12 @@ const Hero = () => {
   } = useAuth();
   return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
-      <div className="absolute inset-0 bg-cover bg-center opacity-20" style={{
-      backgroundImage: `url(${heroImage})`
-    }} />
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-20" 
+        style={{ backgroundImage: `url(${heroImage})` }}
+        role="img"
+        aria-label="Músico criando música personalizada em estúdio profissional - Criando Músicas"
+      />
       
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-background/80 to-accent/30" />
