@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,11 +8,20 @@ import { PLANS, Plan, getPlanInfo } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import PlanTypeToggle from "@/components/PlanTypeToggle";
+
+// Helper function to calculate instrumental price (20% off)
+const getInstrumentalPrice = (originalPrice: string): string => {
+  const numericValue = parseFloat(originalPrice.replace("R$ ", "").replace(",", "."));
+  const discountedValue = numericValue * 0.8;
+  return `R$ ${discountedValue.toFixed(2).replace(".", ",")}`;
+};
 
 const Planos = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const [isInstrumental, setIsInstrumental] = useState(false);
 
   const getPlanIcon = (planId: Plan) => {
     switch (planId) {
@@ -51,8 +60,8 @@ const Planos = () => {
         description: `Você escolheu o plano ${getPlanInfo(planId)?.title}.`,
       });
 
-      // Redirecionar para o Briefing antes da criação
-      navigate("/briefing");
+      // Redirecionar para o Briefing, passando se é instrumental
+      navigate("/briefing", { state: { isInstrumental } });
     } catch (error) {
       toast({
         title: "Erro",
@@ -62,20 +71,49 @@ const Planos = () => {
     }
   };
 
+  // Get current prices based on instrumental toggle
+  const getDisplayPrice = (plan: typeof PLANS[0]) => {
+    if (isInstrumental) {
+      return {
+        price: plan.pricePromo ? getInstrumentalPrice(plan.pricePromo) : getInstrumentalPrice(plan.price),
+        originalPrice: plan.pricePromo ? getInstrumentalPrice(plan.price) : null,
+        hasPromo: !!plan.pricePromo
+      };
+    }
+    return {
+      price: plan.pricePromo || plan.price,
+      originalPrice: plan.pricePromo ? plan.price : null,
+      hasPromo: !!plan.pricePromo
+    };
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background py-12 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="p-3 rounded-xl bg-gradient-to-r from-primary to-accent music-glow">
               <Crown className="w-8 h-8 text-primary-foreground" />
             </div>
             <h1 className="text-4xl font-bold gradient-text">Escolha Seu Plano</h1>
           </div>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
             Transforme suas histórias em músicas incríveis. Escolha o plano ideal para você.
           </p>
+          
+          {/* Toggle Vocal/Instrumental */}
+          <PlanTypeToggle 
+            isInstrumental={isInstrumental} 
+            onToggle={setIsInstrumental}
+            className="mb-4"
+          />
+          
+          {isInstrumental && (
+            <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
+              🎹 Músicas instrumentais com 20% de desconto!
+            </Badge>
+          )}
         </div>
 
         {/* Plans Grid */}
@@ -104,31 +142,38 @@ const Planos = () => {
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-4">
                   <div className={`p-4 rounded-2xl ${
-                    plan.id === "single" ? "bg-gradient-to-r from-primary to-accent music-glow" :
-                    plan.id === "package" ? "bg-gradient-to-r from-primary to-accent music-glow" :
-                    "bg-gradient-to-r from-accent to-primary music-glow"
+                    isInstrumental 
+                      ? "bg-gradient-to-r from-accent to-primary music-glow"
+                      : plan.id === "single" ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                        plan.id === "package" ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                        "bg-gradient-to-r from-accent to-primary music-glow"
                   }`}>
                     {React.cloneElement(getPlanIcon(plan.id), {
                       className: "w-8 h-8 text-white"
                     })}
                   </div>
                 </div>
-                <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">{plan.title}</CardTitle>
+                <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
+                  {isInstrumental ? `${plan.title} 🎹` : plan.title}
+                </CardTitle>
                 
-                {plan.pricePromo ? (
-                  <div className="space-y-1">
-                    <CardDescription className="text-xl line-through text-muted-foreground">
-                      {plan.price}
-                    </CardDescription>
-                    <CardDescription className="text-4xl font-bold text-green-500">
-                      {plan.pricePromo}
+                {(() => {
+                  const priceInfo = getDisplayPrice(plan);
+                  return priceInfo.originalPrice ? (
+                    <div className="space-y-1">
+                      <CardDescription className="text-xl line-through text-muted-foreground">
+                        {priceInfo.originalPrice}
+                      </CardDescription>
+                      <CardDescription className={`text-4xl font-bold ${isInstrumental ? 'text-accent' : 'text-green-500'}`}>
+                        {priceInfo.price}
                     </CardDescription>
                   </div>
-                ) : (
-                  <CardDescription className="text-4xl font-bold gradient-text">
-                    {plan.price}
-                  </CardDescription>
-                )}
+                  ) : (
+                    <CardDescription className={`text-4xl font-bold ${isInstrumental ? 'text-accent' : 'gradient-text'}`}>
+                      {priceInfo.price}
+                    </CardDescription>
+                  );
+                })()}
                 
                 {plan.isSubscription && (
                   <p className="text-muted-foreground text-sm mt-1">por mês</p>

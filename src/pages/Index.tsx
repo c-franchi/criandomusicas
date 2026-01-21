@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import ProcessSteps from "@/components/ProcessSteps";
 import AudioSamples from "@/components/AudioSamples";
+import InstrumentalShowcase from "@/components/InstrumentalShowcase";
 import PricingPlans from "@/components/PricingPlans";
 import Testimonials from "@/components/Testimonials";
 import CTA from "@/components/CTA";
@@ -13,6 +14,7 @@ const Index = () => {
       <Hero />
       <ProcessSteps />
       <AudioSamples />
+      <InstrumentalShowcase />
       <PricingPlans />
       <Testimonials />
       <CTA />
