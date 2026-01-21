@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle, Info, Undo2, Shield } from "lucide-react";
 import MusicLoadingSpinner from "@/components/MusicLoadingSpinner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,8 @@ type Step = "loading" | "generating" | "select" | "editing" | "editing-modified"
 
 const CreateSong = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState<Step>("loading");
   const [briefingData, setBriefingData] = useState<BriefingData | null>(null);
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -55,8 +56,23 @@ const CreateSong = () => {
   const [hasUsedModification, setHasUsedModification] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Carregar dados do briefing
+  // Carregar dados do briefing OU order existente (voucher flow)
   useEffect(() => {
+    if (authLoading) return;
+    if (!user) {
+      navigate('/auth');
+      return;
+    }
+
+    const urlOrderId = searchParams.get('orderId');
+    
+    // VOUCHER FLOW: Se tem orderId na URL, buscar order e letras existentes
+    if (urlOrderId) {
+      loadExistingOrder(urlOrderId);
+      return;
+    }
+
+    // NORMAL FLOW: Verificar briefingData no localStorage
     const data = localStorage.getItem('briefingData');
     if (!data) {
       navigate('/briefing');
@@ -69,7 +85,119 @@ const CreateSong = () => {
     
     // Iniciar geração de letras automaticamente
     generateLyrics(parsed);
-  }, []);
+  }, [authLoading, user, searchParams]);
+
+  // Função para carregar order existente (voucher 100% flow)
+  const loadExistingOrder = async (existingOrderId: string) => {
+    setStep("loading");
+    
+    try {
+      // 1. Buscar order
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', existingOrderId)
+        .single();
+
+      if (orderError) throw orderError;
+      
+      // Verificar se pertence ao usuário
+      if (orderData.user_id !== user?.id) {
+        toast.error("Este pedido não pertence a você");
+        navigate('/dashboard');
+        return;
+      }
+
+      setOrderId(existingOrderId);
+
+      // 2. Reconstruir briefingData da order
+      const reconstructedBriefing: BriefingData = {
+        musicType: orderData.music_type || 'homenagem',
+        emotion: orderData.emotion || 'alegria',
+        emotionIntensity: orderData.emotion_intensity || 3,
+        story: orderData.story || '',
+        structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+        hasMonologue: orderData.has_monologue || false,
+        monologuePosition: orderData.monologue_position || 'bridge',
+        mandatoryWords: orderData.mandatory_words || '',
+        restrictedWords: orderData.restricted_words || '',
+        style: orderData.music_style || 'pop',
+        rhythm: orderData.rhythm || 'moderado',
+        atmosphere: orderData.atmosphere || 'festivo',
+        songName: '',
+        autoGenerateName: true,
+        plan: 'single',
+        lgpdConsent: true
+      };
+      setBriefingData(reconstructedBriefing);
+
+      // 3. Buscar letras já geradas
+      const { data: lyricsData, error: lyricsError } = await supabase
+        .from('lyrics')
+        .select('*')
+        .eq('order_id', existingOrderId)
+        .order('created_at', { ascending: true });
+
+      if (lyricsError) throw lyricsError;
+
+      if (lyricsData && lyricsData.length > 0) {
+        // Letras já existem - exibir para seleção
+        const existingLyrics: LyricOption[] = lyricsData.map((l, idx) => ({
+          id: l.id,
+          version: l.version || String.fromCharCode(65 + idx),
+          title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+          body: l.body || ""
+        }));
+        setLyrics(existingLyrics);
+        setStep("select");
+        toast.success("Suas letras estão prontas!", {
+          description: "Escolha entre as versões criadas para você"
+        });
+      } else {
+        // Aguardar letras (podem estar sendo geradas)
+        setStep("generating");
+        toast.info("Aguardando letras...", {
+          description: "Suas letras estão sendo geradas"
+        });
+        
+        // Poll a cada 3 segundos por até 60 segundos
+        let attempts = 0;
+        const maxAttempts = 20;
+        const pollInterval = setInterval(async () => {
+          attempts++;
+          const { data: newLyrics } = await supabase
+            .from('lyrics')
+            .select('*')
+            .eq('order_id', existingOrderId)
+            .order('created_at', { ascending: true });
+          
+          if (newLyrics && newLyrics.length > 0) {
+            clearInterval(pollInterval);
+            const existingLyrics: LyricOption[] = newLyrics.map((l, idx) => ({
+              id: l.id,
+              version: l.version || String.fromCharCode(65 + idx),
+              title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+              body: l.body || ""
+            }));
+            setLyrics(existingLyrics);
+            setStep("select");
+            toast.success("Letras prontas!");
+          } else if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            toast.error("Letras ainda não disponíveis", {
+              description: "Tente atualizar a página em alguns segundos"
+            });
+            setStep("loading");
+          }
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar order:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      toast.error("Erro ao carregar pedido", { description: errorMessage });
+      navigate('/dashboard');
+    }
+  };
 
   const generateLyrics = async (briefing: BriefingData) => {
     if (!user) {

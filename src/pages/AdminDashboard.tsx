@@ -1174,7 +1174,7 @@ const AdminDashboard = () => {
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <Label>Quantidade Total</Label>
+                                  <Label>Quantidade de Vouchers</Label>
                                   <Input
                                     type="number"
                                     value={(editingVoucher || newVoucher).max_uses || ''}
@@ -1186,12 +1186,12 @@ const AdminDashboard = () => {
                                   />
                                   <p className="text-xs text-muted-foreground mt-1">
                                     {(editingVoucher || newVoucher).max_uses 
-                                      ? `Limite: ${(editingVoucher || newVoucher).max_uses} usos totais`
-                                      : 'Sem limite de quantidade total'}
+                                      ? `Total disponível: ${(editingVoucher || newVoucher).max_uses} usos`
+                                      : 'Sem limite de quantidade'}
                                   </p>
                                 </div>
                                 <div>
-                                  <Label>Limite por Usuário</Label>
+                                  <Label>Uso por Usuário</Label>
                                   <Input
                                     type="number"
                                     value={((editingVoucher || newVoucher) as any).max_uses_per_user || ''}
