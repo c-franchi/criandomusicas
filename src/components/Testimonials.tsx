@@ -209,8 +209,8 @@ const Testimonials = () => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <div className="font-semibold">
-                      {review.profiles?.name || 'Cliente'}
+                    <div className="font-semibold text-foreground">
+                      {review.profiles?.name || 'Cliente Verificado'}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {getMusicTypeLabel(review.orders?.music_type)}

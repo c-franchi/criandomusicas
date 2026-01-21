@@ -7,6 +7,7 @@ import PricingPlans from "@/components/PricingPlans";
 import Testimonials from "@/components/Testimonials";
 import VideoServiceSection from "@/components/VideoServiceSection";
 import ReactionVideosShowcase from "@/components/ReactionVideosShowcase";
+import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
@@ -25,11 +26,12 @@ const Index = () => {
       <ProcessSteps />
       <AudioSamples />
       <InstrumentalShowcase />
+      <VideoServiceSection />
       <WhyChooseUs />
       <PricingPlans />
       <Testimonials />
       <ReactionVideosShowcase />
-      <VideoServiceSection />
+      <FAQ />
       <CTA />
       <Footer />
       <CookieConsent />

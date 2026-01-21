@@ -359,6 +359,9 @@ const CreateSong = () => {
           setShowPronunciationModal(true);
           setStep(hasUsedModification ? "editing-modified" : "editing");
           setLoading(false);
+          toast.warning("Pronúncia necessária", {
+            description: `Defina como pronunciar: ${data.missingPronunciations.join(', ')}`
+          });
           return;
         }
         throw new Error(data?.error || "Erro ao gerar prompt de estilo");
@@ -383,11 +386,25 @@ const CreateSong = () => {
           setShowPronunciationModal(true);
           setStep(hasUsedModification ? "editing-modified" : "editing");
           setLoading(false);
+          toast.warning("Pronúncia necessária", {
+            description: `Defina como pronunciar: ${terms.join(', ')}`
+          });
           return;
         }
       }
       
-      toast.error("Erro ao aprovar letra", { description: errorMessage });
+      // Better error messages for users
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes("Limite de requisições")) {
+        userFriendlyMessage = "Sistema ocupado. Tente novamente em 1 minuto.";
+      } else if (errorMessage.includes("Créditos insuficientes")) {
+        userFriendlyMessage = "Erro interno. Entre em contato com o suporte.";
+      }
+      
+      toast.error("Erro ao aprovar letra", { 
+        description: userFriendlyMessage,
+        duration: 5000 
+      });
       setStep(hasUsedModification ? "editing-modified" : "editing");
     } finally {
       setLoading(false);
