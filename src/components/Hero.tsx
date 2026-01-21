@@ -111,7 +111,7 @@ const Hero = () => {
             <div className="text-muted-foreground">Tempo Médio</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl font-bold gradient-text">4.9★</div>
+            <div className="text-3xl font-bold gradient-text">5.0★</div>
             <div className="text-muted-foreground">Avaliação</div>
           </div>
         </div>
