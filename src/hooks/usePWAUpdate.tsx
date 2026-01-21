@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { toast } from 'sonner';
 
 export const usePWAUpdate = () => {
-  const [needRefresh, setNeedRefresh] = useState(false);
+  const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [swNeedRefresh, setSwNeedRefresh],
+    needRefresh: [swNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(swUrl, r) {
@@ -24,37 +24,53 @@ export const usePWAUpdate = () => {
     },
   });
 
+  // Listen for service worker messages about updates
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'SW_UPDATED') {
+        console.log('SW Update detected via message:', event.data.version);
+        setShowUpdateBanner(true);
+      }
+    };
+
+    navigator.serviceWorker?.addEventListener('message', handleMessage);
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
+  // Show banner when SW needs refresh
   useEffect(() => {
     if (swNeedRefresh) {
-      setNeedRefresh(true);
-      toast.info('Nova versão disponível!', {
-        description: 'Clique para atualizar o app',
-        duration: Infinity,
-        action: {
-          label: 'Atualizar',
-          onClick: () => {
-            updateServiceWorker(true);
-          },
-        },
-      });
+      console.log('SW needs refresh detected');
+      setShowUpdateBanner(true);
     }
-  }, [swNeedRefresh, updateServiceWorker]);
+  }, [swNeedRefresh]);
 
   useEffect(() => {
     if (offlineReady) {
-      toast.success('App pronto para uso offline!', {
-        duration: 3000,
-      });
+      console.log('App ready for offline use');
       setOfflineReady(false);
     }
   }, [offlineReady, setOfflineReady]);
 
-  const forceUpdate = () => {
+  const forceUpdate = useCallback(() => {
+    setIsUpdating(true);
     updateServiceWorker(true);
-  };
+    // Reload page after a brief delay to ensure SW activates
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
+  }, [updateServiceWorker]);
+
+  const dismissBanner = useCallback(() => {
+    setShowUpdateBanner(false);
+  }, []);
 
   return {
-    needRefresh,
+    showUpdateBanner,
+    isUpdating,
     forceUpdate,
+    dismissBanner,
   };
 };
