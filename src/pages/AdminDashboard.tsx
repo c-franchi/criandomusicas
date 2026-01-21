@@ -31,7 +31,9 @@ import {
   Percent,
   Gift,
   Calendar,
-  QrCode
+  QrCode,
+  MessageCircle,
+  Send
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -80,6 +82,9 @@ interface AdminOrder {
   payment_method?: string;
   user_email?: string;
   lyric_title?: string;
+  track_url?: string | null;
+  user_whatsapp?: string | null;
+  user_name?: string | null;
 }
 
 interface PricingConfig {
@@ -184,6 +189,10 @@ const AdminDashboard = () => {
   });
   const [savingVoucher, setSavingVoucher] = useState(false);
 
+  // Music upload
+  const [uploadingMusic, setUploadingMusic] = useState<string | null>(null);
+  const musicInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+
   // Confirmation dialogs
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
   const [deleteAudioId, setDeleteAudioId] = useState<string | null>(null);
@@ -213,10 +222,15 @@ const AdminDashboard = () => {
 
       if (ordersError) throw ordersError;
 
-      // Fetch lyrics titles for orders with approved lyrics
-      const ordersWithLyrics = await Promise.all(
+      // Fetch lyrics titles, tracks, and profiles for each order
+      const ordersWithDetails = await Promise.all(
         (ordersData || []).map(async (order) => {
           let lyric_title = null;
+          let track_url = null;
+          let user_whatsapp = null;
+          let user_name = null;
+          
+          // Fetch lyric title
           if (order.approved_lyric_id) {
             const { data: lyricData } = await supabase
               .from('lyrics')
@@ -225,11 +239,30 @@ const AdminDashboard = () => {
               .maybeSingle();
             lyric_title = lyricData?.title;
           }
-          return { ...order, lyric_title };
+          
+          // Fetch track URL
+          const { data: trackData } = await supabase
+            .from('tracks')
+            .select('audio_url')
+            .eq('order_id', order.id)
+            .eq('status', 'READY')
+            .maybeSingle();
+          track_url = trackData?.audio_url;
+          
+          // Fetch user profile (whatsapp)
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('whatsapp, name')
+            .eq('user_id', order.user_id)
+            .maybeSingle();
+          user_whatsapp = profileData?.whatsapp;
+          user_name = profileData?.name;
+          
+          return { ...order, lyric_title, track_url, user_whatsapp, user_name };
         })
       );
 
-      setOrders(ordersWithLyrics);
+      setOrders(ordersWithDetails);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -782,6 +815,101 @@ const AdminDashboard = () => {
         variant: 'destructive',
       });
     }
+  };
+
+  // Upload music file and mark as ready
+  const handleMusicUpload = async (file: File, order: AdminOrder) => {
+    if (!file) return;
+    setUploadingMusic(order.id);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${order.id}-${Date.now()}.${fileExt}`;
+      const filePath = `${order.user_id}/${fileName}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('music-tracks')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('music-tracks')
+        .getPublicUrl(filePath);
+
+      const audioUrl = publicUrlData.publicUrl;
+
+      // Upsert track record
+      const { error: trackError } = await supabase
+        .from('tracks')
+        .upsert({
+          order_id: order.id,
+          audio_url: audioUrl,
+          status: 'READY'
+        }, {
+          onConflict: 'order_id'
+        });
+
+      if (trackError) throw trackError;
+
+      // Update order status to MUSIC_READY
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update({ status: 'MUSIC_READY' })
+        .eq('id', order.id);
+
+      if (orderError) throw orderError;
+
+      // Send push notification
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            user_id: order.user_id,
+            order_id: order.id,
+            title: '🎵 Sua música está pronta!',
+            body: 'A produção da sua música foi concluída. Acesse agora para ouvir e baixar!',
+            url: `/pedido/${order.id}`
+          }
+        });
+      } catch (pushError) {
+        console.error('Push notification error:', pushError);
+      }
+
+      // Update local state
+      setOrders(prev => prev.map(o => 
+        o.id === order.id ? { ...o, status: 'MUSIC_READY', track_url: audioUrl } : o
+      ));
+
+      toast({
+        title: '🎵 Música enviada!',
+        description: 'O cliente foi notificado por push.',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao enviar música',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingMusic(null);
+    }
+  };
+
+  // Generate WhatsApp link for notifying user
+  const getWhatsAppLink = (order: AdminOrder) => {
+    if (!order.user_whatsapp) return null;
+    const phone = order.user_whatsapp.replace(/\D/g, '');
+    const phoneFormatted = phone.startsWith('55') ? phone : `55${phone}`;
+    const songTitle = order.lyric_title || 'sua música personalizada';
+    const message = encodeURIComponent(
+      `🎵 Olá${order.user_name ? ` ${order.user_name.split(' ')[0]}` : ''}! ` +
+      `Sua música "${songTitle}" está pronta! 🎉\n\n` +
+      `Acesse agora para ouvir e baixar:\n` +
+      `${window.location.origin}/pedido/${order.id}\n\n` +
+      `Obrigado por escolher a Criando Músicas! 💜`
+    );
+    return `https://wa.me/${phoneFormatted}?text=${message}`;
   };
 
   const getStatusText = (status: string, paymentStatus?: string) => {
@@ -1656,10 +1784,64 @@ const AdminDashboard = () => {
                         </Button>
                       )}
                       {order.status === 'MUSIC_GENERATING' && (
-                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_READY')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
-                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          Marcar Pronta
-                        </Button>
+                        <>
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            ref={(el) => { musicInputRefs.current[order.id] = el; }}
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleMusicUpload(file, order);
+                            }}
+                          />
+                          <Button 
+                            onClick={() => musicInputRefs.current[order.id]?.click()} 
+                            size="sm" 
+                            className="flex-1 sm:flex-none text-xs sm:text-sm bg-primary"
+                            disabled={uploadingMusic === order.id}
+                          >
+                            {uploadingMusic === order.id ? (
+                              <>
+                                <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                                Enviando...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                Enviar Música
+                              </>
+                            )}
+                          </Button>
+                        </>
+                      )}
+                      {(order.status === 'MUSIC_READY' || order.status === 'COMPLETED') && order.track_url && (
+                        <>
+                          {getWhatsAppLink(order) && (
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              asChild 
+                              className="flex-1 sm:flex-none text-xs sm:text-sm border-green-500/50 text-green-500 hover:bg-green-500/10"
+                            >
+                              <a href={getWhatsAppLink(order)!} target="_blank" rel="noopener noreferrer">
+                                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                WhatsApp
+                              </a>
+                            </Button>
+                          )}
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            asChild 
+                            className="flex-1 sm:flex-none text-xs sm:text-sm"
+                          >
+                            <a href={order.track_url} target="_blank" rel="noopener noreferrer">
+                              <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                              Ouvir
+                            </a>
+                          </Button>
+                        </>
                       )}
                       {order.status === 'MUSIC_READY' && (
                         <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
