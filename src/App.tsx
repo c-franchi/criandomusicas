@@ -1,3 +1,4 @@
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -5,27 +6,32 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { usePWAUpdate } from "@/hooks/usePWAUpdate";
+import PageLoader from "@/components/PageLoader";
+
+// Critical path - load immediately
 import Index from "./pages/Index";
-import Briefing from "./pages/Briefing";
-import CreateSong from "./pages/CreateSong";
 import Auth from "./pages/Auth";
-import Order from "./pages/Order";
-import OrderDetails from "./pages/OrderDetails";
-import OrderTracking from "./pages/OrderTracking";
-import Dashboard from "./pages/Dashboard";
-import TestOpenAI from "./pages/TestOpenAI";
-import OrderLyricsPage from "./pages/OrderLyricsPage";
 import NotFound from "./pages/NotFound";
-import Planos from "./pages/Planos";
-import Profile from "./pages/Profile";
-import AdminDashboard from "./pages/AdminDashboard";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import Checkout from "./pages/Checkout";
-import Install from "./pages/Install";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import TermsOfUse from "./pages/TermsOfUse";
-import MusicRules from "./pages/MusicRules";
-import MusicShare from "./pages/MusicShare";
+
+// Lazy load other pages for better performance
+const Briefing = lazy(() => import("./pages/Briefing"));
+const CreateSong = lazy(() => import("./pages/CreateSong"));
+const Order = lazy(() => import("./pages/Order"));
+const OrderDetails = lazy(() => import("./pages/OrderDetails"));
+const OrderTracking = lazy(() => import("./pages/OrderTracking"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const TestOpenAI = lazy(() => import("./pages/TestOpenAI"));
+const OrderLyricsPage = lazy(() => import("./pages/OrderLyricsPage"));
+const Planos = lazy(() => import("./pages/Planos"));
+const Profile = lazy(() => import("./pages/Profile"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Install = lazy(() => import("./pages/Install"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
+const MusicRules = lazy(() => import("./pages/MusicRules"));
+const MusicShare = lazy(() => import("./pages/MusicShare"));
 
 const queryClient = new QueryClient();
 
@@ -43,31 +49,37 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/briefing" element={<Briefing />} />
-            <Route path="/criar-musica" element={<CreateSong />} />
-            <Route path="/create-song" element={<CreateSong />} />
-            <Route path="/planos" element={<Planos />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/perfil" element={<Profile />} />
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
-            <Route path="/checkout/:orderId" element={<Checkout />} />
-            <Route path="/install" element={<Install />} />
-            <Route path="/privacidade" element={<PrivacyPolicy />} />
-            <Route path="/termos" element={<TermsOfUse />} />
-            <Route path="/regras" element={<MusicRules />} />
-            <Route path="/m/:orderId" element={<MusicShare />} />
-            <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
-            <Route path="/test-openai" element={<TestOpenAI />} />
-            <Route path="/pedido/:orderId/letras" element={<OrderLyricsPage />} />
-            <Route path="/pedido/:orderId" element={<OrderDetails />} />
-            <Route path="/order/:orderId" element={<Order />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              {/* Critical routes - loaded immediately */}
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Lazy loaded routes */}
+              <Route path="/briefing" element={<Briefing />} />
+              <Route path="/criar-musica" element={<CreateSong />} />
+              <Route path="/create-song" element={<CreateSong />} />
+              <Route path="/planos" element={<Planos />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/perfil" element={<Profile />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
+              <Route path="/checkout/:orderId" element={<Checkout />} />
+              <Route path="/install" element={<Install />} />
+              <Route path="/privacidade" element={<PrivacyPolicy />} />
+              <Route path="/termos" element={<TermsOfUse />} />
+              <Route path="/regras" element={<MusicRules />} />
+              <Route path="/m/:orderId" element={<MusicShare />} />
+              <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
+              <Route path="/test-openai" element={<TestOpenAI />} />
+              <Route path="/pedido/:orderId/letras" element={<OrderLyricsPage />} />
+              <Route path="/pedido/:orderId" element={<OrderDetails />} />
+              <Route path="/order/:orderId" element={<Order />} />
+              
+              {/* Catch-all route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
