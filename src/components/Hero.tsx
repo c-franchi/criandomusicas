@@ -89,7 +89,12 @@ const Hero = () => {
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
-              <Button variant="glass" size="lg" className="text-lg px-8 py-6">
+              <Button 
+                variant="glass" 
+                size="lg" 
+                className="text-lg px-8 py-6"
+                onClick={() => document.getElementById('exemplos')?.scrollIntoView({ behavior: 'smooth' })}
+              >
                 Ver Exemplos
               </Button>
             </>}
