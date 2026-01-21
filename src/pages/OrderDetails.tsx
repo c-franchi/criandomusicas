@@ -211,9 +211,23 @@ const OrderDetails = () => {
   const downloadTrack = () => {
     if (!track?.audio_url) return;
     
+    // Get the song title - prioritize approved lyrics title, then instrumental name
+    const songTitle = order?.is_instrumental 
+      ? `Instrumental ${order?.music_type || 'Personalizado'}`
+      : (lyrics.find(l => l.is_approved)?.title || 'Minha Música');
+    
+    // Sanitize filename: remove special characters and replace spaces with hyphens
+    const sanitizedTitle = songTitle
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Remove accents
+      .replace(/[^a-zA-Z0-9\s-]/g, '') // Remove special chars
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .toLowerCase()
+      .slice(0, 50); // Limit length
+    
     const link = document.createElement('a');
     link.href = track.audio_url;
-    link.download = `${order?.music_type || 'musica'}-${orderId?.slice(0, 8)}.mp3`;
+    link.download = `${sanitizedTitle}.mp3`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
