@@ -221,9 +221,16 @@ const OrderDetails = () => {
   };
 
   const shareOnWhatsApp = () => {
-    const title = lyrics.find(l => l.is_approved)?.title || 'Minha Música Personalizada';
-    const url = window.location.href;
-    const text = `🎵 Ouça minha música personalizada: ${title}\n${url}`;
+    const title = order?.is_instrumental 
+      ? `Instrumental ${order?.music_type || 'Personalizado'}`
+      : (lyrics.find(l => l.is_approved)?.title || 'Minha Música Personalizada');
+    
+    // Share the direct audio URL if available, otherwise share the order page
+    const shareUrl = track?.audio_url || window.location.href;
+    const text = track?.audio_url 
+      ? `🎵 Ouça minha música: ${title}\n\n🎧 Escute aqui:\n${shareUrl}`
+      : `🎵 Veja minha música personalizada: ${title}\n${shareUrl}`;
+    
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -255,7 +262,7 @@ const OrderDetails = () => {
       'LYRICS_APPROVED': { text: 'Letras Aprovadas', progress: 60, color: 'text-indigo-500' },
       'MUSIC_GENERATING': { text: 'Produzindo Música...', progress: 75, color: 'text-yellow-500' },
       'MUSIC_READY': { text: 'Música Pronta!', progress: 95, color: 'text-green-500' },
-      'COMPLETED': { text: 'Concluído', progress: 100, color: 'text-green-600' }
+      'COMPLETED': { text: 'Entregue', progress: 100, color: 'text-green-600' }
     };
 
     if (order.payment_status === 'AWAITING_PIX') {
@@ -345,22 +352,22 @@ const OrderDetails = () => {
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-1">{approvedLyric?.title || 'Música Personalizada'}</h3>
                   <p className="text-muted-foreground text-sm mb-3">{order.music_style}</p>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-2">
                     <Button 
                       onClick={togglePlay}
-                      size="lg"
-                      className="gap-2"
+                      size="default"
+                      className="gap-2 flex-1 min-w-[120px]"
                     >
-                      {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                       {isPlaying ? 'Pausar' : 'Ouvir'}
                     </Button>
                     <Button 
                       onClick={downloadTrack}
                       variant="outline"
-                      size="lg"
-                      className="gap-2"
+                      size="default"
+                      className="gap-2 flex-1 min-w-[120px]"
                     >
-                      <Download className="w-5 h-5" />
+                      <Download className="w-4 h-4" />
                       Baixar
                     </Button>
                   </div>
