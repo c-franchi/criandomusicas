@@ -64,6 +64,7 @@ const Footer = () => {
         
         <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
           <p>© 2025 Criando Músicas. Todos os direitos reservados.</p>
+          <p className="text-xs mt-2 opacity-60">v1.0.3</p>
         </div>
       </div>
     </footer>;
