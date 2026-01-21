@@ -9,6 +9,7 @@ import Briefing from "./pages/Briefing";
 import CreateSong from "./pages/CreateSong";
 import Auth from "./pages/Auth";
 import Order from "./pages/Order";
+import OrderDetails from "./pages/OrderDetails";
 import OrderTracking from "./pages/OrderTracking";
 import Dashboard from "./pages/Dashboard";
 import TestOpenAI from "./pages/TestOpenAI";
@@ -36,6 +37,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/briefing" element={<Briefing />} />
+            <Route path="/criar-musica" element={<CreateSong />} />
             <Route path="/create-song" element={<CreateSong />} />
             <Route path="/planos" element={<Planos />} />
             <Route path="/auth" element={<Auth />} />
@@ -50,8 +52,9 @@ const App = () => (
             <Route path="/regras" element={<MusicRules />} />
             <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
-            <Route path="/pedido/:id/letras" element={<OrderLyricsPage />} />
-            <Route path="/pedido/:orderId" element={<Order />} />
+            <Route path="/pedido/:orderId/letras" element={<OrderLyricsPage />} />
+            <Route path="/pedido/:orderId" element={<OrderDetails />} />
+            <Route path="/order/:orderId" element={<Order />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
