@@ -1788,14 +1788,16 @@ const AdminDashboard = () => {
                           📝 Ver Prompt Final (para Suno/Udio)
                         </summary>
                         <div className="mt-2 space-y-3">
-                          {/* LYRICS section first */}
+                          {/* LYRICS/PROMPT section first */}
                           <div className="relative">
-                            <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">LETRA:</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">
+                              {order.is_instrumental ? 'PROMPT INSTRUMENTAL:' : 'LETRA:'}
+                            </p>
                             <Button
                               variant="outline"
                               size="sm"
                               className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
-                              onClick={() => copyToClipboard(order.final_prompt!, 'Letra')}
+                              onClick={() => copyToClipboard(order.final_prompt!, order.is_instrumental ? 'Prompt Instrumental' : 'Letra')}
                             >
                               <Copy className="w-3 h-3 sm:mr-1" />
                               <span className="hidden sm:inline">Copiar</span>

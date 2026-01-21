@@ -3,13 +3,22 @@ import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings, Bell, Download, RefreshCw } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Bell, Download, RefreshCw, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBanner } from "@/components/PushNotificationPrompt";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 interface Order {
   id: string;
   status?: string;
@@ -31,6 +40,35 @@ const Dashboard = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+
+  const confirmDeleteOrder = async () => {
+    if (!deleteOrderId) return;
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', deleteOrderId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Pedido excluído',
+        description: 'O pedido foi removido com sucesso.',
+      });
+
+      setOrders(prev => prev.filter(o => o.id !== deleteOrderId));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao excluir pedido',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setDeleteOrderId(null);
+    }
+  };
 
   const fetchOrders = useCallback(async () => {
     if (!user?.id) return;
@@ -323,12 +361,23 @@ const Dashboard = () => {
                     <div className="text-2xl font-bold text-primary mb-1">
                       R$ {((order.amount || 999) / 100).toFixed(2).replace('.', ',')}
                     </div>
-                    <Button asChild variant="outline" size="sm">
-                      <Link to={`/pedido/${order.id}`}>
-                        Ver Detalhes
-                        <ExternalLink className="w-4 h-4 ml-2" />
-                      </Link>
-                    </Button>
+                    <div className="flex items-center gap-2 justify-end">
+                      <Button asChild variant="outline" size="sm">
+                        <Link to={`/pedido/${order.id}`}>
+                          Ver Detalhes
+                          <ExternalLink className="w-4 h-4 ml-2" />
+                        </Link>
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => setDeleteOrderId(order.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        title="Excluir pedido"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 
@@ -345,6 +394,24 @@ const Dashboard = () => {
             ))
           )}
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteOrderId} onOpenChange={() => setDeleteOrderId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir pedido?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Esta ação não pode ser desfeita. O pedido será removido permanentemente.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDeleteOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Excluir
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
