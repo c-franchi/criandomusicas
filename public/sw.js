@@ -1,5 +1,9 @@
 // Service Worker for Push Notifications
+// Version: 2.1.0 - Force update for VAPID key change
+const SW_VERSION = '2.1.0';
+
 self.addEventListener('push', function(event) {
+  console.log('[SW v' + SW_VERSION + '] Push received');
   if (!event.data) {
     console.log('Push event but no data');
     return;
@@ -80,24 +84,31 @@ async function syncNotifications() {
 
 // Force update on new version
 self.addEventListener('install', function(event) {
-  console.log('Service Worker installing...');
+  console.log('[SW v' + SW_VERSION + '] Installing...');
+  // Skip waiting immediately to activate new version
   self.skipWaiting();
 });
 
 self.addEventListener('activate', function(event) {
-  console.log('Service Worker activating...');
+  console.log('[SW v' + SW_VERSION + '] Activating...');
   event.waitUntil(
     Promise.all([
       // Take control of all clients immediately
       clients.claim(),
-      // Clear old caches
+      // Clear ALL old caches to force fresh content
       caches.keys().then(function(cacheNames) {
         return Promise.all(
           cacheNames.map(function(cacheName) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('[SW v' + SW_VERSION + '] Deleting cache:', cacheName);
             return caches.delete(cacheName);
           })
         );
+      }),
+      // Notify all clients to reload
+      clients.matchAll({ type: 'window' }).then(function(clientList) {
+        clientList.forEach(function(client) {
+          client.postMessage({ type: 'SW_UPDATED', version: SW_VERSION });
+        });
       })
     ])
   );
