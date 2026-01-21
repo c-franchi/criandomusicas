@@ -26,9 +26,9 @@ const Index = () => {
       <ProcessSteps />
       <AudioSamples />
       <InstrumentalShowcase />
-      <VideoServiceSection />
       <WhyChooseUs />
       <PricingPlans />
+      <VideoServiceSection />
       <Testimonials />
       <ReactionVideosShowcase />
       <FAQ />
