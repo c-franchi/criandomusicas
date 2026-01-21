@@ -362,7 +362,7 @@ const Dashboard = () => {
                   {/* Price and actions - stacks on mobile */}
                   <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
                     <div className="text-xl sm:text-2xl font-bold text-primary">
-                      R$ {((order.amount || 999) / 100).toFixed(2).replace('.', ',')}
+                      R$ {(order.amount / 100).toFixed(2).replace('.', ',')}
                     </div>
                     <div className="flex items-center gap-2">
                       <Button asChild variant="outline" size="sm">
