@@ -28,15 +28,29 @@ interface OrderData {
   story: string;
   approved_lyric_id: string | null;
   lyric_title?: string;
+  is_instrumental?: boolean;
 }
 
-const ORDER_STEPS = [
+// Steps for vocal music (with lyrics)
+const VOCAL_ORDER_STEPS = [
   { status: 'DRAFT', label: 'Briefing', icon: FileText, progress: 10 },
   { status: 'AWAITING_PAYMENT', label: 'Pagamento', icon: CreditCard, progress: 20 },
   { status: 'PAID', label: 'Pago', icon: CheckCircle, progress: 30 },
   { status: 'LYRICS_PENDING', label: 'Gerando Letras', icon: Clock, progress: 40 },
   { status: 'LYRICS_GENERATED', label: 'Letras Prontas', icon: FileText, progress: 50 },
   { status: 'LYRICS_APPROVED', label: 'Letras Aprovadas', icon: CheckCircle, progress: 60 },
+  { status: 'MUSIC_GENERATING', label: 'Produzindo Música', icon: PlayCircle, progress: 80 },
+  { status: 'MUSIC_READY', label: 'Música Pronta', icon: Headphones, progress: 95 },
+  { status: 'COMPLETED', label: 'Entregue', icon: CheckCircle, progress: 100 },
+];
+
+// Steps for instrumental music (no lyrics steps)
+const INSTRUMENTAL_ORDER_STEPS = [
+  { status: 'DRAFT', label: 'Briefing', icon: FileText, progress: 10 },
+  { status: 'AWAITING_PAYMENT', label: 'Pagamento', icon: CreditCard, progress: 20 },
+  { status: 'PAID', label: 'Pago', icon: CheckCircle, progress: 30 },
+  { status: 'LYRICS_PENDING', label: 'Preparando Produção', icon: Clock, progress: 50 },
+  { status: 'LYRICS_APPROVED', label: 'Pronto para Produção', icon: CheckCircle, progress: 60 },
   { status: 'MUSIC_GENERATING', label: 'Produzindo Música', icon: PlayCircle, progress: 80 },
   { status: 'MUSIC_READY', label: 'Música Pronta', icon: Headphones, progress: 95 },
   { status: 'COMPLETED', label: 'Entregue', icon: CheckCircle, progress: 100 },
@@ -57,16 +71,16 @@ const OrderTracking = () => {
       try {
         const { data, error } = await supabase
           .from('orders')
-          .select('*')
+          .select('*, is_instrumental')
           .eq('id', orderId)
           .eq('user_id', user.id)
           .single();
 
         if (error) throw error;
 
-        // Fetch lyric title if approved
+        // Fetch lyric title if approved (only for vocal orders)
         let lyric_title = null;
-        if (data?.approved_lyric_id) {
+        if (data?.approved_lyric_id && !data?.is_instrumental) {
           const { data: lyricData } = await supabase
             .from('lyrics')
             .select('title')
@@ -152,6 +166,9 @@ const OrderTracking = () => {
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Use appropriate steps based on whether order is instrumental
+  const ORDER_STEPS = order.is_instrumental ? INSTRUMENTAL_ORDER_STEPS : VOCAL_ORDER_STEPS;
+
   const getCurrentStep = () => {
     return ORDER_STEPS.find(step => step.status === order.status) || ORDER_STEPS[0];
   };
@@ -171,6 +188,27 @@ const OrderTracking = () => {
     const currentIndex = ORDER_STEPS.findIndex(s => s.status === order.status);
     const stepIndex = ORDER_STEPS.findIndex(s => s.status === status);
     return stepIndex < currentIndex;
+  };
+
+  const getStatusDescription = () => {
+    if (order.is_instrumental) {
+      const descriptions: Record<string, string> = {
+        'MUSIC_GENERATING': 'Sua trilha instrumental está sendo produzida...',
+        'LYRICS_PENDING': 'Preparando os parâmetros técnicos da produção...',
+        'LYRICS_APPROVED': 'Aguardando início da produção instrumental.',
+        'COMPLETED': 'Sua trilha instrumental está pronta! 🎉',
+        'MUSIC_READY': 'Trilha finalizada e pronta para download!',
+      };
+      return descriptions[order.status] || '';
+    }
+    const descriptions: Record<string, string> = {
+      'MUSIC_GENERATING': 'Sua música está sendo produzida. Isso pode levar alguns minutos...',
+      'LYRICS_APPROVED': 'Letras aprovadas! Aguardando produção da música.',
+      'LYRICS_GENERATED': 'Suas letras estão prontas para aprovação.',
+      'COMPLETED': 'Sua música está pronta! 🎉',
+      'MUSIC_READY': 'Música finalizada e pronta para download!',
+    };
+    return descriptions[order.status] || '';
   };
 
   return (
@@ -210,11 +248,7 @@ const OrderTracking = () => {
             <div className="flex-1">
               <h2 className="text-xl font-bold mb-1">{currentStep.label}</h2>
               <p className="text-muted-foreground text-sm">
-                {order.status === 'MUSIC_GENERATING' && 'Sua música está sendo produzida. Isso pode levar alguns minutos...'}
-                {order.status === 'LYRICS_APPROVED' && 'Letras aprovadas! Aguardando produção da música.'}
-                {order.status === 'LYRICS_GENERATED' && 'Suas letras estão prontas para aprovação.'}
-                {order.status === 'COMPLETED' && 'Sua música está pronta! 🎉'}
-                {order.status === 'MUSIC_READY' && 'Música finalizada e pronta para download!'}
+                {getStatusDescription()}
               </p>
             </div>
             <div className="text-right">
