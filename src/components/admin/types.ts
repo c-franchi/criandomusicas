@@ -51,6 +51,7 @@ export interface Voucher {
   discount_type: string;
   discount_value: number;
   max_uses: number | null;
+  max_uses_per_user: number | null;
   current_uses: number;
   valid_from: string;
   valid_until: string | null;

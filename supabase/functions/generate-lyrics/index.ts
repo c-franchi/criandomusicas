@@ -193,7 +193,14 @@ REGRAS OBRIGATÓRIAS:
 7. A letra deve ter entre 150-300 palavras para ~2-3 minutos de música
 8. Capture a essência emocional da história fornecida
 9. Intensidade emocional: ${emotionIntensity}/5 - ${emotionIntensity <= 2 ? 'sutil' : emotionIntensity <= 3 ? 'moderada' : 'intensa'}
-10. ${autoGenerateName ? 'CRIE UM TÍTULO CRIATIVO E ÚNICO para cada versão da letra, baseado na história. O título deve vir na PRIMEIRA LINHA, antes do [Intro].' : `O título da música é: "${songName}". Use-o na primeira linha.`}
+10. ${autoGenerateName ? `CRIE UM TÍTULO CRIATIVO, ÚNICO E ESPECÍFICO para cada versão baseado na história fornecida. 
+    REGRAS PARA O TÍTULO:
+    - O título DEVE ser específico para esta história, NÃO genérico
+    - Se mencionam nomes de pessoas, use-os no título (ex: "Pra Você, Maria", "João, Meu Herói")
+    - Se é uma ocasião especial, referencie-a (ex: "Nossos 25 Anos", "O Dia Que Você Nasceu")
+    - Se é homenagem, mencione a relação (ex: "Mãe, Minha Estrela", "Pai de Ouro")
+    - NUNCA use títulos genéricos como "Música Especial", "Homenagem", "Para Você"
+    - O título deve vir na PRIMEIRA LINHA, antes do [Intro]` : `O título da música é: "${songName}". Use-o na primeira linha.`}
 11. A música será cantada por ${voiceDescription}. Adapte o tom e as referências de gênero adequadamente.
 
 ${hasMonologue ? `
@@ -265,7 +272,11 @@ INSTRUÇÕES FINAIS:
 - Crie DUAS versões DIFERENTES mas baseadas na mesma história
 - Separe as duas versões com uma linha contendo apenas: ---
 - Cada versão deve ser completa e independente
-- ${autoGenerateName ? 'Cada versão deve ter um título criativo diferente na primeira linha' : `Use o título "${songName}" para ambas as versões`}
+- ${autoGenerateName ? `IMPORTANTE SOBRE TÍTULOS:
+  - Cada versão DEVE ter um título ÚNICO, CRIATIVO e ESPECÍFICO para esta história
+  - Extraia nomes, datas, relações e momentos-chave da história para compor o título
+  - Exemplo: Se a história menciona "minha avó Rosa que faz 80 anos", o título pode ser "Rosa, 80 Primaveras" ou "Vovó Rosa, Eterna Flor"
+  - NÃO use títulos genéricos como "Música Para Você" ou "Homenagem Especial"` : `Use o título "${songName}" para ambas as versões`}
 - NÃO inclua comentários, explicações ou metadados
 - APENAS as letras com as tags estruturadas`;
 
