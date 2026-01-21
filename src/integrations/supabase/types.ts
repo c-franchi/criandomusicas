@@ -664,6 +664,8 @@ export type Database = {
           completed_at: string | null
           created_at: string
           currency: string
+          edited_video_delivered_at: string | null
+          edited_video_url: string | null
           id: string
           order_id: string | null
           paid_at: string | null
@@ -678,6 +680,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           currency?: string
+          edited_video_delivered_at?: string | null
+          edited_video_url?: string | null
           id?: string
           order_id?: string | null
           paid_at?: string | null
@@ -692,6 +696,8 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           currency?: string
+          edited_video_delivered_at?: string | null
+          edited_video_url?: string | null
           id?: string
           order_id?: string | null
           paid_at?: string | null
