@@ -3,7 +3,7 @@ import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings, Bell, Download } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Bell, Download, RefreshCw } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +13,7 @@ import { NotificationBanner } from "@/components/PushNotificationPrompt";
 interface Order {
   id: string;
   status?: string;
+  payment_status?: string;
   created_at?: string;
   music_type?: string;
   music_style?: string;
@@ -36,7 +37,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, status, created_at, music_type, music_style, story, approved_lyric_id, amount')
+        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -71,6 +72,7 @@ const Dashboard = () => {
     }
   }, [user?.id, toast]);
 
+  // Initial fetch
   useEffect(() => {
     if (!loading && !user) {
       setShouldRedirect(true);
@@ -78,6 +80,86 @@ const Dashboard = () => {
       fetchOrders();
     }
   }, [user, loading, fetchOrders]);
+
+  // Real-time subscription for order updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('dashboard-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`
+        },
+        async (payload) => {
+          console.log('Order change detected:', payload);
+          
+          if (payload.eventType === 'INSERT') {
+            const newOrder = payload.new as Order;
+            // Fetch lyric title if available
+            let lyric_title = null;
+            if (newOrder.approved_lyric_id) {
+              const { data: lyricData } = await supabase
+                .from('lyrics')
+                .select('title')
+                .eq('id', newOrder.approved_lyric_id)
+                .maybeSingle();
+              lyric_title = lyricData?.title;
+            }
+            setOrders(prev => [{ ...newOrder, lyric_title }, ...prev]);
+            toast({
+              title: '🎵 Novo pedido criado!',
+              description: 'Seu pedido foi adicionado à lista.',
+            });
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedOrder = payload.new as Order;
+            // Fetch lyric title if available
+            let lyric_title = null;
+            if (updatedOrder.approved_lyric_id) {
+              const { data: lyricData } = await supabase
+                .from('lyrics')
+                .select('title')
+                .eq('id', updatedOrder.approved_lyric_id)
+                .maybeSingle();
+              lyric_title = lyricData?.title;
+            }
+            setOrders(prev => prev.map(o => 
+              o.id === updatedOrder.id ? { ...updatedOrder, lyric_title } : o
+            ));
+            
+            // Show toast for important status changes
+            if (updatedOrder.status === 'LYRICS_GENERATED') {
+              toast({
+                title: '✨ Letras prontas!',
+                description: 'As letras da sua música foram geradas.',
+              });
+            } else if (updatedOrder.status === 'MUSIC_READY') {
+              toast({
+                title: '🎵 Música pronta!',
+                description: 'Sua música está disponível para download!',
+              });
+            } else if (updatedOrder.payment_status === 'PAID') {
+              toast({
+                title: '✅ Pagamento confirmado!',
+                description: 'Estamos gerando as letras da sua música.',
+              });
+            }
+          } else if (payload.eventType === 'DELETE') {
+            const deletedId = (payload.old as Order).id;
+            setOrders(prev => prev.filter(o => o.id !== deletedId));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, toast]);
 
   if (shouldRedirect) {
     return <Navigate to="/auth" replace />;

@@ -386,6 +386,40 @@ INSTRUÇÕES FINAIS:
       console.error("Error updating order status:", updateError);
     }
 
+    // Get user_id from order for push notification
+    const { data: orderData } = await supabase
+      .from('orders')
+      .select('user_id')
+      .eq('id', orderId)
+      .single();
+
+    // Send push notification that lyrics are ready
+    if (orderData?.user_id) {
+      try {
+        console.log("Sending push notification for lyrics ready...");
+        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+        
+        await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify({
+            user_id: orderData.user_id,
+            order_id: orderId,
+            title: '✨ Letras prontas!',
+            body: 'As letras da sua música foram geradas. Acesse para escolher sua favorita!',
+            url: `/criar-musica?orderId=${orderId}`
+          })
+        });
+        console.log("Push notification sent successfully");
+      } catch (pushError) {
+        console.error("Push notification error:", pushError);
+        // Don't fail the main operation if push fails
+      }
+    }
+
     console.log("Lyrics saved successfully");
 
     return new Response(
