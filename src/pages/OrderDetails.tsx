@@ -239,9 +239,8 @@ const OrderDetails = () => {
       ? `Instrumental ${order?.music_type || 'Personalizado'}`
       : (lyrics.find(l => l.is_approved)?.title || 'Minha Música Personalizada');
     
-    // Use short shareable URL with song name
-    const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/m/${orderId}`;
+    // Use custom domain for sharing
+    const shareUrl = `https://criandomusicas.com.br/m/${orderId}`;
     const text = `🎵 Ouça minha música: ${title}\n\n🎧 Escute aqui:\n${shareUrl}`;
     
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
