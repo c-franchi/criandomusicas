@@ -151,22 +151,22 @@ const MusicShare = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted p-4">
-      <Card className="p-8 max-w-md w-full text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background via-background to-muted p-4 safe-area-inset">
+      <Card className="p-6 sm:p-8 max-w-md w-full text-center mx-auto">
         {/* Logo/Brand */}
-        <div className="mb-6">
-          <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Music className="w-10 h-10 text-primary" />
+        <div className="mb-4 sm:mb-6">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+            <Music className="w-8 h-8 sm:w-10 sm:h-10 text-primary" />
           </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wider">
+          <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider">
             Criando Músicas
           </p>
         </div>
 
         {/* Track Info */}
-        <h1 className="text-2xl font-bold mb-2">{track.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 break-words px-2">{track.title}</h1>
         {track.music_style && (
-          <p className="text-sm text-muted-foreground mb-6">{track.music_style}</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">{track.music_style}</p>
         )}
 
         {/* Audio Element */}
@@ -178,20 +178,20 @@ const MusicShare = () => {
         />
 
         {/* Player Controls */}
-        <div className="flex flex-col gap-3 mb-8">
+        <div className="flex flex-col gap-2 sm:gap-3 mb-6 sm:mb-8">
           <Button 
             onClick={togglePlay} 
             size="lg" 
-            className="w-full h-14 text-lg"
+            className="w-full h-12 sm:h-14 text-base sm:text-lg"
           >
             {isPlaying ? (
               <>
-                <Pause className="w-6 h-6 mr-2" />
+                <Pause className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Pausar
               </>
             ) : (
               <>
-                <Play className="w-6 h-6 mr-2" />
+                <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
                 Ouvir Música
               </>
             )}
@@ -201,19 +201,19 @@ const MusicShare = () => {
             onClick={downloadTrack} 
             variant="outline" 
             size="lg"
-            className="w-full"
+            className="w-full h-11 sm:h-12"
           >
-            <Download className="w-5 h-5 mr-2" />
+            <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Baixar MP3
           </Button>
         </div>
 
         {/* CTA */}
-        <div className="pt-6 border-t">
-          <p className="text-sm text-muted-foreground mb-3">
+        <div className="pt-4 sm:pt-6 border-t">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
             Quer criar sua própria música personalizada?
           </p>
-          <Button asChild variant="secondary" className="w-full">
+          <Button asChild variant="secondary" className="w-full h-10 sm:h-11">
             <Link to="/">
               Criar minha música
             </Link>
