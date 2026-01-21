@@ -350,7 +350,48 @@ const CreateSong = () => {
         }
       });
 
-      if (error) throw error;
+      // Handle edge function errors - extract message from response body if available
+      if (error) {
+        // Try to extract error details from the error context
+        const errorContext = (error as any)?.context;
+        let errorData: any = null;
+        
+        // Try to parse error body from context or message
+        try {
+          if (errorContext?.body) {
+            errorData = typeof errorContext.body === 'string' 
+              ? JSON.parse(errorContext.body) 
+              : errorContext.body;
+          } else {
+            // Try to extract JSON from error message (e.g. "status code 400, body {...}")
+            const messageMatch = error.message?.match(/body\s*({.+})/);
+            if (messageMatch) {
+              errorData = JSON.parse(messageMatch[1]);
+            }
+          }
+        } catch (e) {
+          // Parsing failed, continue with original error
+        }
+
+        // Check if it's a pronunciation error from the parsed error data
+        if (errorData?.missingPronunciations && errorData.missingPronunciations.length > 0) {
+          setMissingPronunciations(errorData.missingPronunciations);
+          setShowPronunciationModal(true);
+          setStep(hasUsedModification ? "editing-modified" : "editing");
+          setLoading(false);
+          toast.warning("Pronúncia necessária", {
+            description: `Defina como pronunciar: ${errorData.missingPronunciations.join(', ')}`
+          });
+          return;
+        }
+
+        // If we have a parsed error message, use it
+        if (errorData?.error) {
+          throw new Error(errorData.error);
+        }
+        
+        throw error;
+      }
 
       if (!data?.ok) {
         // Check if it's a pronunciation error
