@@ -483,6 +483,7 @@ export type Database = {
       }
       reviews: {
         Row: {
+          allow_music_sample: boolean | null
           comment: string | null
           created_at: string
           id: string
@@ -493,6 +494,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          allow_music_sample?: boolean | null
           comment?: string | null
           created_at?: string
           id?: string
@@ -503,6 +505,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          allow_music_sample?: boolean | null
           comment?: string | null
           created_at?: string
           id?: string

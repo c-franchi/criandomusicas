@@ -26,6 +26,7 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState(existingReview?.comment || "");
   const [isPublic, setIsPublic] = useState(existingReview?.is_public || false);
+  const [allowMusicSample, setAllowMusicSample] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(!!existingReview);
 
@@ -49,7 +50,8 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
           .update({
             rating,
             comment: comment || null,
-            is_public: isPublic
+            is_public: isPublic,
+            allow_music_sample: allowMusicSample
           })
           .eq('id', existingReview.id);
 
@@ -68,7 +70,8 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
             user_id: userId,
             rating,
             comment: comment || null,
-            is_public: isPublic
+            is_public: isPublic,
+            allow_music_sample: allowMusicSample
           });
 
         if (error) throw error;
@@ -181,15 +184,34 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
         </div>
 
         {/* Public checkbox */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-start gap-2">
           <Checkbox
             id="isPublic"
             checked={isPublic}
             onCheckedChange={(checked) => setIsPublic(checked as boolean)}
+            className="mt-0.5"
           />
-          <Label htmlFor="isPublic" className="text-sm cursor-pointer">
+          <Label htmlFor="isPublic" className="text-sm cursor-pointer leading-tight">
             Permitir que minha avaliação seja exibida publicamente
           </Label>
+        </div>
+
+        {/* Music sample permission checkbox */}
+        <div className="flex items-start gap-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
+          <Checkbox
+            id="allowMusicSample"
+            checked={allowMusicSample}
+            onCheckedChange={(checked) => setAllowMusicSample(checked as boolean)}
+            className="mt-0.5"
+          />
+          <div>
+            <Label htmlFor="allowMusicSample" className="text-sm cursor-pointer leading-tight font-medium">
+              Permitir uso da minha música como exemplo na plataforma
+            </Label>
+            <p className="text-xs text-muted-foreground mt-1">
+              Sua música poderá ser usada para inspirar outros clientes
+            </p>
+          </div>
         </div>
 
         {/* Submit */}
