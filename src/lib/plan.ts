@@ -19,7 +19,7 @@ export const PLANS: PlanInfo[] = [
     price: "R$ 47,90",
     pricePromo: "R$ 19,90",
     limitSec: 180,
-    features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte prioritário"],
+    features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp"],
     cta: "Criar Música"
   },
   {
@@ -35,7 +35,7 @@ export const PLANS: PlanInfo[] = [
     title: "Pacote 5 Músicas",
     price: "R$ 109,90",
     limitSec: 300,
-    features: ["Até 5 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Suporte 24/7", "Prioridade na fila"],
+    features: ["Até 5 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Prioridade na fila"],
     cta: "Melhor Valor"
   },
 ];

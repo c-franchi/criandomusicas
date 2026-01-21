@@ -280,8 +280,8 @@ const InstrumentalShowcase = () => {
             })}
           </CarouselContent>
           
-          <CarouselPrevious className="hidden md:flex -left-12 bg-background/80 backdrop-blur-sm border-accent/20 hover:bg-accent hover:text-white" />
-          <CarouselNext className="hidden md:flex -right-12 bg-background/80 backdrop-blur-sm border-accent/20 hover:bg-accent hover:text-white" />
+          <CarouselPrevious className="-left-4 md:-left-12 bg-background/80 backdrop-blur-sm border-accent/20 hover:bg-accent hover:text-white" />
+          <CarouselNext className="-right-4 md:-right-12 bg-background/80 backdrop-blur-sm border-accent/20 hover:bg-accent hover:text-white" />
         </Carousel>
         
         {/* Mobile swipe indicator */}
