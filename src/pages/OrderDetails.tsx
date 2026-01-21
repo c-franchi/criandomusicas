@@ -239,11 +239,10 @@ const OrderDetails = () => {
       ? `Instrumental ${order?.music_type || 'Personalizado'}`
       : (lyrics.find(l => l.is_approved)?.title || 'Minha Música Personalizada');
     
-    // Share the direct audio URL if available, otherwise share the order page
-    const shareUrl = track?.audio_url || window.location.href;
-    const text = track?.audio_url 
-      ? `🎵 Ouça minha música: ${title}\n\n🎧 Escute aqui:\n${shareUrl}`
-      : `🎵 Veja minha música personalizada: ${title}\n${shareUrl}`;
+    // Use short shareable URL with song name
+    const baseUrl = window.location.origin;
+    const shareUrl = `${baseUrl}/m/${orderId}`;
+    const text = `🎵 Ouça minha música: ${title}\n\n🎧 Escute aqui:\n${shareUrl}`;
     
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };

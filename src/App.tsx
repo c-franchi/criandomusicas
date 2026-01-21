@@ -25,6 +25,7 @@ import Install from "./pages/Install";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfUse from "./pages/TermsOfUse";
 import MusicRules from "./pages/MusicRules";
+import MusicShare from "./pages/MusicShare";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/privacidade" element={<PrivacyPolicy />} />
             <Route path="/termos" element={<TermsOfUse />} />
             <Route path="/regras" element={<MusicRules />} />
+            <Route path="/m/:orderId" element={<MusicShare />} />
             <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
             <Route path="/test-openai" element={<TestOpenAI />} />
             <Route path="/pedido/:orderId/letras" element={<OrderLyricsPage />} />
