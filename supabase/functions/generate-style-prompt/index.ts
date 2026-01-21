@@ -432,12 +432,18 @@ ${lyricsForGeneration2}`;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Update order with style prompt and final prompt
+    // For instrumental: keep status as LYRICS_APPROVED (admin controls when to start production)
+    // For vocal: set to LYRICS_APPROVED (ready for production after lyric approval)
     const updateData: Record<string, unknown> = {
       style_prompt: stylePrompt,
       final_prompt: finalPrompt,
-      status: isInstrumental ? 'STYLE_GENERATED' : 'LYRICS_APPROVED',
       updated_at: new Date().toISOString()
     };
+    
+    // Only update status for vocal tracks (instrumental stays in current status)
+    if (!isInstrumental) {
+      updateData.status = 'LYRICS_APPROVED';
+    }
 
     if (!isInstrumental && lyricId) {
       updateData.approved_lyric_id = lyricId;
