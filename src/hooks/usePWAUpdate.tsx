@@ -1,31 +1,59 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+
+// Safe wrapper to avoid "Should have a queue" React error
+const useSafeRegisterSW = () => {
+  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [needRefresh, setNeedRefresh] = useState(false);
+
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      // Register service worker manually to avoid vite-plugin-pwa hook issues
+      navigator.serviceWorker.ready.then((reg) => {
+        setRegistration(reg);
+        console.log('SW ready:', reg.scope);
+      });
+
+      // Check for updates periodically
+      const checkForUpdates = () => {
+        navigator.serviceWorker.getRegistration().then((reg) => {
+          if (reg) {
+            reg.update().catch(console.error);
+          }
+        });
+      };
+
+      const interval = setInterval(checkForUpdates, 30000);
+
+      // Listen for new service worker
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('SW controller changed - new version available');
+        setNeedRefresh(true);
+      });
+
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  const updateServiceWorker = useCallback(() => {
+    if (registration?.waiting) {
+      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+    }
+    window.location.reload();
+  }, [registration]);
+
+  return { needRefresh, updateServiceWorker };
+};
 
 export const usePWAUpdate = () => {
   const [showUpdateBanner, setShowUpdateBanner] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const {
-    offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [swNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
-    onRegisteredSW(swUrl, r) {
-      console.log('SW Registered:', swUrl);
-      // Check for updates every 30 seconds
-      if (r) {
-        setInterval(() => {
-          r.update();
-        }, 30 * 1000);
-      }
-    },
-    onRegisterError(error) {
-      console.error('SW registration error:', error);
-    },
-  });
+  
+  const { needRefresh, updateServiceWorker } = useSafeRegisterSW();
 
   // Listen for service worker messages about updates
   useEffect(() => {
+    if (!('serviceWorker' in navigator)) return;
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'SW_UPDATED') {
         console.log('SW Update detected via message:', event.data.version);
@@ -33,34 +61,23 @@ export const usePWAUpdate = () => {
       }
     };
 
-    navigator.serviceWorker?.addEventListener('message', handleMessage);
+    navigator.serviceWorker.addEventListener('message', handleMessage);
     return () => {
-      navigator.serviceWorker?.removeEventListener('message', handleMessage);
+      navigator.serviceWorker.removeEventListener('message', handleMessage);
     };
   }, []);
 
   // Show banner when SW needs refresh
   useEffect(() => {
-    if (swNeedRefresh) {
+    if (needRefresh) {
       console.log('SW needs refresh detected');
       setShowUpdateBanner(true);
     }
-  }, [swNeedRefresh]);
-
-  useEffect(() => {
-    if (offlineReady) {
-      console.log('App ready for offline use');
-      setOfflineReady(false);
-    }
-  }, [offlineReady, setOfflineReady]);
+  }, [needRefresh]);
 
   const forceUpdate = useCallback(() => {
     setIsUpdating(true);
-    updateServiceWorker(true);
-    // Reload page after a brief delay to ensure SW activates
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+    updateServiceWorker();
   }, [updateServiceWorker]);
 
   const dismissBanner = useCallback(() => {
