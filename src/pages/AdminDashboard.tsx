@@ -28,7 +28,9 @@ import {
   Percent,
   Gift,
   QrCode,
-  MessageCircle
+  MessageCircle,
+  Video,
+  Camera
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -61,6 +63,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AdminStatsCards, AudioSampleManager, type AudioSample, type PricingConfig, type Voucher, type PixConfig } from "@/components/admin";
+import VideoOrdersManager from "@/components/admin/VideoOrdersManager";
+import ReactionVideosManager from "@/components/admin/ReactionVideosManager";
 
 interface AdminOrder {
   id: string;
@@ -98,7 +102,7 @@ const AdminDashboard = () => {
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
-  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix'>('pricing');
+  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions'>('pricing');
   
   // PIX Config
   const [pixConfig, setPixConfig] = useState<PixConfig | null>(null);
@@ -1031,7 +1035,7 @@ const AdminDashboard = () => {
                   </DialogHeader>
                   
                   <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)} className="mt-4">
-                    <TabsList className="grid grid-cols-4 w-full">
+                    <TabsList className="grid grid-cols-6 w-full">
                       <TabsTrigger value="pricing" className="text-xs sm:text-sm">
                         <DollarSign className="w-4 h-4 mr-1" />
                         <span className="hidden sm:inline">Preços</span>
@@ -1047,6 +1051,14 @@ const AdminDashboard = () => {
                       <TabsTrigger value="pix" className="text-xs sm:text-sm">
                         <QrCode className="w-4 h-4 mr-1" />
                         <span className="hidden sm:inline">PIX</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="videos" className="text-xs sm:text-sm">
+                        <Video className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">Vídeos</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="reactions" className="text-xs sm:text-sm">
+                        <Camera className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">Reações</span>
                       </TabsTrigger>
                     </TabsList>
                     
@@ -1412,6 +1424,16 @@ const AdminDashboard = () => {
                           <p className="text-muted-foreground">Nenhuma configuração PIX encontrada</p>
                         </Card>
                       )}
+                    </TabsContent>
+
+                    {/* VIDEO ORDERS TAB */}
+                    <TabsContent value="videos" className="space-y-4 mt-4">
+                      <VideoOrdersManager />
+                    </TabsContent>
+
+                    {/* REACTION VIDEOS TAB */}
+                    <TabsContent value="reactions" className="space-y-4 mt-4">
+                      <ReactionVideosManager />
                     </TabsContent>
                   </Tabs>
                 </DialogContent>

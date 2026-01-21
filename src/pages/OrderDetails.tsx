@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReviewForm from "@/components/ReviewForm";
+import ReactionVideoUpload from "@/components/ReactionVideoUpload";
 
 interface OrderData {
   id: string;
@@ -71,6 +72,7 @@ const OrderDetails = () => {
   const [lyrics, setLyrics] = useState<LyricData[]>([]);
   const [track, setTrack] = useState<TrackData | null>(null);
   const [review, setReview] = useState<ReviewData | null>(null);
+  const [hasReactionVideo, setHasReactionVideo] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
@@ -123,6 +125,15 @@ const OrderDetails = () => {
 
         // Fetch existing review
         await fetchReview();
+
+        // Check if reaction video exists
+        const { data: reactionData } = await supabase
+          .from('reaction_videos')
+          .select('id')
+          .eq('order_id', orderId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        setHasReactionVideo(!!reactionData);
       } catch (err) {
         console.error('Error fetching order:', err);
         toast({
@@ -486,6 +497,15 @@ const OrderDetails = () => {
             userId={user.id}
             existingReview={review || undefined}
             onReviewSubmitted={fetchReview}
+          />
+        )}
+
+        {/* Reaction Video Upload - Show when music is ready and no video uploaded */}
+        {isMusicReady && user && !hasReactionVideo && (
+          <ReactionVideoUpload
+            orderId={orderId!}
+            userId={user.id}
+            onUploadComplete={() => setHasReactionVideo(true)}
           />
         )}
 
