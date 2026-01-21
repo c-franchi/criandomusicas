@@ -3,8 +3,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-// VAPID Public Key from environment variable
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+// VAPID Public Key - This is a PUBLIC key and safe to expose in client code
+// The key is used to identify the application server when subscribing to push notifications
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BLB5eaVrCH-QK6JddCPfdVBMVgDVxiRz1FEbqn_vPXP3d4i0Pl4N5QIYBBkYMOVmPXPc2_cNKD-WZnRTvqMaK8A';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
