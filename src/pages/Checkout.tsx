@@ -220,6 +220,47 @@ export default function Checkout() {
         toast.success(data.message);
 
         if (data.is_free) {
+          // For 100% discount, trigger lyrics generation automatically
+          toast.info('Gerando letras da sua música...');
+          
+          // Fetch full order data for briefing
+          const { data: orderData } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', order.id)
+            .single();
+
+          if (orderData) {
+            // Build briefing from order data
+            const briefing = {
+              musicType: orderData.music_type || 'homenagem',
+              emotion: orderData.emotion || 'alegria',
+              emotionIntensity: orderData.emotion_intensity || 3,
+              style: orderData.music_style || 'pop',
+              rhythm: orderData.rhythm || 'moderado',
+              atmosphere: orderData.atmosphere || 'festivo',
+              structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+              hasMonologue: orderData.has_monologue || false,
+              monologuePosition: orderData.monologue_position || 'bridge',
+              mandatoryWords: orderData.mandatory_words || '',
+              restrictedWords: orderData.restricted_words || '',
+              voiceType: orderData.voice_type || 'feminina'
+            };
+
+            // Trigger automatic lyrics generation
+            try {
+              await supabase.functions.invoke('generate-lyrics', {
+                body: {
+                  orderId: order.id,
+                  story: orderData.story,
+                  briefing
+                }
+              });
+            } catch (lyricsError) {
+              console.error('Lyrics generation error:', lyricsError);
+            }
+          }
+
           setTimeout(() => {
             navigate(`/criar-musica?orderId=${order.id}`);
           }, 1500);

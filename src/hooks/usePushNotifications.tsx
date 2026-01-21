@@ -3,7 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+// VAPID Public Key - This is safe to expose (not a secret)
+const VAPID_PUBLIC_KEY = 'BKhLqNEVLh5O-5mIxJLxlq-jcZMZQj-A1Wc7zMdB4Y1tSQnPGvPLEBNmkE-G_yIbf9VHvfJpJKhNtJWGYLmS4jk';
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
