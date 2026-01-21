@@ -112,45 +112,122 @@ export const usePushNotifications = () => {
 
       // Get service worker registration
       console.log('[Push] Getting service worker registration...');
-      const registration = await navigator.serviceWorker.ready;
-      console.log('[Push] Service worker ready');
+      
+      // Wait for service worker to be ready with timeout
+      let registration: ServiceWorkerRegistration;
+      try {
+        registration = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise<never>((_, reject) => 
+            setTimeout(() => reject(new Error('Service Worker timeout')), 10000)
+          )
+        ]);
+      } catch (swError) {
+        console.error('[Push] Service worker not ready:', swError);
+        toast({
+          title: 'Erro no Service Worker',
+          description: 'Recarregue a página e tente novamente.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+      
+      console.log('[Push] Service worker ready, scope:', registration.scope);
 
-      // Subscribe to push
+      // Subscribe to push with better error handling
       console.log('[Push] Subscribing to push manager with VAPID key...');
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
-      });
-      console.log('[Push] Subscription created:', subscription.endpoint);
+      console.log('[Push] VAPID key length:', VAPID_PUBLIC_KEY.length);
+      
+      let applicationServerKey: Uint8Array;
+      try {
+        applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        console.log('[Push] Converted VAPID key, length:', applicationServerKey.length);
+      } catch (keyError) {
+        console.error('[Push] Invalid VAPID key format:', keyError);
+        toast({
+          title: 'Erro de configuração',
+          description: 'Chave VAPID inválida. Contate o suporte.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+
+      let subscription: PushSubscription;
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: applicationServerKey.buffer as ArrayBuffer
+        });
+        console.log('[Push] Subscription created:', subscription.endpoint);
+      } catch (subError: any) {
+        console.error('[Push] Subscription error:', subError);
+        
+        // Handle specific errors
+        if (subError.message?.includes('applicationServerKey')) {
+          toast({
+            title: 'Erro na chave VAPID',
+            description: 'A chave de notificação é inválida. Contate o suporte.',
+            variant: 'destructive'
+          });
+        } else if (subError.name === 'NotAllowedError') {
+          toast({
+            title: 'Permissão negada',
+            description: 'Verifique as configurações do navegador.',
+            variant: 'destructive'
+          });
+        } else {
+          toast({
+            title: 'Erro ao ativar notificações',
+            description: subError.message || 'Tente novamente mais tarde.',
+            variant: 'destructive'
+          });
+        }
+        return false;
+      }
 
       const subscriptionJson = subscription.toJSON();
       
+      if (!subscriptionJson.endpoint || !subscriptionJson.keys?.p256dh || !subscriptionJson.keys?.auth) {
+        console.error('[Push] Incomplete subscription data:', subscriptionJson);
+        toast({
+          title: 'Erro de subscrição',
+          description: 'Dados de subscrição incompletos.',
+          variant: 'destructive'
+        });
+        return false;
+      }
+      
       // Save to database
+      console.log('[Push] Saving subscription to database...');
       const { error } = await supabase
         .from('push_subscriptions')
         .upsert({
           user_id: user.id,
-          endpoint: subscriptionJson.endpoint!,
-          p256dh: subscriptionJson.keys!.p256dh,
-          auth: subscriptionJson.keys!.auth,
+          endpoint: subscriptionJson.endpoint,
+          p256dh: subscriptionJson.keys.p256dh,
+          auth: subscriptionJson.keys.auth,
           is_active: true
         }, {
           onConflict: 'user_id,endpoint'
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[Push] Database error:', error);
+        throw error;
+      }
 
+      console.log('[Push] Subscription saved successfully!');
       setIsSubscribed(true);
       toast({
         title: '🔔 Notificações ativadas!',
         description: 'Você receberá atualizações sobre seus pedidos.'
       });
       return true;
-    } catch (error) {
-      console.error('Error subscribing to push:', error);
+    } catch (error: any) {
+      console.error('[Push] General error subscribing to push:', error);
       toast({
         title: 'Erro ao ativar notificações',
-        description: 'Tente novamente mais tarde.',
+        description: error.message || 'Tente novamente mais tarde.',
         variant: 'destructive'
       });
       return false;

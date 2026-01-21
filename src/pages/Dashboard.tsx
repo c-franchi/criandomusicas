@@ -334,16 +334,17 @@ const Dashboard = () => {
             </Card>
           ) : (
             orders.map((order) => (
-              <Card key={order.id} className="p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <h3 className="font-semibold text-lg mb-1">
+              <Card key={order.id} className="p-4 sm:p-6">
+                {/* Mobile-first layout */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg mb-1 break-words">
                       {order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-2">
                       {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
                     </p>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Badge className={getStatusColor(order.status || 'DRAFT')}>
                         {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
                       </Badge>
@@ -352,20 +353,22 @@ const Dashboard = () => {
                           🎹 Instrumental
                         </Badge>
                       )}
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-xs sm:text-sm text-muted-foreground">
                         Criado em {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-primary mb-1">
+                  
+                  {/* Price and actions - stacks on mobile */}
+                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
+                    <div className="text-xl sm:text-2xl font-bold text-primary">
                       R$ {((order.amount || 999) / 100).toFixed(2).replace('.', ',')}
                     </div>
-                    <div className="flex items-center gap-2 justify-end">
+                    <div className="flex items-center gap-2">
                       <Button asChild variant="outline" size="sm">
                         <Link to={`/pedido/${order.id}`}>
-                          Ver Detalhes
-                          <ExternalLink className="w-4 h-4 ml-2" />
+                          <span className="hidden xs:inline">Ver </span>Detalhes
+                          <ExternalLink className="w-4 h-4 ml-1 sm:ml-2" />
                         </Link>
                       </Button>
                       <Button 
@@ -383,8 +386,8 @@ const Dashboard = () => {
                 
                 {order.story && (
                   <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2">História:</h4>
-                    <p className="text-sm text-muted-foreground">
+                    <h4 className="font-medium mb-2 text-sm">História:</h4>
+                    <p className="text-sm text-muted-foreground break-words">
                       {order.story.slice(0, 150)}
                       {order.story.length > 150 ? '...' : ''}
                     </p>
