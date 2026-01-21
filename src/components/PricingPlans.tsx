@@ -19,13 +19,30 @@ interface PricingPlan {
   sort_order: number;
 }
 
-// Helper function to calculate instrumental price (20% off)
+// Helper function to calculate instrumental price (20% off, rounded to .90)
 const getInstrumentalPriceCents = (cents: number): number => {
-  return Math.round(cents * 0.8);
+  const discounted = cents * 0.8;
+  // Round to nearest 10 cents ending in 90 (e.g., 1590, 7990, 8790)
+  const rounded = Math.round(discounted / 100) * 100 - 10;
+  return rounded > 0 ? rounded : Math.round(discounted);
 };
 
 const formatPrice = (cents: number) => {
   return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
+};
+
+// Features for instrumental plans (without lyrics mentions)
+const getInstrumentalFeatures = (planId: string): string[] => {
+  switch (planId) {
+    case "single":
+      return ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte prioritário"];
+    case "package":
+      return ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte VIP"];
+    case "subscription":
+      return ["Até 5 músicas instrumentais", "Arranjos personalizados", "Áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Suporte 24/7", "Prioridade na fila"];
+    default:
+      return [];
+  }
 };
 
 const PricingPlans = () => {
@@ -253,18 +270,12 @@ const PricingPlans = () => {
 
               <CardContent className="space-y-4 mt-auto">
                 <ul className="space-y-3 flex-1 text-center">
-                  {(plan.features as string[]).map((feature, index) => (
+                  {(isInstrumental ? getInstrumentalFeatures(plan.id) : (plan.features as string[])).map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <Check className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isInstrumental ? 'text-accent' : 'text-green-500'}`} />
                       <span className="text-muted-foreground">{feature}</span>
                     </li>
                   ))}
-                  {isInstrumental && (
-                    <li className="flex items-start">
-                      <Check className="w-5 h-5 text-accent mr-3 mt-0.5 flex-shrink-0" />
-                      <span className="text-accent font-medium">Sem letra (100% instrumental)</span>
-                    </li>
-                  )}
                 </ul>
 
                 <div className="mt-6">
