@@ -1,20 +1,24 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Video,
   Clock,
   CheckCircle,
-  AlertCircle,
   Search,
   RefreshCw,
   ExternalLink,
   FileImage,
   FileVideo,
   User,
-  Eye
+  Eye,
+  Download,
+  Upload,
+  Send,
+  Loader2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,6 +38,8 @@ interface VideoOrder {
   payment_status: string;
   amount: number;
   created_at: string;
+  edited_video_url?: string | null;
+  edited_video_delivered_at?: string | null;
   user_name?: string | null;
   music_title?: string | null;
   files?: { file_url: string; file_type: string; file_name: string | null }[];
@@ -47,13 +53,17 @@ const VideoOrdersManager = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<VideoOrder | null>(null);
   const [filesDialogOpen, setFilesDialogOpen] = useState(false);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [downloadingAll, setDownloadingAll] = useState<string | null>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const fetchVideoOrders = useCallback(async () => {
     setLoading(true);
     try {
       const { data: ordersData, error } = await supabase
         .from('video_orders')
-        .select('*')
+        .select('*, edited_video_url, edited_video_delivered_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -160,9 +170,143 @@ const VideoOrdersManager = () => {
       'PENDING': 'Aguardando Upload',
       'SUBMITTED': 'Arquivos Enviados',
       'IN_PROGRESS': 'Em Produção',
-      'COMPLETED': 'Concluído'
+      'COMPLETED': 'Concluído',
+      'DELIVERED': 'Entregue'
     };
     return statusMap[status] || status;
+  };
+
+  // Download all files at once
+  const downloadAllFiles = async (order: VideoOrder) => {
+    if (!order.files || order.files.length === 0) {
+      toast({
+        title: 'Nenhum arquivo',
+        description: 'Este pedido não possui arquivos para download.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setDownloadingAll(order.id);
+    
+    try {
+      for (let i = 0; i < order.files.length; i++) {
+        const file = order.files[i];
+        const response = await fetch(file.file_url);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.file_name || `arquivo_${i + 1}.${file.file_type === 'image' ? 'jpg' : 'mp4'}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+        
+        // Small delay between downloads
+        if (i < order.files.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      toast({
+        title: '✅ Download concluído!',
+        description: `${order.files.length} arquivo(s) baixado(s) com sucesso.`
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro no download',
+        description: 'Não foi possível baixar todos os arquivos.',
+        variant: 'destructive'
+      });
+    } finally {
+      setDownloadingAll(null);
+    }
+  };
+
+  // Upload edited video
+  const handleUploadEditedVideo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedOrder) return;
+
+    if (!file.type.startsWith('video/')) {
+      toast({
+        title: 'Formato inválido',
+        description: 'Por favor, selecione um arquivo de vídeo.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setUploadingVideo(true);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `edited_${selectedOrder.id}_${Date.now()}.${fileExt}`;
+      const filePath = `edited-videos/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('video-uploads')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('video-uploads')
+        .getPublicUrl(filePath);
+
+      // Update video order with edited video URL
+      const { error: updateError } = await supabase
+        .from('video_orders')
+        .update({ 
+          edited_video_url: publicUrl,
+          edited_video_delivered_at: new Date().toISOString(),
+          status: 'DELIVERED'
+        })
+        .eq('id', selectedOrder.id);
+
+      if (updateError) throw updateError;
+
+      // Send push notification to user
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            user_id: selectedOrder.user_id,
+            title: '🎬 Seu vídeo está pronto!',
+            body: 'O vídeo editado com sua música personalizada foi entregue. Acesse para visualizar!',
+            url: `/pedido/${selectedOrder.order_id || ''}`,
+            order_id: selectedOrder.order_id
+          }
+        });
+      } catch (notifError) {
+        console.error('Erro ao enviar notificação push:', notifError);
+      }
+
+      toast({
+        title: '✅ Vídeo enviado!',
+        description: 'O cliente foi notificado sobre a entrega.',
+      });
+
+      setVideoOrders(prev => prev.map(vo => 
+        vo.id === selectedOrder.id 
+          ? { ...vo, edited_video_url: publicUrl, status: 'DELIVERED', edited_video_delivered_at: new Date().toISOString() } 
+          : vo
+      ));
+      
+      setUploadDialogOpen(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao enviar vídeo',
+        description: errorMessage,
+        variant: 'destructive'
+      });
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) {
+        videoInputRef.current.value = '';
+      }
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -177,6 +321,8 @@ const VideoOrdersManager = () => {
         return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       case 'COMPLETED':
         return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'DELIVERED':
+        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -240,7 +386,7 @@ const VideoOrdersManager = () => {
           />
         </div>
         <div className="flex gap-1 overflow-x-auto pb-1">
-          {['all', 'SUBMITTED', 'IN_PROGRESS', 'COMPLETED'].map((status) => (
+          {['all', 'SUBMITTED', 'IN_PROGRESS', 'COMPLETED', 'DELIVERED'].map((status) => (
             <Button
               key={status}
               variant={filterStatus === status ? 'default' : 'outline'}
@@ -302,7 +448,7 @@ const VideoOrdersManager = () => {
 
                 {/* Files Preview */}
                 {order.files && order.files.length > 0 && (
-                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-lg flex-wrap">
                     <div className="flex items-center gap-1">
                       <FileImage className="w-4 h-4 text-blue-400" />
                       <span className="text-xs">
@@ -315,17 +461,54 @@ const VideoOrdersManager = () => {
                         {order.files.filter(f => f.file_type === 'video').length} vídeos
                       </span>
                     </div>
+                    <div className="flex items-center gap-1 ml-auto">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setFilesDialogOpen(true);
+                        }}
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        Ver
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-7"
+                        onClick={() => downloadAllFiles(order)}
+                        disabled={downloadingAll === order.id}
+                      >
+                        {downloadingAll === order.id ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Download className="w-3 h-3 mr-1" />
+                        )}
+                        Baixar Tudo
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Edited Video Info */}
+                {order.edited_video_url && (
+                  <div className="flex items-center gap-2 p-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                    <Send className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs text-emerald-400 font-medium">
+                      Vídeo editado entregue
+                    </span>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="ml-auto text-xs h-7"
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setFilesDialogOpen(true);
-                      }}
+                      asChild
                     >
-                      <Eye className="w-3 h-3 mr-1" />
-                      Ver Arquivos
+                      <a href={order.edited_video_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="w-3 h-3 mr-1" />
+                        Ver
+                      </a>
                     </Button>
                   </div>
                 )}
@@ -343,13 +526,29 @@ const VideoOrdersManager = () => {
                     </Button>
                   )}
                   {order.status === 'IN_PROGRESS' && (
+                    <>
+                      <Button
+                        size="sm"
+                        onClick={() => updateVideoOrderStatus(order.id, 'COMPLETED')}
+                        className="text-xs bg-green-600 hover:bg-green-700"
+                      >
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Marcar Concluído
+                      </Button>
+                    </>
+                  )}
+                  {(order.status === 'COMPLETED' || order.status === 'IN_PROGRESS') && !order.edited_video_url && (
                     <Button
                       size="sm"
-                      onClick={() => updateVideoOrderStatus(order.id, 'COMPLETED')}
-                      className="text-xs bg-green-600 hover:bg-green-700"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedOrder(order);
+                        setUploadDialogOpen(true);
+                      }}
+                      className="text-xs border-primary/50 text-primary"
                     >
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Marcar Concluído
+                      <Upload className="w-3 h-3 mr-1" />
+                      Enviar Vídeo Editado
                     </Button>
                   )}
                   {order.order_id && (
@@ -376,9 +575,26 @@ const VideoOrdersManager = () => {
       <Dialog open={filesDialogOpen} onOpenChange={setFilesDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileImage className="w-5 h-5" />
-              Arquivos Enviados
+            <DialogTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <FileImage className="w-5 h-5" />
+                Arquivos Enviados
+              </span>
+              {selectedOrder && selectedOrder.files && selectedOrder.files.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadAllFiles(selectedOrder)}
+                  disabled={downloadingAll === selectedOrder.id}
+                >
+                  {downloadingAll === selectedOrder.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  Baixar Todos
+                </Button>
+              )}
             </DialogTitle>
           </DialogHeader>
           {selectedOrder?.files && (
@@ -410,6 +626,47 @@ const VideoOrdersManager = () => {
               ))}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Edited Video Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="w-5 h-5" />
+              Enviar Vídeo Editado
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="text-sm text-muted-foreground">
+              <p><strong>Cliente:</strong> {selectedOrder?.user_name || 'N/A'}</p>
+              <p><strong>Música:</strong> {selectedOrder?.music_title || 'Música Personalizada'}</p>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editedVideo">Selecione o vídeo editado</Label>
+              <Input
+                id="editedVideo"
+                type="file"
+                accept="video/*"
+                ref={videoInputRef}
+                onChange={handleUploadEditedVideo}
+                disabled={uploadingVideo}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-muted-foreground">
+                O cliente será notificado automaticamente quando o vídeo for enviado.
+              </p>
+            </div>
+
+            {uploadingVideo && (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-6 h-6 animate-spin text-primary mr-2" />
+                <span className="text-sm">Enviando vídeo...</span>
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

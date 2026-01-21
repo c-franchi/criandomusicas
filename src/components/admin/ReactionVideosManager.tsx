@@ -112,6 +112,8 @@ const ReactionVideosManager = () => {
 
   const updateVideo = async (id: string, updates: { is_approved?: boolean; is_public?: boolean }) => {
     try {
+      const video = videos.find(v => v.id === id);
+      
       const { error } = await supabase
         .from('reaction_videos')
         .update(updates)
@@ -119,10 +121,27 @@ const ReactionVideosManager = () => {
 
       if (error) throw error;
 
+      // Send push notification when video is approved
+      if (updates.is_approved === true && video) {
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              user_id: video.user_id,
+              title: '🎉 Seu vídeo foi aprovado!',
+              body: 'Seu vídeo de reação foi aprovado e agora está visível na nossa página inicial!',
+              url: '/',
+              order_id: video.order_id
+            }
+          });
+        } catch (notifError) {
+          console.error('Erro ao enviar notificação push:', notifError);
+        }
+      }
+
       toast({
         title: 'Vídeo atualizado!',
         description: updates.is_approved !== undefined 
-          ? (updates.is_approved ? 'Vídeo aprovado para exibição' : 'Vídeo reprovado')
+          ? (updates.is_approved ? 'Vídeo aprovado e cliente notificado' : 'Vídeo reprovado')
           : 'Visibilidade alterada',
       });
 
