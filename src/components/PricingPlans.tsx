@@ -35,11 +35,11 @@ const formatPrice = (cents: number) => {
 const getInstrumentalFeatures = (planId: string): string[] => {
   switch (planId) {
     case "single":
-      return ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte prioritário"];
+      return ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega por WhatsApp"];
     case "package":
       return ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte VIP"];
     case "subscription":
-      return ["Até 5 músicas instrumentais", "Arranjos personalizados", "Áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Suporte 24/7", "Prioridade na fila"];
+      return ["Até 5 músicas instrumentais", "Arranjos personalizados", "Áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Prioridade na fila"];
     default:
       return [];
   }
@@ -70,7 +70,7 @@ const PricingPlans = () => {
             price_display: "R$ 47,90",
             price_cents: 4790,
             price_promo_cents: 1990,
-            features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp", "Suporte prioritário"] as string[],
+            features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega por WhatsApp"] as string[],
             is_popular: false,
             is_active: true,
             sort_order: 1
@@ -92,7 +92,7 @@ const PricingPlans = () => {
             price_display: "R$ 109,90",
             price_cents: 10990,
             price_promo_cents: null,
-            features: ["Até 5 músicas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega instantânea", "Suporte 24/7", "Prioridade na fila"] as string[],
+            features: ["Até 5 músicas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega por WhatsApp", "Prioridade na fila"] as string[],
             is_popular: false,
             is_active: true,
             sort_order: 3
@@ -140,12 +140,14 @@ const PricingPlans = () => {
 
   const getDisplayPrice = (plan: PricingPlan) => {
     if (isInstrumental) {
-      const baseCents = plan.price_promo_cents || plan.price_cents;
-      const instrumentalCents = getInstrumentalPriceCents(baseCents);
+      // For instrumental: always show original price (with 20% off) and promo price (with 20% off) if exists
+      const instrumentalOriginalCents = getInstrumentalPriceCents(plan.price_cents);
+      const instrumentalPromoCents = plan.price_promo_cents ? getInstrumentalPriceCents(plan.price_promo_cents) : null;
+      
       return {
-        price: formatPrice(instrumentalCents),
-        originalPrice: plan.price_promo_cents ? formatPrice(getInstrumentalPriceCents(plan.price_cents)) : null,
-        hasPromo: !!plan.price_promo_cents
+        price: instrumentalPromoCents ? formatPrice(instrumentalPromoCents) : formatPrice(instrumentalOriginalCents),
+        originalPrice: instrumentalPromoCents ? formatPrice(instrumentalOriginalCents) : null,
+        hasPromo: !!instrumentalPromoCents
       };
     }
     return {
