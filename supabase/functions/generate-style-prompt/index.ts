@@ -15,12 +15,36 @@ interface BriefingData {
   atmosphere?: string;
   hasMonologue?: boolean;
   voiceType?: string;
+  // Campos instrumentais
+  isInstrumental?: boolean;
+  instruments?: string[];
+  soloInstrument?: string;
+  soloMoment?: string;
+  instrumentationNotes?: string;
 }
 
 interface Pronunciation {
   term: string;
   phonetic: string;
 }
+
+// Mapear IDs de instrumentos para nomes em inglês
+const instrumentNameMap: Record<string, string> = {
+  piano: 'Grand Piano',
+  violao: 'Acoustic Guitar',
+  guitarra: 'Electric Guitar',
+  violino: 'Violin',
+  saxofone: 'Saxophone',
+  trompete: 'Trumpet/Brass',
+  bateria: 'Drums/Percussion',
+  baixo: 'Bass Guitar',
+  ukulele: 'Ukulele',
+  acordeao: 'Accordion',
+  orquestra: 'Full Orchestra',
+  sintetizador: 'Synthesizers/Electronic',
+  flauta: 'Flute',
+  harpa: 'Harp'
+};
 
 // Aplicar pronúncias ao texto
 function applyPronunciations(text: string, pronunciations: Pronunciation[]): string {
@@ -62,41 +86,60 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, lyricId, approvedLyrics, phoneticLyrics, songTitle, briefing, pronunciations = [] } = await req.json() as {
+    const { 
+      orderId, 
+      lyricId, 
+      approvedLyrics, 
+      phoneticLyrics, 
+      songTitle, 
+      briefing, 
+      pronunciations = [],
+      isInstrumental = false
+    } = await req.json() as {
       orderId: string;
-      lyricId: string;
-      approvedLyrics: string;
+      lyricId?: string;
+      approvedLyrics?: string;
       phoneticLyrics?: string;
       songTitle?: string;
       briefing: BriefingData;
       pronunciations?: Pronunciation[];
+      isInstrumental?: boolean;
     };
 
-    console.log("generate-style-prompt called with orderId:", orderId);
+    console.log("generate-style-prompt called with orderId:", orderId, "isInstrumental:", isInstrumental);
 
-    if (!orderId || !approvedLyrics) {
+    if (!orderId) {
       return new Response(
-        JSON.stringify({ ok: false, error: "Campos obrigatórios: orderId e approvedLyrics" }),
+        JSON.stringify({ ok: false, error: "Campo obrigatório: orderId" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Detectar termos críticos sem pronúncia
-    const criticalTerms = detectCriticalTerms(approvedLyrics);
-    const missingPronunciations = criticalTerms.filter(
-      term => !pronunciations.some(p => p.term === term)
-    );
-
-    // BLOQUEAR se houver termos sem pronúncia
-    if (missingPronunciations.length > 0) {
+    // Para músicas cantadas, letras são obrigatórias
+    if (!isInstrumental && !approvedLyrics) {
       return new Response(
-        JSON.stringify({ 
-          ok: false, 
-          error: `Termo(s) detectado(s) sem pronúncia definida: ${missingPronunciations.join(', ')}. Defina a pronúncia antes de gerar a música.`,
-          missingPronunciations
-        }),
+        JSON.stringify({ ok: false, error: "Campos obrigatórios para música cantada: approvedLyrics" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Detectar termos críticos sem pronúncia (apenas para cantada)
+    if (!isInstrumental && approvedLyrics) {
+      const criticalTerms = detectCriticalTerms(approvedLyrics);
+      const missingPronunciations = criticalTerms.filter(
+        term => !pronunciations.some(p => p.term === term)
+      );
+
+      if (missingPronunciations.length > 0) {
+        return new Response(
+          JSON.stringify({ 
+            ok: false, 
+            error: `Termo(s) detectado(s) sem pronúncia definida: ${missingPronunciations.join(', ')}. Defina a pronúncia antes de gerar a música.`,
+            missingPronunciations
+          }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -115,16 +158,12 @@ serve(async (req) => {
       rhythm = 'moderado',
       atmosphere = 'festivo',
       hasMonologue = false,
-      voiceType = 'feminina'
+      voiceType = 'feminina',
+      instruments = [],
+      soloInstrument,
+      soloMoment,
+      instrumentationNotes
     } = briefing || {};
-
-    // Gerar letra fonética se houver pronúncias
-    let lyricsForGeneration = approvedLyrics;
-    if (pronunciations.length > 0 && !phoneticLyrics) {
-      lyricsForGeneration = applyPronunciations(approvedLyrics, pronunciations);
-    } else if (phoneticLyrics) {
-      lyricsForGeneration = phoneticLyrics;
-    }
 
     // Map rhythm to BPM range
     const bpmMap: Record<string, string> = {
@@ -135,25 +174,148 @@ serve(async (req) => {
 
     // Map atmosphere to production notes
     const atmosphereMap: Record<string, string> = {
-      'intimo': 'Intimate, acoustic, minimal reverb, close-mic vocals',
-      'festivo': 'Celebratory, bright mix, energetic dynamics, choir-like backing vocals',
+      'intimo': 'Intimate, acoustic, minimal reverb, close-mic feel',
+      'festivo': 'Celebratory, bright mix, energetic dynamics',
       'melancolico': 'Melancholic, subtle pads, tasteful string arrangements, emotional dynamics',
       'epico': 'Epic, orchestral elements, big drums, cinematic build-ups',
-      'leve': 'Light, airy production, soft dynamics, gentle instrumentation'
+      'leve': 'Light, airy production, soft dynamics, gentle instrumentation',
+      'misterioso': 'Mysterious, ambient textures, subtle tension, ethereal pads'
     };
 
-    // Map voice type to vocal instructions
-    const voiceTypeMap: Record<string, string> = {
-      'masculina': 'Male solo vocalist, baritone to tenor range, warm timbre',
-      'feminina': 'Female solo vocalist, alto to soprano range, clear and expressive',
-      'dueto': 'Male and female duet, harmonizing voices, alternating verses and shared chorus',
-      'dupla_masc': 'Two male vocalists, harmony singing, Brazilian dupla sertaneja style',
-      'dupla_fem': 'Two female vocalists, harmony singing, blending voices',
-      'coral': 'Choir/group vocals, layered harmonies, anthemic feel'
-    };
-    const vocalStyle = voiceTypeMap[voiceType] || 'Female solo vocalist';
+    let stylePrompt: string;
+    let finalPrompt: string;
 
-    const systemPrompt = `Você é um produtor musical profissional especializado em criar prompts técnicos para IAs de geração musical (Suno, Udio, etc).
+    if (isInstrumental) {
+      // === PROMPT PARA MÚSICA INSTRUMENTAL ===
+      const instrumentsList = instruments.length > 0 
+        ? instruments.map(i => instrumentNameMap[i] || i).join(', ')
+        : 'Piano, Strings';
+      
+      const soloInfo = soloInstrument && soloInstrument !== 'none'
+        ? `Featured Solo: ${instrumentNameMap[soloInstrument] || soloInstrument} solo in the ${
+            soloMoment === 'intro' ? 'introduction' :
+            soloMoment === 'meio' ? 'bridge/middle section' :
+            soloMoment === 'final' ? 'finale/outro' :
+            'bridge section'
+          }`
+        : 'No featured solo - balanced ensemble arrangement';
+
+      const systemPrompt = `You are a professional music producer specializing in creating technical prompts for AI music generation (Suno, Udio, etc).
+
+Your task is to create a detailed technical style prompt for an INSTRUMENTAL track (NO VOCALS).
+
+CRITICAL RULES:
+1. The prompt must be in ENGLISH
+2. Be specific with genres, subgenres, and sonic characteristics
+3. Include technical production details
+4. ⚠️ DO NOT MENTION ANY FAMOUS ARTIST OR BAND NAMES as references
+5. Focus on instrumental arrangement, dynamics, and production
+6. This is a pure instrumental piece - NO VOCALS, NO LYRICS
+
+OUTPUT FORMAT (follow exactly, in English):
+
+[Style]
+Genre: (main genre and subgenre, NO artist names)
+Mood/Atmosphere: (detailed emotional climate)
+Instrumentation: (list all instruments with specific playing style and arrangement details)
+${soloInstrument && soloInstrument !== 'none' ? 'Featured Solo: (detailed solo instrument characteristics and placement)' : ''}
+Tempo: (BPM and rhythmic feel)
+Key: (suggested key signature)
+Production Notes: (technical production notes, mix, effects, dynamics)
+Structure: (suggested song structure for instrumental - intro, themes, bridge, variations, outro)
+
+Do not include explanations, only the structured technical prompt.
+NEVER mention artist names, bands, or specific songs.`;
+
+      const userPrompt = `Create the style prompt for this INSTRUMENTAL track:
+
+CONTEXT:
+- Type: ${musicType}
+- Musical Style: ${style}
+- Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
+- Atmosphere: ${atmosphere} (${atmosphereMap[atmosphere] || 'balanced production'})
+- Primary Instruments: ${instrumentsList}
+- ${soloInfo}
+${instrumentationNotes ? `- Client Notes: ${instrumentationNotes}` : ''}
+
+REMEMBER: 
+- This is an INSTRUMENTAL track - NO VOCALS
+- DO NOT mention any artist names, bands, or songs as reference
+- Describe specific sonic characteristics instead of comparing to artists
+- Focus on instrumental arrangement and production quality`;
+
+      console.log("Calling Lovable AI Gateway for instrumental style prompt...");
+
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ ok: false, error: "Limite de requisições excedido. Tente novamente em alguns minutos." }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const errorText = await response.text();
+        console.error("AI Gateway error:", response.status, errorText);
+        return new Response(
+          JSON.stringify({ ok: false, error: "Erro ao gerar prompt de estilo. Tente novamente." }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const aiResponse = await response.json();
+      stylePrompt = aiResponse.choices?.[0]?.message?.content?.trim();
+
+      if (!stylePrompt) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Resposta vazia da IA" }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Para instrumental, o final_prompt é apenas o style prompt
+      finalPrompt = `${stylePrompt}
+
+[Instrumental Track - No Lyrics]`;
+
+    } else {
+      // === PROMPT PARA MÚSICA CANTADA (código original) ===
+      
+      // Map voice type to vocal instructions
+      const voiceTypeMap: Record<string, string> = {
+        'masculina': 'Male solo vocalist, baritone to tenor range, warm timbre',
+        'feminina': 'Female solo vocalist, alto to soprano range, clear and expressive',
+        'dueto': 'Male and female duet, harmonizing voices, alternating verses and shared chorus',
+        'dupla_masc': 'Two male vocalists, harmony singing, Brazilian dupla sertaneja style',
+        'dupla_fem': 'Two female vocalists, harmony singing, blending voices',
+        'coral': 'Choir/group vocals, layered harmonies, anthemic feel'
+      };
+      const vocalStyle = voiceTypeMap[voiceType] || 'Female solo vocalist';
+
+      // Gerar letra fonética se houver pronúncias
+      let lyricsForGeneration = approvedLyrics || '';
+      if (pronunciations.length > 0 && !phoneticLyrics) {
+        lyricsForGeneration = applyPronunciations(lyricsForGeneration, pronunciations);
+      } else if (phoneticLyrics) {
+        lyricsForGeneration = phoneticLyrics;
+      }
+
+      const systemPrompt = `Você é um produtor musical profissional especializado em criar prompts técnicos para IAs de geração musical (Suno, Udio, etc).
 
 Sua tarefa é criar um prompt de estilo musical detalhado e técnico que será usado para gerar a música.
 
@@ -180,7 +342,7 @@ ${hasMonologue ? 'Spoken Word: (instruções específicas para partes faladas - 
 Não inclua explicações, apenas o prompt técnico estruturado.
 NUNCA mencione nomes de artistas, bandas ou músicas específicas.`;
 
-    const userPrompt = `Crie o prompt de estilo musical para esta música:
+      const userPrompt = `Crie o prompt de estilo musical para esta música:
 
 CONTEXTO DA MÚSICA:
 - Tipo: ${musicType}
@@ -198,63 +360,71 @@ LEMBRE-SE:
 - NÃO mencione nomes de artistas, bandas ou músicas como referência
 - Descreva características sonoras específicas em vez de comparar com artistas`;
 
-    console.log("Calling Lovable AI Gateway for style prompt generation...");
+      console.log("Calling Lovable AI Gateway for vocal style prompt...");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7,
-      }),
-    });
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_tokens: 1000,
+          temperature: 0.7,
+        }),
+      });
 
-    if (!response.ok) {
-      if (response.status === 429) {
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(
+            JSON.stringify({ ok: false, error: "Limite de requisições excedido. Tente novamente em alguns minutos." }),
+            { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        if (response.status === 402) {
+          return new Response(
+            JSON.stringify({ ok: false, error: "Créditos insuficientes. Entre em contato com o suporte." }),
+            { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const errorText = await response.text();
+        console.error("AI Gateway error:", response.status, errorText);
         return new Response(
-          JSON.stringify({ ok: false, error: "Limite de requisições excedido. Tente novamente em alguns minutos." }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ ok: false, error: "Erro ao gerar prompt de estilo. Tente novamente." }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
+
+      const aiResponse = await response.json();
+      stylePrompt = aiResponse.choices?.[0]?.message?.content?.trim();
+
+      if (!stylePrompt) {
         return new Response(
-          JSON.stringify({ ok: false, error: "Créditos insuficientes. Entre em contato com o suporte." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ ok: false, error: "Resposta vazia da IA" }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
-      return new Response(
-        JSON.stringify({ ok: false, error: "Erro ao gerar prompt de estilo. Tente novamente." }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
 
-    const aiResponse = await response.json();
-    const stylePrompt = aiResponse.choices?.[0]?.message?.content?.trim();
+      // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
+      let lyricsForGeneration2 = approvedLyrics || '';
+      if (pronunciations.length > 0 && !phoneticLyrics) {
+        lyricsForGeneration2 = applyPronunciations(lyricsForGeneration2, pronunciations);
+      } else if (phoneticLyrics) {
+        lyricsForGeneration2 = phoneticLyrics;
+      }
 
-    if (!stylePrompt) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Resposta vazia da IA" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      finalPrompt = `${stylePrompt}
+
+[Lyrics]
+${lyricsForGeneration2}`;
     }
 
     console.log("Style prompt generated successfully");
-
-    // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
-    const finalPrompt = `${stylePrompt}
-
-[Lyrics]
-${lyricsForGeneration}`;
 
     // Save to Supabase
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -262,42 +432,49 @@ ${lyricsForGeneration}`;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Update order with style prompt and final prompt
+    const updateData: Record<string, unknown> = {
+      style_prompt: stylePrompt,
+      final_prompt: finalPrompt,
+      status: isInstrumental ? 'STYLE_GENERATED' : 'LYRICS_APPROVED',
+      updated_at: new Date().toISOString()
+    };
+
+    if (!isInstrumental && lyricId) {
+      updateData.approved_lyric_id = lyricId;
+      updateData.voice_type = voiceType;
+      if (pronunciations.length > 0) {
+        updateData.pronunciations = pronunciations;
+      }
+    }
+
     const { error: updateError } = await supabase
       .from('orders')
-      .update({
-        style_prompt: stylePrompt,
-        final_prompt: finalPrompt,
-        approved_lyric_id: lyricId,
-        status: 'LYRICS_APPROVED',
-        voice_type: voiceType,
-        pronunciations: pronunciations.length > 0 ? pronunciations : null,
-        updated_at: new Date().toISOString()
-      })
+      .update(updateData)
       .eq('id', orderId);
 
     if (updateError) {
       console.error("Error updating order:", updateError);
     }
 
-    // Mark lyric as approved and update phonetic body if needed
-    if (lyricId) {
-      const updateData: Record<string, unknown> = { 
+    // Mark lyric as approved and update phonetic body if needed (only for vocal)
+    if (!isInstrumental && lyricId) {
+      const lyricUpdateData: Record<string, unknown> = { 
         is_approved: true, 
         approved_at: new Date().toISOString() 
       };
       
       if (songTitle) {
-        updateData.title = songTitle;
+        lyricUpdateData.title = songTitle;
       }
       
       // Save phonetic version in lyrics table
-      if (lyricsForGeneration !== approvedLyrics) {
-        updateData.phonetic_body = lyricsForGeneration;
+      if (approvedLyrics && pronunciations.length > 0) {
+        lyricUpdateData.phonetic_body = applyPronunciations(approvedLyrics, pronunciations);
       }
       
       const { error: lyricError } = await supabase
         .from('lyrics')
-        .update(updateData)
+        .update(lyricUpdateData)
         .eq('id', lyricId);
 
       if (lyricError) {
@@ -305,13 +482,13 @@ ${lyricsForGeneration}`;
       }
     }
 
-    console.log("Order updated with approved lyrics and style prompt");
+    console.log("Order updated with style prompt. isInstrumental:", isInstrumental);
 
     return new Response(
       JSON.stringify({
         ok: true,
-        message: "Prompt de estilo gerado com sucesso",
-        usedPhoneticLyrics: lyricsForGeneration !== approvedLyrics
+        message: isInstrumental ? "Prompt instrumental gerado com sucesso" : "Prompt de estilo gerado com sucesso",
+        isInstrumental
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
