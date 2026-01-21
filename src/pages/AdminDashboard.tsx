@@ -443,6 +443,7 @@ const AdminDashboard = () => {
     }
   };
 
+  // Initial fetch
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
@@ -452,6 +453,17 @@ const AdminDashboard = () => {
       fetchPixConfig();
     }
   }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples, fetchVouchers, fetchPixConfig]);
+
+  // Auto-refresh orders every 30 seconds
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    const intervalId = setInterval(() => {
+      fetchOrders();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(intervalId);
+  }, [isAdmin, fetchOrders]);
 
   const updatePricingConfig = (id: string, field: keyof PricingConfig, value: any) => {
     setPricingConfigs(prev => prev.map(config => 
