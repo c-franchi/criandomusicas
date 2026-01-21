@@ -15,7 +15,9 @@ import {
   ExternalLink,
   Share2,
   FileText,
-  MessageCircle
+  MessageCircle,
+  Video,
+  Camera
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -562,6 +564,16 @@ const OrderDetails = () => {
                   <Music className="w-4 h-4" />
                   Escolher Letra
                   <ExternalLink className="w-4 h-4 ml-auto" />
+                </Link>
+              </Button>
+            )}
+
+            {isMusicReady && (
+              <Button asChild variant="outline" className="w-full justify-start gap-2">
+                <Link to={`/video-checkout/${orderId}`}>
+                  <Video className="w-4 h-4" />
+                  Criar Vídeo Personalizado
+                  <Badge variant="secondary" className="ml-auto text-xs">R$ 50</Badge>
                 </Link>
               </Button>
             )}

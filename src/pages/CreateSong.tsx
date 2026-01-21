@@ -10,6 +10,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import PronunciationModal from "@/components/PronunciationModal";
 
 interface LyricOption {
   id: string;
@@ -37,6 +38,11 @@ interface BriefingData {
   lgpdConsent: boolean;
 }
 
+interface Pronunciation {
+  term: string;
+  phonetic: string;
+}
+
 type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
 
 const CreateSong = () => {
@@ -55,6 +61,12 @@ const CreateSong = () => {
   const [editInstructions, setEditInstructions] = useState<string>("");
   const [hasUsedModification, setHasUsedModification] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Pronunciation modal state
+  const [showPronunciationModal, setShowPronunciationModal] = useState(false);
+  const [missingPronunciations, setMissingPronunciations] = useState<string[]>([]);
+  const [pronunciations, setPronunciations] = useState<Pronunciation[]>([]);
+
 
   // Carregar dados do briefing OU order existente (voucher flow)
   useEffect(() => {
@@ -311,7 +323,7 @@ const CreateSong = () => {
     }
   };
 
-  const handleApproveLyric = async () => {
+  const handleApproveLyric = async (customPronunciations?: Pronunciation[]) => {
     if (!selectedLyric || !orderId || !briefingData) return;
 
     setLoading(true);
@@ -325,6 +337,7 @@ const CreateSong = () => {
           lyricId: selectedLyric.id,
           approvedLyrics: editedLyric,
           songTitle: editedTitle,
+          pronunciations: customPronunciations || pronunciations,
           briefing: {
             musicType: briefingData.musicType,
             emotion: briefingData.emotion,
@@ -340,6 +353,14 @@ const CreateSong = () => {
       if (error) throw error;
 
       if (!data?.ok) {
+        // Check if it's a pronunciation error
+        if (data?.missingPronunciations && data.missingPronunciations.length > 0) {
+          setMissingPronunciations(data.missingPronunciations);
+          setShowPronunciationModal(true);
+          setStep(hasUsedModification ? "editing-modified" : "editing");
+          setLoading(false);
+          return;
+        }
         throw new Error(data?.error || "Erro ao gerar prompt de estilo");
       }
 
@@ -352,11 +373,31 @@ const CreateSong = () => {
     } catch (error) {
       console.error("Erro:", error);
       const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      
+      // Check for pronunciation error in the message
+      if (errorMessage.includes("sem pronúncia definida")) {
+        const match = errorMessage.match(/Termo\(s\) detectado\(s\) sem pronúncia definida: ([^.]+)/);
+        if (match) {
+          const terms = match[1].split(', ').map(t => t.trim());
+          setMissingPronunciations(terms);
+          setShowPronunciationModal(true);
+          setStep(hasUsedModification ? "editing-modified" : "editing");
+          setLoading(false);
+          return;
+        }
+      }
+      
       toast.error("Erro ao aprovar letra", { description: errorMessage });
       setStep(hasUsedModification ? "editing-modified" : "editing");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePronunciationSubmit = (newPronunciations: Pronunciation[]) => {
+    setPronunciations(newPronunciations);
+    setShowPronunciationModal(false);
+    handleApproveLyric(newPronunciations);
   };
 
   const handleRequestEdit = async () => {
@@ -639,7 +680,7 @@ const CreateSong = () => {
             )}
 
             <Button
-              onClick={handleApproveLyric}
+              onClick={() => handleApproveLyric()}
               disabled={loading || !editedTitle.trim()}
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
             >
@@ -772,7 +813,7 @@ const CreateSong = () => {
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
-              onClick={handleApproveLyric}
+              onClick={() => handleApproveLyric()}
               disabled={loading || !editedTitle.trim()}
               size="lg"
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
@@ -882,7 +923,17 @@ const CreateSong = () => {
     );
   }
 
-  return null;
+  return (
+    <>
+      <PronunciationModal
+        open={showPronunciationModal}
+        onClose={() => setShowPronunciationModal(false)}
+        missingTerms={missingPronunciations}
+        onSubmit={handlePronunciationSubmit}
+        loading={loading}
+      />
+    </>
+  );
 };
 
 export default CreateSong;

@@ -5,6 +5,8 @@ import InstrumentalShowcase from "@/components/InstrumentalShowcase";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import PricingPlans from "@/components/PricingPlans";
 import Testimonials from "@/components/Testimonials";
+import VideoServiceSection from "@/components/VideoServiceSection";
+import ReactionVideosShowcase from "@/components/ReactionVideosShowcase";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
@@ -26,6 +28,8 @@ const Index = () => {
       <WhyChooseUs />
       <PricingPlans />
       <Testimonials />
+      <ReactionVideosShowcase />
+      <VideoServiceSection />
       <CTA />
       <Footer />
       <CookieConsent />
