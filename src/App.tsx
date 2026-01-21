@@ -32,6 +32,8 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const MusicRules = lazy(() => import("./pages/MusicRules"));
 const MusicShare = lazy(() => import("./pages/MusicShare"));
+const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
+const VideoUpload = lazy(() => import("./pages/VideoUpload"));
 
 const queryClient = new QueryClient();
 
@@ -75,6 +77,8 @@ const App = () => (
               <Route path="/pedido/:orderId/letras" element={<OrderLyricsPage />} />
               <Route path="/pedido/:orderId" element={<OrderDetails />} />
               <Route path="/order/:orderId" element={<Order />} />
+              <Route path="/video-checkout/:orderId" element={<VideoCheckout />} />
+              <Route path="/video-upload/:videoOrderId" element={<VideoUpload />} />
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />

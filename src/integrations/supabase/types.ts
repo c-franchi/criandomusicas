@@ -481,6 +481,50 @@ export type Database = {
         }
         Relationships: []
       }
+      reaction_videos: {
+        Row: {
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          is_public: boolean | null
+          order_id: string | null
+          thumbnail_url: string | null
+          updated_at: string
+          user_id: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_public?: boolean | null
+          order_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          is_public?: boolean | null
+          order_id?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          user_id?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reaction_videos_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           allow_music_sample: boolean | null
@@ -575,6 +619,97 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      video_order_files: {
+        Row: {
+          created_at: string
+          file_name: string | null
+          file_type: string
+          file_url: string
+          id: string
+          sort_order: number | null
+          video_order_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name?: string | null
+          file_type: string
+          file_url: string
+          id?: string
+          sort_order?: number | null
+          video_order_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          sort_order?: number | null
+          video_order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_order_files_video_order_id_fkey"
+            columns: ["video_order_id"]
+            isOneToOne: false
+            referencedRelation: "video_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_orders: {
+        Row: {
+          amount: number
+          completed_at: string | null
+          created_at: string
+          currency: string
+          id: string
+          order_id: string | null
+          paid_at: string | null
+          payment_status: string
+          status: string
+          updated_at: string
+          user_id: string
+          video_type: string
+        }
+        Insert: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          video_type?: string
+        }
+        Update: {
+          amount?: number
+          completed_at?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string | null
+          paid_at?: string | null
+          payment_status?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          video_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_orders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voucher_redemptions: {
         Row: {
