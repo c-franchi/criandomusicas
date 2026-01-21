@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-// VAPID Public Key - This is safe to expose (not a secret)
-const VAPID_PUBLIC_KEY = 'BKhLqNEVLh5O-5mIxJLxlq-jcZMZQj-A1Wc7zMdB4Y1tSQnPGvPLEBNmkE-G_yIbf9VHvfJpJKhNtJWGYLmS4jk';
+// VAPID Public Key from environment variable
+const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -71,10 +71,22 @@ export const usePushNotifications = () => {
   }, [isSupported, user]);
 
   const subscribe = useCallback(async () => {
-    if (!isSupported || !user || !VAPID_PUBLIC_KEY) {
+    console.log('[Push] Subscribe called. isSupported:', isSupported, 'user:', !!user, 'VAPID_PUBLIC_KEY:', VAPID_PUBLIC_KEY ? 'SET' : 'MISSING');
+    
+    if (!isSupported || !user) {
       toast({
         title: 'Notificações não disponíveis',
-        description: 'Seu navegador não suporta notificações push ou a chave VAPID não está configurada.',
+        description: 'Seu navegador não suporta notificações push.',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    if (!VAPID_PUBLIC_KEY) {
+      console.error('[Push] VITE_VAPID_PUBLIC_KEY not configured in environment');
+      toast({
+        title: 'Erro de configuração',
+        description: 'Chave VAPID não configurada. Contate o suporte.',
         variant: 'destructive'
       });
       return false;
@@ -83,8 +95,10 @@ export const usePushNotifications = () => {
     setIsLoading(true);
     try {
       // Request permission
+      console.log('[Push] Requesting notification permission...');
       const permissionResult = await Notification.requestPermission();
       setPermission(permissionResult);
+      console.log('[Push] Permission result:', permissionResult);
 
       if (permissionResult !== 'granted') {
         toast({
@@ -96,13 +110,17 @@ export const usePushNotifications = () => {
       }
 
       // Get service worker registration
+      console.log('[Push] Getting service worker registration...');
       const registration = await navigator.serviceWorker.ready;
+      console.log('[Push] Service worker ready');
 
       // Subscribe to push
+      console.log('[Push] Subscribing to push manager with VAPID key...');
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY) as BufferSource
       });
+      console.log('[Push] Subscription created:', subscription.endpoint);
 
       const subscriptionJson = subscription.toJSON();
       

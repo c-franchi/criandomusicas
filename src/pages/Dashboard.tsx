@@ -21,6 +21,7 @@ interface Order {
   approved_lyric_id?: string;
   lyric_title?: string;
   amount?: number;
+  is_instrumental?: boolean;
 }
 
 const Dashboard = () => {
@@ -37,7 +38,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount')
+        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -165,7 +166,27 @@ const Dashboard = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const getStatusText = (status: string) => {
+  // Status text function that considers if order is instrumental
+  const getStatusText = (status: string, isInstrumental?: boolean) => {
+    // For instrumental orders, use different labels for certain statuses
+    if (isInstrumental) {
+      const instrumentalStatusMap: Record<string, string> = {
+        'DRAFT': 'Rascunho',
+        'AWAITING_PAYMENT': 'Aguardando Pagamento',
+        'PAID': 'Pago',
+        'BRIEFING_COMPLETE': 'Briefing Completo',
+        'LYRICS_PENDING': 'Preparando Produção',
+        'LYRICS_GENERATED': 'Preparando Produção',
+        'LYRICS_APPROVED': 'Pronto para Produção',
+        'MUSIC_GENERATING': 'Em Produção',
+        'MUSIC_READY': 'Música Pronta',
+        'COMPLETED': 'Entregue',
+        'CANCELLED': 'Cancelado'
+      };
+      return instrumentalStatusMap[status] || status;
+    }
+
+    // For vocal orders, use standard labels
     const statusMap: Record<string, string> = {
       'DRAFT': 'Rascunho',
       'AWAITING_PAYMENT': 'Aguardando Pagamento',
@@ -286,8 +307,13 @@ const Dashboard = () => {
                     </p>
                     <div className="flex items-center gap-2">
                       <Badge className={getStatusColor(order.status || 'DRAFT')}>
-                        {getStatusText(order.status || 'DRAFT')}
+                        {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
                       </Badge>
+                      {order.is_instrumental && (
+                        <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
+                          🎹 Instrumental
+                        </Badge>
+                      )}
                       <span className="text-sm text-muted-foreground">
                         Criado em {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
                       </span>

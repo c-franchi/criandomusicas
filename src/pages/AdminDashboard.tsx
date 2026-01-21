@@ -1849,7 +1849,71 @@ const AdminDashboard = () => {
                     {/* Actions Row */}
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-border/30">
                       {order.status === 'LYRICS_APPROVED' && (
-                        <Button onClick={() => updateOrderStatus(order.id, 'MUSIC_GENERATING')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                        <Button 
+                          onClick={async () => {
+                            // For instrumental orders, generate style prompt first if not already generated
+                            if (order.is_instrumental && !order.style_prompt) {
+                              try {
+                                toast({
+                                  title: '⏳ Gerando prompt de estilo...',
+                                  description: 'Aguarde enquanto preparamos a produção.',
+                                });
+                                
+                                // Fetch full order data for briefing
+                                const { data: orderData, error: fetchError } = await supabase
+                                  .from('orders')
+                                  .select('*')
+                                  .eq('id', order.id)
+                                  .single();
+
+                                if (fetchError) throw fetchError;
+
+                                const briefing = {
+                                  musicType: orderData.music_type || 'homenagem',
+                                  style: orderData.music_style || 'pop',
+                                  rhythm: orderData.rhythm || 'moderado',
+                                  atmosphere: orderData.atmosphere || 'festivo',
+                                  instruments: orderData.instruments || [],
+                                  soloInstrument: orderData.solo_instrument || null,
+                                  soloMoment: orderData.solo_moment || null,
+                                  instrumentationNotes: orderData.instrumentation_notes || ''
+                                };
+
+                                // Generate style prompt for instrumental
+                                const { error: styleError } = await supabase.functions.invoke('generate-style-prompt', {
+                                  body: {
+                                    orderId: order.id,
+                                    isInstrumental: true,
+                                    briefing
+                                  }
+                                });
+
+                                if (styleError) throw styleError;
+
+                                toast({
+                                  title: '✅ Prompt gerado com sucesso!',
+                                  description: 'Atualizando para produção...',
+                                });
+
+                                // Refresh orders to get the updated style_prompt
+                                await fetchOrders();
+                              } catch (error) {
+                                console.error('Error generating style prompt:', error);
+                                toast({
+                                  title: 'Erro ao gerar prompt',
+                                  description: error instanceof Error ? error.message : 'Tente novamente',
+                                  variant: 'destructive',
+                                });
+                                return;
+                              }
+                            }
+                            
+                            // Now update status to MUSIC_GENERATING
+                            await updateOrderStatus(order.id, 'MUSIC_GENERATING');
+                          }} 
+                          size="sm" 
+                          className="flex-1 sm:flex-none text-xs sm:text-sm"
+                        >
                           <PlayCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Iniciar Produção
                         </Button>
