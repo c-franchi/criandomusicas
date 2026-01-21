@@ -897,18 +897,26 @@ const AdminDashboard = () => {
       const fileName = `${order.id}-${Date.now()}.${fileExt}`;
       const filePath = `${order.user_id}/${fileName}`;
 
+      console.log('Iniciando upload para:', filePath);
+
       // Upload to storage
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('music-tracks')
         .upload(filePath, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Erro no upload do storage:', uploadError);
+        throw new Error(`Erro no upload: ${uploadError.message}`);
+      }
+
+      console.log('Upload concluído:', uploadData);
 
       const { data: publicUrlData } = supabase.storage
         .from('music-tracks')
         .getPublicUrl(filePath);
 
       const audioUrl = publicUrlData.publicUrl;
+      console.log('URL pública:', audioUrl);
 
       // Upsert track record
       const { error: trackError } = await supabase
@@ -921,7 +929,12 @@ const AdminDashboard = () => {
           onConflict: 'order_id'
         });
 
-      if (trackError) throw trackError;
+      if (trackError) {
+        console.error('Erro ao salvar track:', trackError);
+        throw new Error(`Erro ao salvar track: ${trackError.message}`);
+      }
+
+      console.log('Track salva com sucesso');
 
       // Update order status to MUSIC_READY
       const { error: orderError } = await supabase
@@ -929,7 +942,10 @@ const AdminDashboard = () => {
         .update({ status: 'MUSIC_READY' })
         .eq('id', order.id);
 
-      if (orderError) throw orderError;
+      if (orderError) {
+        console.error('Erro ao atualizar status:', orderError);
+        throw new Error(`Erro ao atualizar pedido: ${orderError.message}`);
+      }
 
       // Send push notification
       try {
@@ -956,7 +972,8 @@ const AdminDashboard = () => {
         description: 'O cliente foi notificado por push.',
       });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      console.error('Erro completo no upload:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao enviar música';
       toast({
         title: 'Erro ao enviar música',
         description: errorMessage,
