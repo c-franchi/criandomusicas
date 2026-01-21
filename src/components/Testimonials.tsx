@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -11,11 +11,22 @@ interface PublicReview {
   created_at: string;
   profiles?: {
     name: string | null;
+    avatar_url: string | null;
   };
   orders?: {
     music_type: string | null;
   };
 }
+
+// Placeholder avatar URLs for users without profile photos
+const placeholderAvatars = [
+  "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
+];
 
 // Default testimonials as fallback - expanded for better social proof
 const defaultTestimonials = [
@@ -24,42 +35,48 @@ const defaultTestimonials = [
     role: "Mãe de família",
     content: "Fiz uma música para o aniversário de 15 anos da minha filha. Ela chorou de emoção! O resultado superou todas as expectativas.",
     rating: 5,
-    musicType: "aniversario"
+    musicType: "aniversario",
+    avatarUrl: placeholderAvatars[0]
   },
   {
     name: "João Santos",
     role: "Empresário",
     content: "Encomendei uma música para minha empresa. A equipe ficou emocionada com a letra personalizada. Processo simples e resultado incrível!",
     rating: 5,
-    musicType: "corporativo"
+    musicType: "corporativo",
+    avatarUrl: placeholderAvatars[1]
   },
   {
     name: "Ana Costa",
     role: "Noiva",
     content: "Nossa música de casamento ficou perfeita! Contava nossa história desde o primeiro encontro. Todos os convidados se emocionaram.",
     rating: 5,
-    musicType: "casamento"
+    musicType: "casamento",
+    avatarUrl: placeholderAvatars[2]
   },
   {
     name: "Pedro Oliveira",
     role: "Pai orgulhoso",
     content: "Presente de formatura para meu filho. A letra menciona cada conquista dele. Melhor investimento que fiz! Ele guarda para sempre.",
     rating: 5,
-    musicType: "homenagem"
+    musicType: "homenagem",
+    avatarUrl: placeholderAvatars[3]
   },
   {
     name: "Carla Mendes",
     role: "Esposa há 25 anos",
     content: "Bodas de prata com uma música que conta nossa história. Meu marido chorou, os filhos emocionados. Momento inesquecível!",
     rating: 5,
-    musicType: "declaracao"
+    musicType: "declaracao",
+    avatarUrl: placeholderAvatars[4]
   },
   {
     name: "Ricardo Lima",
     role: "Avô",
     content: "Música para minha neta de 5 anos com o nome dela e as brincadeiras favoritas. Ela pede para ouvir todos os dias!",
     rating: 5,
-    musicType: "aniversario"
+    musicType: "aniversario",
+    avatarUrl: placeholderAvatars[5]
   }
 ];
 
@@ -89,7 +106,7 @@ const Testimonials = () => {
         // Fetch profile and order data for each review
         if (data && data.length > 0) {
           const enrichedReviews = await Promise.all(
-            data.map(async (review) => {
+            data.map(async (review, index) => {
               // Get order to get user_id and music_type
               const { data: orderData } = await supabase
                 .from('orders')
@@ -97,19 +114,22 @@ const Testimonials = () => {
                 .eq('id', review.order_id)
                 .single();
 
-              let profileName = null;
+              let profileData = null;
               if (orderData?.user_id) {
-                const { data: profileData } = await supabase
+                const { data: profile } = await supabase
                   .from('profiles')
-                  .select('name')
+                  .select('name, avatar_url')
                   .eq('user_id', orderData.user_id)
                   .single();
-                profileName = profileData?.name;
+                profileData = profile;
               }
 
               return {
                 ...review,
-                profiles: { name: profileName },
+                profiles: { 
+                  name: profileData?.name || null,
+                  avatar_url: profileData?.avatar_url || placeholderAvatars[index % placeholderAvatars.length]
+                },
                 orders: { music_type: orderData?.music_type || null }
               };
             })
@@ -145,7 +165,6 @@ const Testimonials = () => {
 
   // Use real reviews if available, otherwise use defaults
   const hasRealReviews = reviews.length > 0;
-  const displayItems = hasRealReviews ? reviews : defaultTestimonials;
 
   return (
     <section className="py-24 px-6" id="depoimentos" aria-labelledby="testimonials-heading">
@@ -185,7 +204,7 @@ const Testimonials = () => {
         
         <div className="grid md:grid-cols-3 gap-8">
           {hasRealReviews ? (
-            reviews.slice(0, 6).map((review) => (
+            reviews.slice(0, 6).map((review, index) => (
               <Card key={review.id} className="p-6 glass-card border-border/50 hover:border-primary/50 transition-all duration-300 relative">
                 <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/20" />
                 
@@ -203,14 +222,18 @@ const Testimonials = () => {
                 </p>
                 
                 <div className="flex items-center gap-3">
-                  <Avatar className="bg-primary/20">
+                  <Avatar className="w-12 h-12 border-2 border-primary/30">
+                    <AvatarImage 
+                      src={review.profiles?.avatar_url || placeholderAvatars[index % placeholderAvatars.length]} 
+                      alt={review.profiles?.name || 'Cliente'}
+                    />
                     <AvatarFallback className="bg-primary/20 text-primary">
                       {getInitials(review.profiles?.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-semibold text-foreground">
-                      {review.profiles?.name || 'Cliente Verificado'}
+                      {review.profiles?.name || `Cliente ${index + 1}`}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {getMusicTypeLabel(review.orders?.music_type)}
@@ -235,7 +258,11 @@ const Testimonials = () => {
                 </blockquote>
                 
                 <div className="flex items-center gap-3">
-                  <Avatar className="bg-primary/20">
+                  <Avatar className="w-12 h-12 border-2 border-primary/30">
+                    <AvatarImage 
+                      src={testimonial.avatarUrl} 
+                      alt={testimonial.name}
+                    />
                     <AvatarFallback className="bg-primary/20 text-primary">
                       {testimonial.name.charAt(0)}
                     </AvatarFallback>
