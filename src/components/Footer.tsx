@@ -21,9 +21,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Produto</h4>
             <ul className="space-y-2 text-muted-foreground">
-              <li><a href="/como-funciona" className="hover:text-primary transition-colors">Como funciona</a></li>
-              <li><a href="/exemplos" className="hover:text-primary transition-colors">Exemplos</a></li>
-              <li><a href="/precos" className="hover:text-primary transition-colors">Preços</a></li>
+              <li><a href="/#processo" className="hover:text-primary transition-colors">Como funciona</a></li>
+              <li><a href="/#exemplos" className="hover:text-primary transition-colors">Exemplos</a></li>
+              <li><a href="/planos" className="hover:text-primary transition-colors">Preços</a></li>
             </ul>
           </div>
           
@@ -33,7 +33,7 @@ const Footer = () => {
               <li><a href="/termos" className="hover:text-primary transition-colors">Termos de Uso</a></li>
               <li><a href="/privacidade" className="hover:text-primary transition-colors">Política de Privacidade</a></li>
               <li><a href="/regras" className="hover:text-primary transition-colors">Regras de Criação</a></li>
-              <li><a href="/contato" className="hover:text-primary transition-colors">Contato</a></li>
+              <li><a href="https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre o Criando Músicas" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Contato</a></li>
             </ul>
           </div>
         </div>
