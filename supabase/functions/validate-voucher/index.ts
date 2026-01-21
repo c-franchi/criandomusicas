@@ -111,19 +111,28 @@ serve(async (req) => {
       });
     }
 
-    // Check if user already used this voucher (if authenticated)
+    // Check if user already used this voucher too many times (if authenticated)
     if (userId) {
-      const { data: existingRedemption } = await supabaseClient
+      const { data: userRedemptions, error: redemptionError } = await supabaseClient
         .from('voucher_redemptions')
         .select('id')
         .eq('voucher_id', voucher.id)
-        .eq('user_id', userId)
-        .maybeSingle();
+        .eq('user_id', userId);
 
-      if (existingRedemption) {
+      if (redemptionError) {
+        logStep("Redemption check error", { error: redemptionError.message });
+      }
+
+      const userUsageCount = userRedemptions?.length || 0;
+      const maxUsesPerUser = voucher.max_uses_per_user;
+
+      // Check per-user limit if set
+      if (maxUsesPerUser !== null && userUsageCount >= maxUsesPerUser) {
         return new Response(JSON.stringify({ 
           valid: false, 
-          error: "Você já utilizou este voucher" 
+          error: maxUsesPerUser === 1 
+            ? "Você já utilizou este voucher" 
+            : `Você atingiu o limite de ${maxUsesPerUser} usos deste voucher`
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
           status: 200,

@@ -6,7 +6,6 @@ import {
   Music, 
   Play, 
   Pause, 
-  Download,
   Home,
   Loader2
 } from "lucide-react";
@@ -100,25 +99,6 @@ const MusicShare = () => {
     }
   };
 
-  const downloadTrack = () => {
-    if (!track?.audio_url) return;
-    
-    const sanitizedTitle = track.title
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .toLowerCase()
-      .slice(0, 50);
-    
-    const link = document.createElement('a');
-    link.href = track.audio_url;
-    link.download = `${sanitizedTitle}.mp3`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted">
@@ -177,7 +157,7 @@ const MusicShare = () => {
           preload="metadata"
         />
 
-        {/* Player Controls */}
+        {/* Player Controls - Only Play, no Download for public share */}
         <div className="flex flex-col gap-2 sm:gap-3 mb-6 sm:mb-8">
           <Button 
             onClick={togglePlay} 
@@ -195,16 +175,6 @@ const MusicShare = () => {
                 Ouvir Música
               </>
             )}
-          </Button>
-          
-          <Button 
-            onClick={downloadTrack} 
-            variant="outline" 
-            size="lg"
-            className="w-full h-11 sm:h-12"
-          >
-            <Download className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Baixar MP3
           </Button>
         </div>
 

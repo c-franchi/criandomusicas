@@ -116,11 +116,12 @@ const AdminDashboard = () => {
   const [loadingVouchers, setLoadingVouchers] = useState(false);
   const [voucherDialogOpen, setVoucherDialogOpen] = useState(false);
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
-  const [newVoucher, setNewVoucher] = useState<Partial<Voucher>>({
+  const [newVoucher, setNewVoucher] = useState<Partial<Voucher & { max_uses_per_user?: number | null }>>({
     code: '',
     discount_type: 'percent',
     discount_value: 10,
     max_uses: null,
+    max_uses_per_user: null,
     valid_until: null,
     plan_ids: null,
     is_active: true
@@ -300,6 +301,7 @@ const AdminDashboard = () => {
             discount_type: voucherData.discount_type,
             discount_value: voucherData.discount_value,
             max_uses: voucherData.max_uses,
+            max_uses_per_user: (voucherData as any).max_uses_per_user ?? null,
             valid_until: voucherData.valid_until,
             plan_ids: voucherData.plan_ids,
             is_active: voucherData.is_active ?? true,
@@ -316,6 +318,7 @@ const AdminDashboard = () => {
             discount_type: voucherData.discount_type || 'percent',
             discount_value: voucherData.discount_value,
             max_uses: voucherData.max_uses,
+            max_uses_per_user: (voucherData as any).max_uses_per_user ?? null,
             valid_until: voucherData.valid_until,
             plan_ids: voucherData.plan_ids,
             is_active: voucherData.is_active ?? true,
@@ -328,7 +331,7 @@ const AdminDashboard = () => {
 
       setVoucherDialogOpen(false);
       setEditingVoucher(null);
-      setNewVoucher({ code: '', discount_type: 'percent', discount_value: 10, max_uses: null, valid_until: null, plan_ids: null, is_active: true });
+      setNewVoucher({ code: '', discount_type: 'percent', discount_value: 10, max_uses: null, max_uses_per_user: null, valid_until: null, plan_ids: null, is_active: true });
       fetchVouchers();
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
@@ -1171,7 +1174,7 @@ const AdminDashboard = () => {
                               </div>
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <Label>Quantidade de Vouchers</Label>
+                                  <Label>Quantidade Total</Label>
                                   <Input
                                     type="number"
                                     value={(editingVoucher || newVoucher).max_uses || ''}
@@ -1183,25 +1186,42 @@ const AdminDashboard = () => {
                                   />
                                   <p className="text-xs text-muted-foreground mt-1">
                                     {(editingVoucher || newVoucher).max_uses 
-                                      ? `Limite: ${(editingVoucher || newVoucher).max_uses} usos`
-                                      : 'Sem limite de quantidade'}
+                                      ? `Limite: ${(editingVoucher || newVoucher).max_uses} usos totais`
+                                      : 'Sem limite de quantidade total'}
                                   </p>
                                 </div>
                                 <div>
-                                  <Label>Válido até</Label>
+                                  <Label>Limite por Usuário</Label>
                                   <Input
-                                    type="date"
-                                    value={(editingVoucher || newVoucher).valid_until?.split('T')[0] || ''}
+                                    type="number"
+                                    value={((editingVoucher || newVoucher) as any).max_uses_per_user || ''}
                                     onChange={(e) => editingVoucher 
-                                      ? setEditingVoucher({ ...editingVoucher, valid_until: e.target.value || null })
-                                      : setNewVoucher({ ...newVoucher, valid_until: e.target.value || null })}
+                                      ? setEditingVoucher({ ...editingVoucher, max_uses_per_user: e.target.value ? parseInt(e.target.value) : null } as any)
+                                      : setNewVoucher({ ...newVoucher, max_uses_per_user: e.target.value ? parseInt(e.target.value) : null })}
+                                    placeholder="Ilimitado"
+                                    min={1}
                                   />
                                   <p className="text-xs text-muted-foreground mt-1">
-                                    {(editingVoucher || newVoucher).valid_until 
-                                      ? 'Expira na data definida'
-                                      : 'Sem data de expiração'}
+                                    {((editingVoucher || newVoucher) as any).max_uses_per_user 
+                                      ? `Cada usuário pode usar ${((editingVoucher || newVoucher) as any).max_uses_per_user}x`
+                                      : 'Sem limite por usuário'}
                                   </p>
                                 </div>
+                              </div>
+                              <div>
+                                <Label>Válido até</Label>
+                                <Input
+                                  type="date"
+                                  value={(editingVoucher || newVoucher).valid_until?.split('T')[0] || ''}
+                                  onChange={(e) => editingVoucher 
+                                    ? setEditingVoucher({ ...editingVoucher, valid_until: e.target.value || null })
+                                    : setNewVoucher({ ...newVoucher, valid_until: e.target.value || null })}
+                                />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {(editingVoucher || newVoucher).valid_until 
+                                    ? 'Expira na data definida'
+                                    : 'Sem data de expiração'}
+                                </p>
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
@@ -1500,17 +1520,33 @@ const AdminDashboard = () => {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
+                          {/* Type Badge - Vocal vs Instrumental */}
+                          <Badge 
+                            variant="outline" 
+                            className={`text-[10px] sm:text-xs shrink-0 ${
+                              order.is_instrumental 
+                                ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
+                                : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                            }`}
+                          >
+                            {order.is_instrumental ? '🎹 Instrumental' : '🎤 Vocal'}
+                          </Badge>
                           <h3 className="font-bold text-sm sm:text-lg truncate">
                             {order.lyric_title || `Música ${order.music_type}`}
                           </h3>
-                          <Badge className={`${getStatusColor(order.status)} text-[10px] sm:text-xs shrink-0`}>
+                          <Badge className={`${getStatusColor(order.status, order.payment_status)} text-[10px] sm:text-xs shrink-0`}>
                             {getStatusIcon(order.status)}
-                            <span className="ml-1">{getStatusText(order.status)}</span>
+                            <span className="ml-1">{getStatusText(order.status, order.payment_status)}</span>
                           </Badge>
                         </div>
                         <p className="text-xs sm:text-sm text-muted-foreground">
                           {order.music_style} • {order.music_type} • 
                           {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                          {order.is_instrumental && order.instruments?.length ? (
+                            <span className="ml-2 text-purple-400">
+                              • 🎵 {order.instruments.slice(0, 3).join(', ')}{order.instruments.length > 3 ? '...' : ''}
+                            </span>
+                          ) : null}
                         </p>
                       </div>
                     </div>
