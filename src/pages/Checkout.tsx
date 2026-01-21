@@ -30,6 +30,7 @@ interface OrderData {
   voucher_code: string | null;
   discount_applied: number;
   payment_method: string | null;
+  is_instrumental: boolean | null;
 }
 
 interface VoucherValidation {
@@ -220,8 +221,12 @@ export default function Checkout() {
         toast.success(data.message);
 
         if (data.is_free) {
-          // For 100% discount, trigger lyrics generation automatically
-          toast.info('Gerando letras da sua música...');
+          // For 100% discount, trigger generation automatically based on order type
+          const isInstrumental = order.is_instrumental === true;
+          
+          toast.info(isInstrumental 
+            ? 'Preparando sua música instrumental...' 
+            : 'Gerando letras da sua música...');
           
           // Fetch full order data for briefing
           const { data: orderData } = await supabase
@@ -244,20 +249,36 @@ export default function Checkout() {
               monologuePosition: orderData.monologue_position || 'bridge',
               mandatoryWords: orderData.mandatory_words || '',
               restrictedWords: orderData.restricted_words || '',
-              voiceType: orderData.voice_type || 'feminina'
+              voiceType: orderData.voice_type || 'feminina',
+              instruments: orderData.instruments || [],
+              soloInstrument: orderData.solo_instrument || null,
+              soloMoment: orderData.solo_moment || null,
+              instrumentationNotes: orderData.instrumentation_notes || ''
             };
 
-            // Trigger automatic lyrics generation
+            // Trigger automatic generation based on type
             try {
-              await supabase.functions.invoke('generate-lyrics', {
-                body: {
-                  orderId: order.id,
-                  story: orderData.story,
-                  briefing
-                }
-              });
-            } catch (lyricsError) {
-              console.error('Lyrics generation error:', lyricsError);
+              if (isInstrumental) {
+                // For instrumental, skip lyrics and generate style prompt directly
+                await supabase.functions.invoke('generate-style-prompt', {
+                  body: {
+                    orderId: order.id,
+                    isInstrumental: true,
+                    briefing
+                  }
+                });
+              } else {
+                // For vocal music, generate lyrics first
+                await supabase.functions.invoke('generate-lyrics', {
+                  body: {
+                    orderId: order.id,
+                    story: orderData.story,
+                    briefing
+                  }
+                });
+              }
+            } catch (genError) {
+              console.error('Generation error:', genError);
             }
           }
 

@@ -33,6 +33,11 @@ interface OrderData {
   approved_lyric_id: string | null;
   amount: number;
   user_id: string;
+  is_instrumental: boolean | null;
+  instruments: string[] | null;
+  solo_instrument: string | null;
+  solo_moment: string | null;
+  instrumentation_notes: string | null;
 }
 
 interface LyricData {
@@ -264,6 +269,8 @@ const OrderDetails = () => {
   const approvedLyric = lyrics.find(l => l.is_approved);
   const isMusicReady = order.status === 'MUSIC_READY' || order.status === 'COMPLETED';
 
+  const isInstrumental = order.is_instrumental === true;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
       <div className="max-w-3xl mx-auto space-y-6">
@@ -275,9 +282,16 @@ const OrderDetails = () => {
             </Link>
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">
-              {approvedLyric?.title || `Música ${order.music_type}`}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">
+                {isInstrumental ? `Instrumental ${order.music_type}` : (approvedLyric?.title || `Música ${order.music_type}`)}
+              </h1>
+              {isInstrumental && (
+                <Badge className="bg-purple-500/20 text-purple-600 border-purple-500/30">
+                  🎹 Instrumental
+                </Badge>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground">
               {order.music_style} • Pedido #{orderId?.slice(0, 8)}
             </p>
@@ -378,8 +392,45 @@ const OrderDetails = () => {
           />
         )}
 
-        {/* Lyrics Section */}
-        {approvedLyric && (
+        {/* Instruments Section - Show for instrumental orders */}
+        {isInstrumental && order.instruments && order.instruments.length > 0 && (
+          <Card className="border-purple-500/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-purple-600">
+                🎹 Instrumentação
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Instrumentos selecionados:</p>
+                <div className="flex flex-wrap gap-2">
+                  {order.instruments.map((instrument, idx) => (
+                    <Badge key={idx} variant="secondary" className="bg-purple-500/10 text-purple-600">
+                      {instrument}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              
+              {order.solo_instrument && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Solo de instrumento:</p>
+                  <p className="font-medium">{order.solo_instrument} ({order.solo_moment || 'meio'})</p>
+                </div>
+              )}
+              
+              {order.instrumentation_notes && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Observações:</p>
+                  <p className="text-sm bg-muted p-3 rounded-lg">{order.instrumentation_notes}</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Lyrics Section - Hide for instrumental orders */}
+        {!isInstrumental && approvedLyric && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

@@ -42,22 +42,60 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { email: user.email });
 
-    // Get pricing configuration from database
-    const { data: pricingConfig, error: pricingError } = await supabaseClient
-      .from('pricing_config')
-      .select('*')
-      .eq('id', planId)
+    // Check if order is instrumental to use correct pricing
+    const { data: orderInfo, error: orderError } = await supabaseClient
+      .from('orders')
+      .select('is_instrumental')
+      .eq('id', orderId)
       .single();
 
-    if (pricingError || !pricingConfig) {
-      logStep("Pricing config not found, using default");
+    if (orderError) {
+      logStep("Error fetching order info", { error: orderError.message });
     }
 
-    // Use promo price if available, otherwise regular price
-    const priceInCents = pricingConfig?.price_promo_cents || pricingConfig?.price_cents || 990;
-    const productName = pricingConfig?.name || "Música Personalizada";
+    const isInstrumental = orderInfo?.is_instrumental === true;
+    const effectivePlanId = isInstrumental ? `${planId}_instrumental` : planId;
     
-    logStep("Using price", { priceInCents, productName });
+    logStep("Determined plan", { isInstrumental, effectivePlanId });
+
+    // Get pricing configuration from database - try instrumental variant first
+    let pricingConfig = null;
+    let priceInCents = 990;
+    let productName = "Música Personalizada";
+    
+    const { data: effectivePricing, error: pricingError } = await supabaseClient
+      .from('pricing_config')
+      .select('*')
+      .eq('id', effectivePlanId)
+      .single();
+
+    if (!pricingError && effectivePricing) {
+      pricingConfig = effectivePricing;
+      priceInCents = effectivePricing.price_promo_cents || effectivePricing.price_cents;
+      productName = effectivePricing.name;
+      logStep("Using effective plan pricing", { priceInCents, productName });
+    } else {
+      logStep("Pricing config not found for effective plan, trying base plan");
+      // Fallback to base plan if instrumental variant not found
+      const { data: basePricing } = await supabaseClient
+        .from('pricing_config')
+        .select('*')
+        .eq('id', planId)
+        .single();
+      
+      if (basePricing) {
+        pricingConfig = basePricing;
+        // Apply 20% discount for instrumental if base plan found
+        priceInCents = isInstrumental 
+          ? Math.round((basePricing.price_promo_cents || basePricing.price_cents) * 0.8)
+          : basePricing.price_promo_cents || basePricing.price_cents;
+        productName = isInstrumental 
+          ? `${basePricing.name} (Instrumental)` 
+          : basePricing.name;
+        
+        logStep("Using base price with discount", { priceInCents, productName, isInstrumental });
+      }
+    }
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -75,9 +113,9 @@ serve(async (req) => {
     // Get origin for redirect URLs
     const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
 
-    // Use existing price ID if available, or create inline price
+    // Use existing price ID if available (only for non-instrumental with stripe_price_id), or create inline price
     let lineItems;
-    if (pricingConfig?.stripe_price_id) {
+    if (pricingConfig?.stripe_price_id && !isInstrumental) {
       lineItems = [{ price: pricingConfig.stripe_price_id, quantity: 1 }];
     } else {
       // Create inline price data for dynamic pricing
@@ -86,7 +124,9 @@ serve(async (req) => {
           currency: 'brl',
           product_data: {
             name: productName,
-            description: 'Uma música exclusiva criada com IA baseada na sua história'
+            description: isInstrumental 
+              ? 'Uma música instrumental exclusiva criada com IA'
+              : 'Uma música exclusiva criada com IA baseada na sua história'
           },
           unit_amount: priceInCents,
         },
@@ -105,7 +145,8 @@ serve(async (req) => {
       metadata: {
         order_id: orderId,
         user_id: user.id,
-        plan_id: planId
+        plan_id: planId,
+        is_instrumental: String(isInstrumental)
       }
     });
 
