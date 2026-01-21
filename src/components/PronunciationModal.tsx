@@ -41,45 +41,53 @@ const PronunciationModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            Definir Pronúncia
+            Pronúncia Especial Necessária
           </DialogTitle>
-          <DialogDescription>
-            Detectamos termos especiais na sua letra que podem ser pronunciados de forma diferente. 
-            Por favor, defina como cada um deve ser falado/cantado.
+          <DialogDescription className="text-left">
+            <span className="block mb-2">
+              Detectamos termos especiais que precisam de pronúncia definida para que o cantor pronuncie corretamente.
+            </span>
+            <span className="block text-primary font-medium">
+              ⚠️ Sem essa informação, não conseguimos produzir sua música.
+            </span>
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           {missingTerms.map((term) => (
-            <div key={term} className="space-y-2">
+            <div key={term} className="space-y-2 p-3 bg-muted/30 rounded-lg border border-border/50">
               <Label className="flex items-center gap-2">
-                <span className="font-mono bg-muted px-2 py-1 rounded text-primary">{term}</span>
+                <span className="font-mono bg-primary/20 px-3 py-1.5 rounded text-primary font-bold text-lg">{term}</span>
                 <Volume2 className="w-4 h-4 text-muted-foreground" />
               </Label>
               <Input
-                placeholder={`Como pronunciar "${term}"? Ex: én-i-vê-óito`}
+                placeholder={`Como pronunciar "${term}"?`}
                 value={pronunciations[term] || ''}
                 onChange={(e) => setPronunciations(prev => ({
                   ...prev,
                   [term]: e.target.value
                 }))}
+                className="text-base"
               />
               <p className="text-xs text-muted-foreground">
-                Escreva foneticamente como o cantor deve pronunciar
+                Escreva <strong>exatamente como se pronuncia verbalmente</strong>
               </p>
             </div>
           ))}
         </div>
 
-        <div className="bg-muted/50 p-3 rounded-lg text-sm">
-          <p className="text-muted-foreground">
-            <strong>Dica:</strong> Para siglas, escreva letra por letra (ex: NYV8 → "én-i-vê-óito"). 
-            Para nomes próprios, escreva como se fala (ex: iPhone → "aifon").
-          </p>
+        <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg text-sm space-y-2">
+          <p className="font-medium text-foreground">💡 Exemplos de pronúncia:</p>
+          <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+            <li><strong>NYV8</strong> → "ene ipsolon vê oito"</li>
+            <li><strong>iPhone</strong> → "aifón"</li>
+            <li><strong>Wi-Fi</strong> → "uái-fái"</li>
+            <li><strong>ABC</strong> → "a bê cê"</li>
+          </ul>
         </div>
 
         <DialogFooter>
