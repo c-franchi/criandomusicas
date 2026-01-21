@@ -738,7 +738,7 @@ const AdminDashboard = () => {
   };
 
   // Confirm PIX payment
-  const confirmPixPayment = async (orderId: string) => {
+  const confirmPixPayment = async (orderId: string, userId: string) => {
     try {
       const { error } = await supabase
         .from('orders')
@@ -749,6 +749,22 @@ const AdminDashboard = () => {
         .eq('id', orderId);
 
       if (error) throw error;
+
+      // Send push notification to user
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            user_id: userId,
+            order_id: orderId,
+            title: '✅ Pagamento PIX confirmado!',
+            body: 'Seu pagamento foi recebido. Estamos gerando as letras da sua música!',
+            url: `/order/${orderId}`
+          }
+        });
+      } catch (pushError) {
+        console.error('Push notification error:', pushError);
+        // Don't fail the main operation if push fails
+      }
 
       toast({
         title: '✅ Pagamento PIX confirmado!',
@@ -1620,7 +1636,7 @@ const AdminDashboard = () => {
                           <p className="text-[10px] sm:text-xs text-muted-foreground">Verifique o pagamento e confirme manualmente</p>
                         </div>
                         <Button 
-                          onClick={() => confirmPixPayment(order.id)} 
+                          onClick={() => confirmPixPayment(order.id, order.user_id)} 
                           size="sm" 
                           className="bg-yellow-500 hover:bg-yellow-600 text-black shrink-0 text-xs sm:text-sm"
                         >

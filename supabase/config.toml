@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.apply-voucher]
 verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false
