@@ -460,6 +460,39 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          is_public: boolean | null
+          order_id: string
+          rating: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          order_id: string
+          rating: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean | null
+          order_id?: string
+          rating?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       tracks: {
         Row: {
           audio_url: string | null
