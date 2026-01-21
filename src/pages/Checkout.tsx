@@ -117,9 +117,15 @@ export default function Checkout() {
           return;
         }
 
-        // If already paid, redirect to create song
+        // If already paid, redirect based on order type
         if (data.payment_status === 'PAID') {
-          navigate(`/criar-musica?orderId=${orderId}`);
+          if (data.is_instrumental) {
+            // Instrumental: go to dashboard to wait for production
+            navigate('/dashboard');
+          } else {
+            // Vocal: go to lyrics selection/creation
+            navigate(`/criar-musica?orderId=${orderId}`);
+          }
           return;
         }
 
@@ -162,7 +168,12 @@ export default function Checkout() {
         if (success) {
           toast.success('Música liberada! Redirecionando...');
           setTimeout(() => {
-            navigate(`/criar-musica?orderId=${order.id}`);
+            // VIP: redirect based on order type
+            if (order.is_instrumental) {
+              navigate('/dashboard');
+            } else {
+              navigate(`/criar-musica?orderId=${order.id}`);
+            }
           }, 1500);
         } else {
           setProcessingVIP(false);
@@ -283,7 +294,12 @@ export default function Checkout() {
           }
 
           setTimeout(() => {
-            navigate(`/criar-musica?orderId=${order.id}`);
+            if (isInstrumental) {
+              toast.success('Sua música instrumental está em produção!');
+              navigate('/dashboard');
+            } else {
+              navigate(`/criar-musica?orderId=${order.id}`);
+            }
           }, 1500);
         } else {
           setOrder(prev => prev ? {

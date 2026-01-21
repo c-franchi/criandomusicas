@@ -49,7 +49,7 @@ serve(async (req) => {
     // Verify order belongs to user
     const { data: order, error: orderError } = await supabaseClient
       .from('orders')
-      .select('id, user_id, amount, payment_status')
+      .select('id, user_id, amount, payment_status, is_instrumental')
       .eq('id', orderId)
       .single();
 
@@ -155,9 +155,11 @@ serve(async (req) => {
       amount: finalPrice,
     };
 
-  if (isFree) {
+    if (isFree) {
       orderUpdate.payment_status = 'PAID';
-      orderUpdate.status = 'LYRICS_PENDING';
+      // Instrumental goes directly to production (LYRICS_APPROVED = ready for style prompt)
+      // Vocal needs to generate lyrics first (LYRICS_PENDING)
+      orderUpdate.status = order.is_instrumental ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
     }
 
     const { error: updateError } = await supabaseClient
