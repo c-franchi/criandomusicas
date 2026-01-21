@@ -30,7 +30,8 @@ import {
   QrCode,
   MessageCircle,
   Video,
-  Camera
+  Camera,
+  Loader2
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -140,6 +141,9 @@ const AdminDashboard = () => {
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
   const [deleteAudioId, setDeleteAudioId] = useState<string | null>(null);
   const [deleteVoucherId, setDeleteVoucherId] = useState<string | null>(null);
+  
+  // PIX confirmation loading
+  const [confirmingPix, setConfirmingPix] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
@@ -594,6 +598,7 @@ const AdminDashboard = () => {
 
   // Confirm PIX payment and auto-generate lyrics/style
   const confirmPixPayment = async (orderId: string, userId: string) => {
+    setConfirmingPix(orderId);
     try {
       // 1. Fetch order details for generation
       const { data: orderData, error: fetchError } = await supabase
@@ -699,6 +704,8 @@ const AdminDashboard = () => {
         description: errorMessage,
         variant: 'destructive',
       });
+    } finally {
+      setConfirmingPix(null);
     }
   };
 
@@ -1632,10 +1639,15 @@ const AdminDashboard = () => {
                           onClick={() => confirmPixPayment(order.id, order.user_id)} 
                           size="sm" 
                           className="bg-yellow-500 hover:bg-yellow-600 text-black shrink-0 text-xs sm:text-sm"
+                          disabled={confirmingPix === order.id}
                         >
-                          <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                          <span className="hidden sm:inline">Confirmar PIX</span>
-                          <span className="sm:hidden">Confirmar</span>
+                          {confirmingPix === order.id ? (
+                            <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 animate-spin" />
+                          ) : (
+                            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                          )}
+                          <span className="hidden sm:inline">{confirmingPix === order.id ? 'Confirmando...' : 'Confirmar PIX'}</span>
+                          <span className="sm:hidden">{confirmingPix === order.id ? '...' : 'Confirmar'}</span>
                         </Button>
                       </div>
                     )}

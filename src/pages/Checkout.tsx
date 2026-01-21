@@ -312,9 +312,16 @@ export default function Checkout() {
           setVoucherCode('');
         }
       } else {
-        toast.error(data.error || 'Erro ao aplicar voucher');
+        // Show the specific error from the server
+        const errorMsg = data.error || 'Erro ao aplicar voucher';
+        toast.error(errorMsg);
+        setVoucherResult(null);
+        setVoucherCode('');
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Extract error message from response if available
+      const errorDetail = error?.message || error?.error || 'Erro ao aplicar voucher';
+      toast.error(errorDetail);
       console.error('Error applying voucher:', error);
       toast.error('Erro ao aplicar voucher');
     } finally {
