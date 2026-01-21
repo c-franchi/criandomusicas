@@ -221,6 +221,7 @@ export type Database = {
           id: string
           mandatory_words: string | null
           monologue_position: string | null
+          music_ready_at: string | null
           music_structure: string | null
           music_style: string | null
           music_type: string | null
@@ -229,6 +230,7 @@ export type Database = {
           pronunciations: Json | null
           purpose: string | null
           restricted_words: string | null
+          review_notification_sent: boolean | null
           rhythm: string | null
           status: Database["public"]["Enums"]["order_status"]
           story: string | null
@@ -254,6 +256,7 @@ export type Database = {
           id?: string
           mandatory_words?: string | null
           monologue_position?: string | null
+          music_ready_at?: string | null
           music_structure?: string | null
           music_style?: string | null
           music_type?: string | null
@@ -262,6 +265,7 @@ export type Database = {
           pronunciations?: Json | null
           purpose?: string | null
           restricted_words?: string | null
+          review_notification_sent?: boolean | null
           rhythm?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
@@ -287,6 +291,7 @@ export type Database = {
           id?: string
           mandatory_words?: string | null
           monologue_position?: string | null
+          music_ready_at?: string | null
           music_structure?: string | null
           music_style?: string | null
           music_type?: string | null
@@ -295,6 +300,7 @@ export type Database = {
           pronunciations?: Json | null
           purpose?: string | null
           restricted_words?: string | null
+          review_notification_sent?: boolean | null
           rhythm?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null

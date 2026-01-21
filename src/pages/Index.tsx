@@ -5,6 +5,7 @@ import PricingPlans from "@/components/PricingPlans";
 import Testimonials from "@/components/Testimonials";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
+import CookieConsent from "@/components/CookieConsent";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
       <Testimonials />
       <CTA />
       <Footer />
+      <CookieConsent />
     </div>
   );
 };
