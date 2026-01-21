@@ -85,10 +85,16 @@ serve(async (req) => {
       
       if (basePricing) {
         pricingConfig = basePricing;
-        // Apply 20% discount for instrumental if base plan found
-        priceInCents = isInstrumental 
-          ? Math.round((basePricing.price_promo_cents || basePricing.price_cents) * 0.8)
-          : basePricing.price_promo_cents || basePricing.price_cents;
+        // Apply 20% discount for instrumental if base plan found, round to .90
+        const basePrice = basePricing.price_promo_cents || basePricing.price_cents;
+        if (isInstrumental) {
+          const discounted = basePrice * 0.8;
+          // Round to nearest 100 cents, then subtract 10 to end in .90
+          priceInCents = Math.round(discounted / 100) * 100 - 10;
+          if (priceInCents < 100) priceInCents = Math.round(discounted);
+        } else {
+          priceInCents = basePrice;
+        }
         productName = isInstrumental 
           ? `${basePricing.name} (Instrumental)` 
           : basePricing.name;
@@ -113,10 +119,11 @@ serve(async (req) => {
     // Get origin for redirect URLs
     const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
 
-    // Use existing price ID if available (only for non-instrumental with stripe_price_id), or create inline price
+    // Use existing stripe_price_id if available in pricing config
     let lineItems;
-    if (pricingConfig?.stripe_price_id && !isInstrumental) {
+    if (pricingConfig?.stripe_price_id) {
       lineItems = [{ price: pricingConfig.stripe_price_id, quantity: 1 }];
+      logStep("Using Stripe price ID", { priceId: pricingConfig.stripe_price_id });
     } else {
       // Create inline price data for dynamic pricing
       lineItems = [{
@@ -132,6 +139,7 @@ serve(async (req) => {
         },
         quantity: 1,
       }];
+      logStep("Using inline price data", { priceInCents, productName });
     }
 
     // Create a one-time payment session
