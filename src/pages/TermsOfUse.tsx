@@ -1,10 +1,19 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
+import SEO from "@/components/SEO";
 const TermsOfUse = () => {
+  const currentDate = new Date().toISOString();
+  
   return (
     <div className="min-h-screen bg-background py-12 px-6">
+      <SEO 
+        canonical="/termos"
+        title="Termos de Uso"
+        description="Termos e condições de uso do serviço Criando Músicas. Saiba sobre garantias, política de reembolso, propriedade intelectual e processo de criação."
+        keywords="termos de uso, condições de serviço, garantia música personalizada, reembolso, direitos autorais"
+        updatedAt={currentDate}
+      />
       <div className="max-w-4xl mx-auto">
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/">

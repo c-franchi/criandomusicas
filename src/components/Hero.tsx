@@ -39,18 +39,18 @@ const Hero = () => {
           </Link>}
       </div>
       
-      {/* Floating Elements */}
-      <div className="absolute top-20 left-10 animate-float">
+      {/* Floating Elements - decorative, hidden from screen readers */}
+      <div className="absolute top-20 left-10 animate-float" aria-hidden="true">
         <Music className="w-12 h-12 text-primary/60" />
       </div>
       <div className="absolute bottom-32 right-16 animate-float" style={{
       animationDelay: '2s'
-    }}>
+    }} aria-hidden="true">
         <Sparkles className="w-8 h-8 text-accent/60" />
       </div>
       <div className="absolute top-1/2 left-20 animate-float" style={{
       animationDelay: '4s'
-    }}>
+    }} aria-hidden="true">
         <Headphones className="w-10 h-10 text-primary/40" />
       </div>
       
