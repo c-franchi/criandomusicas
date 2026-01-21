@@ -770,9 +770,19 @@ const AdminDashboard = () => {
     }
   };
 
-  // Confirm PIX payment
+  // Confirm PIX payment and auto-generate lyrics
   const confirmPixPayment = async (orderId: string, userId: string) => {
     try {
+      // 1. Fetch order details for lyrics generation
+      const { data: orderData, error: fetchError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', orderId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // 2. Update payment status to PAID
       const { error } = await supabase
         .from('orders')
         .update({ 
@@ -783,25 +793,54 @@ const AdminDashboard = () => {
 
       if (error) throw error;
 
-      // Send push notification to user
+      // 3. Build briefing from order data
+      const briefing = {
+        musicType: orderData.music_type || 'homenagem',
+        emotion: orderData.emotion || 'alegria',
+        emotionIntensity: orderData.emotion_intensity || 3,
+        style: orderData.music_style || 'pop',
+        rhythm: orderData.rhythm || 'moderado',
+        atmosphere: orderData.atmosphere || 'festivo',
+        structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+        hasMonologue: orderData.has_monologue || false,
+        monologuePosition: orderData.monologue_position || 'bridge',
+        mandatoryWords: orderData.mandatory_words || '',
+        restrictedWords: orderData.restricted_words || '',
+        voiceType: orderData.voice_type || 'feminina'
+      };
+
+      // 4. Trigger automatic lyrics generation
+      try {
+        await supabase.functions.invoke('generate-lyrics', {
+          body: {
+            orderId,
+            story: orderData.story,
+            briefing
+          }
+        });
+      } catch (lyricsError) {
+        console.error('Lyrics generation error:', lyricsError);
+        // Continue - lyrics can be regenerated manually
+      }
+
+      // 5. Send push notification to user
       try {
         await supabase.functions.invoke('send-push-notification', {
           body: {
             user_id: userId,
             order_id: orderId,
             title: '✅ Pagamento PIX confirmado!',
-            body: 'Seu pagamento foi recebido. Estamos gerando as letras da sua música!',
-            url: `/order/${orderId}`
+            body: 'Seu pagamento foi recebido. As letras da sua música estão sendo geradas!',
+            url: `/criar-musica?orderId=${orderId}`
           }
         });
       } catch (pushError) {
         console.error('Push notification error:', pushError);
-        // Don't fail the main operation if push fails
       }
 
       toast({
-        title: '✅ Pagamento PIX confirmado!',
-        description: 'O pedido foi liberado para geração de letras.',
+        title: '✅ Pagamento confirmado!',
+        description: 'Letras em geração automática. O cliente foi notificado.',
       });
 
       setOrders(prev => prev.map(o => 
