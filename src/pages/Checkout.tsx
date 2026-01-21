@@ -592,11 +592,15 @@ export default function Checkout() {
                       variant="outline"
                       onClick={validateVoucher}
                       disabled={validatingVoucher || !voucherCode.trim()}
+                      className="shrink-0"
                     >
                       {validatingVoucher ? (
                         <Music className="h-4 w-4 animate-spin" />
                       ) : (
-                        <Tag className="h-4 w-4" />
+                        <>
+                          <Tag className="h-4 w-4 mr-2" />
+                          <span>Usar voucher</span>
+                        </>
                       )}
                     </Button>
                   </div>
