@@ -1,5 +1,22 @@
 import { Music } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const scrollToSection = (sectionId: string) => {
+    // Se já está na homepage, apenas scroll
+    if (window.location.pathname === '/') {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // Navega para homepage e depois faz scroll
+      navigate('/');
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  };
+
   return <footer className="py-12 px-6 border-t border-border/50">
       <div className="max-w-6xl mx-auto">
         <div className="grid md:grid-cols-4 gap-8">
@@ -21,19 +38,19 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Produto</h4>
             <ul className="space-y-2 text-muted-foreground">
-              <li><a href="/#processo" className="hover:text-primary transition-colors">Como funciona</a></li>
-              <li><a href="/#exemplos" className="hover:text-primary transition-colors">Exemplos</a></li>
-              <li><a href="/planos" className="hover:text-primary transition-colors">Preços</a></li>
+              <li><button onClick={() => scrollToSection('processo')} className="hover:text-primary transition-colors text-left">Como funciona</button></li>
+              <li><button onClick={() => scrollToSection('exemplos')} className="hover:text-primary transition-colors text-left">Exemplos</button></li>
+              <li><Link to="/planos" className="hover:text-primary transition-colors">Preços</Link></li>
             </ul>
           </div>
           
           <div>
             <h4 className="font-semibold mb-4">Legal</h4>
             <ul className="space-y-2 text-muted-foreground">
-              <li><a href="/termos" className="hover:text-primary transition-colors">Termos de Uso</a></li>
-              <li><a href="/privacidade" className="hover:text-primary transition-colors">Política de Privacidade</a></li>
-              <li><a href="/regras" className="hover:text-primary transition-colors">Regras de Criação</a></li>
-              <li><a href="https://wa.me/5511999999999?text=Olá! Gostaria de saber mais sobre o Criando Músicas" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Contato</a></li>
+              <li><Link to="/termos" className="hover:text-primary transition-colors">Termos de Uso</Link></li>
+              <li><Link to="/privacidade" className="hover:text-primary transition-colors">Política de Privacidade</Link></li>
+              <li><Link to="/regras" className="hover:text-primary transition-colors">Regras de Criação</Link></li>
+              <li><a href="https://wa.me/5516997813038?text=Olá! Gostaria de saber mais sobre o Criando Músicas" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Contato</a></li>
             </ul>
           </div>
         </div>
