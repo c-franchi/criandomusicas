@@ -1,5 +1,6 @@
 import { Music } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { APP_VERSION } from "@/lib/version";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const Footer = () => {
         
         <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
           <p>© 2025 Criando Músicas. Todos os direitos reservados.</p>
-          <p className="text-xs mt-2 opacity-60">v2.1.0</p>
+          <p className="text-xs mt-2 opacity-60">v{APP_VERSION}</p>
         </div>
       </div>
     </footer>;
