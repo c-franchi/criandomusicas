@@ -936,10 +936,13 @@ const AdminDashboard = () => {
 
       console.log('Track salva com sucesso');
 
-      // Update order status to MUSIC_READY
+      // Update order status to COMPLETED (Entregue)
       const { error: orderError } = await supabase
         .from('orders')
-        .update({ status: 'MUSIC_READY' })
+        .update({ 
+          status: 'COMPLETED',
+          music_ready_at: new Date().toISOString()
+        })
         .eq('id', order.id);
 
       if (orderError) {
@@ -964,7 +967,7 @@ const AdminDashboard = () => {
 
       // Update local state
       setOrders(prev => prev.map(o => 
-        o.id === order.id ? { ...o, status: 'MUSIC_READY', track_url: audioUrl } : o
+        o.id === order.id ? { ...o, status: 'COMPLETED', track_url: audioUrl } : o
       ));
 
       toast({
