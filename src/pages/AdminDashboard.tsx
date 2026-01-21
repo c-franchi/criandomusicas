@@ -85,6 +85,10 @@ interface AdminOrder {
   track_url?: string | null;
   user_whatsapp?: string | null;
   user_name?: string | null;
+  is_instrumental?: boolean | null;
+  instruments?: string[] | null;
+  solo_instrument?: string | null;
+  solo_moment?: string | null;
 }
 
 interface PricingConfig {
@@ -216,7 +220,11 @@ const AdminDashboard = () => {
           user_id,
           final_prompt,
           style_prompt,
-          approved_lyric_id
+          approved_lyric_id,
+          is_instrumental,
+          instruments,
+          solo_instrument,
+          solo_moment
         `)
         .order('created_at', { ascending: false });
 
@@ -770,10 +778,10 @@ const AdminDashboard = () => {
     }
   };
 
-  // Confirm PIX payment and auto-generate lyrics
+  // Confirm PIX payment and auto-generate lyrics/style
   const confirmPixPayment = async (orderId: string, userId: string) => {
     try {
-      // 1. Fetch order details for lyrics generation
+      // 1. Fetch order details for generation
       const { data: orderData, error: fetchError } = await supabase
         .from('orders')
         .select('*')
@@ -782,12 +790,16 @@ const AdminDashboard = () => {
 
       if (fetchError) throw fetchError;
 
+      const isInstrumental = orderData.is_instrumental === true;
+
       // 2. Update payment status to PAID
+      // For instrumental: skip to LYRICS_APPROVED (ready for music generation)
+      // For vocal: go to LYRICS_PENDING (start lyrics generation)
       const { error } = await supabase
         .from('orders')
         .update({ 
           payment_status: 'PAID', 
-          status: 'LYRICS_PENDING' 
+          status: isInstrumental ? 'LYRICS_APPROVED' : 'LYRICS_PENDING' 
         })
         .eq('id', orderId);
 
@@ -806,21 +818,37 @@ const AdminDashboard = () => {
         monologuePosition: orderData.monologue_position || 'bridge',
         mandatoryWords: orderData.mandatory_words || '',
         restrictedWords: orderData.restricted_words || '',
-        voiceType: orderData.voice_type || 'feminina'
+        voiceType: orderData.voice_type || 'feminina',
+        instruments: orderData.instruments || [],
+        soloInstrument: orderData.solo_instrument || null,
+        soloMoment: orderData.solo_moment || null,
+        instrumentationNotes: orderData.instrumentation_notes || ''
       };
 
-      // 4. Trigger automatic lyrics generation
+      // 4. Trigger automatic generation based on type
       try {
-        await supabase.functions.invoke('generate-lyrics', {
-          body: {
-            orderId,
-            story: orderData.story,
-            briefing
-          }
-        });
-      } catch (lyricsError) {
-        console.error('Lyrics generation error:', lyricsError);
-        // Continue - lyrics can be regenerated manually
+        if (isInstrumental) {
+          // For instrumental, skip lyrics and generate style prompt directly
+          await supabase.functions.invoke('generate-style-prompt', {
+            body: {
+              orderId,
+              isInstrumental: true,
+              briefing
+            }
+          });
+        } else {
+          // For vocal music, generate lyrics first
+          await supabase.functions.invoke('generate-lyrics', {
+            body: {
+              orderId,
+              story: orderData.story,
+              briefing
+            }
+          });
+        }
+      } catch (genError) {
+        console.error('Generation error:', genError);
+        // Continue - can be regenerated manually
       }
 
       // 5. Send push notification to user
@@ -830,7 +858,9 @@ const AdminDashboard = () => {
             user_id: userId,
             order_id: orderId,
             title: '✅ Pagamento PIX confirmado!',
-            body: 'Seu pagamento foi recebido. As letras da sua música estão sendo geradas!',
+            body: isInstrumental 
+              ? 'Seu pagamento foi recebido. Sua música instrumental está sendo preparada!'
+              : 'Seu pagamento foi recebido. As letras da sua música estão sendo geradas!',
             url: `/criar-musica?orderId=${orderId}`
           }
         });
@@ -840,11 +870,13 @@ const AdminDashboard = () => {
 
       toast({
         title: '✅ Pagamento confirmado!',
-        description: 'Letras em geração automática. O cliente foi notificado.',
+        description: isInstrumental 
+          ? 'Prompt de estilo gerado. O cliente foi notificado.'
+          : 'Letras em geração automática. O cliente foi notificado.',
       });
 
       setOrders(prev => prev.map(o => 
-        o.id === orderId ? { ...o, payment_status: 'PAID', status: 'LYRICS_PENDING' } : o
+        o.id === orderId ? { ...o, payment_status: 'PAID', status: isInstrumental ? 'LYRICS_APPROVED' : 'LYRICS_PENDING' } : o
       ));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
