@@ -11,9 +11,12 @@ import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// PIX Configuration
-const PIX_KEY = '14.389.841/0001-47';
-const PIX_NAME = 'Criando Músicas';
+interface PixConfigData {
+  pix_key: string;
+  pix_name: string;
+  qr_code_url: string;
+  is_active: boolean;
+}
 
 interface OrderData {
   id: string;
@@ -61,6 +64,28 @@ export default function Checkout() {
   const [showPixSection, setShowPixSection] = useState(false);
   const [pixConfirmed, setPixConfirmed] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
+  const [pixConfig, setPixConfig] = useState<PixConfigData | null>(null);
+
+  // Fetch PIX config
+  useEffect(() => {
+    const fetchPixConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pix_config')
+          .select('*')
+          .eq('id', 'main')
+          .single();
+
+        if (!error && data) {
+          setPixConfig(data);
+        }
+      } catch (error) {
+        console.error('Error fetching PIX config:', error);
+      }
+    };
+
+    fetchPixConfig();
+  }, []);
 
   // Fetch order data
   useEffect(() => {
@@ -277,7 +302,8 @@ export default function Checkout() {
 
   // Copy PIX key to clipboard
   const copyPixKey = () => {
-    navigator.clipboard.writeText(PIX_KEY);
+    if (!pixConfig) return;
+    navigator.clipboard.writeText(pixConfig.pix_key);
     setCopiedKey(true);
     toast.success('Chave PIX copiada!');
     setTimeout(() => setCopiedKey(false), 3000);
@@ -347,7 +373,7 @@ export default function Checkout() {
             {/* QR Code First */}
             <div className="bg-white p-4 rounded-xl mx-auto w-fit mb-6">
               <img 
-                src="/images/pix-qrcode.jpg" 
+                src={pixConfig?.qr_code_url || '/images/pix-qrcode.jpg'} 
                 alt="QR Code PIX" 
                 className="w-48 h-48 object-contain"
               />
@@ -374,7 +400,7 @@ export default function Checkout() {
                 <div>
                   <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
                   <div className="flex items-center gap-2 mt-1">
-                    <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{PIX_KEY}</code>
+                    <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{pixConfig?.pix_key || '14.389.841/0001-47'}</code>
                     <Button variant="outline" size="sm" onClick={copyPixKey}>
                       {copiedKey ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                     </Button>
@@ -382,7 +408,7 @@ export default function Checkout() {
                 </div>
                 <div>
                   <Label className="text-xs text-muted-foreground">Nome:</Label>
-                  <p className="font-medium">{PIX_NAME}</p>
+                  <p className="font-medium">{pixConfig?.pix_name || 'Criando Músicas'}</p>
                 </div>
               </div>
             </Card>
@@ -621,7 +647,7 @@ export default function Checkout() {
               <div className="text-center">
                 <div className="bg-white p-4 rounded-xl mx-auto w-fit mb-3">
                   <img 
-                    src="/images/pix-qrcode.jpg" 
+                    src={pixConfig?.qr_code_url || '/images/pix-qrcode.jpg'} 
                     alt="QR Code PIX" 
                     className="w-48 h-48 object-contain"
                   />
@@ -656,7 +682,7 @@ export default function Checkout() {
                   <div>
                     <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
                     <div className="flex items-center gap-2 mt-1">
-                      <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{PIX_KEY}</code>
+                      <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{pixConfig?.pix_key || '14.389.841/0001-47'}</code>
                       <Button variant="outline" size="sm" onClick={copyPixKey}>
                         {copiedKey ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
                       </Button>
@@ -664,7 +690,7 @@ export default function Checkout() {
                   </div>
                   <div>
                     <Label className="text-xs text-muted-foreground">Nome:</Label>
-                    <p className="font-medium">{PIX_NAME}</p>
+                    <p className="font-medium">{pixConfig?.pix_name || 'Criando Músicas'}</p>
                   </div>
                 </div>
               </Card>

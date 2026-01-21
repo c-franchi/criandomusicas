@@ -30,7 +30,8 @@ import {
   Tag,
   Percent,
   Gift,
-  Calendar
+  Calendar,
+  QrCode
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -118,6 +119,14 @@ interface Voucher {
   created_at: string;
 }
 
+interface PixConfig {
+  id: string;
+  pix_key: string;
+  pix_name: string;
+  qr_code_url: string;
+  is_active: boolean;
+}
+
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
@@ -130,7 +139,14 @@ const AdminDashboard = () => {
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
-  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio'>('pricing');
+  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix'>('pricing');
+  
+  // PIX Config
+  const [pixConfig, setPixConfig] = useState<PixConfig | null>(null);
+  const [loadingPix, setLoadingPix] = useState(false);
+  const [savingPix, setSavingPix] = useState(false);
+  const [uploadingQrCode, setUploadingQrCode] = useState(false);
+  const qrCodeInputRef = useRef<HTMLInputElement>(null);
   
   // Audio Samples
   const [audioSamples, setAudioSamples] = useState<AudioSample[]>([]);
@@ -366,14 +382,101 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchPixConfig = useCallback(async () => {
+    setLoadingPix(true);
+    try {
+      const { data, error } = await supabase
+        .from('pix_config')
+        .select('*')
+        .eq('id', 'main')
+        .single();
+
+      if (error) throw error;
+      setPixConfig(data);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao carregar config PIX',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingPix(false);
+    }
+  }, [toast]);
+
+  const savePixConfig = async () => {
+    if (!pixConfig) return;
+    setSavingPix(true);
+    try {
+      const { error } = await supabase
+        .from('pix_config')
+        .update({
+          pix_key: pixConfig.pix_key,
+          pix_name: pixConfig.pix_name,
+          qr_code_url: pixConfig.qr_code_url,
+          is_active: pixConfig.is_active,
+        })
+        .eq('id', 'main');
+
+      if (error) throw error;
+
+      toast({
+        title: 'Config PIX atualizada!',
+        description: 'As novas configurações de PIX estão ativas.',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao salvar config PIX',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingPix(false);
+    }
+  };
+
+  const handleQrCodeUpload = async (file: File) => {
+    if (!file) return;
+    setUploadingQrCode(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `pix-qrcode-${Date.now()}.${fileExt}`;
+      const filePath = `pix/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('audio-samples')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: publicUrlData } = supabase.storage
+        .from('audio-samples')
+        .getPublicUrl(filePath);
+
+      const qrCodeUrl = publicUrlData.publicUrl;
+
+      setPixConfig(prev => prev ? { ...prev, qr_code_url: qrCodeUrl } : null);
+
+      toast({ title: 'QR Code enviado!', description: 'A nova imagem foi salva.' });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao enviar QR Code', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setUploadingQrCode(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchOrders();
       fetchPricing();
       fetchAudioSamples();
       fetchVouchers();
+      fetchPixConfig();
     }
-  }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples, fetchVouchers]);
+  }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples, fetchVouchers, fetchPixConfig]);
 
   const updatePricingConfig = (id: string, field: keyof PricingConfig, value: any) => {
     setPricingConfigs(prev => prev.map(config => 
@@ -865,7 +968,7 @@ const AdminDashboard = () => {
             <div className="flex gap-2 w-full sm:w-auto">
               <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => { fetchPricing(); fetchVouchers(); }} className="flex-1 sm:flex-none text-xs sm:text-sm">
+                  <Button variant="outline" size="sm" onClick={() => { fetchPricing(); fetchVouchers(); fetchPixConfig(); }} className="flex-1 sm:flex-none text-xs sm:text-sm">
                     <Settings className="w-4 h-4 sm:mr-2" />
                     <span className="hidden sm:inline">Configurações</span>
                     <span className="sm:hidden">Config</span>
@@ -878,23 +981,27 @@ const AdminDashboard = () => {
                       Configurações do Sistema
                     </DialogTitle>
                     <DialogDescription>
-                      Gerencie preços, vouchers e áudios de exemplo.
+                      Gerencie preços, vouchers, áudios de exemplo e configurações PIX.
                     </DialogDescription>
                   </DialogHeader>
                   
                   <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)} className="mt-4">
-                    <TabsList className="grid grid-cols-3 w-full">
+                    <TabsList className="grid grid-cols-4 w-full">
                       <TabsTrigger value="pricing" className="text-xs sm:text-sm">
                         <DollarSign className="w-4 h-4 mr-1" />
-                        Preços
+                        <span className="hidden sm:inline">Preços</span>
                       </TabsTrigger>
                       <TabsTrigger value="vouchers" className="text-xs sm:text-sm">
                         <Gift className="w-4 h-4 mr-1" />
-                        Vouchers
+                        <span className="hidden sm:inline">Vouchers</span>
                       </TabsTrigger>
                       <TabsTrigger value="audio" className="text-xs sm:text-sm">
                         <Headphones className="w-4 h-4 mr-1" />
-                        Áudios
+                        <span className="hidden sm:inline">Áudios</span>
+                      </TabsTrigger>
+                      <TabsTrigger value="pix" className="text-xs sm:text-sm">
+                        <QrCode className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">PIX</span>
                       </TabsTrigger>
                     </TabsList>
                     
@@ -1193,6 +1300,103 @@ const AdminDashboard = () => {
                             </Card>
                           ))}
                         </div>
+                      )}
+                    </TabsContent>
+
+                    {/* PIX TAB */}
+                    <TabsContent value="pix" className="space-y-4 mt-4">
+                      {loadingPix ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Music className="w-6 h-6 animate-spin text-primary" />
+                        </div>
+                      ) : pixConfig ? (
+                        <div className="space-y-4">
+                          <Card className="p-4">
+                            <h3 className="font-semibold mb-4 flex items-center gap-2">
+                              <QrCode className="w-5 h-5" />
+                              Configurações de Pagamento PIX
+                            </h3>
+                            
+                            <div className="space-y-4">
+                              <div>
+                                <Label>Chave PIX (CNPJ/CPF/Email/Celular)</Label>
+                                <Input
+                                  value={pixConfig.pix_key}
+                                  onChange={(e) => setPixConfig({ ...pixConfig, pix_key: e.target.value })}
+                                  placeholder="14.389.841/0001-47"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label>Nome do Recebedor</Label>
+                                <Input
+                                  value={pixConfig.pix_name}
+                                  onChange={(e) => setPixConfig({ ...pixConfig, pix_name: e.target.value })}
+                                  placeholder="Criando Músicas"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label>QR Code PIX</Label>
+                                <div className="flex items-start gap-4 mt-2">
+                                  {pixConfig.qr_code_url && (
+                                    <div className="bg-white p-2 rounded-lg">
+                                      <img 
+                                        src={pixConfig.qr_code_url} 
+                                        alt="QR Code PIX" 
+                                        className="w-32 h-32 object-contain"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex-1 space-y-2">
+                                    <input
+                                      ref={qrCodeInputRef}
+                                      type="file"
+                                      accept="image/*"
+                                      className="hidden"
+                                      onChange={(e) => e.target.files?.[0] && handleQrCodeUpload(e.target.files[0])}
+                                    />
+                                    <Button
+                                      variant="outline"
+                                      onClick={() => qrCodeInputRef.current?.click()}
+                                      disabled={uploadingQrCode}
+                                      className="w-full"
+                                    >
+                                      {uploadingQrCode ? (
+                                        <Music className="w-4 h-4 animate-spin mr-2" />
+                                      ) : (
+                                        <Upload className="w-4 h-4 mr-2" />
+                                      )}
+                                      {uploadingQrCode ? 'Enviando...' : 'Alterar QR Code'}
+                                    </Button>
+                                    <p className="text-xs text-muted-foreground">
+                                      Envie a imagem do QR Code gerado pelo seu banco.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center justify-between pt-2">
+                                <Label htmlFor="pix-active">PIX Ativo</Label>
+                                <Switch
+                                  id="pix-active"
+                                  checked={pixConfig.is_active}
+                                  onCheckedChange={(checked) => setPixConfig({ ...pixConfig, is_active: checked })}
+                                />
+                              </div>
+                            </div>
+                          </Card>
+
+                          <Button onClick={savePixConfig} className="w-full" disabled={savingPix}>
+                            {savingPix ? <Music className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                            Salvar Configurações PIX
+                          </Button>
+                        </div>
+                      ) : (
+                        <Card className="p-6 text-center">
+                          <QrCode className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                          <p className="text-muted-foreground">Nenhuma configuração PIX encontrada</p>
+                        </Card>
                       )}
                     </TabsContent>
                   </Tabs>

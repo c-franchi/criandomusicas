@@ -316,6 +316,36 @@ export type Database = {
           },
         ]
       }
+      pix_config: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          pix_key: string
+          pix_name: string
+          qr_code_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          pix_key?: string
+          pix_name?: string
+          qr_code_url?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          pix_key?: string
+          pix_name?: string
+          qr_code_url?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pricing_config: {
         Row: {
           created_at: string
