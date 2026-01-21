@@ -5,7 +5,6 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { 
   Music, 
@@ -16,7 +15,6 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  FileText,
   Settings,
   Save,
   DollarSign,
@@ -27,13 +25,10 @@ import {
   Headphones,
   Edit,
   Upload,
-  Tag,
   Percent,
   Gift,
-  Calendar,
   QrCode,
-  MessageCircle,
-  Send
+  MessageCircle
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,7 +42,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -66,6 +60,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AdminStatsCards, AudioSampleManager, type AudioSample, type PricingConfig, type Voucher, type PixConfig } from "@/components/admin";
 
 interface AdminOrder {
   id: string;
@@ -89,51 +84,6 @@ interface AdminOrder {
   instruments?: string[] | null;
   solo_instrument?: string | null;
   solo_moment?: string | null;
-}
-
-interface PricingConfig {
-  id: string;
-  name: string;
-  price_display: string;
-  price_cents: number;
-  price_promo_cents: number | null;
-  stripe_price_id: string | null;
-  is_active: boolean;
-  is_popular: boolean;
-}
-
-interface AudioSample {
-  id: string;
-  title: string;
-  description: string;
-  style: string;
-  occasion: string;
-  audio_url: string;
-  cover_url: string | null;
-  is_active: boolean;
-  sort_order: number;
-}
-
-interface Voucher {
-  id: string;
-  code: string;
-  discount_type: string;
-  discount_value: number;
-  max_uses: number | null;
-  current_uses: number;
-  valid_from: string;
-  valid_until: string | null;
-  plan_ids: string[] | null;
-  is_active: boolean;
-  created_at: string;
-}
-
-interface PixConfig {
-  id: string;
-  pix_key: string;
-  pix_name: string;
-  qr_code_url: string;
-  is_active: boolean;
 }
 
 const AdminDashboard = () => {
@@ -160,22 +110,6 @@ const AdminDashboard = () => {
   // Audio Samples
   const [audioSamples, setAudioSamples] = useState<AudioSample[]>([]);
   const [loadingAudio, setLoadingAudio] = useState(false);
-  const [audioDialogOpen, setAudioDialogOpen] = useState(false);
-  const [editingAudio, setEditingAudio] = useState<AudioSample | null>(null);
-  const [newAudio, setNewAudio] = useState<Partial<AudioSample>>({
-    title: '',
-    description: '',
-    style: '',
-    occasion: '',
-    audio_url: '',
-    cover_url: '',
-    is_active: true,
-    sort_order: 0
-  });
-  const [uploadingAudio, setUploadingAudio] = useState(false);
-  const [uploadingCover, setUploadingCover] = useState(false);
-  const audioInputRef = useRef<HTMLInputElement>(null);
-  const coverInputRef = useRef<HTMLInputElement>(null);
 
   // Vouchers
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
@@ -593,145 +527,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Upload audio file to storage
-  const handleAudioUpload = async (file: File) => {
-    if (!file) return;
-    setUploadingAudio(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `audios/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('audio-samples')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: publicUrlData } = supabase.storage
-        .from('audio-samples')
-        .getPublicUrl(filePath);
-
-      const audioUrl = publicUrlData.publicUrl;
-
-      if (editingAudio) {
-        setEditingAudio({ ...editingAudio, audio_url: audioUrl });
-      } else {
-        setNewAudio({ ...newAudio, audio_url: audioUrl });
-      }
-
-      toast({ title: 'Áudio enviado!', description: 'O arquivo foi enviado com sucesso.' });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast({ title: 'Erro ao enviar áudio', description: errorMessage, variant: 'destructive' });
-    } finally {
-      setUploadingAudio(false);
-    }
-  };
-
-  // Upload cover image to storage
-  const handleCoverUpload = async (file: File) => {
-    if (!file) return;
-    setUploadingCover(true);
-    try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `covers/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('audio-samples')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: publicUrlData } = supabase.storage
-        .from('audio-samples')
-        .getPublicUrl(filePath);
-
-      const coverUrl = publicUrlData.publicUrl;
-
-      if (editingAudio) {
-        setEditingAudio({ ...editingAudio, cover_url: coverUrl });
-      } else {
-        setNewAudio({ ...newAudio, cover_url: coverUrl });
-      }
-
-      toast({ title: 'Capa enviada!', description: 'A imagem foi enviada com sucesso.' });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast({ title: 'Erro ao enviar capa', description: errorMessage, variant: 'destructive' });
-    } finally {
-      setUploadingCover(false);
-    }
-  };
-
-  const saveAudioSample = async () => {
-    try {
-      const audioData = editingAudio || newAudio;
-      if (!audioData.title || !audioData.audio_url) {
-        toast({ title: 'Erro', description: 'Título e URL do áudio são obrigatórios.', variant: 'destructive' });
-        return;
-      }
-
-      if (editingAudio) {
-        const { error } = await supabase
-          .from('audio_samples')
-          .update({
-            title: audioData.title,
-            description: audioData.description || '',
-            style: audioData.style || '',
-            occasion: audioData.occasion || '',
-            audio_url: audioData.audio_url,
-            cover_url: audioData.cover_url || null,
-            is_active: audioData.is_active ?? true,
-            sort_order: audioData.sort_order || 0
-          })
-          .eq('id', editingAudio.id);
-
-        if (error) throw error;
-        
-        // Update local state immediately
-        setAudioSamples(prev => prev.map(a => 
-          a.id === editingAudio.id 
-            ? { ...a, ...audioData, cover_url: audioData.cover_url || null } as AudioSample
-            : a
-        ));
-        
-        toast({ title: 'Áudio atualizado!', description: 'As informações foram salvas.' });
-      } else {
-        const { data, error } = await supabase
-          .from('audio_samples')
-          .insert({
-            title: audioData.title,
-            description: audioData.description || '',
-            style: audioData.style || '',
-            occasion: audioData.occasion || '',
-            audio_url: audioData.audio_url,
-            cover_url: audioData.cover_url || null,
-            is_active: audioData.is_active ?? true,
-            sort_order: audioData.sort_order || 0
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        
-        // Add to local state immediately
-        if (data) {
-          setAudioSamples(prev => [...prev, data]);
-        }
-        
-        toast({ title: 'Áudio adicionado!', description: 'O novo áudio está disponível.' });
-      }
-
-      setAudioDialogOpen(false);
-      setEditingAudio(null);
-      setNewAudio({ title: '', description: '', style: '', occasion: '', audio_url: '', cover_url: '', is_active: true, sort_order: 0 });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast({ title: 'Erro ao salvar áudio', description: errorMessage, variant: 'destructive' });
-    }
-  };
 
   const confirmDeleteAudio = async () => {
     if (!deleteAudioId) return;
@@ -1482,60 +1277,12 @@ const AdminDashboard = () => {
                     
                     {/* AUDIO TAB */}
                     <TabsContent value="audio" className="space-y-4 mt-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="font-semibold">Áudios de Exemplo</h3>
-                        <Button size="sm" onClick={() => { setEditingAudio(null); setAudioDialogOpen(true); }}>
-                          <Plus className="w-4 h-4 mr-1" />
-                          Novo Áudio
-                        </Button>
-                      </div>
-                      
-                      {loadingAudio ? (
-                        <div className="flex items-center justify-center py-8">
-                          <Music className="w-6 h-6 animate-spin text-primary" />
-                        </div>
-                      ) : audioSamples.length === 0 ? (
-                        <Card className="p-6 text-center">
-                          <Headphones className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                          <p className="text-muted-foreground">Nenhum áudio cadastrado</p>
-                        </Card>
-                      ) : (
-                        <div className="space-y-2">
-                          {audioSamples.map((audio) => (
-                            <Card key={audio.id} className={`p-3 ${!audio.is_active ? 'opacity-50' : ''}`}>
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  {audio.cover_url ? (
-                                    <img src={audio.cover_url} alt={audio.title} className="w-10 h-10 rounded object-cover" />
-                                  ) : (
-                                    <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                                      <Headphones className="w-5 h-5 text-muted-foreground" />
-                                    </div>
-                                  )}
-                                  <div>
-                                    <p className="font-semibold text-sm">{audio.title}</p>
-                                    <p className="text-xs text-muted-foreground">{audio.style} • {audio.occasion}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <Badge variant={audio.is_active ? 'default' : 'secondary'} className="text-xs">
-                                    {audio.is_active ? 'Ativo' : 'Inativo'}
-                                  </Badge>
-                                  <Button variant="ghost" size="sm" onClick={() => {
-                                    setEditingAudio(audio);
-                                    setAudioDialogOpen(true);
-                                  }} className="h-8 w-8 p-0">
-                                    <Edit className="w-4 h-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => setDeleteAudioId(audio.id)} className="h-8 w-8 p-0">
-                                    <Trash2 className="w-4 h-4 text-destructive" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </Card>
-                          ))}
-                        </div>
-                      )}
+                      <AudioSampleManager
+                        audioSamples={audioSamples}
+                        setAudioSamples={setAudioSamples}
+                        loadingAudio={loadingAudio}
+                        onDeleteAudio={(id) => setDeleteAudioId(id)}
+                      />
                     </TabsContent>
 
                     {/* PIX TAB */}
@@ -1649,52 +1396,7 @@ const AdminDashboard = () => {
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
-          <Card className="p-3 sm:p-4 bg-gradient-to-br from-green-500/10 to-transparent border-green-500/20 hover:border-green-500/40 transition-colors">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
-                <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
-              </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-green-400">{statusCounts.ready}</p>
-                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Prontos p/ Produção</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-3 sm:p-4 bg-gradient-to-br from-yellow-500/10 to-transparent border-yellow-500/20 hover:border-yellow-500/40 transition-colors">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-yellow-500/20 flex items-center justify-center">
-                <PlayCircle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-              </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-yellow-400">{statusCounts.generating}</p>
-                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Em Produção</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-3 sm:p-4 bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/20 hover:border-emerald-500/40 transition-colors">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                <Music className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-emerald-400">{statusCounts.completed}</p>
-                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Concluídos</p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-3 sm:p-4 bg-gradient-to-br from-primary/10 to-transparent border-primary/20 hover:border-primary/40 transition-colors">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-xl sm:text-2xl font-bold text-primary">{statusCounts.total}</p>
-                <p className="text-[10px] sm:text-sm text-muted-foreground leading-tight">Total de Pedidos</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+        <AdminStatsCards statusCounts={statusCounts} />
 
         {/* Filters */}
         <div className="flex flex-col gap-3 mb-4 sm:mb-6">
