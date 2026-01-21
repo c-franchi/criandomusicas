@@ -20,6 +20,7 @@ import {
   Camera
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReviewForm from "@/components/ReviewForm";
@@ -67,6 +68,7 @@ interface ReviewData {
 const OrderDetails = () => {
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdminRole(user?.id);
   const { toast } = useToast();
   const [order, setOrder] = useState<OrderData | null>(null);
   const [lyrics, setLyrics] = useState<LyricData[]>([]);
@@ -90,16 +92,21 @@ const OrderDetails = () => {
   // Fetch order data
   useEffect(() => {
     const fetchOrderData = async () => {
-      if (!user?.id || !orderId) return;
+      if (!user?.id || !orderId || adminLoading) return;
 
       try {
-        // Fetch order
-        const { data: orderData, error: orderError } = await supabase
+        // Fetch order - Admin can view any order, regular users only their own
+        let query = supabase
           .from('orders')
           .select('*')
-          .eq('id', orderId)
-          .eq('user_id', user.id)
-          .single();
+          .eq('id', orderId);
+        
+        // Only filter by user_id if NOT admin
+        if (!isAdmin) {
+          query = query.eq('user_id', user.id);
+        }
+        
+        const { data: orderData, error: orderError } = await query.single();
 
         if (orderError) throw orderError;
         setOrder(orderData);
@@ -146,10 +153,10 @@ const OrderDetails = () => {
       }
     };
 
-    if (user) {
+    if (user && !adminLoading) {
       fetchOrderData();
     }
-  }, [user, orderId, toast, fetchReview]);
+  }, [user, orderId, toast, fetchReview, isAdmin, adminLoading]);
 
   // Real-time subscription for order updates
   useEffect(() => {
@@ -300,7 +307,7 @@ const OrderDetails = () => {
     toast({ title: 'Link copiado!', description: 'Compartilhe em suas redes sociais!' });
   };
 
-  if (authLoading || loading) {
+  if (authLoading || loading || adminLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">

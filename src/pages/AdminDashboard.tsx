@@ -665,8 +665,33 @@ const AdminDashboard = () => {
             }
           });
         }
-      } catch (genError) {
+      } catch (genError: unknown) {
         console.error('Generation error:', genError);
+        
+        // Check if it's a pronunciation error
+        const errorMessage = genError instanceof Error ? genError.message : '';
+        const errorBody = (genError as any)?.context?.body;
+        let parsedError = '';
+        
+        if (errorBody) {
+          try {
+            const parsed = JSON.parse(errorBody);
+            parsedError = parsed?.error || '';
+          } catch {
+            // ignore parse error
+          }
+        }
+        
+        if (parsedError.includes('sem pronúncia definida') || 
+            parsedError.includes('missingPronunciations') ||
+            errorMessage.includes('sem pronúncia definida')) {
+          toast({
+            title: '⚠️ Pronúncia necessária',
+            description: 'Este pedido contém termos especiais (siglas, nomes) que precisam de pronúncia definida. O cliente deve aprovar a letra com as pronúncias na página /criar-musica.',
+            variant: 'default',
+            duration: 10000
+          });
+        }
         // Continue - can be regenerated manually
       }
 
