@@ -490,6 +490,21 @@ ${lyricsForGeneration2}`;
 
     console.log("Order updated with style prompt. isInstrumental:", isInstrumental);
 
+    // Trigger automatic validation (async, non-blocking)
+    try {
+      const supabaseClient = createClient(supabaseUrl, supabaseKey);
+      supabaseClient.functions.invoke('validate-prompt', {
+        body: {
+          orderId,
+          briefing,
+          stylePrompt,
+          finalPrompt
+        }
+      }).catch(err => console.error("Validation error (non-blocking):", err));
+    } catch (validationError) {
+      console.error("Failed to trigger validation:", validationError);
+    }
+
     return new Response(
       JSON.stringify({
         ok: true,

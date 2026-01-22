@@ -22,6 +22,8 @@ interface ChatMessage {
 
 interface BriefingFormData {
   isInstrumental: boolean;
+  hasCustomLyric: boolean;
+  customLyricText: string;
   musicType: string;
   emotion: string;
   emotionIntensity: number;
@@ -110,6 +112,8 @@ const Briefing = () => {
   
   const initialFormData: BriefingFormData = {
     isInstrumental: false,
+    hasCustomLyric: false,
+    customLyricText: "",
     musicType: "",
     emotion: "",
     emotionIntensity: 3,
@@ -263,6 +267,7 @@ const Briefing = () => {
       field: 'isInstrumental',
       options: [
         { id: "cantada", label: "🎤 Música Cantada", description: "Com letra e vocal" },
+        { id: "custom_lyric", label: "📝 Já Tenho a Letra", description: "Usar minha própria letra" },
         { id: "instrumental", label: "🎹 Instrumental", description: "Apenas música, sem vocal" }
       ]
     },
@@ -503,6 +508,83 @@ const Briefing = () => {
       content: "Qual nome você quer dar para sua música?",
       inputType: 'text',
       field: 'songName'
+    },
+    // FLUXO "JÁ TENHO A LETRA" (Steps 30-35)
+    // Step 30: Cole sua letra
+    {
+      type: 'bot',
+      content: "Ótimo! 📝 Cole sua letra completa abaixo.\n\nDica: inclua a estrutura (verso, refrão, etc.) se quiser que a IA respeite esse formato.",
+      inputType: 'textarea',
+      field: 'customLyricText'
+    },
+    // Step 31: Tipo de música (custom lyric)
+    {
+      type: 'bot',
+      content: "Qual tipo de música você imagina para essa letra?",
+      inputType: 'options',
+      field: 'musicType',
+      options: [
+        { id: "homenagem", label: "🎁 Homenagem", description: "Para celebrar pessoas especiais" },
+        { id: "romantica", label: "❤️ Romântica", description: "Declaração de amor" },
+        { id: "motivacional", label: "💪 Motivacional", description: "Inspirar e motivar" },
+        { id: "religiosa", label: "✝️ Religiosa", description: "Louvor e fé" },
+        { id: "corporativa", label: "🏢 Corporativa", description: "Para empresas" }
+      ]
+    },
+    // Step 32: Tipo de voz (custom lyric)
+    {
+      type: 'bot',
+      content: "Qual tipo de voz você prefere para sua música? 🎤",
+      inputType: 'options',
+      field: 'voiceType',
+      options: [
+        { id: "masculina", label: "👨 Voz Masculina" },
+        { id: "feminina", label: "👩 Voz Feminina" },
+        { id: "dueto", label: "👫 Dueto" },
+        { id: "coral", label: "🎶 Coral/Grupo" }
+      ]
+    },
+    // Step 33: Estilo (custom lyric)
+    {
+      type: 'bot',
+      content: "Qual estilo musical combina com sua letra?",
+      inputType: 'options-with-other',
+      field: 'style',
+      options: [
+        { id: "sertanejo", label: "🤠 Sertanejo" },
+        { id: "pop", label: "🎵 Pop" },
+        { id: "rock", label: "🎸 Rock" },
+        { id: "mpb", label: "🇧🇷 MPB" },
+        { id: "gospel", label: "🙏 Gospel" },
+        { id: "bossa", label: "🎹 Bossa Nova" },
+        { id: "outros", label: "✨ Outros" }
+      ]
+    },
+    // Step 34: Ritmo (custom lyric)
+    {
+      type: 'bot',
+      content: "Qual ritmo combina mais com sua música?",
+      inputType: 'options',
+      field: 'rhythm',
+      options: [
+        { id: "lento", label: "🐢 Lento", description: "Balada, emocional" },
+        { id: "moderado", label: "🚶 Moderado", description: "Versátil" },
+        { id: "animado", label: "🏃 Animado", description: "Rápido, dançante" }
+      ]
+    },
+    // Step 35: Atmosfera (custom lyric)
+    {
+      type: 'bot',
+      content: "E qual atmosfera?",
+      inputType: 'options',
+      field: 'atmosphere',
+      options: [
+        { id: "intimo", label: "🕯️ Íntimo" },
+        { id: "festivo", label: "🎉 Festivo" },
+        { id: "melancolico", label: "🌧️ Melancólico" },
+        { id: "epico", label: "🏔️ Épico" },
+        { id: "leve", label: "☁️ Leve" }
+      ]
     }
   ];
 
@@ -621,12 +703,25 @@ const Briefing = () => {
 
   // Mapear steps para o fluxo correto
   const getNextStep = (current: number, data: BriefingFormData): number => {
-    // Step 0: isInstrumental -> 1 (musicType)
-    if (current === 0) return 1;
+    // Step 0: isInstrumental -> depende da escolha
+    if (current === 0) {
+      if (data.hasCustomLyric) return 30; // Vai para fluxo "já tenho letra"
+      return 1; // musicType
+    }
     
     // Step 1: musicType
     if (current === 1) {
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
+    }
+    
+    // FLUXO "JÁ TENHO A LETRA" (30-35)
+    if (data.hasCustomLyric) {
+      if (current === 30) return 31; // customLyricText -> musicType
+      if (current === 31) return 32; // musicType -> voiceType
+      if (current === 32) return 33; // voiceType -> style
+      if (current === 33) return 34; // style -> rhythm
+      if (current === 34) return 35; // rhythm -> atmosphere
+      if (current === 35) return 100; // atmosphere -> confirmação
     }
     
     // FLUXO INSTRUMENTAL (2-9, 20-21)
@@ -722,14 +817,20 @@ const Briefing = () => {
     const field = currentMsg.field;
     let displayValue = option.label;
 
-    // Handle isInstrumental
+    // Handle isInstrumental / custom_lyric
     if (field === 'isInstrumental') {
       const isInstrumental = option.id === 'instrumental';
-      setFormData(prev => ({ ...prev, isInstrumental }));
+      const hasCustomLyric = option.id === 'custom_lyric';
+      
+      setFormData(prev => ({ 
+        ...prev, 
+        isInstrumental,
+        hasCustomLyric
+      }));
       addUserMessage(displayValue);
       setStepHistory(prev => [...prev, currentStep]);
       
-      const nextStep = getNextStep(currentStep, { ...formData, isInstrumental });
+      const nextStep = getNextStep(currentStep, { ...formData, isInstrumental, hasCustomLyric });
       setCurrentStep(nextStep);
       setTimeout(() => addBotMessage(chatFlow[nextStep]), 500);
       return;
@@ -920,6 +1021,16 @@ const Briefing = () => {
       return;
     }
 
+    // Validação para letra customizada
+    if (field === 'customLyricText' && value.length < 50) {
+      toast({
+        title: 'Letra muito curta',
+        description: 'Cole sua letra completa (mínimo 50 caracteres).',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // Campos opcionais podem ficar vazios
     if (!value && (field === 'mandatoryWords' || field === 'restrictedWords' || field === 'instrumentationNotes')) {
       addUserMessage("(nenhum)");
@@ -1014,6 +1125,8 @@ const Briefing = () => {
     // Criar ordem no banco primeiro
     const briefingData = {
       isInstrumental: data.isInstrumental,
+      hasCustomLyric: data.hasCustomLyric,
+      customLyricText: data.customLyricText,
       musicType: data.musicType,
       emotion: data.emotion,
       emotionIntensity: data.emotionIntensity,
@@ -1047,11 +1160,12 @@ const Briefing = () => {
           status: 'AWAITING_PAYMENT',
           payment_status: 'PENDING',
           is_instrumental: briefingData.isInstrumental,
+          has_custom_lyric: briefingData.hasCustomLyric,
           music_type: briefingData.musicType,
           music_style: briefingData.style,
           emotion: briefingData.emotion,
           emotion_intensity: briefingData.emotionIntensity,
-          story: briefingData.story,
+          story: briefingData.hasCustomLyric ? briefingData.customLyricText : briefingData.story,
           has_monologue: briefingData.hasMonologue,
           monologue_position: briefingData.monologuePosition,
           mandatory_words: briefingData.mandatoryWords,
@@ -1248,7 +1362,36 @@ const Briefing = () => {
                   onEdit={() => handleEditField(1)} 
                 />
                 
-                {formData.isInstrumental ? (
+                {formData.hasCustomLyric ? (
+                  // Campos para letra customizada
+                  <>
+                    <ConfirmationItem 
+                      label="Letra" 
+                      value={formData.customLyricText.length > 100 ? formData.customLyricText.substring(0, 100) + "..." : formData.customLyricText} 
+                      onEdit={() => handleEditField(30)} 
+                    />
+                    <ConfirmationItem 
+                      label="Tipo de voz" 
+                      value={getFieldLabel('voiceType', formData.voiceType)} 
+                      onEdit={() => handleEditField(32)} 
+                    />
+                    <ConfirmationItem 
+                      label="Estilo" 
+                      value={getFieldLabel('style', formData.style)} 
+                      onEdit={() => handleEditField(33)} 
+                    />
+                    <ConfirmationItem 
+                      label="Ritmo" 
+                      value={getFieldLabel('rhythm', formData.rhythm)} 
+                      onEdit={() => handleEditField(34)} 
+                    />
+                    <ConfirmationItem 
+                      label="Atmosfera" 
+                      value={getFieldLabel('atmosphere', formData.atmosphere)} 
+                      onEdit={() => handleEditField(35)} 
+                    />
+                  </>
+                ) : formData.isInstrumental ? (
                   // Campos instrumentais
                   <>
                     <ConfirmationItem 

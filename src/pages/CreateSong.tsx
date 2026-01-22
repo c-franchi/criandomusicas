@@ -122,7 +122,27 @@ const CreateSong = () => {
 
       setOrderId(existingOrderId);
 
-      // 2. Reconstruir briefingData da order
+      // 2. Se tem letra customizada, ir direto para geração de style prompt
+      if (orderData.has_custom_lyric) {
+        // Criar lyric fictícia com a letra do story (que contém a letra customizada)
+        const customLyric: LyricOption = {
+          id: 'custom',
+          version: 'A',
+          title: orderData.song_title || 'Minha Letra',
+          body: orderData.story || ''
+        };
+        setLyrics([customLyric]);
+        setSelectedLyric(customLyric);
+        setEditedLyric(customLyric.body);
+        setEditedTitle(customLyric.title);
+        
+        // Ir direto para a etapa de edição/aprovação
+        setStep("editing");
+        toast.info("Revise sua letra e aprove para produção");
+        return;
+      }
+
+      // 3. Reconstruir briefingData da order
       const reconstructedBriefing: BriefingData = {
         musicType: orderData.music_type || 'homenagem',
         emotion: orderData.emotion || 'alegria',
