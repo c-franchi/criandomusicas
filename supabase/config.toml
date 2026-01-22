@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.notify-admin-order]
 verify_jwt = false
+
+[functions.validate-prompt]
+verify_jwt = false

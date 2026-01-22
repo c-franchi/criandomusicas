@@ -1618,39 +1618,68 @@ const AdminDashboard = () => {
                           📝 Ver Prompt Final (para Suno/Udio)
                         </summary>
                         <div className="mt-2 space-y-3">
-                          {/* LYRICS/PROMPT section first */}
-                          <div className="relative">
-                            <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">
-                              {order.is_instrumental ? 'PROMPT INSTRUMENTAL:' : 'LETRA:'}
-                            </p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
-                              onClick={() => copyToClipboard(order.final_prompt!, order.is_instrumental ? 'Prompt Instrumental' : 'Letra')}
-                            >
-                              <Copy className="w-3 h-3 sm:mr-1" />
-                              <span className="hidden sm:inline">Copiar</span>
-                            </Button>
-                            <pre className="p-2 sm:p-3 bg-muted rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-primary pr-10 sm:pr-20">
-                              {order.final_prompt}
-                            </pre>
-                          </div>
-                          {/* STYLE section second */}
+                          {/* STYLE section - always first for production */}
                           {order.style_prompt && (
                             <div className="relative">
-                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">ESTILO:</p>
+                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">📋 STYLE (copie primeiro):</p>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
-                                onClick={() => copyToClipboard(order.style_prompt!, 'Estilo')}
+                                onClick={() => copyToClipboard(order.style_prompt!, 'Style')}
                               >
                                 <Copy className="w-3 h-3 sm:mr-1" />
-                                <span className="hidden sm:inline">Copiar</span>
+                                <span className="hidden sm:inline">Copiar Style</span>
+                              </Button>
+                              <pre className="p-2 sm:p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap pr-10 sm:pr-20">
+                                {order.style_prompt}
+                              </pre>
+                            </div>
+                          )}
+                          
+                          {/* LYRICS section - only for vocal tracks */}
+                          {!order.is_instrumental && (
+                            <div className="relative">
+                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">🎤 LETRA (copie no campo lyrics):</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
+                                onClick={() => {
+                                  // Extract only lyrics from final_prompt (after [Lyrics] tag)
+                                  const lyricsMatch = order.final_prompt!.match(/\[Lyrics\]\n?([\s\S]*)/i);
+                                  const lyricsOnly = lyricsMatch ? lyricsMatch[1].trim() : order.final_prompt!;
+                                  copyToClipboard(lyricsOnly, 'Letra');
+                                }}
+                              >
+                                <Copy className="w-3 h-3 sm:mr-1" />
+                                <span className="hidden sm:inline">Copiar Letra</span>
+                              </Button>
+                              <pre className="p-2 sm:p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap border-l-4 border-l-primary pr-10 sm:pr-20">
+                                {/* Show only lyrics portion */}
+                                {(() => {
+                                  const lyricsMatch = order.final_prompt!.match(/\[Lyrics\]\n?([\s\S]*)/i);
+                                  return lyricsMatch ? lyricsMatch[1].trim() : order.final_prompt;
+                                })()}
+                              </pre>
+                            </div>
+                          )}
+                          
+                          {/* For instrumental, show the full prompt */}
+                          {order.is_instrumental && (
+                            <div className="relative">
+                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">🎹 PROMPT COMPLETO:</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
+                                onClick={() => copyToClipboard(order.final_prompt!, 'Prompt Instrumental')}
+                              >
+                                <Copy className="w-3 h-3 sm:mr-1" />
+                                <span className="hidden sm:inline">Copiar Tudo</span>
                               </Button>
                               <pre className="p-2 sm:p-3 bg-muted rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap pr-10 sm:pr-20">
-                                {order.style_prompt}
+                                {order.final_prompt}
                               </pre>
                             </div>
                           )}
