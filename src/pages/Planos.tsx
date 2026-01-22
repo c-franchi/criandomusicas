@@ -61,8 +61,12 @@ const Planos = () => {
         description: `Você escolheu o plano ${getPlanInfo(planId)?.title}.`,
       });
 
-      // Redirecionar para o Briefing, passando se é instrumental
-      navigate("/briefing", { state: { isInstrumental } });
+      // Redirecionar para o Briefing, passando se é instrumental via URL param
+      if (isInstrumental) {
+        navigate("/briefing?instrumental=true");
+      } else {
+        navigate("/briefing");
+      }
     } catch (error) {
       toast({
         title: "Erro",

@@ -89,6 +89,7 @@ interface AdminOrder {
   instruments?: string[] | null;
   solo_instrument?: string | null;
   solo_moment?: string | null;
+  song_title?: string | null;
 }
 
 const AdminDashboard = () => {
@@ -167,7 +168,8 @@ const AdminDashboard = () => {
           is_instrumental,
           instruments,
           solo_instrument,
-          solo_moment
+          solo_moment,
+          song_title
         `)
         .order('created_at', { ascending: false });
 
@@ -1592,7 +1594,7 @@ const AdminDashboard = () => {
                         </div>
                         {/* Song Title - prominently displayed */}
                         <h3 className="font-bold text-base sm:text-xl text-primary mb-1">
-                          🎵 {order.lyric_title || `Música ${order.music_type}`}
+                          🎵 {order.song_title || order.lyric_title || `Música ${order.music_type}`}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground">
                           {order.music_style} • {order.music_type} • 

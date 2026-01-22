@@ -217,6 +217,7 @@ export type Database = {
           emotion: string | null
           emotion_intensity: number | null
           final_prompt: string | null
+          has_custom_lyric: boolean | null
           has_monologue: boolean | null
           id: string
           instrumentation_notes: string | null
@@ -230,6 +231,7 @@ export type Database = {
           music_type: string | null
           payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          prompt_validation_score: number | null
           pronunciations: Json | null
           purpose: string | null
           restricted_words: string | null
@@ -237,6 +239,7 @@ export type Database = {
           rhythm: string | null
           solo_instrument: string | null
           solo_moment: string | null
+          song_title: string | null
           status: Database["public"]["Enums"]["order_status"]
           story: string | null
           style_prompt: string | null
@@ -257,6 +260,7 @@ export type Database = {
           emotion?: string | null
           emotion_intensity?: number | null
           final_prompt?: string | null
+          has_custom_lyric?: boolean | null
           has_monologue?: boolean | null
           id?: string
           instrumentation_notes?: string | null
@@ -270,6 +274,7 @@ export type Database = {
           music_type?: string | null
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          prompt_validation_score?: number | null
           pronunciations?: Json | null
           purpose?: string | null
           restricted_words?: string | null
@@ -277,6 +282,7 @@ export type Database = {
           rhythm?: string | null
           solo_instrument?: string | null
           solo_moment?: string | null
+          song_title?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
           style_prompt?: string | null
@@ -297,6 +303,7 @@ export type Database = {
           emotion?: string | null
           emotion_intensity?: number | null
           final_prompt?: string | null
+          has_custom_lyric?: boolean | null
           has_monologue?: boolean | null
           id?: string
           instrumentation_notes?: string | null
@@ -310,6 +317,7 @@ export type Database = {
           music_type?: string | null
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          prompt_validation_score?: number | null
           pronunciations?: Json | null
           purpose?: string | null
           restricted_words?: string | null
@@ -317,6 +325,7 @@ export type Database = {
           rhythm?: string | null
           solo_instrument?: string | null
           solo_moment?: string | null
+          song_title?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           story?: string | null
           style_prompt?: string | null

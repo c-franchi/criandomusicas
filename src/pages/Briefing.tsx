@@ -187,9 +187,21 @@ const Briefing = () => {
     }
   }, [transcript, resetTranscript]);
 
-  // Iniciar chat (mostrar opção de continuar se há dados salvos)
+  // Iniciar chat (mostrar opção de continuar se há dados salvos, ou iniciar direto em instrumental)
   useEffect(() => {
     const timer = setTimeout(() => {
+      // Verificar se veio com parâmetro instrumental na URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const startAsInstrumental = urlParams.get('instrumental') === 'true';
+      
+      if (startAsInstrumental) {
+        // Entrar direto no fluxo instrumental, pulando a primeira pergunta
+        setFormData(prev => ({ ...prev, isInstrumental: true }));
+        setCurrentStep(1); // Vai direto para musicType
+        addBotMessage(chatFlow[1]);
+        return;
+      }
+      
       if (hasSavedData && formData.musicType) {
         // Tem dados salvos, mostrar opção de continuar
         setMessages([{
@@ -361,6 +373,26 @@ const Briefing = () => {
       content: "Tem mais algum detalhe sobre os instrumentos ou o som que você imagina? (opcional)\n\nEx: 'quero um piano bem suave', 'bateria marcante', 'violino melancólico'",
       inputType: 'textarea',
       field: 'instrumentationNotes'
+    },
+    // Step 10 para instrumental: Nome automático?
+    // (Nota: Isso é mapeado dinamicamente no getNextStep para instrumentais)
+    // Step 20: Nome automático? (Instrumental)
+    {
+      type: 'bot',
+      content: "Quase lá! 🎵\n\nVocê quer dar um nome para sua música instrumental ou deixar a IA sugerir?",
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: [
+        { id: "auto", label: "🤖 Deixar a IA criar", description: "Título automático" },
+        { id: "manual", label: "✍️ Eu quero escolher", description: "Digitar nome" }
+      ]
+    },
+    // Step 21: Nome da música (Instrumental)
+    {
+      type: 'bot',
+      content: "Qual nome você quer dar para sua música instrumental?",
+      inputType: 'text',
+      field: 'songName'
     },
     // FLUXO CANTADA (Steps 10-19)
     // Step 10: Emoção
@@ -597,7 +629,7 @@ const Briefing = () => {
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
     }
     
-    // FLUXO INSTRUMENTAL (2-9)
+    // FLUXO INSTRUMENTAL (2-9, 20-21)
     if (data.isInstrumental) {
       if (current === 2) return 3; // style -> instruments
       if (current === 3) return 4; // instruments -> wantSolo
@@ -609,7 +641,11 @@ const Briefing = () => {
       if (current === 6) return 7; // rhythm -> atmosphere
       if (current === 7) return 8; // atmosphere -> story
       if (current === 8) return 9; // story -> instrumentationNotes
-      if (current === 9) return 100; // Fim -> confirmação
+      if (current === 9) return 20; // instrumentationNotes -> autoGenerateName (instrumental)
+      if (current === 20) {
+        return data.autoGenerateName ? 100 : 21; // Se auto, vai para confirmação
+      }
+      if (current === 21) return 100; // songName -> confirmação
     }
     
     // FLUXO CANTADA (10-19)
@@ -1029,6 +1065,8 @@ const Briefing = () => {
           solo_instrument: briefingData.soloInstrument || null,
           solo_moment: briefingData.soloMoment || null,
           instrumentation_notes: briefingData.instrumentationNotes || null,
+          // Título da música (para instrumental e vocal)
+          song_title: briefingData.autoGenerateName ? null : briefingData.songName || null,
         })
         .select()
         .single();
@@ -1257,6 +1295,11 @@ const Briefing = () => {
                         onEdit={() => handleEditField(9)} 
                       />
                     )}
+                    <ConfirmationItem 
+                      label="Nome da música" 
+                      value={formData.autoGenerateName ? "Gerado pela IA" : formData.songName} 
+                      onEdit={() => handleEditField(20)} 
+                    />
                   </>
                 ) : (
                   // Campos cantada
