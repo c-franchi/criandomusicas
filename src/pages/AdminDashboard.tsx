@@ -1585,17 +1585,21 @@ const AdminDashboard = () => {
                           >
                             {order.is_instrumental ? '🎹 Instrumental' : '🎤 Vocal'}
                           </Badge>
-                          <h3 className="font-bold text-sm sm:text-lg truncate">
-                            {order.lyric_title || `Música ${order.music_type}`}
-                          </h3>
                           <Badge className={`${getStatusColor(order.status, order.payment_status)} text-[10px] sm:text-xs shrink-0`}>
                             {getStatusIcon(order.status)}
                             <span className="ml-1">{getStatusText(order.status, order.payment_status)}</span>
                           </Badge>
                         </div>
+                        {/* Song Title - prominently displayed */}
+                        <h3 className="font-bold text-base sm:text-xl text-primary mb-1">
+                          🎵 {order.lyric_title || `Música ${order.music_type}`}
+                        </h3>
                         <p className="text-xs sm:text-sm text-muted-foreground">
                           {order.music_style} • {order.music_type} • 
                           {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                          {order.user_name && (
+                            <span className="ml-2">• 👤 {order.user_name}</span>
+                          )}
                           {order.is_instrumental && order.instruments?.length ? (
                             <span className="ml-2 text-purple-400">
                               • 🎵 {order.instruments.slice(0, 3).join(', ')}{order.instruments.length > 3 ? '...' : ''}
