@@ -19,13 +19,8 @@ interface PricingPlan {
   sort_order: number;
 }
 
-// Helper function to calculate instrumental price (20% off, rounded to .90)
-const getInstrumentalPriceCents = (cents: number): number => {
-  const discounted = cents * 0.8;
-  // Round to nearest 10 cents ending in 90 (e.g., 1590, 7990, 8790)
-  const rounded = Math.round(discounted / 100) * 100 - 10;
-  return rounded > 0 ? rounded : Math.round(discounted);
-};
+// Instrumental prices come directly from DB (single_instrumental, etc.)
+// No calculation needed - they are stored separately
 
 const formatPrice = (cents: number) => {
   return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
@@ -48,20 +43,30 @@ const getInstrumentalFeatures = (planId: string): string[] => {
 const PricingPlans = () => {
   const navigate = useNavigate();
   const [plans, setPlans] = useState<PricingPlan[]>([]);
+  const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInstrumental, setIsInstrumental] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
-      const { data, error } = await supabase
-        .from('pricing_config')
-        .select('*')
-        .eq('is_active', true)
-        .not('id', 'like', '%_instrumental')  // Filter out instrumental variants
-        .order('sort_order', { ascending: true });
+      // Fetch both vocal and instrumental plans
+      const [vocalResult, instrumentalResult] = await Promise.all([
+        supabase
+          .from('pricing_config')
+          .select('*')
+          .eq('is_active', true)
+          .not('id', 'like', '%_instrumental')
+          .order('sort_order', { ascending: true }),
+        supabase
+          .from('pricing_config')
+          .select('*')
+          .eq('is_active', true)
+          .like('id', '%_instrumental')
+          .order('sort_order', { ascending: true })
+      ]);
 
-      if (error) {
-        console.error('Error fetching plans:', error);
+      if (vocalResult.error) {
+        console.error('Error fetching plans:', vocalResult.error);
         // Fallback to static plans
         setPlans([
           {
@@ -98,13 +103,26 @@ const PricingPlans = () => {
             sort_order: 3
           }
         ]);
+        // Fallback instrumental plans
+        setInstrumentalPlans([
+          { id: "single_instrumental", name: "Instrumental Única", price_display: "R$ 15,90", price_cents: 1590, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 1 },
+          { id: "package_instrumental", name: "Pacote 3 Instrumentais", price_display: "R$ 79,90", price_cents: 7990, price_promo_cents: null, features: [], is_popular: true, is_active: true, sort_order: 2 },
+          { id: "subscription_instrumental", name: "Pacote 5 Instrumentais", price_display: "R$ 87,90", price_cents: 8790, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 3 }
+        ]);
       } else {
         // Map data to ensure features is an array
-        const mappedData = (data || []).map(item => ({
+        const mappedVocal = (vocalResult.data || []).map(item => ({
           ...item,
           features: Array.isArray(item.features) ? item.features as string[] : []
         }));
-        setPlans(mappedData);
+        setPlans(mappedVocal);
+        
+        // Map instrumental plans
+        const mappedInstrumental = (instrumentalResult.data || []).map(item => ({
+          ...item,
+          features: Array.isArray(item.features) ? item.features as string[] : []
+        }));
+        setInstrumentalPlans(mappedInstrumental);
       }
       setLoading(false);
     };
@@ -138,16 +156,28 @@ const PricingPlans = () => {
     }
   };
 
+  // Get matching instrumental plan for a vocal plan
+  const getInstrumentalPlan = (vocalPlanId: string): PricingPlan | null => {
+    const instrumentalId = `${vocalPlanId}_instrumental`;
+    return instrumentalPlans.find(p => p.id === instrumentalId) || null;
+  };
+
   const getDisplayPrice = (plan: PricingPlan) => {
     if (isInstrumental) {
-      // For instrumental: always show original price (with 20% off) and promo price (with 20% off) if exists
-      const instrumentalOriginalCents = getInstrumentalPriceCents(plan.price_cents);
-      const instrumentalPromoCents = plan.price_promo_cents ? getInstrumentalPriceCents(plan.price_promo_cents) : null;
-      
+      // Get the corresponding instrumental plan from DB
+      const instPlan = getInstrumentalPlan(plan.id);
+      if (instPlan) {
+        return {
+          price: formatPrice(instPlan.price_promo_cents || instPlan.price_cents),
+          originalPrice: instPlan.price_promo_cents ? formatPrice(instPlan.price_cents) : null,
+          hasPromo: !!instPlan.price_promo_cents
+        };
+      }
+      // Fallback if no instrumental plan found
       return {
-        price: instrumentalPromoCents ? formatPrice(instrumentalPromoCents) : formatPrice(instrumentalOriginalCents),
-        originalPrice: instrumentalPromoCents ? formatPrice(instrumentalOriginalCents) : null,
-        hasPromo: !!instrumentalPromoCents
+        price: formatPrice(plan.price_cents),
+        originalPrice: null,
+        hasPromo: false
       };
     }
     return {

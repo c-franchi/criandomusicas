@@ -34,47 +34,36 @@ const MusicShare = () => {
       }
 
       try {
-        // Fetch track
-        const { data: trackData, error: trackError } = await supabase
-          .from('tracks')
-          .select('audio_url')
-          .eq('order_id', orderId)
-          .eq('status', 'READY')
-          .maybeSingle();
+        // Use the public edge function to fetch track (bypasses RLS)
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-track?orderId=${orderId}`,
+          {
+            headers: {
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            }
+          }
+        );
 
-        if (trackError || !trackData?.audio_url) {
+        if (!response.ok) {
+          console.error('Error fetching public track:', response.status);
           setError(true);
           setLoading(false);
           return;
         }
 
-        // Fetch order and lyrics for title
-        const { data: orderData } = await supabase
-          .from('orders')
-          .select('music_style, music_type, is_instrumental, approved_lyric_id')
-          .eq('id', orderId)
-          .single();
+        const data = await response.json();
 
-        let title = 'Música Personalizada';
-        
-        if (orderData?.approved_lyric_id) {
-          const { data: lyricData } = await supabase
-            .from('lyrics')
-            .select('title')
-            .eq('id', orderData.approved_lyric_id)
-            .maybeSingle();
-          
-          if (lyricData?.title) {
-            title = lyricData.title;
-          }
-        } else if (orderData?.is_instrumental) {
-          title = `Instrumental ${orderData.music_type || 'Personalizado'}`;
+        if (!data?.audio_url) {
+          console.error('No audio_url in response');
+          setError(true);
+          setLoading(false);
+          return;
         }
 
         setTrack({
-          audio_url: trackData.audio_url,
-          title,
-          music_style: orderData?.music_style || ''
+          audio_url: data.audio_url,
+          title: data.title || 'Música Personalizada',
+          music_style: data.music_style || ''
         });
       } catch (err) {
         console.error('Error fetching track:', err);

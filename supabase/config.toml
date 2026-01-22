@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.send-review-reminder]
 verify_jwt = false
+
+[functions.get-public-track]
+verify_jwt = false

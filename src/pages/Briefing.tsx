@@ -497,10 +497,17 @@ const Briefing = () => {
 
   // Gerar opções de solo baseado nos instrumentos selecionados
   const getSoloOptions = (instruments: string[]) => {
+    // Se não tem instrumentos, só mostrar opção de não
+    if (instruments.length === 0) {
+      return [{ id: "none", label: "❌ Não, sem solo", description: "Prefiro sem solo" }];
+    }
+    
     const options = [
+      { id: "yes", label: "✅ Sim, quero solo!", description: "Escolher instrumento" },
       { id: "none", label: "❌ Não, sem solo", description: "Prefiro sem solo" }
     ];
     
+    // Adicionar cada instrumento como opção de solo
     instruments.forEach(instId => {
       const inst = INSTRUMENT_OPTIONS.find(i => i.id === instId);
       if (inst) {
