@@ -52,6 +52,20 @@ serve(async (req) => {
     });
 
     if (session.payment_status === "paid") {
+      // Fetch order details first to get music_type
+      const { data: orderData } = await supabaseClient
+        .from('orders')
+        .select('music_type, is_instrumental')
+        .eq('id', orderId)
+        .single();
+
+      // Fetch user profile for name
+      const { data: profileData } = await supabaseClient
+        .from('profiles')
+        .select('name')
+        .eq('user_id', user.id)
+        .single();
+
       // Update the order status to PAID
       const { error: updateError } = await supabaseClient
         .from('orders')
@@ -66,6 +80,23 @@ serve(async (req) => {
         throw new Error(`Failed to update order: ${updateError.message}`);
       }
       logStep("Order updated to PAID", { orderId });
+
+      // Notify admin about new paid order
+      try {
+        await supabaseClient.functions.invoke('notify-admin-order', {
+          body: {
+            orderId,
+            userId: user.id,
+            orderType: orderData?.is_instrumental ? 'instrumental' : 'vocal',
+            userName: profileData?.name || 'Cliente',
+            musicType: orderData?.music_type || 'personalizada'
+          }
+        });
+        logStep("Admin notified about new order");
+      } catch (notifyError) {
+        console.error("Failed to notify admin:", notifyError);
+        // Don't fail the whole request for this
+      }
 
       return new Response(JSON.stringify({ 
         success: true, 
