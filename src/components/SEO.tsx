@@ -17,7 +17,7 @@ const SITE_NAME = 'Criando Músicas';
 
 const SEO = ({
   title,
-  description = 'Crie músicas personalizadas com inteligência artificial. Transforme sua história em uma canção única e emocionante. Entrega em até 48h via WhatsApp.',
+  description = 'Crie músicas personalizadas com inteligência artificial. Transforme sua história em uma canção única e emocionante. Entrega em até 48h diretamente na plataforma.',
   keywords = 'música personalizada, criar música, presente criativo, música para aniversário, música para casamento, IA música',
   canonical,
   type = 'website',

@@ -227,6 +227,17 @@ const Briefing = () => {
 
   // Encontrar o step onde o usuário parou
   const getSavedStep = (data: BriefingFormData): number => {
+    // Fluxo "Já tenho a letra" (índices 22-27)
+    if (data.hasCustomLyric) {
+      if (!data.customLyricText) return 22;
+      if (!data.musicType) return 23;
+      if (!data.voiceType) return 24;
+      if (!data.style) return 25;
+      if (!data.rhythm) return 26;
+      if (!data.atmosphere) return 27;
+      return 100;
+    }
+    
     if (!data.musicType) return 1; // Primeiro após isInstrumental
     if (data.isInstrumental) {
       // Fluxo instrumental
@@ -255,8 +266,12 @@ const Briefing = () => {
   // 1: musicType
   // INSTRUMENTAL (2-9):
   // 2: style, 3: instruments, 4: wantSolo, 5: soloMoment, 6: rhythm, 7: atmosphere, 8: story, 9: instrumentationNotes
-  // CANTADA (10-18):
+  // CANTADA (10-19):
   // 10: emotion, 11: emotionIntensity, 12: story, 13: mandatoryWords, 14: voiceType, 15: style, 16: rhythm, 17: atmosphere, 18: autoGenerateName, 19: songName
+  // INSTRUMENTAL NAME (20-21):
+  // 20: autoGenerateName (instrumental), 21: songName (instrumental)
+  // JÁ TENHO A LETRA (22-27):
+  // 22: customLyricText, 23: musicType, 24: voiceType, 25: style, 26: rhythm, 27: atmosphere
 
   const chatFlow: Omit<ChatMessage, 'id'>[] = [
     // Step 0: Escolha cantada ou instrumental
@@ -509,15 +524,15 @@ const Briefing = () => {
       inputType: 'text',
       field: 'songName'
     },
-    // FLUXO "JÁ TENHO A LETRA" (Steps 30-35)
-    // Step 30: Cole sua letra
+    // FLUXO "JÁ TENHO A LETRA" (índices 22-27 do array)
+    // Índice 22: Cole sua letra
     {
       type: 'bot',
       content: "Ótimo! 📝 Cole sua letra completa abaixo.\n\nDica: inclua a estrutura (verso, refrão, etc.) se quiser que a IA respeite esse formato.",
       inputType: 'textarea',
       field: 'customLyricText'
     },
-    // Step 31: Tipo de música (custom lyric)
+    // Índice 23: Tipo de música (custom lyric)
     {
       type: 'bot',
       content: "Qual tipo de música você imagina para essa letra?",
@@ -531,7 +546,7 @@ const Briefing = () => {
         { id: "corporativa", label: "🏢 Corporativa", description: "Para empresas" }
       ]
     },
-    // Step 32: Tipo de voz (custom lyric)
+    // Índice 24: Tipo de voz (custom lyric)
     {
       type: 'bot',
       content: "Qual tipo de voz você prefere para sua música? 🎤",
@@ -544,7 +559,7 @@ const Briefing = () => {
         { id: "coral", label: "🎶 Coral/Grupo" }
       ]
     },
-    // Step 33: Estilo (custom lyric)
+    // Índice 25: Estilo (custom lyric)
     {
       type: 'bot',
       content: "Qual estilo musical combina com sua letra?",
@@ -560,7 +575,7 @@ const Briefing = () => {
         { id: "outros", label: "✨ Outros" }
       ]
     },
-    // Step 34: Ritmo (custom lyric)
+    // Índice 26: Ritmo (custom lyric)
     {
       type: 'bot',
       content: "Qual ritmo combina mais com sua música?",
@@ -572,7 +587,7 @@ const Briefing = () => {
         { id: "animado", label: "🏃 Animado", description: "Rápido, dançante" }
       ]
     },
-    // Step 35: Atmosfera (custom lyric)
+    // Índice 27: Atmosfera (custom lyric)
     {
       type: 'bot',
       content: "E qual atmosfera?",
@@ -702,10 +717,11 @@ const Briefing = () => {
   };
 
   // Mapear steps para o fluxo correto
+  // NOTA: O chatFlow é um array linear. Os "steps lógicos" 30-35 correspondem aos índices 22-27 do array.
   const getNextStep = (current: number, data: BriefingFormData): number => {
     // Step 0: isInstrumental -> depende da escolha
     if (current === 0) {
-      if (data.hasCustomLyric) return 30; // Vai para fluxo "já tenho letra"
+      if (data.hasCustomLyric) return 22; // Vai para fluxo "já tenho letra" (índice 22 do array)
       return 1; // musicType
     }
     
@@ -714,14 +730,14 @@ const Briefing = () => {
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
     }
     
-    // FLUXO "JÁ TENHO A LETRA" (30-35)
+    // FLUXO "JÁ TENHO A LETRA" (índices 22-27 do chatFlow)
     if (data.hasCustomLyric) {
-      if (current === 30) return 31; // customLyricText -> musicType
-      if (current === 31) return 32; // musicType -> voiceType
-      if (current === 32) return 33; // voiceType -> style
-      if (current === 33) return 34; // style -> rhythm
-      if (current === 34) return 35; // rhythm -> atmosphere
-      if (current === 35) return 100; // atmosphere -> confirmação
+      if (current === 22) return 23; // customLyricText -> musicType
+      if (current === 23) return 24; // musicType -> voiceType
+      if (current === 24) return 25; // voiceType -> style
+      if (current === 25) return 26; // style -> rhythm
+      if (current === 26) return 27; // rhythm -> atmosphere
+      if (current === 27) return 100; // atmosphere -> confirmação
     }
     
     // FLUXO INSTRUMENTAL (2-9, 20-21)

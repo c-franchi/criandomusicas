@@ -230,7 +230,7 @@ const Planos = () => {
               🎵 Garantia de satisfação de 100%
             </p>
             <p className="text-muted-foreground">
-              Todos os planos incluem entrega por WhatsApp e suporte técnico especializado
+              Todos os planos incluem entrega em até 48h diretamente na plataforma e suporte técnico especializado
             </p>
           </div>
           

@@ -13,7 +13,7 @@ const faqs = [
   },
   {
     question: "Quanto tempo leva para receber minha música?",
-    answer: "O tempo médio de entrega é de 48 horas após a aprovação da letra. Músicas instrumentais podem ser entregues em até 24 horas. Você recebe notificações por email e push em cada etapa do processo."
+    answer: "O tempo médio de entrega é de até 48 horas após a aprovação da letra. Músicas instrumentais podem ser entregues em até 24 horas. Você recebe notificações por email e push e acompanha tudo diretamente na plataforma."
   },
   {
     question: "Posso pedir alterações na letra?",
@@ -91,12 +91,10 @@ const FAQ = () => {
             Ainda tem dúvidas? Entre em contato conosco!
           </p>
           <a 
-            href="https://wa.me/5511999999999?text=Olá! Tenho uma dúvida sobre as músicas personalizadas."
-            target="_blank"
-            rel="noopener noreferrer"
+            href="mailto:contato@criandomusicas.com.br"
             className="inline-flex items-center gap-2 text-primary hover:underline"
           >
-            Falar pelo WhatsApp
+            Enviar email para suporte
           </a>
         </div>
       </div>

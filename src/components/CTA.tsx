@@ -37,7 +37,7 @@ const CTA = () => {
     "2 versões de letras personalizadas", 
     "Entrega em até 48 horas", 
     "Música completa e profissional", 
-    "Envio direto no WhatsApp"
+    "Entrega automatizada na plataforma"
   ];
 
   // Calculate display values

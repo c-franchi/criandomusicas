@@ -69,7 +69,7 @@ const Hero = () => {
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
           Transformamos suas memórias em músicas únicas, personalizadas e emocionantes. 
-          Da história à melodia, entregamos no seu WhatsApp.
+          Da história à melodia, entrega em até 48h diretamente na plataforma.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

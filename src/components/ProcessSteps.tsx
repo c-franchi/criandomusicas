@@ -25,7 +25,7 @@ const ProcessSteps = () => {
     {
       icon: Share2,
       title: "Entrega Completa",
-      description: "Música finalizada no WhatsApp + opção de publicar no YouTube",
+      description: "Música finalizada na plataforma em até 48h + opção de publicar no YouTube",
       badge: "48h"
     }
   ];
