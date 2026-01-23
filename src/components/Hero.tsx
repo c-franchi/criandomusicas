@@ -60,18 +60,15 @@ const Hero = () => {
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight px-0 my-[67px]">
           Conte sua{" "}
-          <span className="gradient-text">história!</span>
+          <span className="gradient-text">história.</span>
           <br />
-          A gente{" "}
-          <span className="gradient-text">compõe;</span>
-          <br />
-          Você{" "}
-          <span className="gradient-text">emociona.</span>
+          A gente transforma em{" "}
+          <span className="gradient-text">música.</span>
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Transformamos suas memórias em músicas únicas, personalizadas e emocionantes. 
-          Da história à melodia, entrega em até 48h diretamente na plataforma.
+          Crie músicas personalizadas para homenagear, presentear ou eternizar momentos 
+          — com opção de vídeo pronto para compartilhar.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -112,14 +109,20 @@ const Hero = () => {
                 className="text-lg px-8 py-6"
                 onClick={() => document.getElementById('exemplos')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Ver Exemplos
+                Ver exemplos 🎧
               </Button>
             </>
           )}
         </div>
         
+        {/* Micro Social Proof */}
+        <div className="mt-6 text-muted-foreground text-sm md:text-base">
+          <span className="text-accent">⭐⭐⭐⭐⭐</span>{" "}
+          Mais de 500 músicas criadas • Entrega rápida • Avaliações reais
+        </div>
+        
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-8 mt-16 max-w-2xl mx-auto">
+        <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
           <div className="text-center">
             <div className="text-3xl font-bold gradient-text">500+</div>
             <div className="text-muted-foreground">Músicas Criadas</div>
