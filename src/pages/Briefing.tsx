@@ -394,28 +394,8 @@ const Briefing = () => {
       inputType: 'textarea',
       field: 'instrumentationNotes'
     },
-    // Step 10 para instrumental: Nome automático?
-    // (Nota: Isso é mapeado dinamicamente no getNextStep para instrumentais)
-    // Step 20: Nome automático? (Instrumental)
-    {
-      type: 'bot',
-      content: "Quase lá! 🎵\n\nVocê quer dar um nome para sua música instrumental ou deixar a IA sugerir?",
-      inputType: 'options',
-      field: 'autoGenerateName',
-      options: [
-        { id: "auto", label: "🤖 Deixar a IA criar", description: "Título automático" },
-        { id: "manual", label: "✍️ Eu quero escolher", description: "Digitar nome" }
-      ]
-    },
-    // Step 21: Nome da música (Instrumental)
-    {
-      type: 'bot',
-      content: "Qual nome você quer dar para sua música instrumental?",
-      inputType: 'text',
-      field: 'songName'
-    },
-    // FLUXO CANTADA (Steps 10-19)
-    // Step 10: Emoção
+    // FLUXO CANTADA (Steps 10-19) - DEVE estar nos índices 10-19 do array!
+    // Step 10: Emoção (índice 10)
     {
       type: 'bot',
       content: "Qual emoção principal deve transmitir?",
@@ -423,28 +403,28 @@ const Briefing = () => {
       field: 'emotion',
       options: [] // Será preenchido dinamicamente
     },
-    // Step 11: Intensidade
+    // Step 11: Intensidade (índice 11)
     {
       type: 'bot',
       content: "Qual a intensidade dessa emoção?",
       inputType: 'intensity',
       field: 'emotionIntensity'
     },
-    // Step 12: História
+    // Step 12: História (índice 12)
     {
       type: 'bot',
       content: "Agora me conte a história! 📝\n\nDescreva os fatos, momentos especiais, piadas internas, nomes importantes... Quanto mais detalhes, melhor será sua letra!",
       inputType: 'textarea',
       field: 'story'
     },
-    // Step 13: Palavras obrigatórias
+    // Step 13: Palavras obrigatórias (índice 13)
     {
       type: 'bot',
       content: "Tem alguma palavra, nome ou frase que DEVE aparecer na letra? (opcional)\n\nSelecione as sugestões ou digite novas:",
       inputType: 'word-suggestions',
       field: 'mandatoryWords'
     },
-    // Step 14: Tipo de voz
+    // Step 14: Tipo de voz (índice 14)
     {
       type: 'bot',
       content: "Qual tipo de voz você prefere para sua música? 🎤",
@@ -461,7 +441,7 @@ const Briefing = () => {
         { id: "coral", label: "🎶 Coral/Grupo", description: "Múltiplas vozes" }
       ]
     },
-    // Step 15: Estilo (cantada)
+    // Step 15: Estilo (cantada) (índice 15)
     {
       type: 'bot',
       content: "Qual estilo musical você prefere?",
@@ -480,7 +460,7 @@ const Briefing = () => {
         { id: "outros", label: "✨ Outros" }
       ]
     },
-    // Step 16: Ritmo (cantada)
+    // Step 16: Ritmo (cantada) (índice 16)
     {
       type: 'bot',
       content: "Qual ritmo combina mais?",
@@ -492,7 +472,7 @@ const Briefing = () => {
         { id: "animado", label: "🏃 Animado", description: "Rápido, dançante" }
       ]
     },
-    // Step 17: Atmosfera (cantada)
+    // Step 17: Atmosfera (cantada) (índice 17)
     {
       type: 'bot',
       content: "E qual atmosfera?",
@@ -506,7 +486,7 @@ const Briefing = () => {
         { id: "leve", label: "☁️ Leve", description: "Suave, tranquilo" }
       ]
     },
-    // Step 18: Nome automático?
+    // Step 18: Nome automático? (cantada) (índice 18)
     {
       type: 'bot',
       content: "Quase lá! 🎵\n\nVocê quer dar um nome para sua música ou deixar a IA sugerir um título criativo?",
@@ -517,10 +497,29 @@ const Briefing = () => {
         { id: "manual", label: "✍️ Eu quero escolher", description: "Digitar nome" }
       ]
     },
-    // Step 19: Nome da música
+    // Step 19: Nome da música (cantada) (índice 19)
     {
       type: 'bot',
       content: "Qual nome você quer dar para sua música?",
+      inputType: 'text',
+      field: 'songName'
+    },
+    // FLUXO INSTRUMENTAL - NOME (Steps 20-21) - índices 20-21 do array
+    // Step 20: Nome automático? (Instrumental) (índice 20)
+    {
+      type: 'bot',
+      content: "Quase lá! 🎵\n\nVocê quer dar um nome para sua música instrumental ou deixar a IA sugerir?",
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: [
+        { id: "auto", label: "🤖 Deixar a IA criar", description: "Título automático" },
+        { id: "manual", label: "✍️ Eu quero escolher", description: "Digitar nome" }
+      ]
+    },
+    // Step 21: Nome da música (Instrumental) (índice 21)
+    {
+      type: 'bot',
+      content: "Qual nome você quer dar para sua música instrumental?",
       inputType: 'text',
       field: 'songName'
     },
