@@ -1,15 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, Headphones, User, ArrowRight } from "lucide-react";
+import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
 import heroImage from "@/assets/hero-music.jpg";
+
 const Hero = () => {
-  const {
-    user,
-    signOut
-  } = useAuth();
-  return <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  const { user, signOut } = useAuth();
+  const { isAdmin } = useAdminRole(user?.id);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-20" 
@@ -23,7 +25,8 @@ const Hero = () => {
       
       {/* Auth Section */}
       <div className="absolute top-6 right-6 z-20">
-        {user ? <div className="flex items-center gap-3">
+        {user ? (
+          <div className="flex items-center gap-3">
             <Badge variant="secondary" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               {user.email}
@@ -31,26 +34,25 @@ const Hero = () => {
             <Button variant="outline" size="sm" onClick={() => signOut()}>
               Sair
             </Button>
-          </div> : <Link to="/auth">
+          </div>
+        ) : (
+          <Link to="/auth">
             <Button variant="outline" size="sm">
               <User className="w-4 h-4 mr-2" />
               Entrar
             </Button>
-          </Link>}
+          </Link>
+        )}
       </div>
       
       {/* Floating Elements - decorative, hidden from screen readers */}
       <div className="absolute top-20 left-10 animate-float" aria-hidden="true">
         <Music className="w-12 h-12 text-primary/60" />
       </div>
-      <div className="absolute bottom-32 right-16 animate-float" style={{
-      animationDelay: '2s'
-    }} aria-hidden="true">
+      <div className="absolute bottom-32 right-16 animate-float" style={{ animationDelay: '2s' }} aria-hidden="true">
         <Sparkles className="w-8 h-8 text-accent/60" />
       </div>
-      <div className="absolute top-1/2 left-20 animate-float" style={{
-      animationDelay: '4s'
-    }} aria-hidden="true">
+      <div className="absolute top-1/2 left-20 animate-float" style={{ animationDelay: '4s' }} aria-hidden="true">
         <Headphones className="w-10 h-10 text-primary/40" />
       </div>
       
@@ -73,11 +75,21 @@ const Hero = () => {
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {user ? <>
+          {user ? (
+            <>
+              {isAdmin && (
+                <Link to="/admin">
+                  <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+                    <LayoutDashboard className="w-5 h-5 mr-2" />
+                    Dashboard
+                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              )}
               <Link to="/dashboard">
-                <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
+                <Button variant={isAdmin ? "outline" : "hero"} size="lg" className="text-lg px-8 py-6 group">
                   Meus Pedidos
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                  {!isAdmin && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </Link>
               <Link to="/briefing">
@@ -85,7 +97,9 @@ const Hero = () => {
                   Nova Música
                 </Button>
               </Link>
-            </> : <>
+            </>
+          ) : (
+            <>
               <Link to="/briefing">
                 <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
                   Criar Minha Música
@@ -100,7 +114,8 @@ const Hero = () => {
               >
                 Ver Exemplos
               </Button>
-            </>}
+            </>
+          )}
         </div>
         
         {/* Stats */}
@@ -119,6 +134,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Hero;
