@@ -24,6 +24,7 @@ interface BriefingFormData {
   isInstrumental: boolean;
   hasCustomLyric: boolean;
   customLyricText: string;
+  isConfidential: boolean;
   musicType: string;
   emotion: string;
   emotionIntensity: number;
@@ -114,6 +115,7 @@ const Briefing = () => {
     isInstrumental: false,
     hasCustomLyric: false,
     customLyricText: "",
+    isConfidential: false,
     musicType: "",
     emotion: "",
     emotionIntensity: 3,
@@ -1142,6 +1144,7 @@ const Briefing = () => {
       isInstrumental: data.isInstrumental,
       hasCustomLyric: data.hasCustomLyric,
       customLyricText: data.customLyricText,
+      isConfidential: data.isConfidential,
       musicType: data.musicType,
       emotion: data.emotion,
       emotionIntensity: data.emotionIntensity,
@@ -1176,6 +1179,7 @@ const Briefing = () => {
           payment_status: 'PENDING',
           is_instrumental: briefingData.isInstrumental,
           has_custom_lyric: briefingData.hasCustomLyric,
+          is_confidential: briefingData.isConfidential,
           music_type: briefingData.musicType,
           music_style: briefingData.style,
           emotion: briefingData.emotion,
@@ -1511,6 +1515,27 @@ const Briefing = () => {
                 )}
               </div>
             </div>
+
+            {/* Confidentiality Option - Only for custom lyrics */}
+            {formData.hasCustomLyric && (
+              <div className="bg-muted rounded-2xl p-4 flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="confidential"
+                  checked={formData.isConfidential}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isConfidential: e.target.checked }))}
+                  className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                />
+                <label htmlFor="confidential" className="text-sm cursor-pointer">
+                  <span className="font-semibold flex items-center gap-1">
+                    🔒 Quero confidencialidade na minha letra
+                  </span>
+                  <p className="text-muted-foreground mt-1">
+                    Sua letra não será compartilhada publicamente e será tratada com total privacidade.
+                  </p>
+                </label>
+              </div>
+            )}
 
             <div className="flex gap-3 pt-4">
               <Button 

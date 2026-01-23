@@ -31,6 +31,7 @@ interface OrderData {
   discount_applied: number;
   payment_method: string | null;
   is_instrumental: boolean | null;
+  has_custom_lyric: boolean | null;
 }
 
 interface VoucherValidation {
@@ -94,15 +95,7 @@ export default function Checkout() {
       if (!orderId || !user) return;
 
       try {
-        // Fetch pricing first
-        const { data: pricingData } = await supabase
-          .from('pricing_config')
-          .select('price_cents, price_promo_cents')
-          .eq('id', 'single')
-          .single();
-        
-        const basePrice = pricingData?.price_promo_cents || pricingData?.price_cents || 1990;
-
+        // First fetch the order to determine type
         const { data, error } = await supabase
           .from('orders')
           .select('*')
@@ -120,10 +113,8 @@ export default function Checkout() {
         // If already paid, redirect based on order type
         if (data.payment_status === 'PAID') {
           if (data.is_instrumental) {
-            // Instrumental: go to dashboard to wait for production
             navigate('/dashboard');
           } else {
-            // Vocal: go to lyrics selection/creation
             navigate(`/criar-musica?orderId=${orderId}`);
           }
           return;
@@ -135,8 +126,25 @@ export default function Checkout() {
           setPixConfirmed(true);
         }
 
-        // If amount is 0, set base price
-        if (data.amount === 0) {
+        // Determine correct pricing based on order type
+        let pricingId = 'single';
+        if (data.has_custom_lyric) {
+          pricingId = 'single_custom_lyric';
+        } else if (data.is_instrumental) {
+          pricingId = 'single_instrumental';
+        }
+
+        // Fetch correct pricing
+        const { data: pricingData } = await supabase
+          .from('pricing_config')
+          .select('price_cents, price_promo_cents')
+          .eq('id', pricingId)
+          .single();
+        
+        const basePrice = pricingData?.price_promo_cents || pricingData?.price_cents || 1990;
+
+        // If amount is 0 or different from expected, update it
+        if (data.amount === 0 || data.amount !== basePrice) {
           await supabase.from('orders').update({ amount: basePrice }).eq('id', orderId);
           data.amount = basePrice;
         }
@@ -533,6 +541,16 @@ export default function Checkout() {
             <CardTitle className="flex items-center gap-2">
               <Music className="h-5 w-5 text-primary" />
               Resumo do Pedido
+              {order.has_custom_lyric && (
+                <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
+                  📝 Letra Própria
+                </Badge>
+              )}
+              {order.is_instrumental && !order.has_custom_lyric && (
+                <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
+                  🎹 Instrumental
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -555,7 +573,9 @@ export default function Checkout() {
 
             {order.story && (
               <div className="pt-4 border-t border-border/50">
-                <p className="text-muted-foreground text-sm mb-2">História</p>
+                <p className="text-muted-foreground text-sm mb-2">
+                  {order.has_custom_lyric ? 'Sua Letra' : 'História'}
+                </p>
                 <p className="text-sm line-clamp-3">{order.story}</p>
               </div>
             )}

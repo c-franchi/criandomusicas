@@ -86,6 +86,7 @@ interface AdminOrder {
   user_whatsapp?: string | null;
   user_name?: string | null;
   is_instrumental?: boolean | null;
+  has_custom_lyric?: boolean | null;
   instruments?: string[] | null;
   solo_instrument?: string | null;
   solo_moment?: string | null;
@@ -166,6 +167,7 @@ const AdminDashboard = () => {
           style_prompt,
           approved_lyric_id,
           is_instrumental,
+          has_custom_lyric,
           instruments,
           solo_instrument,
           solo_moment,
@@ -1576,16 +1578,18 @@ const AdminDashboard = () => {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          {/* Type Badge - Vocal vs Instrumental */}
+                          {/* Type Badge - Vocal vs Instrumental vs Letra Própria */}
                           <Badge 
                             variant="outline" 
                             className={`text-[10px] sm:text-xs shrink-0 ${
-                              order.is_instrumental 
-                                ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
-                                : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                              order.has_custom_lyric 
+                                ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                                : order.is_instrumental 
+                                  ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
+                                  : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
                             }`}
                           >
-                            {order.is_instrumental ? '🎹 Instrumental' : '🎤 Vocal'}
+                            {order.has_custom_lyric ? '📝 Letra Própria' : order.is_instrumental ? '🎹 Instrumental' : '🎤 Vocal'}
                           </Badge>
                           <Badge className={`${getStatusColor(order.status, order.payment_status)} text-[10px] sm:text-xs shrink-0`}>
                             {getStatusIcon(order.status)}
