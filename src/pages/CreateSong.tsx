@@ -36,6 +36,7 @@ interface BriefingData {
   autoGenerateName: boolean;
   plan: string;
   lgpdConsent: boolean;
+  voiceType?: string;
 }
 
 interface Pronunciation {
@@ -365,7 +366,8 @@ const CreateSong = () => {
             style: briefingData.style,
             rhythm: briefingData.rhythm,
             atmosphere: briefingData.atmosphere,
-            hasMonologue: briefingData.hasMonologue
+            hasMonologue: briefingData.hasMonologue,
+            voiceType: briefingData.voiceType || 'feminina'
           }
         }
       });
