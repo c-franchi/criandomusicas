@@ -157,10 +157,11 @@ const CreateSong = () => {
         style: orderData.music_style || 'pop',
         rhythm: orderData.rhythm || 'moderado',
         atmosphere: orderData.atmosphere || 'festivo',
-        songName: '',
-        autoGenerateName: true,
+        songName: orderData.song_title || '',
+        autoGenerateName: !orderData.song_title,
         plan: 'single',
-        lgpdConsent: true
+        lgpdConsent: true,
+        voiceType: orderData.voice_type || 'feminina'
       };
       setBriefingData(reconstructedBriefing);
 
@@ -345,7 +346,25 @@ const CreateSong = () => {
   };
 
   const handleApproveLyric = async (customPronunciations?: Pronunciation[]) => {
-    if (!selectedLyric || !orderId || !briefingData) return;
+    console.log("handleApproveLyric called", {
+      selectedLyric: selectedLyric?.id,
+      orderId,
+      editedLyric: editedLyric?.substring(0, 50),
+      editedLyricLength: editedLyric?.length,
+      briefingData: briefingData ? 'exists' : 'null'
+    });
+    
+    if (!selectedLyric || !orderId || !briefingData) {
+      console.error("Missing required data:", { selectedLyric: !!selectedLyric, orderId: !!orderId, briefingData: !!briefingData });
+      toast.error("Dados incompletos", { description: "Selecione uma letra antes de aprovar" });
+      return;
+    }
+    
+    if (!editedLyric || editedLyric.trim().length === 0) {
+      console.error("editedLyric is empty!");
+      toast.error("Letra vazia", { description: "A letra da música não foi carregada corretamente. Tente selecionar novamente." });
+      return;
+    }
 
     setLoading(true);
     setStep("approved");

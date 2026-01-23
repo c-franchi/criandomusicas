@@ -107,8 +107,11 @@ serve(async (req) => {
     };
 
     console.log("generate-style-prompt called with orderId:", orderId, "isInstrumental:", isInstrumental);
+    console.log("Received params - lyricId:", lyricId, "approvedLyrics length:", approvedLyrics?.length || 0, "songTitle:", songTitle);
+    console.log("Briefing voiceType:", briefing?.voiceType);
 
     if (!orderId) {
+      console.error("Missing orderId");
       return new Response(
         JSON.stringify({ ok: false, error: "Campo obrigatório: orderId" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -117,8 +120,9 @@ serve(async (req) => {
 
     // Para músicas cantadas, letras são obrigatórias
     if (!isInstrumental && !approvedLyrics) {
+      console.error("Missing approvedLyrics for vocal track - orderId:", orderId);
       return new Response(
-        JSON.stringify({ ok: false, error: "Campos obrigatórios para música cantada: approvedLyrics" }),
+        JSON.stringify({ ok: false, error: "Campos obrigatórios para música cantada: approvedLyrics. A letra não foi selecionada." }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
