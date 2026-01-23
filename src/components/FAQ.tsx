@@ -8,44 +8,40 @@ import { HelpCircle } from "lucide-react";
 
 const faqs = [
   {
-    question: "Como funciona o processo de criação da música?",
-    answer: "É simples! Você preenche um briefing contando a história que deseja transformar em música, escolhe o estilo musical e as emoções. Nossa IA cria duas versões de letra para você escolher. Após sua aprovação, produzimos a música profissionalmente em até 48 horas."
+    question: "Preciso saber algo de música para criar?",
+    answer: "Não precisa saber nada de música. Você só conta a história, o resto é com a gente. É simples: você escreve o que quer contar, escolhe o estilo e a gente transforma em música."
   },
   {
     question: "Quanto tempo leva para receber minha música?",
-    answer: "O tempo médio de entrega é de até 48 horas após a aprovação da letra. Músicas instrumentais podem ser entregues em até 24 horas. Você recebe notificações por email e push e acompanha tudo diretamente na plataforma."
+    answer: "O tempo médio de entrega é de até 48 horas após você aprovar a letra. Você acompanha tudo pela plataforma e recebe notificações quando sua música estiver pronta."
   },
   {
     question: "Posso pedir alterações na letra?",
-    answer: "Sim! Após recebermos duas versões de letra, você pode solicitar uma modificação gratuita antes de aprovar. Após a aprovação, a letra é considerada final e a produção começa imediatamente."
+    answer: "Sim! Você recebe duas versões de letra para escolher e pode pedir ajustes antes de aprovar. Depois que você aprova, a música começa a ser produzida."
   },
   {
-    question: "A música é realmente exclusiva?",
-    answer: "Absolutamente! Cada música é criada do zero especificamente para você, baseada na sua história única. Você recebe os direitos de uso pessoal da música, que nunca será vendida ou criada para outra pessoa."
+    question: "A música é realmente minha e exclusiva?",
+    answer: "Sim! Cada música é criada do zero, só para você. Ela nunca será vendida ou usada por outra pessoa. A música é sua para sempre."
   },
   {
-    question: "Posso usar a música comercialmente?",
-    answer: "O plano padrão inclui uso pessoal e em redes sociais. Para uso comercial (propaganda, eventos corporativos, etc.), entre em contato conosco para discutir licenciamento específico."
+    question: "Quais estilos musicais vocês fazem?",
+    answer: "Fazemos vários estilos: Pop, Sertanejo, Rock, MPB, Gospel, Funk, Forró, Pagode, Bossa Nova e muito mais. Você escolhe o que combina com a sua história."
   },
   {
-    question: "Quais estilos musicais estão disponíveis?",
-    answer: "Oferecemos diversos estilos: Pop, Sertanejo, Rock, MPB, Gospel, Funk, Eletrônica, Clássico, Jazz, Bossa Nova, Reggae, Forró, Pagode e mais. Cada estilo pode ser adaptado ao ritmo e atmosfera de sua preferência."
+    question: "Posso fazer uma música sem letra (instrumental)?",
+    answer: "Pode sim! Músicas instrumentais são perfeitas para vídeos, podcasts ou momentos especiais. Você escolhe os instrumentos e o clima que deseja."
   },
   {
-    question: "Como funciona a música instrumental?",
-    answer: "Músicas instrumentais não possuem letra ou vocal. Você escolhe os instrumentos, atmosfera e ritmo desejados. São perfeitas para vídeos, podcasts ou como trilha sonora de momentos especiais."
-  },
-  {
-    question: "Posso criar um vídeo com a música?",
-    answer: "Sim! Oferecemos um serviço adicional de edição de vídeo por R$50. Você pode enviar fotos ou vídeos e nossa equipe cria um vídeo profissional sincronizado com sua música. Disponível após a entrega da música."
+    question: "Vocês fazem vídeo também?",
+    answer: "Sim! Por R$50, você pode receber um vídeo personalizado com fotos ou clipes, sincronizado com sua música. Perfeito para compartilhar nas redes sociais."
   },
   {
     question: "Como funciona o pagamento?",
-    answer: "Aceitamos cartão de crédito, PIX e boleto via Stripe. O pagamento é processado com segurança e você só paga após finalizar o briefing. Também aceitamos vouchers de desconto."
+    answer: "Aceitamos PIX, cartão de crédito e débito. O pagamento é 100% seguro e você só paga depois de preencher o briefing. Também aceitamos cupons de desconto."
   },
   {
     question: "E se eu não gostar do resultado?",
-    answer: "Nossa taxa de satisfação é de 98%! Se você seguir o briefing detalhadamente, a música refletirá exatamente sua história. Após aprovar a letra, a venda é considerada final, por isso incentivamos briefings bem detalhados."
+    answer: "Nossa taxa de satisfação é de 98%! Quanto mais detalhes você colocar no briefing, melhor fica a música. Você aprova a letra antes, então não tem surpresas."
   }
 ];
 
@@ -62,7 +58,7 @@ const FAQ = () => {
             Perguntas <span className="gradient-text">Frequentes</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Tire suas dúvidas sobre como criamos músicas personalizadas para você
+            Tudo o que você precisa saber antes de criar sua música
           </p>
         </div>
 

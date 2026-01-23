@@ -147,13 +147,13 @@ const PricingPlans = () => {
   const getButtonText = (planId: string) => {
     switch (planId) {
       case "single":
-        return "Criar Música";
+        return "Quero esse plano";
       case "package":
-        return "Pacote Popular";
+        return "Quero esse plano";
       case "subscription":
-        return "Melhor Valor";
+        return "Quero esse plano";
       default:
-        return "Escolher";
+        return "Quero esse plano";
     }
   };
 
@@ -207,10 +207,13 @@ const PricingPlans = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold gradient-text mb-4">
-            Escolha Seu Plano
+            Escolha a melhor forma de criar sua música
           </h2>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Transforme suas histórias em músicas incríveis. Escolha o plano que melhor se adapta às suas necessidades.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-2">
+            Sem contrato • Cancele quando quiser
+          </p>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+            Escolha o plano ideal para você e comece a criar sua música personalizada agora.
           </p>
           
           {/* Toggle Vocal/Instrumental */}

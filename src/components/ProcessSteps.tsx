@@ -1,32 +1,26 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, CreditCard, Music, Share2 } from "lucide-react";
+import { FileText, Music, Share2 } from "lucide-react";
 
 const ProcessSteps = () => {
   const steps = [
     {
       icon: FileText,
-      title: "Conte sua História",
-      description: "Compartilhe a ocasião, estilo musical e conte qualquer história, homenagem ou momento especial",
-      badge: "3 min"
-    },
-    {
-      icon: CreditCard,
-      title: "Pagamento Seguro",
-      description: "PIX ou cartão. Aprovação instantânea para começar a criar",
-      badge: "Seguro"
+      title: "Conte sua história",
+      description: "Você escreve os detalhes, sentimentos ou a ideia da música.",
+      badge: "1"
     },
     {
       icon: Music,
-      title: "2 Letras Personalizadas",
-      description: "Receba 2 versões de letras personalizadas. Escolha a favorita",
-      badge: "IA"
+      title: "Nós criamos a música",
+      description: "Transformamos sua história em uma música única, no estilo que você escolher.",
+      badge: "2"
     },
     {
       icon: Share2,
-      title: "Entrega Completa",
-      description: "Música finalizada na plataforma em até 48h + opção de publicar no YouTube",
-      badge: "48h"
+      title: "Receba e compartilhe",
+      description: "Baixe sua música e, se quiser, receba também o vídeo pronto para emocionar.",
+      badge: "3"
     }
   ];
 
@@ -35,15 +29,15 @@ const ProcessSteps = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">
-            Como funciona o{" "}
-            <span className="gradient-text">processo</span>
+            Como{" "}
+            <span className="gradient-text">funciona</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Do briefing à entrega, um processo simples e transparente
+            É simples, rápido e você não precisa saber nada de música
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {steps.map((step, index) => (
             <Card key={index} className="relative p-6 glass-card border-border/50 hover:border-primary/50 transition-all duration-300">
               <div className="absolute -top-4 left-6">

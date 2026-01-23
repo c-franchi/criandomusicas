@@ -3,48 +3,72 @@ import { Clock, Heart, Music, Shield, Sparkles, Users } from "lucide-react";
 const benefits = [
   {
     icon: Clock,
-    title: "Entrega Rápida",
-    description: "Sua música pronta em até 48 horas após aprovação da letra. Letra gerada instantaneamente."
+    title: "Processo simples e rápido",
+    description: "Você conta a história, escolhe o estilo e recebe sua música. Sem complicação."
   },
   {
     icon: Heart,
-    title: "100% Personalizada",
-    description: "Cada música é única, criada especialmente a partir da sua história e emoções."
+    title: "Músicas personalizadas de verdade",
+    description: "Cada música é única, criada do zero a partir da sua história e emoções."
   },
   {
     icon: Music,
-    title: "+10 Estilos Musicais",
-    description: "Sertanejo, Pop, Gospel, Rock, MPB, Forró, Funk, Eletrônica e muito mais."
+    title: "Opção de vídeo pronto",
+    description: "Além da música, você pode receber um vídeo editado para compartilhar."
   },
   {
     icon: Users,
-    title: "+500 Músicas Criadas",
-    description: "Centenas de clientes satisfeitos já eternizaram seus momentos especiais conosco."
+    title: "Atendimento humano",
+    description: "Suporte real e transparente. Nada de robôs ou respostas automáticas."
   },
   {
     icon: Shield,
-    title: "Satisfação Garantida",
-    description: "Você aprova a letra antes da produção. Não gostou? Geramos novas opções."
+    title: "Sem promessas falsas",
+    description: "Você aprova a letra antes. Sem surpresas, sem pegadinhas."
   },
   {
     icon: Sparkles,
-    title: "Qualidade Profissional",
-    description: "Áudio em alta qualidade com vozes realistas e arranjos musicais completos."
+    title: "+500 músicas criadas",
+    description: "Centenas de clientes satisfeitos já eternizaram seus momentos especiais."
   }
+];
+
+// Target audience section
+const targetAudience = [
+  "Quer dar um presente diferente e inesquecível",
+  "Quer homenagear alguém especial",
+  "Quer transformar sentimentos em música",
+  "Quer uma música própria, mesmo sem saber compor",
+  "Quer compartilhar algo único nas redes sociais"
 ];
 
 const WhyChooseUs = () => {
   return (
     <section className="py-16 bg-background" id="diferenciais" aria-labelledby="why-choose-title">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Target Audience */}
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Esse serviço é perfeito{" "}
+            <span className="gradient-text">para quem:</span>
+          </h2>
+          <ul className="max-w-2xl mx-auto space-y-3">
+            {targetAudience.map((item, index) => (
+              <li key={index} className="flex items-center gap-3 text-lg text-muted-foreground">
+                <Heart className="w-5 h-5 text-primary flex-shrink-0" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
         <header className="text-center mb-12">
           <h2 id="why-choose-title" className="text-3xl md:text-4xl font-bold gradient-text mb-4">
             Por que escolher Criando Músicas?
           </h2>
           <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-            Transformamos histórias em melodias únicas. Seja para um aniversário especial, 
-            casamento, declaração de amor ou homenagem, criamos a trilha sonora perfeita 
-            para eternizar seus momentos mais importantes.
+            Um jeito simples, confiável e emocionante de criar músicas personalizadas 
+            para presentear, homenagear ou eternizar momentos especiais.
           </p>
         </header>
 

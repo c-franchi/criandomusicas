@@ -169,11 +169,11 @@ const AudioSamples = () => {
             Exemplos Reais
           </Badge>
           <h2 className="text-4xl font-bold mb-4">
-            Ouça músicas{" "}
-            <span className="gradient-text">criadas por nós</span>
+            Algumas histórias que já{" "}
+            <span className="gradient-text">viraram música</span> 🎵
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Confira alguns exemplos de músicas personalizadas que já criamos para nossos clientes
+            Ouça músicas reais criadas para nossos clientes. Cada uma conta uma história única.
           </p>
         </div>
         
