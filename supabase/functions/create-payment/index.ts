@@ -42,10 +42,10 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { email: user.email });
 
-    // Check if order is instrumental to use correct pricing
+    // Check order type (instrumental, custom lyric, or vocal) to use correct pricing
     const { data: orderInfo, error: orderError } = await supabaseClient
       .from('orders')
-      .select('is_instrumental')
+      .select('is_instrumental, has_custom_lyric')
       .eq('id', orderId)
       .single();
 
@@ -54,9 +54,17 @@ serve(async (req) => {
     }
 
     const isInstrumental = orderInfo?.is_instrumental === true;
-    const effectivePlanId = isInstrumental ? `${planId}_instrumental` : planId;
+    const hasCustomLyric = orderInfo?.has_custom_lyric === true;
     
-    logStep("Determined plan", { isInstrumental, effectivePlanId });
+    // Determine the effective plan ID based on order type
+    let effectivePlanId = planId;
+    if (hasCustomLyric) {
+      effectivePlanId = 'single_custom_lyric';
+    } else if (isInstrumental) {
+      effectivePlanId = `${planId}_instrumental`;
+    }
+    
+    logStep("Determined plan", { isInstrumental, hasCustomLyric, effectivePlanId });
 
     // Get pricing configuration from database - try instrumental variant first
     let pricingConfig = null;
@@ -126,14 +134,19 @@ serve(async (req) => {
       logStep("Using Stripe price ID", { priceId: pricingConfig.stripe_price_id });
     } else {
       // Create inline price data for dynamic pricing
+      let description = 'Uma música exclusiva criada com IA baseada na sua história';
+      if (hasCustomLyric) {
+        description = 'Uma música exclusiva criada com sua letra personalizada';
+      } else if (isInstrumental) {
+        description = 'Uma música instrumental exclusiva criada com IA';
+      }
+      
       lineItems = [{
         price_data: {
           currency: 'brl',
           product_data: {
             name: productName,
-            description: isInstrumental 
-              ? 'Uma música instrumental exclusiva criada com IA'
-              : 'Uma música exclusiva criada com IA baseada na sua história'
+            description
           },
           unit_amount: priceInCents,
         },
@@ -153,8 +166,9 @@ serve(async (req) => {
       metadata: {
         order_id: orderId,
         user_id: user.id,
-        plan_id: planId,
-        is_instrumental: String(isInstrumental)
+        plan_id: effectivePlanId,
+        is_instrumental: String(isInstrumental),
+        has_custom_lyric: String(hasCustomLyric)
       }
     });
 

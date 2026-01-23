@@ -37,6 +37,7 @@ interface BriefingData {
   plan: string;
   lgpdConsent: boolean;
   voiceType?: string;
+  hasCustomLyric?: boolean;
 }
 
 interface Pronunciation {
@@ -161,7 +162,8 @@ const CreateSong = () => {
         autoGenerateName: !orderData.song_title,
         plan: 'single',
         lgpdConsent: true,
-        voiceType: orderData.voice_type || 'feminina'
+        voiceType: orderData.voice_type || 'feminina',
+        hasCustomLyric: orderData.has_custom_lyric || false
       };
       setBriefingData(reconstructedBriefing);
 
@@ -755,13 +757,16 @@ const CreateSong = () => {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              variant="outline"
-              onClick={() => setStep("select")}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Escolher Outra Versão
-            </Button>
+            {/* Only show "Escolher Outra Versão" if NOT custom lyrics */}
+            {!briefingData?.hasCustomLyric && (
+              <Button
+                variant="outline"
+                onClick={() => setStep("select")}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Escolher Outra Versão
+              </Button>
+            )}
 
             {editInstructions.trim() && (
               <Button

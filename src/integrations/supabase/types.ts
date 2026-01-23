@@ -222,6 +222,7 @@ export type Database = {
           id: string
           instrumentation_notes: string | null
           instruments: string[] | null
+          is_confidential: boolean | null
           is_instrumental: boolean | null
           mandatory_words: string | null
           monologue_position: string | null
@@ -265,6 +266,7 @@ export type Database = {
           id?: string
           instrumentation_notes?: string | null
           instruments?: string[] | null
+          is_confidential?: boolean | null
           is_instrumental?: boolean | null
           mandatory_words?: string | null
           monologue_position?: string | null
@@ -308,6 +310,7 @@ export type Database = {
           id?: string
           instrumentation_notes?: string | null
           instruments?: string[] | null
+          is_confidential?: boolean | null
           is_instrumental?: boolean | null
           mandatory_words?: string | null
           monologue_position?: string | null
