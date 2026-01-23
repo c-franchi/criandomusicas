@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { PLANS, Plan, getPlanInfo } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -121,7 +121,7 @@ const Planos = () => {
           />
           
           {isInstrumental && (
-            <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
+            <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse mb-4">
               🎹 Músicas instrumentais com 20% de desconto!
             </Badge>
           )}
@@ -221,6 +221,94 @@ const Planos = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+
+        {/* Custom Lyrics Special Section */}
+        <div className="mb-16">
+          <div className="text-center mb-8">
+            <Badge className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30 mb-4 px-4 py-2">
+              <Sparkles className="w-4 h-4 mr-2 inline" />
+              Novidade!
+            </Badge>
+            <h2 className="text-3xl font-bold gradient-text mb-4">Já Tem Sua Letra Pronta?</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Traga sua própria composição e nós transformamos em música profissional por um preço especial!
+            </p>
+          </div>
+          
+          <Card className="relative max-w-lg mx-auto border-2 border-green-500/50 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent hover:border-green-400/70 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/20">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold px-6 py-1.5 shadow-lg">
+                <FileText className="w-4 h-4 mr-2" />
+                Preço Especial
+              </Badge>
+            </div>
+            
+            <CardHeader className="text-center pt-8 pb-4">
+              <div className="flex justify-center mb-4">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg shadow-green-500/30">
+                  <FileText className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
+                Música com Letra Própria
+              </CardTitle>
+              <div className="space-y-1">
+                <CardDescription className="text-xl line-through text-muted-foreground">
+                  R$ 47,90
+                </CardDescription>
+                <CardDescription className="text-5xl font-bold text-green-400">
+                  R$ 9,90
+                </CardDescription>
+                <Badge className="bg-red-500/20 text-red-400 border-red-500/30 animate-pulse mt-2">
+                  79% de desconto!
+                </Badge>
+              </div>
+            </CardHeader>
+
+            <CardContent className="pb-8">
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start gap-3">
+                  <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
+                    <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
+                  </div>
+                  <span className="text-card-foreground leading-relaxed font-medium">1 música completa com sua letra</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
+                    <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
+                  </div>
+                  <span className="text-card-foreground leading-relaxed font-medium">Traga sua própria composição</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
+                    <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
+                  </div>
+                  <span className="text-card-foreground leading-relaxed font-medium">Produção profissional</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
+                    <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
+                  </div>
+                  <span className="text-card-foreground leading-relaxed font-medium">Alta qualidade</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
+                    <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
+                  </div>
+                  <span className="text-card-foreground leading-relaxed font-medium">Entrega em até 48h na plataforma</span>
+                </li>
+              </ul>
+
+              <Button
+                onClick={() => navigate("/briefing?custom_lyric=true")}
+                className="w-full py-4 font-semibold text-lg bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-lg shadow-green-500/30 transition-all duration-300"
+              >
+                <FileText className="w-5 h-5 mr-2" />
+                Usar Minha Letra
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Footer */}
