@@ -4,6 +4,7 @@ import AudioSamples from "@/components/AudioSamples";
 import InstrumentalShowcase from "@/components/InstrumentalShowcase";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import PricingPlans from "@/components/PricingPlans";
+import CustomLyricHighlight from "@/components/CustomLyricHighlight";
 import Testimonials from "@/components/Testimonials";
 import VideoServiceSection from "@/components/VideoServiceSection";
 import ReactionVideosShowcase from "@/components/ReactionVideosShowcase";
@@ -28,6 +29,7 @@ const Index = () => {
       <InstrumentalShowcase />
       <WhyChooseUs />
       <PricingPlans />
+      <CustomLyricHighlight />
       <VideoServiceSection />
       <Testimonials />
       <ReactionVideosShowcase />
