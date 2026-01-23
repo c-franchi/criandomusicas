@@ -134,10 +134,10 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const AI_GATEWAY_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!AI_GATEWAY_API_KEY) {
       return new Response(
-        JSON.stringify({ ok: false, error: "LOVABLE_API_KEY não configurada" }),
+        JSON.stringify({ ok: false, error: "AI_GATEWAY_API_KEY não configurada" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -280,12 +280,12 @@ INSTRUÇÕES FINAIS:
 - NÃO inclua comentários, explicações ou metadados
 - APENAS as letras com as tags estruturadas`;
 
-    console.log("Calling Lovable AI Gateway for lyrics generation...");
+    console.log("Calling AI Gateway for lyrics generation...");
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
