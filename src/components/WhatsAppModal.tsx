@@ -92,7 +92,7 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
 
       toast({
         title: "WhatsApp salvo!",
-        description: "Você receberá sua música por WhatsApp quando estiver pronta.",
+        description: "Poderemos entrar em contato caso necessário.",
       });
 
       onConfirm();
@@ -114,10 +114,10 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-primary" />
-            Informe seu WhatsApp
+            Informe seu WhatsApp (opcional)
           </DialogTitle>
           <DialogDescription>
-            Para receber sua música pronta diretamente no WhatsApp, informe seu número.
+            Informe seu número para que possamos entrar em contato caso necessário. Sua música será entregue diretamente na plataforma.
           </DialogDescription>
         </DialogHeader>
         
@@ -133,7 +133,7 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
               maxLength={16}
             />
             <p className="text-xs text-muted-foreground">
-              Sua música será enviada por WhatsApp quando estiver pronta
+              Usado apenas para contato de suporte, se necessário
             </p>
           </div>
           
