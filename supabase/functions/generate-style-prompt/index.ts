@@ -146,10 +146,10 @@ serve(async (req) => {
       }
     }
 
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
+    const AI_GATEWAY_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!AI_GATEWAY_API_KEY) {
       return new Response(
-        JSON.stringify({ ok: false, error: "LOVABLE_API_KEY não configurada" }),
+        JSON.stringify({ ok: false, error: "AI_GATEWAY_API_KEY não configurada" }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -248,12 +248,12 @@ REMEMBER:
 - Describe specific sonic characteristics instead of comparing to artists
 - Focus on instrumental arrangement and production quality`;
 
-      console.log("Calling Lovable AI Gateway for instrumental style prompt...");
+      console.log("Calling AI Gateway for instrumental style prompt...");
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -364,12 +364,12 @@ LEMBRE-SE:
 - NÃO mencione nomes de artistas, bandas ou músicas como referência
 - Descreva características sonoras específicas em vez de comparar com artistas`;
 
-      console.log("Calling Lovable AI Gateway for vocal style prompt...");
+      console.log("Calling AI Gateway for vocal style prompt...");
 
       const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
