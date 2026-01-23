@@ -56,6 +56,7 @@ const PricingPlans = () => {
           .select('*')
           .eq('is_active', true)
           .not('id', 'like', '%_instrumental')
+          .neq('id', 'single_custom_lyric')
           .order('sort_order', { ascending: true }),
         supabase
           .from('pricing_config')
