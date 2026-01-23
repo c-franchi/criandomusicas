@@ -34,10 +34,10 @@ const CTA = () => {
   }, []);
 
   const benefits = [
-    "2 versões de letras personalizadas", 
+    "Processo simples e rápido", 
     "Entrega em até 48 horas", 
-    "Música completa e profissional", 
-    "Entrega automatizada na plataforma"
+    "Música exclusiva e personalizada", 
+    "Opção de vídeo para compartilhar"
   ];
 
   // Calculate display values
@@ -57,17 +57,16 @@ const CTA = () => {
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <Badge className="mb-6 bg-accent text-accent-foreground">
           <Zap className="w-4 h-4 mr-2" />
-          Oferta Especial
+          Comece Agora
         </Badge>
         
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          Transforme sua história em{" "}
+          Transforme sua história em uma{" "}
           <span className="gradient-text">música única</span>
         </h2>
         
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Mais de 500 clientes já criaram suas músicas personalizadas. 
-          Transforme qualquer momento em uma trilha sonora inesquecível.
+          Comece agora e crie algo que vai emocionar para sempre.
         </p>
         
         {/* Benefits */}
@@ -96,9 +95,9 @@ const CTA = () => {
           variant="hero" 
           size="lg" 
           className="text-lg px-8 py-6 group"
-          onClick={() => navigate('/criar-musica')}
+          onClick={() => navigate('/briefing')}
         >
-          Começar Agora
+          Criar minha música agora
           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </div>

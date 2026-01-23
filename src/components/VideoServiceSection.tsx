@@ -15,11 +15,11 @@ const VideoServiceSection = () => {
             Serviço Adicional
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Transforme Sua Música em <span className="text-primary">Vídeo</span>
+            Transforme sua música em <span className="text-primary">vídeo</span> 🎬
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Crie vídeos personalizados com fotos ou clipes usando qualquer música. 
-            Presente perfeito para datas especiais!
+            Além da música, você pode receber um vídeo personalizado, 
+            pronto para compartilhar e emocionar ainda mais.
           </p>
         </div>
 
@@ -112,7 +112,7 @@ const VideoServiceSection = () => {
           </p>
           <Button asChild size="lg" className="group">
             <Link to="/auth">
-              Começar Agora
+              Quero minha música em vídeo
               <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
             </Link>
           </Button>
