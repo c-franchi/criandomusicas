@@ -39,7 +39,7 @@ const ProcessSteps = () => {
         
         <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
           {steps.map((step, index) => (
-            <Card key={index} className="relative p-6 glass-card border-border/50 hover:border-primary/50 transition-all duration-300">
+            <Card key={index} className="relative p-6 bg-card/80 border-border/60 hover:border-primary/50 transition-all duration-300">
               <div className="absolute -top-4 left-6">
                 <Badge variant="secondary" className="bg-primary text-primary-foreground">
                   {step.badge}
@@ -50,8 +50,8 @@ const ProcessSteps = () => {
                 <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center mb-4">
                   <step.icon className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+                <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{step.description}</p>
               </div>
               
               {/* Step number */}

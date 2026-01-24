@@ -76,15 +76,15 @@ const WhyChooseUs = () => {
           {benefits.map((benefit, index) => (
             <article 
               key={index} 
-              className="group p-6 rounded-xl bg-card border border-border hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+              className="group p-6 rounded-xl bg-card/80 border border-border/60 hover:border-primary/50 hover:shadow-lg transition-all duration-300"
             >
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+              <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center mb-4 group-hover:bg-primary/25 transition-colors">
                 <benefit.icon className="w-6 h-6 text-primary" aria-hidden="true" />
               </div>
               <h3 className="text-xl font-semibold text-foreground mb-2">
                 {benefit.title}
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground leading-relaxed">
                 {benefit.description}
               </p>
             </article>
