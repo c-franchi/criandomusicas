@@ -335,15 +335,26 @@ const Briefing = () => {
       field: 'instruments',
       options: INSTRUMENT_OPTIONS
     },
-    // Step 4: Quer solo?
+    // Step 4: Quer solo? (usa soloInstrument temporariamente como "want_solo")
     {
       type: 'bot',
       content: "Você gostaria que algum instrumento tivesse um solo especial na música? ✨",
       inputType: 'options',
       field: 'soloInstrument',
+      options: [
+        { id: "want_solo", label: "✨ Sim, quero um solo" },
+        { id: "none", label: "❌ Não, sem solo" }
+      ]
+    },
+    // Step 5: Qual instrumento terá o solo (dinâmico baseado nos instrumentos)
+    {
+      type: 'bot',
+      content: "Qual instrumento terá o destaque com o solo? 🎵",
+      inputType: 'options',
+      field: 'soloInstrument',
       options: [] // Será preenchido dinamicamente com base nos instrumentos selecionados
     },
-    // Step 5: Momento do solo
+    // Step 6: Momento do solo
     {
       type: 'bot',
       content: "Em que momento da música você quer o solo?",
@@ -356,7 +367,7 @@ const Briefing = () => {
         { id: "auto", label: "🎲 Deixar a IA decidir", description: "O melhor momento" }
       ]
     },
-    // Step 6: Ritmo (instrumental)
+    // Step 7: Ritmo (instrumental) - was step 6
     {
       type: 'bot',
       content: "Qual ritmo combina mais com sua música?",
@@ -368,7 +379,7 @@ const Briefing = () => {
         { id: "animado", label: "🏃 Animado", description: "Energético, dançante" }
       ]
     },
-    // Step 7: Atmosfera (instrumental)
+    // Step 8: Atmosfera (instrumental)
     {
       type: 'bot',
       content: "E qual atmosfera?",
@@ -383,19 +394,12 @@ const Briefing = () => {
         { id: "misterioso", label: "🌙 Misterioso", description: "Enigmático" }
       ]
     },
-    // Step 8: História/Contexto (instrumental)
+    // Step 9: História/Contexto (instrumental) - placeholder to keep index alignment
     {
       type: 'bot',
       content: "Conte um pouco sobre o contexto da sua música! 📝\n\nPara quem é? Qual ocasião? O que você quer transmitir?\n\n(Isso ajuda a IA a criar algo mais personalizado)",
       inputType: 'textarea',
       field: 'story'
-    },
-    // Step 9: Observações de instrumentação
-    {
-      type: 'bot',
-      content: "Tem mais algum detalhe sobre os instrumentos ou o som que você imagina? (opcional)\n\nEx: 'quero um piano bem suave', 'bateria marcante', 'violino melancólico'",
-      inputType: 'textarea',
-      field: 'instrumentationNotes'
     },
     // FLUXO CANTADA (Steps 10-19) - DEVE estar nos índices 10-19 do array!
     // Step 10: Emoção (índice 10)
@@ -704,12 +708,15 @@ const Briefing = () => {
           : "Qual emoção principal deve transmitir?";
       }
       
-      // Se for pergunta de solo, preencher com instrumentos selecionados
-      if (msg.field === 'soloInstrument') {
-        newMsg.options = getSoloOptions(formData.instruments);
-        if (formData.instruments.length === 0) {
-          newMsg.options = [{ id: "none", label: "❌ Não, sem solo" }];
-        }
+      // Se for step 5 (qual instrumento terá solo), preencher com instrumentos selecionados
+      if (msg.field === 'soloInstrument' && currentStep === 5) {
+        const instrumentOptions = formData.instruments.map(instId => {
+          const inst = INSTRUMENT_OPTIONS.find(i => i.id === instId);
+          return { id: instId, label: inst?.label || instId };
+        });
+        newMsg.options = instrumentOptions.length > 0 
+          ? instrumentOptions 
+          : [{ id: "piano", label: "🎹 Piano/Teclado" }];
       }
       
       setMessages(prev => [...prev, newMsg]);
@@ -751,18 +758,19 @@ const Briefing = () => {
     }
     
     // FLUXO INSTRUMENTAL (2-9, 20-21)
+    // Steps: 2-style, 3-instruments, 4-wantSolo, 5-soloInstrument, 6-soloMoment, 7-rhythm, 8-atmosphere, 9-story
     if (data.isInstrumental) {
       if (current === 2) return 3; // style -> instruments
       if (current === 3) return 4; // instruments -> wantSolo
       if (current === 4) {
-        // Se escolheu "none" ou não tem instrumentos, pular momento do solo
-        return data.soloInstrument === 'none' || !data.soloInstrument ? 6 : 5;
+        // Se escolheu "want_solo", vai perguntar qual instrumento. Se "none", pula para rhythm
+        return data.soloInstrument === 'want_solo' ? 5 : 7;
       }
-      if (current === 5) return 6; // soloMoment -> rhythm
-      if (current === 6) return 7; // rhythm -> atmosphere
-      if (current === 7) return 8; // atmosphere -> story
-      if (current === 8) return 9; // story -> instrumentationNotes
-      if (current === 9) return 20; // instrumentationNotes -> autoGenerateName (instrumental)
+      if (current === 5) return 6; // soloInstrument -> soloMoment
+      if (current === 6) return 7; // soloMoment -> rhythm
+      if (current === 7) return 8; // rhythm -> atmosphere
+      if (current === 8) return 9; // atmosphere -> story
+      if (current === 9) return 20; // story -> autoGenerateName (instrumental)
       if (current === 20) {
         return data.autoGenerateName ? 100 : 21; // Se auto, vai para confirmação
       }
