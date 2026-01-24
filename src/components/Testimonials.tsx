@@ -191,8 +191,8 @@ const Testimonials = () => {
 
         <div className="text-center mb-16">
           <h2 id="testimonials-heading" className="text-4xl font-bold mb-4">
-            O que quem já criou uma música{" "}
-            <span className="gradient-text">com a gente diz</span> 💜
+            Veja o que nossos{" "}
+            <span className="gradient-text">clientes dizem</span> 💜
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {hasRealReviews 

@@ -1,10 +1,34 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Sparkles, ArrowRight, Check, Music } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+
+interface PricingData {
+  price_cents: number;
+  price_promo_cents: number | null;
+}
 
 const CustomLyricHighlight = () => {
   const navigate = useNavigate();
+  const [pricing, setPricing] = useState<PricingData | null>(null);
+
+  useEffect(() => {
+    const fetchPricing = async () => {
+      const { data } = await supabase
+        .from('pricing_config')
+        .select('price_cents, price_promo_cents')
+        .eq('id', 'single_custom_lyric')
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (data) {
+        setPricing(data);
+      }
+    };
+    fetchPricing();
+  }, []);
 
   const features = [
     "Use sua própria letra ou poema",
@@ -12,6 +36,17 @@ const CustomLyricHighlight = () => {
     "Entrega em até 48h na plataforma",
     "Escolha o estilo musical"
   ];
+
+  const formatPrice = (cents: number) => {
+    return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
+  };
+
+  const originalPrice = pricing?.price_cents || 4790;
+  const promoPrice = pricing?.price_promo_cents || pricing?.price_cents || 990;
+  const hasPromo = pricing?.price_promo_cents && pricing.price_promo_cents < pricing.price_cents;
+  const discountPercent = hasPromo 
+    ? Math.round((1 - promoPrice / originalPrice) * 100)
+    : 79;
 
   return (
     <section className="py-16 relative overflow-hidden">
@@ -37,7 +72,7 @@ const CustomLyricHighlight = () => {
                   NOVIDADE
                 </Badge>
                 <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 px-3 py-1">
-                  79% OFF
+                  {discountPercent}% OFF
                 </Badge>
               </div>
 
@@ -85,11 +120,13 @@ const CustomLyricHighlight = () => {
                 <h3 className="text-2xl font-bold mb-2">Música com Letra Própria</h3>
                 
                 <div className="my-6">
-                  <div className="text-lg text-muted-foreground line-through">
-                    R$ 47,90
-                  </div>
+                  {hasPromo && (
+                    <div className="text-lg text-muted-foreground line-through">
+                      {formatPrice(originalPrice)}
+                    </div>
+                  )}
                   <div className="text-5xl font-bold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                    R$ 9,90
+                    {formatPrice(promoPrice)}
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
                     pagamento único
