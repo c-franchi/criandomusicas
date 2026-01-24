@@ -106,7 +106,7 @@ const Testimonials = () => {
         // Fetch profile and order data for each review
         if (data && data.length > 0) {
           const enrichedReviews = await Promise.all(
-            data.map(async (review, index) => {
+            data.map(async (review) => {
               // Get order to get user_id and music_type
               const { data: orderData } = await supabase
                 .from('orders')
@@ -124,11 +124,12 @@ const Testimonials = () => {
                 profileData = profile;
               }
 
+              // Only use real data - no placeholders for real reviews
               return {
                 ...review,
                 profiles: { 
                   name: profileData?.name || null,
-                  avatar_url: profileData?.avatar_url || placeholderAvatars[index % placeholderAvatars.length]
+                  avatar_url: profileData?.avatar_url || null
                 },
                 orders: { music_type: orderData?.music_type || null }
               };
@@ -223,17 +224,19 @@ const Testimonials = () => {
                 
                 <div className="flex items-center gap-3">
                   <Avatar className="w-12 h-12 border-2 border-primary/30">
-                    <AvatarImage 
-                      src={review.profiles?.avatar_url || placeholderAvatars[index % placeholderAvatars.length]} 
-                      alt={review.profiles?.name || 'Cliente'}
-                    />
+                    {review.profiles?.avatar_url ? (
+                      <AvatarImage 
+                        src={review.profiles.avatar_url} 
+                        alt={review.profiles?.name || 'Cliente Verificado'}
+                      />
+                    ) : null}
                     <AvatarFallback className="bg-primary/20 text-primary">
                       {getInitials(review.profiles?.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
                     <div className="font-semibold text-foreground">
-                      {review.profiles?.name || `Cliente ${index + 1}`}
+                      {review.profiles?.name || 'Cliente Verificado'}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {getMusicTypeLabel(review.orders?.music_type)}
