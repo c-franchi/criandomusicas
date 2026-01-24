@@ -311,8 +311,11 @@ BE VERY CONCISE - under 950 characters total.`;
 
       const systemPrompt = `You are a music producer creating ULTRA-CONCISE prompts for AI music (Suno, Udio).
 
-⚠️ CRITICAL: OUTPUT MUST BE UNDER 950 CHARACTERS TOTAL. Be extremely concise.
-⚠️ NO artist/band names. NO explanations. Just the prompt in English.
+⚠️ CRITICAL RULES:
+1. OUTPUT MUST BE UNDER 950 CHARACTERS TOTAL. Be extremely concise.
+2. NO artist/band names. NO explanations. Just the prompt in English.
+3. OUTPUT ONLY THE [Style] SECTION. DO NOT include [Lyrics] or any lyrics content.
+4. The response should contain ONLY production/style instructions, never any song text.
 
 FORMAT (very brief):
 [Style]
@@ -386,6 +389,13 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
         );
       }
 
+      // SANITIZAÇÃO: Remover qualquer [Lyrics] que a IA possa ter incluído erroneamente
+      const lyricsIndex = stylePrompt.indexOf('[Lyrics]');
+      if (lyricsIndex > -1) {
+        stylePrompt = stylePrompt.substring(0, lyricsIndex).trim();
+        console.log("Removed leaked [Lyrics] section from style prompt");
+      }
+
       // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
       let lyricsForGeneration2 = approvedLyrics || '';
       if (pronunciations.length > 0 && !phoneticLyrics) {
@@ -394,10 +404,18 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
         lyricsForGeneration2 = phoneticLyrics;
       }
 
+      // Limpar duplicações na letra (remover [Intro] repetidos, etc.)
+      let cleanedLyrics = lyricsForGeneration2;
+      // Remover segunda ocorrência de [Lyrics] se existir
+      const secondLyricsIndex = cleanedLyrics.indexOf('[Lyrics]');
+      if (secondLyricsIndex > -1) {
+        cleanedLyrics = cleanedLyrics.substring(0, secondLyricsIndex).trim();
+      }
+
       finalPrompt = `${stylePrompt}
 
 [Lyrics]
-${lyricsForGeneration2}`;
+${cleanedLyrics}`;
     }
 
     console.log("Style prompt generated successfully");

@@ -166,6 +166,10 @@ const AdminDashboard = () => {
   // Cover generation loading
   const [generatingCover, setGeneratingCover] = useState<string | null>(null);
 
+  // PIX Receipt Modal
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<AdminOrder | null>(null);
+
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
     try {
@@ -1233,6 +1237,106 @@ const AdminDashboard = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* PIX Receipt Modal */}
+      <Dialog open={receiptModalOpen} onOpenChange={setReceiptModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              📄 Comprovante de Pagamento PIX
+            </DialogTitle>
+            <DialogDescription>
+              Verifique os dados do comprovante antes de confirmar ou rejeitar o pagamento.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedReceiptOrder && (
+            <div className="space-y-4">
+              {/* Receipt Image */}
+              <div className="bg-white p-2 rounded-lg flex justify-center">
+                <img 
+                  src={selectedReceiptOrder.pix_receipt_url || ''} 
+                  alt="Comprovante PIX" 
+                  className="max-w-full max-h-[50vh] object-contain rounded"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/placeholder.svg';
+                  }}
+                />
+              </div>
+              
+              {/* Order Details */}
+              <div className="grid grid-cols-2 gap-3 p-3 bg-muted/50 rounded-lg text-sm">
+                <div>
+                  <span className="text-muted-foreground text-xs">Valor Esperado:</span>
+                  <p className="font-bold text-lg text-primary">
+                    R$ {((selectedReceiptOrder.amount || 0) / 100).toFixed(2).replace('.', ',')}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-xs">Cliente:</span>
+                  <p className="font-medium">{selectedReceiptOrder.user_name || 'Não informado'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-xs">Música:</span>
+                  <p className="font-medium truncate">
+                    {selectedReceiptOrder.song_title || selectedReceiptOrder.lyric_title || selectedReceiptOrder.music_type}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground text-xs">Estilo:</span>
+                  <p className="font-medium">{selectedReceiptOrder.music_style}</p>
+                </div>
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                <Button
+                  onClick={() => {
+                    if (selectedReceiptOrder.pix_receipt_url) {
+                      window.open(selectedReceiptOrder.pix_receipt_url, '_blank');
+                    }
+                  }}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Abrir Original
+                </Button>
+                <Button
+                  onClick={async () => {
+                    await confirmPixPayment(selectedReceiptOrder.id, selectedReceiptOrder.user_id);
+                    setReceiptModalOpen(false);
+                    setSelectedReceiptOrder(null);
+                  }}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  disabled={confirmingPix === selectedReceiptOrder.id}
+                >
+                  {confirmingPix === selectedReceiptOrder.id ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                  )}
+                  Confirmar Pagamento
+                </Button>
+                <Button
+                  onClick={() => {
+                    setRejectOrderId(selectedReceiptOrder.id);
+                    setRejectUserId(selectedReceiptOrder.user_id);
+                    setReceiptModalOpen(false);
+                    setSelectedReceiptOrder(null);
+                    setShowRejectDialog(true);
+                  }}
+                  variant="destructive"
+                  className="flex-1"
+                >
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Rejeitar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
@@ -1991,14 +2095,15 @@ const AdminDashboard = () => {
                           )}
                         </div>
                         
-                        {/* PIX Receipt Preview */}
+                        {/* PIX Receipt Preview - Opens Modal */}
                         {order.pix_receipt_url && (
                           <div className="flex items-start gap-3 p-2 bg-background/50 rounded-lg border border-yellow-500/20">
-                            <a 
-                              href={order.pix_receipt_url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="shrink-0"
+                            <button 
+                              onClick={() => {
+                                setSelectedReceiptOrder(order);
+                                setReceiptModalOpen(true);
+                              }}
+                              className="shrink-0 focus:outline-none focus:ring-2 focus:ring-yellow-500 rounded-lg"
                             >
                               <img 
                                 src={order.pix_receipt_url} 
@@ -2008,20 +2113,21 @@ const AdminDashboard = () => {
                                   (e.target as HTMLImageElement).src = '/placeholder.svg';
                                 }}
                               />
-                            </a>
+                            </button>
                             <div className="flex-1 min-w-0">
                               <p className="text-xs font-medium text-yellow-400">📄 Comprovante Enviado</p>
                               <p className="text-[10px] text-muted-foreground mt-1">
                                 Clique na imagem para ampliar e verificar os dados do pagamento.
                               </p>
-                              <a 
-                                href={order.pix_receipt_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
+                              <button 
+                                onClick={() => {
+                                  setSelectedReceiptOrder(order);
+                                  setReceiptModalOpen(true);
+                                }}
                                 className="text-[10px] text-primary hover:underline mt-1 inline-block"
                               >
                                 Ver em tamanho original →
-                              </a>
+                              </button>
                             </div>
                           </div>
                         )}
@@ -2102,6 +2208,18 @@ const AdminDashboard = () => {
                             
                             // Now update status to MUSIC_GENERATING
                             await updateOrderStatus(order.id, 'MUSIC_GENERATING');
+
+                            // AUTO-GENERATE COVER: Trigger cover generation in background (non-blocking)
+                            if (!order.cover_url) {
+                              generateCoverImage(order.id).catch(err => {
+                                console.error('Auto cover generation failed:', err);
+                                // Non-blocking - don't show error to user
+                              });
+                              toast({
+                                title: '🎬 Produção iniciada!',
+                                description: 'Capa sendo gerada automaticamente em segundo plano...',
+                              });
+                            }
                           }} 
                           size="sm" 
                           className="flex-1 sm:flex-none text-xs sm:text-sm"
@@ -2228,17 +2346,46 @@ const AdminDashboard = () => {
             ) : (
               filteredCompletedOrders.map((order) => (
                 <Card key={order.id} className="p-3 sm:p-4 bg-card/30 border-border/30 opacity-80 hover:opacity-100 transition-opacity">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-sm sm:text-base truncate">{order.lyric_title || `Música ${order.music_type}`}</h3>
+                  <div className="flex items-center gap-3">
+                    {/* Cover thumbnail */}
+                    {order.cover_url ? (
+                      <img 
+                        src={order.cover_url} 
+                        alt="Capa" 
+                        className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover shadow-md shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                        <Music className="w-6 h-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base truncate">
+                        🎵 {order.song_title || order.lyric_title || `Música ${order.music_type}`}
+                      </h3>
                       <p className="text-xs sm:text-sm text-muted-foreground">
                         {order.music_style} • {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                        {order.user_name && <span className="ml-2">• 👤 {order.user_name}</span>}
                       </p>
                     </div>
+                    
                     <div className="flex items-center gap-2 shrink-0">
                       <Badge className={`${getStatusColor(order.status)} text-[10px] sm:text-xs`}>
                         {getStatusText(order.status)}
                       </Badge>
+                      {order.track_url && (
+                        <Button variant="ghost" size="sm" asChild className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                          <a href={order.track_url} target="_blank" rel="noopener noreferrer" title="Ouvir música">
+                            <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          </a>
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="sm" asChild className="h-7 w-7 sm:h-8 sm:w-8 p-0">
+                        <Link to={`/pedido/${order.id}`} title="Ver detalhes">
+                          <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Link>
+                      </Button>
                       <Button variant="ghost" size="sm" onClick={() => setDeleteOrderId(order.id)} className="h-7 w-7 sm:h-8 sm:w-8 p-0">
                         <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-destructive" />
                       </Button>
