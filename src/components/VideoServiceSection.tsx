@@ -1,8 +1,10 @@
-import { Video, Image, Play, Sparkles, ArrowRight, RefreshCw } from "lucide-react";
+import { Video, Image, Play, Sparkles, ArrowRight, RefreshCw, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+
+const WHATSAPP_NUMBER = "5516997310587";
 
 const VideoServiceSection = () => {
   return (
@@ -32,7 +34,8 @@ const VideoServiceSection = () => {
               </div>
               <h3 className="text-2xl font-bold mb-2">Vídeo Personalizado</h3>
               <div className="bg-primary/10 rounded-lg py-4 px-6 inline-block mb-4">
-                <span className="text-4xl font-bold text-primary">R$ 50</span>
+                <span className="text-sm text-muted-foreground">a partir de</span>
+                <span className="text-4xl font-bold text-primary ml-2">R$ 50</span>
               </div>
               <p className="text-muted-foreground max-w-md mx-auto">
                 Escolha uma das opções abaixo para criar seu vídeo com edição profissional
@@ -106,16 +109,30 @@ const VideoServiceSection = () => {
         </Card>
 
         {/* CTA */}
-        <div className="text-center">
-          <p className="text-muted-foreground mb-4">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">
             Disponível para qualquer pessoa — com ou sem música criada na plataforma
           </p>
-          <Button asChild size="lg" className="group">
-            <Link to="/auth">
-              Quero minha música em vídeo
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild size="lg" className="group">
+              <Link to="/auth">
+                Quero minha música em vídeo
+                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </Button>
+            <a 
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Olá! Gostaria de saber sobre outros planos de vídeo personalizados.`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg transition-colors"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Outros planos de vídeo
+            </a>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Projetos especiais? Fale conosco pelo WhatsApp para orçamentos personalizados
+          </p>
         </div>
       </div>
     </section>

@@ -525,45 +525,56 @@ const AudioSampleManager = ({
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
                 <Label className="text-sm font-medium flex items-center gap-2 mb-2">
                   <Music className="w-4 h-4 text-primary" />
-                  Músicas com Permissão de Uso
+                  Músicas com Permissão de Uso ({audioData.audio_type === 'instrumental' ? 'Instrumentais' : 'Vocais'})
                 </Label>
                 {loadingTracks ? (
                   <div className="flex items-center justify-center py-4 gap-2">
                     <Music className="w-5 h-5 animate-spin text-primary" />
                     <span className="text-sm text-muted-foreground">Carregando músicas aprovadas...</span>
                   </div>
-                ) : approvedTracks.length > 0 ? (
-                  <>
-                    <Select value={selectedTrack} onValueChange={handleSelectApprovedTrack}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecionar música aprovada..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {approvedTracks.map((track) => (
-                          <SelectItem key={track.order_id} value={track.order_id}>
-                            <div className="flex items-center gap-2">
-                              {track.cover_url && (
-                                <img src={track.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
-                              )}
-                              <Check className="w-4 h-4 text-primary" />
-                              <span className="font-medium">
-                                {track.song_title || track.lyric_title || `Música ${track.music_type}`}
-                              </span>
-                              <span className="text-xs text-muted-foreground">• {track.music_style}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {approvedTracks.length} música(s) disponíveis
+                ) : (() => {
+                  const selectedType = audioData.audio_type || 'vocal';
+                  const filteredTracks = approvedTracks.filter(track => {
+                    if (selectedType === 'vocal') {
+                      return track.music_type !== 'instrumental';
+                    } else {
+                      return track.music_type === 'instrumental';
+                    }
+                  });
+                  
+                  return filteredTracks.length > 0 ? (
+                    <>
+                      <Select value={selectedTrack} onValueChange={handleSelectApprovedTrack}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecionar música aprovada..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {filteredTracks.map((track) => (
+                            <SelectItem key={track.order_id} value={track.order_id}>
+                              <div className="flex items-center gap-2">
+                                {track.cover_url && (
+                                  <img src={track.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
+                                )}
+                                <Check className="w-4 h-4 text-primary" />
+                                <span className="font-medium">
+                                  {track.song_title || track.lyric_title || `Música ${track.music_type}`}
+                                </span>
+                                <span className="text-xs text-muted-foreground">• {track.music_style}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {filteredTracks.length} música(s) {selectedType === 'vocal' ? 'vocal(is)' : 'instrumental(is)'} disponíveis
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted-foreground py-2">
+                      Nenhuma música {selectedType === 'vocal' ? 'vocal' : 'instrumental'} com permissão de uso encontrada.
                     </p>
-                  </>
-                ) : (
-                  <p className="text-sm text-muted-foreground py-2">
-                    Nenhuma música com permissão de uso encontrada.
-                  </p>
-                )}
+                  );
+                })()}
               </div>
             )}
 
