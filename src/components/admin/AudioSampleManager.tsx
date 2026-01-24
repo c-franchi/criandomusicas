@@ -219,50 +219,17 @@ const AudioSampleManager = ({
     }
   };
 
-  const handleSelectApprovedTrack = (orderId: string) => {
+  const [generatingDescription, setGeneratingDescription] = useState(false);
+
+  const handleSelectApprovedTrack = async (orderId: string) => {
     const track = approvedTracks.find(t => t.order_id === orderId);
     if (track) {
       setSelectedTrack(orderId);
       
-      // Generate auto description based on lyrics and style
-      const generateDescription = () => {
-        const parts: string[] = [];
-        
-        // Use purpose if available
-        if (track.purpose) {
-          parts.push(`Para ${track.purpose.toLowerCase()}`);
-        }
-        
-        // Extract first verse or meaningful text from lyrics
-        if (track.lyric_body) {
-          const lines = track.lyric_body.split('\n').filter(line => 
-            line.trim() && 
-            !line.startsWith('[') && 
-            line.length > 10
-          );
-          if (lines.length > 0) {
-            // Get first meaningful line as context
-            const firstLine = lines[0].substring(0, 50);
-            parts.push(`"${firstLine}..."`);
-          }
-        }
-        
-        // Add user name if available
-        if (track.user_name) {
-          parts.push(`Criada para ${track.user_name}`);
-        }
-        
-        return parts.length > 0 ? parts.join(' • ') : `Uma ${track.music_type || 'música'} especial`;
-      };
-
-      // Determine occasion from real data (purpose, story) - not static mapping
+      // Determine occasion from real data (purpose, story)
       const getOccasion = () => {
-        // Priority 1: Use purpose if available
-        if (track.purpose) {
-          return track.purpose;
-        }
+        if (track.purpose) return track.purpose;
         
-        // Priority 2: Extract keywords from story
         if (track.story) {
           const storyLower = track.story.toLowerCase();
           if (storyLower.includes('trilha sonora') || storyLower.includes('vídeo') || storyLower.includes('video')) return 'Trilha Sonora';
@@ -275,7 +242,6 @@ const AudioSampleManager = ({
           if (storyLower.includes('namorados') || storyLower.includes('amor')) return 'Romântico';
         }
         
-        // Priority 3: Use music_type with proper casing
         if (track.music_type) {
           return track.music_type.charAt(0).toUpperCase() + track.music_type.slice(1);
         }
@@ -284,13 +250,16 @@ const AudioSampleManager = ({
       };
       
       const audioData = editingAudio || newAudio;
+      const title = track.song_title || track.lyric_title || `Música ${track.music_type}`;
+      
+      // Set initial data with loading description
       const updatedData = {
         ...audioData,
         audio_url: track.audio_url,
-        title: track.song_title || track.lyric_title || `Música ${track.music_type}`,
+        title,
         style: track.music_style || '',
         occasion: getOccasion(),
-        description: generateDescription(),
+        description: 'Gerando descrição com IA...',
         cover_url: track.cover_url || ''
       };
       
@@ -299,11 +268,56 @@ const AudioSampleManager = ({
       } else {
         setNewAudio(updatedData);
       }
-      
-      toast({ 
-        title: 'Música selecionada!', 
-        description: 'Título, descrição, capa e dados foram preenchidos automaticamente.' 
-      });
+
+      // Generate AI description
+      setGeneratingDescription(true);
+      try {
+        const { data, error } = await supabase.functions.invoke('generate-audio-description', {
+          body: {
+            title,
+            style: track.music_style,
+            purpose: track.purpose,
+            story: track.story,
+            lyricBody: track.lyric_body,
+            userName: track.user_name,
+            musicType: track.music_type
+          }
+        });
+
+        if (error) throw error;
+
+        const aiDescription = data?.description || `Uma música especial criada com muito carinho e dedicação.`;
+        
+        if (editingAudio) {
+          setEditingAudio(prev => prev ? { ...prev, description: aiDescription } : prev);
+        } else {
+          setNewAudio(prev => ({ ...prev, description: aiDescription }));
+        }
+
+        toast({ 
+          title: '✨ Descrição gerada com IA!', 
+          description: 'Título, descrição e dados foram preenchidos com toque humano.' 
+        });
+      } catch (error) {
+        console.error('Error generating AI description:', error);
+        // Fallback to simple description
+        const fallbackDesc = track.purpose 
+          ? `Uma música especial criada para celebrar ${track.purpose.toLowerCase()}.`
+          : 'Uma música única, feita com carinho e emoção.';
+        
+        if (editingAudio) {
+          setEditingAudio(prev => prev ? { ...prev, description: fallbackDesc } : prev);
+        } else {
+          setNewAudio(prev => ({ ...prev, description: fallbackDesc }));
+        }
+
+        toast({ 
+          title: 'Música selecionada!', 
+          description: 'Dados preenchidos. Você pode editar a descrição manualmente.' 
+        });
+      } finally {
+        setGeneratingDescription(false);
+      }
     }
   };
 
@@ -591,14 +605,21 @@ const AudioSampleManager = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Descrição</Label>
+              <Label className="flex items-center gap-2">
+                Descrição
+                {generatingDescription && (
+                  <span className="text-xs text-primary animate-pulse">✨ Gerando com IA...</span>
+                )}
+              </Label>
               <Textarea
                 value={audioData.description || ''}
                 onChange={(e) => editingAudio 
                   ? setEditingAudio({ ...editingAudio, description: e.target.value })
                   : setNewAudio({ ...newAudio, description: e.target.value })}
-                placeholder="Breve descrição"
-                rows={2}
+                placeholder="Descrição emocional e envolvente da música"
+                rows={3}
+                disabled={generatingDescription}
+                className={generatingDescription ? 'opacity-50' : ''}
               />
             </div>
 
