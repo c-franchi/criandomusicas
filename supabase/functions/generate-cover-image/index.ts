@@ -70,15 +70,20 @@ serve(async (req) => {
       }
     }
 
-    // Convert musical prompt to visual art prompt
-    const visualPrompt = `Create a stunning, professional album cover art. Style: ${basePrompt}. 
-    Requirements: 
-    - High quality digital art or photography style
-    - Vibrant, emotionally resonant colors
-    - NO text, NO letters, NO words, NO typography
-    - Suitable as a music streaming cover image
-    - ${order.is_instrumental ? 'Abstract, instrumental music vibe' : 'Soulful, emotional vocal music atmosphere'}
-    - Professional, polished, ready for commercial use`;
+    // Convert musical prompt to visual art prompt - REALISTIC IMAGES
+    const visualPrompt = `Create a PHOTOREALISTIC, cinematic album cover art. Theme: ${basePrompt}. 
+    
+    CRITICAL REQUIREMENTS:
+    - ULTRA REALISTIC photography style, NOT illustration, NOT cartoon, NOT digital art
+    - Professional DSLR camera quality, 85mm lens aesthetic
+    - Cinematic lighting with dramatic shadows and highlights
+    - Real textures: skin, fabric, nature, architecture
+    - NO text, NO letters, NO words, NO typography whatsoever
+    - ${order.is_instrumental ? 'Capture an atmospheric landscape or abstract natural scene' : 'Feature authentic human emotion and connection'}
+    - Professional color grading like high-end music videos
+    - Commercial quality suitable for Spotify/Apple Music covers
+    - Avoid any cartoonish, anime, or illustrated elements
+    - Focus on depth of field and bokeh for professional look`;
 
     console.log('Generating image with prompt:', visualPrompt.substring(0, 200) + '...');
 

@@ -439,6 +439,12 @@ ${cleanedLyrics}`;
       updateData.status = 'LYRICS_APPROVED';
     }
 
+    // Save song_title to order if provided
+    if (songTitle) {
+      updateData.song_title = songTitle;
+      console.log("Saving song_title to order:", songTitle);
+    }
+
     // Only save approved_lyric_id if it's a valid UUID (not "custom" string)
     if (!isInstrumental && isValidUuid(lyricId)) {
       updateData.approved_lyric_id = lyricId;
