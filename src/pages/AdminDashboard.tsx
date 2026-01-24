@@ -1608,10 +1608,21 @@ const AdminDashboard = () => {
                             <span className="ml-1">{getStatusText(order.status, order.payment_status)}</span>
                           </Badge>
                         </div>
-                        {/* Song Title - prominently displayed */}
-                        <h3 className="font-bold text-base sm:text-xl text-primary mb-1">
-                          🎵 {order.song_title || order.lyric_title || `Música ${order.music_type}`}
-                        </h3>
+                        {/* Song Title - prominently displayed with copy button */}
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-bold text-base sm:text-xl text-primary">
+                            🎵 {order.song_title || order.lyric_title || `Música ${order.music_type}`}
+                          </h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0 hover:bg-primary/10"
+                            onClick={() => copyToClipboard(order.song_title || order.lyric_title || `Música ${order.music_type}`, 'Nome da música')}
+                            title="Copiar nome da música"
+                          >
+                            <Copy className="w-3.5 h-3.5 text-muted-foreground hover:text-primary" />
+                          </Button>
+                        </div>
                         <p className="text-xs sm:text-sm text-muted-foreground">
                           {order.music_style} • {order.music_type} • 
                           {new Date(order.created_at).toLocaleDateString('pt-BR')}

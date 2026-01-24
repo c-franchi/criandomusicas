@@ -9,6 +9,7 @@ interface UserProfile {
   name: string | null;
   phone: string | null;
   whatsapp: string | null;
+  avatar_url: string | null;
   plan: string;
   songs_generated: number;
   created_at: string;

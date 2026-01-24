@@ -3,7 +3,7 @@ import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings, Bell, Download, RefreshCw, Trash2 } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Bell, Download, RefreshCw, Trash2, Home } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
@@ -291,6 +291,11 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="icon" asChild title="Voltar para Home">
+              <Link to="/">
+                <Home className="w-4 h-4" />
+              </Link>
+            </Button>
             <Button variant="outline" size="icon" asChild title="Instalar App">
               <Link to="/install">
                 <Download className="w-4 h-4" />

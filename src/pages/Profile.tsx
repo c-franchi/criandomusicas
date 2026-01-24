@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,7 +10,9 @@ import {
   Mail, 
   Save, 
   ArrowLeft,
-  Music
+  Music,
+  Camera,
+  Loader2
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +22,9 @@ const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -33,8 +38,82 @@ const Profile = () => {
         phone: profile.phone || "",
         whatsapp: (profile as any).whatsapp || ""
       });
+      setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: 'Arquivo inválido',
+        description: 'Por favor, selecione uma imagem.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: 'Arquivo muito grande',
+        description: 'A imagem deve ter no máximo 5MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      // Generate unique filename
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Upload to storage
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const newAvatarUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      // Update profile with new avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: newAvatarUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(newAvatarUrl);
+      toast({
+        title: 'Foto atualizada!',
+        description: 'Sua foto de perfil foi salva com sucesso.',
+      });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao enviar foto',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingAvatar(false);
+      // Reset input
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = '';
+      }
+    }
+  };
 
   const handleSave = async () => {
     if (!user) return;
@@ -108,13 +187,46 @@ const Profile = () => {
               Voltar ao Dashboard
             </Link>
           </Button>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
+          <div className="flex items-center gap-4">
+            {/* Avatar Upload */}
+            <div className="relative group">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+                id="avatar-upload"
+              />
+              <div 
+                className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                {uploadingAvatar ? (
+                  <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                ) : avatarUrl ? (
+                  <img 
+                    src={avatarUrl} 
+                    alt="Avatar" 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-8 h-8 text-primary" />
+                )}
+              </div>
+              <div 
+                className="absolute bottom-0 right-0 w-6 h-6 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-lg"
+                onClick={() => avatarInputRef.current?.click()}
+              >
+                <Camera className="w-3.5 h-3.5 text-primary-foreground" />
+              </div>
             </div>
             <div>
               <h1 className="text-2xl font-bold">Meu Perfil</h1>
               <p className="text-muted-foreground">Gerencie suas informações</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Clique na foto para alterar
+              </p>
             </div>
           </div>
         </div>
