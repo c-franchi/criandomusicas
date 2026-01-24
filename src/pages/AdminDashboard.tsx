@@ -66,6 +66,7 @@ import {
 import { AdminStatsCards, AudioSampleManager, type AudioSample, type PricingConfig, type Voucher, type PixConfig } from "@/components/admin";
 import VideoOrdersManager from "@/components/admin/VideoOrdersManager";
 import ReactionVideosManager from "@/components/admin/ReactionVideosManager";
+import ReviewsManager from "@/components/admin/ReviewsManager";
 
 interface AdminOrder {
   id: string;
@@ -105,7 +106,7 @@ const AdminDashboard = () => {
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
-  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions'>('pricing');
+  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions' | 'reviews'>('pricing');
   
   // PIX Config
   const [pixConfig, setPixConfig] = useState<PixConfig | null>(null);
@@ -1118,6 +1119,10 @@ const AdminDashboard = () => {
                         <Camera className="w-4 h-4 mr-1" />
                         <span className="hidden sm:inline">Reações</span>
                       </TabsTrigger>
+                      <TabsTrigger value="reviews" className="text-xs sm:text-sm">
+                        <MessageCircle className="w-4 h-4 mr-1" />
+                        <span className="hidden sm:inline">Avaliações</span>
+                      </TabsTrigger>
                     </TabsList>
                     
                     {/* PRICING TAB */}
@@ -1492,6 +1497,11 @@ const AdminDashboard = () => {
                     {/* REACTION VIDEOS TAB */}
                     <TabsContent value="reactions" className="space-y-4 mt-4">
                       <ReactionVideosManager />
+                    </TabsContent>
+
+                    {/* REVIEWS TAB */}
+                    <TabsContent value="reviews" className="space-y-4 mt-4">
+                      <ReviewsManager />
                     </TabsContent>
                   </Tabs>
                 </DialogContent>
