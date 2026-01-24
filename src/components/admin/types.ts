@@ -72,8 +72,12 @@ export interface ApprovedMusicTrack {
   order_id: string;
   audio_url: string;
   lyric_title: string | null;
+  song_title: string | null;
   music_type: string | null;
   music_style: string | null;
+  purpose: string | null;
+  cover_url: string | null;
+  lyric_body: string | null;
   user_name: string | null;
   created_at: string;
 }

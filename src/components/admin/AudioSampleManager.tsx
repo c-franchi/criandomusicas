@@ -97,13 +97,13 @@ const AudioSampleManager = ({
       for (const track of tracksData) {
         const { data: orderData } = await supabase
           .from('orders')
-          .select('music_type, music_style, user_id, created_at')
+          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title')
           .eq('id', track.order_id)
           .single();
 
         const { data: lyricData } = await supabase
           .from('lyrics')
-          .select('title')
+          .select('title, body')
           .eq('order_id', track.order_id)
           .eq('is_approved', true)
           .single();
@@ -122,8 +122,12 @@ const AudioSampleManager = ({
           order_id: track.order_id,
           audio_url: track.audio_url || '',
           lyric_title: lyricData?.title || null,
+          song_title: orderData?.song_title || null,
           music_type: orderData?.music_type || null,
           music_style: orderData?.music_style || null,
+          purpose: orderData?.purpose || null,
+          cover_url: orderData?.cover_url || null,
+          lyric_body: lyricData?.body || null,
           user_name: userName,
           created_at: orderData?.created_at || ''
         });
@@ -217,14 +221,59 @@ const AudioSampleManager = ({
     const track = approvedTracks.find(t => t.order_id === orderId);
     if (track) {
       setSelectedTrack(orderId);
+      
+      // Generate auto description based on lyrics and style
+      const generateDescription = () => {
+        const parts: string[] = [];
+        
+        // Use purpose if available
+        if (track.purpose) {
+          parts.push(`Para ${track.purpose.toLowerCase()}`);
+        }
+        
+        // Extract first verse or meaningful text from lyrics
+        if (track.lyric_body) {
+          const lines = track.lyric_body.split('\n').filter(line => 
+            line.trim() && 
+            !line.startsWith('[') && 
+            line.length > 10
+          );
+          if (lines.length > 0) {
+            // Get first meaningful line as context
+            const firstLine = lines[0].substring(0, 50);
+            parts.push(`"${firstLine}..."`);
+          }
+        }
+        
+        // Add user name if available
+        if (track.user_name) {
+          parts.push(`Criada para ${track.user_name}`);
+        }
+        
+        return parts.length > 0 ? parts.join(' • ') : `Uma ${track.music_type || 'música'} especial`;
+      };
+
+      // Determine occasion from music_type
+      const getOccasion = () => {
+        const typeToOccasion: Record<string, string> = {
+          'romantica': 'Casamento, Dia dos Namorados',
+          'homenagem': 'Aniversário, Homenagem',
+          'infantil': 'Aniversário Infantil',
+          'motivacional': 'Superação, Motivação',
+          'parodia': 'Festa, Diversão'
+        };
+        return typeToOccasion[track.music_type || ''] || track.music_type || '';
+      };
+      
       const audioData = editingAudio || newAudio;
       const updatedData = {
         ...audioData,
         audio_url: track.audio_url,
-        title: track.lyric_title || `Música ${track.music_type}`,
+        title: track.song_title || track.lyric_title || `Música ${track.music_type}`,
         style: track.music_style || '',
-        occasion: track.music_type || '',
-        description: track.user_name ? `Criada para ${track.user_name}` : ''
+        occasion: getOccasion(),
+        description: generateDescription(),
+        cover_url: track.cover_url || ''
       };
       
       if (editingAudio) {
@@ -235,7 +284,7 @@ const AudioSampleManager = ({
       
       toast({ 
         title: 'Música selecionada!', 
-        description: 'Os dados foram preenchidos automaticamente.' 
+        description: 'Título, descrição, capa e dados foram preenchidos automaticamente.' 
       });
     }
   };
@@ -422,8 +471,13 @@ const AudioSampleManager = ({
                     {approvedTracks.map((track) => (
                       <SelectItem key={track.order_id} value={track.order_id}>
                         <div className="flex items-center gap-2">
+                          {track.cover_url && (
+                            <img src={track.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
+                          )}
                           <Check className="w-4 h-4 text-green-500" />
-                          <span>{track.lyric_title || `Música ${track.music_type}`}</span>
+                          <span className="font-medium">
+                            {track.song_title || track.lyric_title || `Música ${track.music_type}`}
+                          </span>
                           <span className="text-xs text-muted-foreground">• {track.music_style}</span>
                         </div>
                       </SelectItem>
