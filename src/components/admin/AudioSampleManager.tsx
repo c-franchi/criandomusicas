@@ -453,37 +453,64 @@ const AudioSampleManager = ({
           <p className="text-muted-foreground">Nenhum áudio cadastrado</p>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {audioSamples.map((audio) => (
-            <Card key={audio.id} className={`p-3 ${!audio.is_active ? 'opacity-50' : ''}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {audio.cover_url ? (
-                    <img src={audio.cover_url} alt={audio.title} className="w-10 h-10 rounded object-cover" />
-                  ) : (
-                    <div className="w-10 h-10 rounded bg-muted flex items-center justify-center">
-                      <Headphones className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">{audio.title}</p>
-                      <Badge variant="outline" className="text-xs">
-                        {audio.audio_type === 'instrumental' ? '🎹 Instrumental' : '🎤 Vocal'}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{audio.style} • {audio.occasion}</p>
+            <Card key={audio.id} className={`p-4 border-primary/20 hover:border-[hsl(45,100%,50%)] transition-all duration-300 ${!audio.is_active ? 'opacity-50' : ''}`}>
+              <div className="flex gap-4">
+                {/* Cover Image */}
+                {audio.cover_url ? (
+                  <img 
+                    src={audio.cover_url} 
+                    alt={audio.title} 
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover shadow-md shrink-0"
+                  />
+                ) : (
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                    <Headphones className="w-8 h-8 text-muted-foreground" />
                   </div>
+                )}
+                
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h3 className="font-bold text-base sm:text-lg text-primary truncate">
+                      🎵 {audio.title}
+                    </h3>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs shrink-0 ${
+                        audio.audio_type === 'instrumental' 
+                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
+                          : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                      }`}
+                    >
+                      {audio.audio_type === 'instrumental' ? '🎹 Instrumental' : '🎤 Vocal'}
+                    </Badge>
+                    <Badge variant={audio.is_active ? 'default' : 'secondary'} className="text-xs shrink-0">
+                      {audio.is_active ? '✓ Ativo' : 'Inativo'}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <span className="font-medium">{audio.style}</span>
+                    <span>•</span>
+                    <span>{audio.occasion}</span>
+                  </div>
+                  
+                  {audio.description && (
+                    <p className="text-sm text-foreground/80 line-clamp-2 leading-relaxed">
+                      {audio.description}
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center gap-1">
-                  <Badge variant={audio.is_active ? 'default' : 'secondary'} className="text-xs">
-                    {audio.is_active ? 'Ativo' : 'Inativo'}
-                  </Badge>
-                  <Button variant="ghost" size="sm" onClick={() => openDialog(audio)} className="h-8 w-8 p-0">
+                
+                {/* Actions */}
+                <div className="flex flex-col gap-1 shrink-0">
+                  <Button variant="outline" size="sm" onClick={() => openDialog(audio)} className="h-8 w-8 p-0">
                     <Edit className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => onDeleteAudio(audio.id)} className="h-8 w-8 p-0">
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                  <Button variant="ghost" size="sm" onClick={() => onDeleteAudio(audio.id)} className="h-8 w-8 p-0 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
