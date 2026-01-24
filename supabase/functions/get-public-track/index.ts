@@ -51,10 +51,10 @@ serve(async (req) => {
       );
     }
 
-    // Fetch order info for title/style
+    // Fetch order info for title/style/cover
     const { data: orderData } = await supabase
       .from("orders")
-      .select("music_style, music_type, is_instrumental, approved_lyric_id")
+      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url")
       .eq("id", orderId)
       .single();
 
@@ -78,7 +78,8 @@ serve(async (req) => {
       JSON.stringify({
         audio_url: trackData.audio_url,
         title,
-        music_style: orderData?.music_style || ""
+        music_style: orderData?.music_style || "",
+        cover_url: orderData?.cover_url || null
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
