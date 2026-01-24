@@ -301,7 +301,12 @@ const AdminDashboard = () => {
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
-      setAudioSamples(data || []);
+      // Cast audio_type to proper type
+      const typedData = (data || []).map(item => ({
+        ...item,
+        audio_type: (item.audio_type as 'vocal' | 'instrumental') || 'vocal'
+      }));
+      setAudioSamples(typedData);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({

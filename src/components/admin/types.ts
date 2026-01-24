@@ -43,6 +43,7 @@ export interface AudioSample {
   cover_url: string | null;
   is_active: boolean;
   sort_order: number;
+  audio_type: 'vocal' | 'instrumental';
 }
 
 export interface Voucher {
