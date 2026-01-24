@@ -18,7 +18,8 @@ import {
   Download,
   Upload,
   Send,
-  Loader2
+  Loader2,
+  Trash2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface VideoOrder {
   id: string;
@@ -158,6 +170,40 @@ const VideoOrdersManager = () => {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: 'Erro ao atualizar status',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const deleteVideoOrder = async (id: string) => {
+    try {
+      // First delete associated files from video_order_files
+      const { error: filesError } = await supabase
+        .from('video_order_files')
+        .delete()
+        .eq('video_order_id', id);
+
+      if (filesError) throw filesError;
+
+      // Then delete the video order itself
+      const { error } = await supabase
+        .from('video_orders')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Pedido removido!',
+        description: 'O pedido de vídeo foi removido com sucesso.',
+      });
+
+      setVideoOrders(prev => prev.filter(vo => vo.id !== id));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao remover pedido',
         description: errorMessage,
         variant: 'destructive',
       });
@@ -328,7 +374,20 @@ const VideoOrdersManager = () => {
     }
   };
 
-  const getVideoTypeText = (type: string) => {
+  const getVideoTypeLabel = (type: string, files?: { file_url: string; file_type: string; file_name: string | null }[]) => {
+    // Show actual content uploaded, not the type
+    if (files && files.length > 0) {
+      const imageCount = files.filter(f => f.file_type === 'image').length;
+      const videoCount = files.filter(f => f.file_type === 'video').length;
+      
+      const parts: string[] = [];
+      if (imageCount > 0) parts.push(`${imageCount} Foto${imageCount > 1 ? 's' : ''}`);
+      if (videoCount > 0) parts.push(`${videoCount} Vídeo${videoCount > 1 ? 's' : ''}`);
+      
+      return parts.length > 0 ? parts.join(' + ') : 'Sem arquivos';
+    }
+    
+    // Fallback to type if no files
     const typeMap: Record<string, string> = {
       'photos_5': '5 Fotos',
       'photos_8': '8 Fotos + 1 Vídeo',
@@ -427,7 +486,7 @@ const VideoOrdersManager = () => {
                         {getStatusText(order.status)}
                       </Badge>
                       <Badge variant="outline" className="text-xs">
-                        {getVideoTypeText(order.video_type)}
+                        {getVideoTypeLabel(order.video_type, order.files)}
                       </Badge>
                     </div>
                     <h3 className="font-semibold mt-1 truncate">
@@ -564,6 +623,37 @@ const VideoOrdersManager = () => {
                       </a>
                     </Button>
                   )}
+                  
+                  {/* Delete Button */}
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs border-destructive/50 text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-3 h-3 mr-1" />
+                        Remover
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remover Pedido de Vídeo?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação não pode ser desfeita. O pedido e todos os arquivos associados serão removidos permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => deleteVideoOrder(order.id)}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Remover
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
             </Card>
