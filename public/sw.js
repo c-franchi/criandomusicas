@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications
-// Version: 2.3.0 - Admin can view all orders + better pronunciation error handling
-const SW_VERSION = '2.3.0';
+// Version: 2.4.0 - Audio sample auto-description + video delete fix
+const SW_VERSION = '2.4.0';
 
 self.addEventListener('push', function(event) {
   console.log('[SW v' + SW_VERSION + '] Push received');
