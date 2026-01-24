@@ -439,22 +439,42 @@ export default function Checkout() {
       
       if (uploadError) throw uploadError;
       
-      // Get public URL
-      const { data: urlData } = supabase.storage
+      // Get signed URL for private bucket (admins access via has_role policy)
+      const { data: urlData } = await supabase.storage
         .from('pix-receipts')
-        .getPublicUrl(fileName);
+        .createSignedUrl(fileName, 60 * 60 * 24 * 30); // 30 days validity
+      
+      const receiptUrl = urlData?.signedUrl || `pix-receipts/${fileName}`;
       
       // Update order with receipt URL and status
       const { error: updateError } = await supabase
         .from('orders')
         .update({
-          pix_receipt_url: urlData.publicUrl,
+          pix_receipt_url: receiptUrl,
           payment_status: 'AWAITING_PIX',
-          payment_method: 'pix'
+          payment_method: 'pix',
+          pix_rejection_reason: null // Clear any previous rejection
         })
         .eq('id', order.id);
       
       if (updateError) throw updateError;
+      
+      // Notify admins about new PIX receipt
+      try {
+        await supabase.functions.invoke('notify-admin-order', {
+          body: {
+            orderId: order.id,
+            userId: user.id,
+            orderType: order.is_instrumental ? 'instrumental' : 'vocal',
+            userName: 'Cliente',
+            musicType: order.music_type || 'personalizada',
+            isPixReceipt: true
+          }
+        });
+      } catch (notifyError) {
+        console.error('Failed to notify admin:', notifyError);
+        // Don't fail the whole request for this
+      }
       
       setPixConfirmed(true);
       setShowReceiptUpload(false);
@@ -798,6 +818,17 @@ export default function Checkout() {
                   <p className="text-xs text-muted-foreground">Pagamento instantâneo</p>
                 </div>
               </Button>
+
+              {/* PIX Flow Instructions */}
+              <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
+                <p className="text-xs text-emerald-400 font-medium mb-1">📋 Como funciona o pagamento via PIX:</p>
+                <ol className="text-[10px] sm:text-xs text-muted-foreground space-y-1">
+                  <li>1. Escaneie o QR Code ou copie a chave PIX</li>
+                  <li>2. Realize o pagamento no app do seu banco</li>
+                  <li>3. <strong>Envie o comprovante</strong> para confirmar</li>
+                  <li>4. Aguarde a verificação (em até 30 minutos)</li>
+                </ol>
+              </div>
 
               <p className="text-xs text-center text-muted-foreground mt-3">
                 Pagamento seguro • Dados protegidos

@@ -95,6 +95,11 @@ interface AdminOrder {
   song_title?: string | null;
   cover_url?: string | null;
   pix_receipt_url?: string | null;
+  pix_rejection_reason?: string | null;
+  amount?: number;
+  purpose?: string;
+  emotion?: string;
+  voice_type?: string;
 }
 
 const AdminDashboard = () => {
@@ -151,6 +156,13 @@ const AdminDashboard = () => {
   // PIX confirmation loading
   const [confirmingPix, setConfirmingPix] = useState<string | null>(null);
   
+  // PIX rejection
+  const [rejectingPix, setRejectingPix] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
+  const [rejectOrderId, setRejectOrderId] = useState<string | null>(null);
+  const [rejectUserId, setRejectUserId] = useState<string | null>(null);
+  
   // Cover generation loading
   const [generatingCover, setGeneratingCover] = useState<string | null>(null);
 
@@ -180,7 +192,12 @@ const AdminDashboard = () => {
           solo_moment,
           song_title,
           cover_url,
-          pix_receipt_url
+          pix_receipt_url,
+          pix_rejection_reason,
+          amount,
+          purpose,
+          emotion,
+          voice_type
         `)
         .order('created_at', { ascending: false });
 
@@ -772,6 +789,70 @@ const AdminDashboard = () => {
     }
   };
 
+  // Reject PIX payment
+  const rejectPixPayment = async (orderId: string, userId: string, reason: string) => {
+    setRejectingPix(orderId);
+    try {
+      // Update order to rejected status
+      const { error } = await supabase
+        .from('orders')
+        .update({ 
+          payment_status: 'PENDING',
+          status: 'AWAITING_PAYMENT',
+          pix_rejection_reason: reason,
+          pix_receipt_url: null // Clear receipt to allow re-upload
+        })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      // Send push notification to user about rejection
+      try {
+        await supabase.functions.invoke('send-push-notification', {
+          body: {
+            user_id: userId,
+            order_id: orderId,
+            title: '⚠️ Problema com seu pagamento PIX',
+            body: `Motivo: ${reason}. Por favor, tente novamente.`,
+            url: `/checkout/${orderId}`
+          }
+        });
+      } catch (pushError) {
+        console.error('Push notification error:', pushError);
+      }
+
+      toast({
+        title: '❌ Pagamento rejeitado',
+        description: 'O cliente foi notificado e pode tentar novamente.',
+      });
+
+      // Update local state
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { 
+          ...o, 
+          payment_status: 'PENDING', 
+          status: 'AWAITING_PAYMENT',
+          pix_rejection_reason: reason,
+          pix_receipt_url: null
+        } : o
+      ));
+
+      setShowRejectDialog(false);
+      setRejectionReason('');
+      setRejectOrderId(null);
+      setRejectUserId(null);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({
+        title: 'Erro ao rejeitar pagamento',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    } finally {
+      setRejectingPix(null);
+    }
+  };
+
   // Upload music file and mark as ready
   const handleMusicUpload = async (file: File, order: AdminOrder) => {
     if (!file) return;
@@ -1099,6 +1180,54 @@ const AdminDashboard = () => {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDeleteVoucher} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Apagar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* PIX Rejection Dialog */}
+      <AlertDialog open={showRejectDialog} onOpenChange={(open) => {
+        if (!open) {
+          setShowRejectDialog(false);
+          setRejectionReason('');
+          setRejectOrderId(null);
+          setRejectUserId(null);
+        }
+      }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Rejeitar Pagamento PIX</AlertDialogTitle>
+            <AlertDialogDescription>
+              Informe o motivo da rejeição. O cliente será notificado e poderá tentar novamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Label htmlFor="rejection-reason" className="text-sm font-medium">Motivo da Rejeição *</Label>
+            <Select value={rejectionReason} onValueChange={setRejectionReason}>
+              <SelectTrigger className="mt-2">
+                <SelectValue placeholder="Selecione o motivo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Valor incorreto">Valor incorreto</SelectItem>
+                <SelectItem value="Comprovante ilegível">Comprovante ilegível</SelectItem>
+                <SelectItem value="Comprovante inválido">Comprovante inválido</SelectItem>
+                <SelectItem value="Pagamento não identificado">Pagamento não identificado</SelectItem>
+                <SelectItem value="Dados do destinatário incorretos">Dados do destinatário incorretos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                if (rejectOrderId && rejectUserId && rejectionReason) {
+                  rejectPixPayment(rejectOrderId, rejectUserId, rejectionReason);
+                }
+              }} 
+              disabled={!rejectionReason || rejectingPix === rejectOrderId}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {rejectingPix === rejectOrderId ? 'Rejeitando...' : 'Rejeitar Pagamento'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1792,26 +1921,74 @@ const AdminDashboard = () => {
                     {/* PIX Confirmation Alert with Receipt Preview */}
                     {order.payment_status === 'AWAITING_PIX' && (
                       <div className="p-2 sm:p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg space-y-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <p className="text-xs sm:text-sm font-medium text-yellow-400">Aguardando confirmação do PIX</p>
-                            <p className="text-[10px] sm:text-xs text-muted-foreground">Verifique o comprovante e confirme manualmente</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">
+                              Valor esperado: <strong>R$ {((order.amount || 0) / 100).toFixed(2).replace('.', ',')}</strong>
+                            </p>
                           </div>
-                          <Button 
-                            onClick={() => confirmPixPayment(order.id, order.user_id)} 
-                            size="sm" 
-                            className="bg-yellow-500 hover:bg-yellow-600 text-black shrink-0 text-xs sm:text-sm"
-                            disabled={confirmingPix === order.id}
-                          >
-                            {confirmingPix === order.id ? (
-                              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 animate-spin" />
-                            ) : (
-                              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                            )}
-                            <span className="hidden sm:inline">{confirmingPix === order.id ? 'Confirmando...' : 'Confirmar PIX'}</span>
-                            <span className="sm:hidden">{confirmingPix === order.id ? '...' : 'Confirmar'}</span>
-                          </Button>
+                          <div className="flex gap-2 shrink-0">
+                            <Button 
+                              onClick={() => confirmPixPayment(order.id, order.user_id)} 
+                              size="sm" 
+                              className="bg-yellow-500 hover:bg-yellow-600 text-black text-xs sm:text-sm"
+                              disabled={confirmingPix === order.id}
+                            >
+                              {confirmingPix === order.id ? (
+                                <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                              ) : (
+                                <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                              )}
+                              <span className="hidden sm:inline">{confirmingPix === order.id ? 'Confirmando...' : 'Confirmar'}</span>
+                              <span className="sm:hidden">✓</span>
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                setRejectOrderId(order.id);
+                                setRejectUserId(order.user_id);
+                                setShowRejectDialog(true);
+                              }} 
+                              size="sm" 
+                              variant="outline"
+                              className="border-destructive/50 text-destructive hover:bg-destructive/10 text-xs sm:text-sm"
+                            >
+                              <AlertCircle className="w-3.5 h-3.5 mr-1" />
+                              <span className="hidden sm:inline">Rejeitar</span>
+                              <span className="sm:hidden">✕</span>
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Order Details for Admin */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 bg-background/30 rounded text-[10px] sm:text-xs">
+                          <div>
+                            <span className="text-muted-foreground">Tipo:</span>
+                            <p className="font-medium">{order.music_type || '-'}</p>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Estilo:</span>
+                            <p className="font-medium">{order.music_style || '-'}</p>
+                          </div>
+                          {order.purpose && (
+                            <div>
+                              <span className="text-muted-foreground">Ocasião:</span>
+                              <p className="font-medium">{order.purpose}</p>
+                            </div>
+                          )}
+                          {order.emotion && (
+                            <div>
+                              <span className="text-muted-foreground">Emoção:</span>
+                              <p className="font-medium">{order.emotion}</p>
+                            </div>
+                          )}
+                          {order.voice_type && !order.is_instrumental && (
+                            <div>
+                              <span className="text-muted-foreground">Voz:</span>
+                              <p className="font-medium">{order.voice_type}</p>
+                            </div>
+                          )}
                         </div>
                         
                         {/* PIX Receipt Preview */}
@@ -1827,6 +2004,9 @@ const AdminDashboard = () => {
                                 src={order.pix_receipt_url} 
                                 alt="Comprovante PIX" 
                                 className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border-2 border-yellow-500/30 hover:border-yellow-500 transition-colors cursor-pointer"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = '/placeholder.svg';
+                                }}
                               />
                             </a>
                             <div className="flex-1 min-w-0">

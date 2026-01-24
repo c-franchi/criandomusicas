@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, userId, orderType, userName, musicType } = await req.json();
+    const { orderId, userId, orderType, userName, musicType, isPixReceipt } = await req.json();
 
     if (!orderId) {
       return new Response(
@@ -70,11 +70,22 @@ serve(async (req) => {
 
     console.log(`Sending notifications to ${subscriptions.length} admin devices`);
 
-    // Format notification
+    // Format notification based on type
     const isInstrumental = orderType === "instrumental";
-    const title = "🎵 Novo Pedido Recebido!";
-    const body = `${userName || "Cliente"} pediu uma música ${isInstrumental ? "instrumental" : "cantada"} (${musicType || "personalizada"})`;
-    const url = `/admin`;
+    
+    let title: string;
+    let body: string;
+    let url: string;
+    
+    if (isPixReceipt) {
+      title = "💰 Comprovante PIX Recebido!";
+      body = `${userName || "Cliente"} enviou comprovante para música ${isInstrumental ? "instrumental" : "cantada"} - VERIFICAR`;
+      url = `/admin`;
+    } else {
+      title = "🎵 Novo Pedido Recebido!";
+      body = `${userName || "Cliente"} pediu uma música ${isInstrumental ? "instrumental" : "cantada"} (${musicType || "personalizada"})`;
+      url = `/admin`;
+    }
 
     // Get VAPID keys
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
