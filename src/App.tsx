@@ -8,6 +8,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { usePWAUpdate } from "@/hooks/usePWAUpdate";
 import PageLoader from "@/components/PageLoader";
 import UpdateBanner from "@/components/UpdateBanner";
+import ProfileOnboardingWrapper from "@/components/ProfileOnboardingWrapper";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -57,6 +58,7 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <PWAUpdateHandler />
+        <ProfileOnboardingWrapper />
         <Toaster />
         <Sonner />
         <BrowserRouter>

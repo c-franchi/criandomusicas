@@ -13,6 +13,7 @@ import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const Index = () => {
   return (
@@ -37,6 +38,7 @@ const Index = () => {
       <CTA />
       <Footer />
       <CookieConsent />
+      <ScrollToTop />
     </main>
   );
 };
