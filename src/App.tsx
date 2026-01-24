@@ -27,6 +27,7 @@ const OrderLyricsPage = lazy(() => import("./pages/OrderLyricsPage"));
 const Planos = lazy(() => import("./pages/Planos"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const AdminSettings = lazy(() => import("./pages/AdminSettings"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const Install = lazy(() => import("./pages/Install"));
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/perfil" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/configuracoes" element={<AdminSettings />} />
               <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
               <Route path="/checkout/:orderId" element={<Checkout />} />
               <Route path="/install" element={<Install />} />
