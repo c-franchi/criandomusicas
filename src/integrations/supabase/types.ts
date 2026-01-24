@@ -234,6 +234,7 @@ export type Database = {
           payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           pix_receipt_url: string | null
+          pix_rejection_reason: string | null
           prompt_validation_score: number | null
           pronunciations: Json | null
           purpose: string | null
@@ -280,6 +281,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           pix_receipt_url?: string | null
+          pix_rejection_reason?: string | null
           prompt_validation_score?: number | null
           pronunciations?: Json | null
           purpose?: string | null
@@ -326,6 +328,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           pix_receipt_url?: string | null
+          pix_rejection_reason?: string | null
           prompt_validation_score?: number | null
           pronunciations?: Json | null
           purpose?: string | null
