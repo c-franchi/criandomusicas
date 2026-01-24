@@ -1596,8 +1596,12 @@ const Briefing = () => {
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          {stepHistory.length > 0 && (
+          {stepHistory.length > 0 ? (
             <Button variant="ghost" size="icon" onClick={handleGoBack} className="mr-1">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          ) : (
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="mr-1" title="Voltar à homepage">
               <ArrowLeft className="w-5 h-5" />
             </Button>
           )}
