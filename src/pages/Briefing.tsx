@@ -229,7 +229,7 @@ const Briefing = () => {
 
   // Encontrar o step onde o usuário parou
   const getSavedStep = (data: BriefingFormData): number => {
-    // Fluxo "Já tenho a letra" (índices 22-27)
+    // Fluxo "Já tenho a letra" (índices 22-28)
     if (data.hasCustomLyric) {
       if (!data.customLyricText) return 22;
       if (!data.musicType) return 23;
@@ -237,6 +237,7 @@ const Briefing = () => {
       if (!data.style) return 25;
       if (!data.rhythm) return 26;
       if (!data.atmosphere) return 27;
+      if (!data.songName) return 28;  // Novo passo para nome da música
       return 100;
     }
     
@@ -525,7 +526,7 @@ const Briefing = () => {
       inputType: 'text',
       field: 'songName'
     },
-    // FLUXO "JÁ TENHO A LETRA" (índices 22-27 do array)
+    // FLUXO "JÁ TENHO A LETRA" (índices 22-28 do array)
     // Índice 22: Cole sua letra
     {
       type: 'bot',
@@ -601,6 +602,13 @@ const Briefing = () => {
         { id: "epico", label: "🏔️ Épico" },
         { id: "leve", label: "☁️ Leve" }
       ]
+    },
+    // Índice 28: Nome da música (custom lyric) - NOVO PASSO
+    {
+      type: 'bot',
+      content: "Qual nome você quer dar para sua música? ✨",
+      inputType: 'text',
+      field: 'songName'
     }
   ];
 
@@ -731,14 +739,15 @@ const Briefing = () => {
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
     }
     
-    // FLUXO "JÁ TENHO A LETRA" (índices 22-27 do chatFlow)
+    // FLUXO "JÁ TENHO A LETRA" (índices 22-28 do chatFlow)
     if (data.hasCustomLyric) {
       if (current === 22) return 23; // customLyricText -> musicType
       if (current === 23) return 24; // musicType -> voiceType
       if (current === 24) return 25; // voiceType -> style
       if (current === 25) return 26; // style -> rhythm
       if (current === 26) return 27; // rhythm -> atmosphere
-      if (current === 27) return 100; // atmosphere -> confirmação
+      if (current === 27) return 28; // atmosphere -> songName (NOVO!)
+      if (current === 28) return 100; // songName -> confirmação
     }
     
     // FLUXO INSTRUMENTAL (2-9, 20-21)
@@ -1198,8 +1207,8 @@ const Briefing = () => {
           solo_instrument: briefingData.soloInstrument || null,
           solo_moment: briefingData.soloMoment || null,
           instrumentation_notes: briefingData.instrumentationNotes || null,
-          // Título da música (para instrumental e vocal)
-          song_title: briefingData.autoGenerateName ? null : briefingData.songName || null,
+          // Título da música (para instrumental, vocal e letra própria)
+          song_title: briefingData.hasCustomLyric ? (briefingData.songName || null) : (briefingData.autoGenerateName ? null : briefingData.songName || null),
         })
         .select()
         .single();
@@ -1353,7 +1362,7 @@ const Briefing = () => {
             <div>
               <h1 className="font-semibold">Confirme seu Briefing</h1>
               <p className="text-sm text-muted-foreground">
-                {formData.isInstrumental ? "Música Instrumental 🎹" : "Música Cantada 🎤"}
+                {formData.hasCustomLyric ? "📝 Letra Própria" : formData.isInstrumental ? "Música Instrumental 🎹" : "Música Cantada 🎤"}
               </p>
             </div>
           </div>
@@ -1364,9 +1373,11 @@ const Briefing = () => {
             <div className="bg-muted rounded-2xl p-6 space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 🎵 Resumo da sua música
-                {formData.isInstrumental && (
+                {formData.hasCustomLyric ? (
+                  <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 border-amber-500/30">📝 Letra Própria</Badge>
+                ) : formData.isInstrumental ? (
                   <Badge variant="secondary">Instrumental</Badge>
-                )}
+                ) : null}
               </h2>
               
               <div className="space-y-3">
@@ -1385,29 +1396,34 @@ const Briefing = () => {
                   // Campos para letra customizada
                   <>
                     <ConfirmationItem 
+                      label="Nome da música" 
+                      value={formData.songName || "(não definido)"} 
+                      onEdit={() => handleEditField(28)} 
+                    />
+                    <ConfirmationItem 
                       label="Letra" 
                       value={formData.customLyricText.length > 100 ? formData.customLyricText.substring(0, 100) + "..." : formData.customLyricText} 
-                      onEdit={() => handleEditField(30)} 
+                      onEdit={() => handleEditField(22)} 
                     />
                     <ConfirmationItem 
                       label="Tipo de voz" 
                       value={getFieldLabel('voiceType', formData.voiceType)} 
-                      onEdit={() => handleEditField(32)} 
+                      onEdit={() => handleEditField(24)} 
                     />
                     <ConfirmationItem 
                       label="Estilo" 
                       value={getFieldLabel('style', formData.style)} 
-                      onEdit={() => handleEditField(33)} 
+                      onEdit={() => handleEditField(25)} 
                     />
                     <ConfirmationItem 
                       label="Ritmo" 
                       value={getFieldLabel('rhythm', formData.rhythm)} 
-                      onEdit={() => handleEditField(34)} 
+                      onEdit={() => handleEditField(26)} 
                     />
                     <ConfirmationItem 
                       label="Atmosfera" 
                       value={getFieldLabel('atmosphere', formData.atmosphere)} 
-                      onEdit={() => handleEditField(35)} 
+                      onEdit={() => handleEditField(27)} 
                     />
                   </>
                 ) : formData.isInstrumental ? (

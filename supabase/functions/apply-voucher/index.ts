@@ -49,7 +49,7 @@ serve(async (req) => {
     // Verify order belongs to user
     const { data: order, error: orderError } = await supabaseClient
       .from('orders')
-      .select('id, user_id, amount, payment_status, is_instrumental')
+      .select('id, user_id, amount, payment_status, is_instrumental, has_custom_lyric')
       .eq('id', orderId)
       .single();
 
@@ -157,9 +157,10 @@ serve(async (req) => {
 
     if (isFree) {
       orderUpdate.payment_status = 'PAID';
-      // Instrumental goes directly to production (LYRICS_APPROVED = ready for style prompt)
-      // Vocal needs to generate lyrics first (LYRICS_PENDING)
-      orderUpdate.status = order.is_instrumental ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
+      // Instrumental and custom lyrics go directly to production (LYRICS_APPROVED = ready for style prompt)
+      // They already have their "lyrics" (instrumental has none, custom has user's text)
+      // Regular vocal needs to generate lyrics first (LYRICS_PENDING)
+      orderUpdate.status = (order.is_instrumental || order.has_custom_lyric) ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
     }
 
     const { error: updateError } = await supabaseClient

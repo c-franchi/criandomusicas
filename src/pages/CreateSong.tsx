@@ -138,6 +138,29 @@ const CreateSong = () => {
         setEditedLyric(customLyric.body);
         setEditedTitle(customLyric.title);
         
+        // Reconstruir briefingData para letra customizada
+        const customBriefing: BriefingData = {
+          musicType: orderData.music_type || 'homenagem',
+          emotion: orderData.emotion || 'alegria',
+          emotionIntensity: orderData.emotion_intensity || 3,
+          story: orderData.story || '',
+          structure: [],
+          hasMonologue: false,
+          monologuePosition: '',
+          mandatoryWords: '',
+          restrictedWords: '',
+          style: orderData.music_style || 'pop',
+          rhythm: orderData.rhythm || 'moderado',
+          atmosphere: orderData.atmosphere || 'festivo',
+          songName: orderData.song_title || '',
+          autoGenerateName: !orderData.song_title,
+          plan: 'single',
+          lgpdConsent: true,
+          voiceType: orderData.voice_type || 'feminina',
+          hasCustomLyric: true
+        };
+        setBriefingData(customBriefing);
+        
         // Ir direto para a etapa de edição/aprovação
         setStep("editing");
         toast.info("Revise sua letra e aprove para produção");
@@ -353,12 +376,22 @@ const CreateSong = () => {
       orderId,
       editedLyric: editedLyric?.substring(0, 50),
       editedLyricLength: editedLyric?.length,
-      briefingData: briefingData ? 'exists' : 'null'
+      briefingData: briefingData ? 'exists' : 'null',
+      hasCustomLyric: briefingData?.hasCustomLyric
     });
     
-    if (!selectedLyric || !orderId || !briefingData) {
-      console.error("Missing required data:", { selectedLyric: !!selectedLyric, orderId: !!orderId, briefingData: !!briefingData });
+    // Para letras customizadas, podemos aprovar mesmo sem selectedLyric já que temos editedLyric
+    const isCustomLyric = briefingData?.hasCustomLyric === true;
+    
+    if (!isCustomLyric && !selectedLyric) {
+      console.error("Missing selectedLyric for non-custom lyric");
       toast.error("Dados incompletos", { description: "Selecione uma letra antes de aprovar" });
+      return;
+    }
+    
+    if (!orderId || !briefingData) {
+      console.error("Missing required data:", { orderId: !!orderId, briefingData: !!briefingData });
+      toast.error("Dados incompletos", { description: "Dados do pedido não encontrados" });
       return;
     }
     
@@ -373,13 +406,17 @@ const CreateSong = () => {
 
     try {
       // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
+      // Para letra customizada, usar 'custom' como lyricId
+      const lyricId = selectedLyric?.id || 'custom';
+      
       const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
         body: {
           orderId,
-          lyricId: selectedLyric.id,
+          lyricId: lyricId,
           approvedLyrics: editedLyric,
           songTitle: editedTitle,
           pronunciations: customPronunciations || pronunciations,
+          hasCustomLyric: briefingData.hasCustomLyric || false,
           briefing: {
             musicType: briefingData.musicType,
             emotion: briefingData.emotion,
