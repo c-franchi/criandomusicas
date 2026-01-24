@@ -3,9 +3,31 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-// VAPID Public Key - This is a PUBLIC key and safe to expose in client code
-// The key is used to identify the application server when subscribing to push notifications
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || 'BPUYkF8XxABC123DEF456ghiJKLmnopQRstuVWxyz789';
+// Cache for VAPID key
+let cachedVapidKey: string | null = null;
+
+async function getVapidPublicKey(): Promise<string | null> {
+  if (cachedVapidKey) return cachedVapidKey;
+  
+  try {
+    const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
+    
+    if (error) {
+      console.error('[Push] Error fetching VAPID key:', error);
+      return null;
+    }
+    
+    if (data?.vapidPublicKey) {
+      cachedVapidKey = data.vapidPublicKey;
+      return cachedVapidKey;
+    }
+    
+    return null;
+  } catch (err) {
+    console.error('[Push] Failed to fetch VAPID key:', err);
+    return null;
+  }
+}
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -72,7 +94,7 @@ export const usePushNotifications = () => {
   }, [isSupported, user]);
 
   const subscribe = useCallback(async () => {
-    console.log('[Push] Subscribe called. isSupported:', isSupported, 'user:', !!user, 'VAPID_PUBLIC_KEY:', VAPID_PUBLIC_KEY ? 'SET' : 'MISSING');
+    console.log('[Push] Subscribe called. isSupported:', isSupported, 'user:', !!user);
     
     if (!isSupported || !user) {
       toast({
@@ -83,18 +105,25 @@ export const usePushNotifications = () => {
       return false;
     }
 
-    if (!VAPID_PUBLIC_KEY) {
-      console.error('[Push] VITE_VAPID_PUBLIC_KEY not configured in environment');
-      toast({
-        title: 'Erro de configuração',
-        description: 'Chave VAPID não configurada. Contate o suporte.',
-        variant: 'destructive'
-      });
-      return false;
-    }
-
     setIsLoading(true);
     try {
+      // Fetch VAPID key from backend
+      console.log('[Push] Fetching VAPID public key from backend...');
+      const vapidPublicKey = await getVapidPublicKey();
+      
+      if (!vapidPublicKey) {
+        console.error('[Push] VAPID_PUBLIC_KEY not configured');
+        toast({
+          title: 'Erro de configuração',
+          description: 'Chave VAPID não configurada. Contate o suporte.',
+          variant: 'destructive'
+        });
+        setIsLoading(false);
+        return false;
+      }
+      
+      console.log('[Push] VAPID key fetched successfully, length:', vapidPublicKey.length);
+      
       // Request permission
       console.log('[Push] Requesting notification permission...');
       const permissionResult = await Notification.requestPermission();
@@ -136,11 +165,10 @@ export const usePushNotifications = () => {
 
       // Subscribe to push with better error handling
       console.log('[Push] Subscribing to push manager with VAPID key...');
-      console.log('[Push] VAPID key length:', VAPID_PUBLIC_KEY.length);
       
       let applicationServerKey: Uint8Array;
       try {
-        applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+        applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
         console.log('[Push] Converted VAPID key, length:', applicationServerKey.length);
       } catch (keyError) {
         console.error('[Push] Invalid VAPID key format:', keyError);
