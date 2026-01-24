@@ -48,7 +48,8 @@ const AudioSampleManager = ({
     audio_url: '',
     cover_url: '',
     is_active: true,
-    sort_order: 0
+    sort_order: 0,
+    audio_type: 'vocal'
   });
   const [uploadingAudio, setUploadingAudio] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
@@ -314,6 +315,8 @@ const AudioSampleManager = ({
         return;
       }
 
+      const audioType = audioData.audio_type || 'vocal';
+
       if (editingAudio) {
         const { error } = await supabase
           .from('audio_samples')
@@ -325,7 +328,8 @@ const AudioSampleManager = ({
             audio_url: audioData.audio_url,
             cover_url: audioData.cover_url || null,
             is_active: audioData.is_active ?? true,
-            sort_order: audioData.sort_order || 0
+            sort_order: audioData.sort_order || 0,
+            audio_type: audioType
           })
           .eq('id', editingAudio.id);
 
@@ -333,7 +337,7 @@ const AudioSampleManager = ({
         
         setAudioSamples(prev => prev.map(a => 
           a.id === editingAudio.id 
-            ? { ...a, ...audioData, cover_url: audioData.cover_url || null } as AudioSample
+            ? { ...a, ...audioData, cover_url: audioData.cover_url || null, audio_type: audioType as 'vocal' | 'instrumental' } as AudioSample
             : a
         ));
         
@@ -349,7 +353,8 @@ const AudioSampleManager = ({
             audio_url: audioData.audio_url,
             cover_url: audioData.cover_url || null,
             is_active: audioData.is_active ?? true,
-            sort_order: audioData.sort_order || 0
+            sort_order: audioData.sort_order || 0,
+            audio_type: audioType
           })
           .select()
           .single();
@@ -357,7 +362,11 @@ const AudioSampleManager = ({
         if (error) throw error;
         
         if (data) {
-          setAudioSamples(prev => [...prev, data]);
+          const typedData: AudioSample = {
+            ...data,
+            audio_type: (data.audio_type as 'vocal' | 'instrumental') || 'vocal'
+          };
+          setAudioSamples(prev => [...prev, typedData]);
         }
         
         toast({ title: 'Áudio adicionado!', description: 'O novo áudio está disponível.' });
@@ -383,7 +392,8 @@ const AudioSampleManager = ({
         audio_url: '',
         cover_url: '',
         is_active: true,
-        sort_order: 0
+        sort_order: 0,
+        audio_type: 'vocal'
       });
     }
     setSelectedTrack("");
@@ -402,7 +412,8 @@ const AudioSampleManager = ({
       audio_url: '',
       cover_url: '',
       is_active: true,
-      sort_order: 0
+      sort_order: 0,
+      audio_type: 'vocal'
     });
   };
 
@@ -441,7 +452,12 @@ const AudioSampleManager = ({
                     </div>
                   )}
                   <div>
-                    <p className="font-semibold text-sm">{audio.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{audio.title}</p>
+                      <Badge variant="outline" className="text-xs">
+                        {audio.audio_type === 'instrumental' ? '🎹 Instrumental' : '🎤 Vocal'}
+                      </Badge>
+                    </div>
                     <p className="text-xs text-muted-foreground">{audio.style} • {audio.occasion}</p>
                   </div>
                 </div>
@@ -473,37 +489,81 @@ const AudioSampleManager = ({
           </DialogHeader>
           
           <div className="space-y-4 mt-4">
+            {/* Audio Type Selector */}
+            <div className="space-y-2">
+              <Label>Tipo de Áudio *</Label>
+              <Select 
+                value={audioData.audio_type || 'vocal'} 
+                onValueChange={(value: 'vocal' | 'instrumental') => editingAudio 
+                  ? setEditingAudio({ ...editingAudio, audio_type: value })
+                  : setNewAudio({ ...newAudio, audio_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="vocal">
+                    <div className="flex items-center gap-2">
+                      <span>🎤</span>
+                      <span>Vocal</span>
+                      <span className="text-xs text-muted-foreground">- Exibir em "Músicas com Letra"</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="instrumental">
+                    <div className="flex items-center gap-2">
+                      <span>🎹</span>
+                      <span>Instrumental</span>
+                      <span className="text-xs text-muted-foreground">- Exibir em "Músicas sem Vocal"</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Approved Tracks Selector */}
-            {!editingAudio && approvedTracks.length > 0 && (
+            {!editingAudio && (
               <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
                 <Label className="text-sm font-medium flex items-center gap-2 mb-2">
                   <Music className="w-4 h-4 text-primary" />
                   Músicas com Permissão de Uso
                 </Label>
-                <Select value={selectedTrack} onValueChange={handleSelectApprovedTrack}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecionar música aprovada..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {approvedTracks.map((track) => (
-                      <SelectItem key={track.order_id} value={track.order_id}>
-                        <div className="flex items-center gap-2">
-                          {track.cover_url && (
-                            <img src={track.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
-                          )}
-                          <Check className="w-4 h-4 text-green-500" />
-                          <span className="font-medium">
-                            {track.song_title || track.lyric_title || `Música ${track.music_type}`}
-                          </span>
-                          <span className="text-xs text-muted-foreground">• {track.music_style}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {loadingTracks ? 'Carregando...' : `${approvedTracks.length} música(s) disponíveis`}
-                </p>
+                {loadingTracks ? (
+                  <div className="flex items-center justify-center py-4 gap-2">
+                    <Music className="w-5 h-5 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">Carregando músicas aprovadas...</span>
+                  </div>
+                ) : approvedTracks.length > 0 ? (
+                  <>
+                    <Select value={selectedTrack} onValueChange={handleSelectApprovedTrack}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecionar música aprovada..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {approvedTracks.map((track) => (
+                          <SelectItem key={track.order_id} value={track.order_id}>
+                            <div className="flex items-center gap-2">
+                              {track.cover_url && (
+                                <img src={track.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
+                              )}
+                              <Check className="w-4 h-4 text-primary" />
+                              <span className="font-medium">
+                                {track.song_title || track.lyric_title || `Música ${track.music_type}`}
+                              </span>
+                              <span className="text-xs text-muted-foreground">• {track.music_style}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {approvedTracks.length} música(s) disponíveis
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground py-2">
+                    Nenhuma música com permissão de uso encontrada.
+                  </p>
+                )}
               </div>
             )}
 

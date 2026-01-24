@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       audio_samples: {
         Row: {
+          audio_type: string
           audio_url: string
           cover_url: string | null
           created_at: string
@@ -29,6 +30,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          audio_type?: string
           audio_url: string
           cover_url?: string | null
           created_at?: string
@@ -42,6 +44,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          audio_type?: string
           audio_url?: string
           cover_url?: string | null
           created_at?: string

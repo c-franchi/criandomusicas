@@ -21,6 +21,7 @@ interface AudioSample {
   occasion: string;
   audio_url: string;
   cover_url?: string;
+  audio_type?: 'vocal' | 'instrumental';
 }
 
 const AudioSamples = () => {
@@ -68,8 +69,9 @@ const AudioSamples = () => {
       try {
         const { data, error } = await supabase
           .from('audio_samples')
-          .select('id, title, description, style, occasion, audio_url, cover_url')
+          .select('id, title, description, style, occasion, audio_url, cover_url, audio_type')
           .eq('is_active', true)
+          .eq('audio_type', 'vocal') // Only fetch vocal samples for this section
           .order('sort_order', { ascending: true })
           .limit(10);
 
@@ -203,12 +205,12 @@ const AudioSamples = () => {
                       <img 
                         src={sample.cover_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop"}
                         alt={`Música personalizada: ${sample.title}`}
-                        className={`w-full h-full object-cover transition-all duration-500 ${
-                          isPlaying ? 'scale-110 brightness-75' : 'group-hover:scale-105'
+                        className={`w-full h-full object-cover transition-transform duration-500 ${
+                          isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
                         }`}
                         loading="lazy"
                       />
-                      <div className={`absolute inset-0 transition-all duration-500 ${
+                      <div className={`absolute inset-0 transition-all duration-300 ${
                         isPlaying 
                           ? 'bg-gradient-to-t from-primary/90 via-primary/40 to-transparent' 
                           : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'

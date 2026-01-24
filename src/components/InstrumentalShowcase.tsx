@@ -1,8 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Music, Piano, Guitar } from "lucide-react";
+import { Play, Pause, Music, Piano, ChevronLeft, ChevronRight } from "lucide-react";
 import { 
   Carousel, 
   CarouselContent, 
@@ -11,72 +11,99 @@ import {
   CarouselPrevious 
 } from "@/components/ui/carousel";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InstrumentalSample {
   id: string;
   title: string;
   description: string;
-  instruments: string[];
   style: string;
-  mood: string;
+  occasion: string;
   audioUrl?: string;
   coverUrl: string;
 }
 
-const instrumentalSamples: InstrumentalSample[] = [
+// Fallback samples
+const fallbackSamples: InstrumentalSample[] = [
   {
     id: "inst-1",
     title: "Serenata ao Luar",
     description: "Piano solo melancólico com toques de jazz, perfeito para momentos de reflexão",
-    instruments: ["Piano", "Cordas"],
     style: "Jazz",
-    mood: "Melancólico",
+    occasion: "Melancólico",
     coverUrl: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=300&fit=crop"
   },
   {
     id: "inst-2",
     title: "Alma Brasileira",
     description: "Violão clássico com influências de bossa nova e MPB contemporânea",
-    instruments: ["Violão", "Percussão"],
     style: "MPB",
-    mood: "Romântico",
+    occasion: "Romântico",
     coverUrl: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop"
   },
   {
     id: "inst-3",
     title: "Horizonte Infinito",
     description: "Orquestra épica com solo de violino, ideal para vídeos e apresentações",
-    instruments: ["Orquestra", "Violino Solo"],
     style: "Clássico",
-    mood: "Épico",
+    occasion: "Épico",
     coverUrl: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=400&h=300&fit=crop"
-  },
-  {
-    id: "inst-4",
-    title: "Groove Noturno",
-    description: "Saxofone suave com piano jazz, atmosfera de clube noturno",
-    instruments: ["Saxofone", "Piano", "Contrabaixo"],
-    style: "Jazz",
-    mood: "Sofisticado",
-    coverUrl: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&h=300&fit=crop"
-  },
-  {
-    id: "inst-5",
-    title: "Despertar Rural",
-    description: "Viola caipira com acordeão, trilha perfeita para memórias do campo",
-    instruments: ["Viola", "Acordeão", "Violão"],
-    style: "Sertanejo",
-    mood: "Nostálgico",
-    coverUrl: "https://images.unsplash.com/photo-1516981879613-9f5da904015f?w=400&h=300&fit=crop"
   }
 ];
 
 const InstrumentalShowcase = () => {
+  const [samples, setSamples] = useState<InstrumentalSample[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const fetchSamples = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('audio_samples')
+          .select('id, title, description, style, occasion, audio_url, cover_url')
+          .eq('is_active', true)
+          .eq('audio_type', 'instrumental')
+          .order('sort_order', { ascending: true })
+          .limit(10);
+
+        if (error || !data || data.length === 0) {
+          setSamples(fallbackSamples);
+        } else {
+          // Map database fields to component interface
+          const mappedSamples = data.map(item => ({
+            id: item.id,
+            title: item.title,
+            description: item.description,
+            style: item.style,
+            occasion: item.occasion,
+            audioUrl: item.audio_url,
+            coverUrl: item.cover_url || "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=400&h=300&fit=crop"
+          }));
+          setSamples(mappedSamples);
+        }
+      } catch {
+        setSamples(fallbackSamples);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSamples();
+
+    return () => {
+      if (audioElement) {
+        audioElement.pause();
+      }
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -136,12 +163,15 @@ const InstrumentalShowcase = () => {
     }
   };
 
-  const getInstrumentIcon = (instrument: string) => {
-    const lower = instrument.toLowerCase();
-    if (lower.includes("piano") || lower.includes("teclado")) return <Piano className="w-3 h-3" />;
-    if (lower.includes("violão") || lower.includes("guitarra")) return <Guitar className="w-3 h-3" />;
-    return <Music className="w-3 h-3" />;
-  };
+  if (loading) {
+    return (
+      <section className="py-24 px-6 bg-gradient-to-b from-secondary/20 to-background">
+        <div className="max-w-6xl mx-auto flex justify-center">
+          <Piano className="w-8 h-8 animate-spin text-accent" />
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-24 px-6 bg-gradient-to-b from-secondary/20 to-background" id="instrumentais">
@@ -168,29 +198,29 @@ const InstrumentalShowcase = () => {
           className="w-full"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {instrumentalSamples.map((sample) => {
+            {samples.map((sample) => {
               const isPlaying = currentPlaying === sample.id;
               const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
               
               return (
                 <CarouselItem key={sample.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
                   <Card 
-                    className={`overflow-hidden border-border/50 transition-all duration-500 group ${
+                    className={`overflow-hidden border-border/50 transition-all duration-300 group ${
                       isPlaying 
-                        ? 'ring-2 ring-accent shadow-lg shadow-accent/20 scale-[1.02]' 
+                        ? 'ring-2 ring-accent shadow-lg shadow-accent/20' 
                         : 'hover:border-accent/50 hover:shadow-md'
                     }`}
                   >
-                    <div className="relative h-48">
+                    <div className="relative h-48 overflow-hidden">
                       <img 
                         src={sample.coverUrl}
                         alt={`Música instrumental ${sample.style}: ${sample.title} - ${sample.description}`}
-                        className={`w-full h-full object-cover transition-all duration-500 ${
-                          isPlaying ? 'scale-110 brightness-75' : 'group-hover:scale-105'
+                        className={`w-full h-full object-cover transition-transform duration-500 ${
+                          isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
                         }`}
                         loading="lazy"
                       />
-                      <div className={`absolute inset-0 transition-all duration-500 ${
+                      <div className={`absolute inset-0 transition-all duration-300 ${
                         isPlaying 
                           ? 'bg-gradient-to-t from-accent/90 via-accent/40 to-transparent' 
                           : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'
@@ -242,19 +272,9 @@ const InstrumentalShowcase = () => {
                         {sample.description}
                       </p>
                       
-                      {/* Instruments tags */}
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {sample.instruments.map((instrument, idx) => (
-                          <Badge key={idx} variant="secondary" className="text-xs flex items-center gap-1">
-                            {getInstrumentIcon(instrument)}
-                            {instrument}
-                          </Badge>
-                        ))}
-                      </div>
-                      
                       <div className="flex items-center justify-between">
                         <Badge variant="outline" className="text-xs">
-                          {sample.mood}
+                          {sample.occasion}
                         </Badge>
                         
                         {isPlaying && duration > 0 && (
@@ -286,8 +306,10 @@ const InstrumentalShowcase = () => {
         
         {/* Mobile swipe indicator */}
         <div className="flex justify-center gap-2 mt-6 md:hidden">
-          <p className="text-sm text-muted-foreground">
-            ← Deslize para ver mais →
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <ChevronLeft className="w-4 h-4" />
+            Deslize para ver mais
+            <ChevronRight className="w-4 h-4" />
           </p>
         </div>
         
