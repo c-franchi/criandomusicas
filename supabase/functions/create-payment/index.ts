@@ -27,12 +27,22 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Get order ID and plan ID from request body
-    const { orderId, planId = "single" } = await req.json();
-    if (!orderId) {
-      throw new Error("Order ID is required");
+    // Get request body
+    const requestBody = await req.json();
+    const { orderId, planId = "single", isVideoOrder, videoOrderId, amount: videoAmount, description: videoDescription, successUrl: customSuccessUrl, cancelUrl: customCancelUrl } = requestBody;
+    
+    // Validate required fields based on order type
+    if (isVideoOrder) {
+      if (!videoOrderId) {
+        throw new Error("Video Order ID is required for video orders");
+      }
+      logStep("Video order received", { videoOrderId, amount: videoAmount });
+    } else {
+      if (!orderId) {
+        throw new Error("Order ID is required");
+      }
+      logStep("Order ID received", { orderId, planId });
     }
-    logStep("Order ID received", { orderId, planId });
 
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization")!;
@@ -41,6 +51,49 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { email: user.email });
+
+    // Handle video order payment
+    if (isVideoOrder) {
+      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+        apiVersion: "2025-08-27.basil",
+      });
+
+      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
+
+      const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
+
+      const session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email,
+        line_items: [{
+          price_data: {
+            currency: 'brl',
+            product_data: {
+              name: videoDescription || 'Vídeo Personalizado',
+              description: 'Edição profissional do seu vídeo com sua música'
+            },
+            unit_amount: videoAmount || 5000,
+          },
+          quantity: 1,
+        }],
+        mode: "payment",
+        success_url: customSuccessUrl || `${origin}/video-upload/${videoOrderId}`,
+        cancel_url: customCancelUrl || `${origin}/video-checkout/${videoOrderId}`,
+        metadata: {
+          video_order_id: videoOrderId,
+          user_id: user.id,
+          is_video_order: "true"
+        }
+      });
+
+      logStep("Video checkout session created", { sessionId: session.id, url: session.url });
+
+      return new Response(JSON.stringify({ url: session.url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     // Check order type (instrumental, custom lyric, or vocal) to use correct pricing
     const { data: orderInfo, error: orderError } = await supabaseClient
