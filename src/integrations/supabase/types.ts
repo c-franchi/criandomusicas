@@ -211,6 +211,7 @@ export type Database = {
           amount: number
           approved_lyric_id: string | null
           atmosphere: string | null
+          cover_url: string | null
           created_at: string
           currency: string
           discount_applied: number | null
@@ -255,6 +256,7 @@ export type Database = {
           amount?: number
           approved_lyric_id?: string | null
           atmosphere?: string | null
+          cover_url?: string | null
           created_at?: string
           currency?: string
           discount_applied?: number | null
@@ -299,6 +301,7 @@ export type Database = {
           amount?: number
           approved_lyric_id?: string | null
           atmosphere?: string | null
+          cover_url?: string | null
           created_at?: string
           currency?: string
           discount_applied?: number | null
