@@ -21,8 +21,14 @@ import {
   MessageCircle,
   Video,
   Camera,
-  Trash2
+  Trash2,
+  CalendarIcon
 } from "lucide-react";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -658,13 +664,37 @@ const AdminSettings = () => {
                       </div>
                       <div>
                         <Label>Válido até</Label>
-                        <Input
-                          type="date"
-                          value={(editingVoucher || newVoucher).valid_until?.split('T')[0] || ''}
-                          onChange={(e) => editingVoucher 
-                            ? setEditingVoucher({ ...editingVoucher, valid_until: e.target.value || null })
-                            : setNewVoucher({ ...newVoucher, valid_until: e.target.value || null })}
-                        />
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={cn(
+                                "w-full justify-start text-left font-normal",
+                                !((editingVoucher || newVoucher).valid_until) && "text-muted-foreground"
+                              )}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {(editingVoucher || newVoucher).valid_until 
+                                ? format(new Date((editingVoucher || newVoucher).valid_until!), "dd/MM/yyyy", { locale: ptBR })
+                                : "Selecione uma data"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={(editingVoucher || newVoucher).valid_until ? new Date((editingVoucher || newVoucher).valid_until!) : undefined}
+                              onSelect={(date) => {
+                                const dateStr = date ? date.toISOString() : null;
+                                editingVoucher 
+                                  ? setEditingVoucher({ ...editingVoucher, valid_until: dateStr })
+                                  : setNewVoucher({ ...newVoucher, valid_until: dateStr });
+                              }}
+                              initialFocus
+                              className="p-3 pointer-events-auto"
+                              disabled={(date) => date < new Date()}
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div className="flex items-center gap-2">
                         <Switch
