@@ -51,6 +51,9 @@
     --status-info: 199 89% 48%;
     --status-info-foreground: 0 0% 98%;
     
+    /* Accent colors for card highlights */
+    --gold: 45 100% 50%;
+    
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(259 100% 65% / 0.3);
     --shadow-card: 0 10px 30px -10px hsl(240 15% 3% / 0.5);
