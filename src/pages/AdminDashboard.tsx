@@ -614,15 +614,18 @@ const AdminDashboard = () => {
       if (fetchError) throw fetchError;
 
       const isInstrumental = orderData.is_instrumental === true;
+      const hasCustomLyric = orderData.has_custom_lyric === true;
 
       // 2. Update payment status to PAID
-      // For instrumental: skip to LYRICS_APPROVED (ready for music generation)
+      // For instrumental OR custom lyric: skip to LYRICS_APPROVED (no AI lyrics needed)
       // For vocal: go to LYRICS_PENDING (start lyrics generation)
+      const newStatus = (isInstrumental || hasCustomLyric) ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
+      
       const { error } = await supabase
         .from('orders')
         .update({ 
           payment_status: 'PAID', 
-          status: isInstrumental ? 'LYRICS_APPROVED' : 'LYRICS_PENDING' 
+          status: newStatus
         })
         .eq('id', orderId);
 
@@ -659,8 +662,17 @@ const AdminDashboard = () => {
               briefing
             }
           });
+        } else if (hasCustomLyric) {
+          // For custom lyrics (Letra Própria), DO NOT generate lyrics - user already has their own
+          // Just wait for user to approve their lyrics at /criar-musica
+          console.log('Letra Própria - aguardando aprovação do usuário, não consumindo créditos IA');
+          toast({
+            title: '📝 Letra Própria',
+            description: 'O cliente já forneceu sua própria letra. Aguardando aprovação em /criar-musica.',
+            duration: 5000
+          });
         } else {
-          // For vocal music, generate lyrics first
+          // For regular vocal music, generate lyrics with AI
           await supabase.functions.invoke('generate-lyrics', {
             body: {
               orderId,

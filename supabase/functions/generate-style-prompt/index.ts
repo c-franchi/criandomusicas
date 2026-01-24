@@ -28,6 +28,12 @@ interface Pronunciation {
   phonetic: string;
 }
 
+// Helper function to validate UUID format
+function isValidUuid(id: string | undefined | null): boolean {
+  if (!id || id === 'custom') return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+}
+
 // Mapear IDs de instrumentos para nomes em inglês
 const instrumentNameMap: Record<string, string> = {
   piano: 'Grand Piano',
@@ -449,8 +455,15 @@ ${lyricsForGeneration2}`;
       updateData.status = 'LYRICS_APPROVED';
     }
 
-    if (!isInstrumental && lyricId) {
+    // Only save approved_lyric_id if it's a valid UUID (not "custom" string)
+    if (!isInstrumental && isValidUuid(lyricId)) {
       updateData.approved_lyric_id = lyricId;
+      updateData.voice_type = voiceType;
+      if (pronunciations.length > 0) {
+        updateData.pronunciations = pronunciations;
+      }
+    } else if (!isInstrumental) {
+      // For custom lyrics, just save voice_type and pronunciations without lyric reference
       updateData.voice_type = voiceType;
       if (pronunciations.length > 0) {
         updateData.pronunciations = pronunciations;
@@ -466,8 +479,8 @@ ${lyricsForGeneration2}`;
       console.error("Error updating order:", updateError);
     }
 
-    // Mark lyric as approved and update phonetic body if needed (only for vocal)
-    if (!isInstrumental && lyricId) {
+    // Mark lyric as approved and update phonetic body if needed (only for vocal with valid UUID)
+    if (!isInstrumental && isValidUuid(lyricId)) {
       const lyricUpdateData: Record<string, unknown> = { 
         is_approved: true, 
         approved_at: new Date().toISOString() 
@@ -490,6 +503,8 @@ ${lyricsForGeneration2}`;
       if (lyricError) {
         console.error("Error marking lyric as approved:", lyricError);
       }
+    } else if (!isInstrumental) {
+      console.log("Custom lyric flow - skipping lyrics table update (no valid lyricId)");
     }
 
     console.log("Order updated with style prompt. isInstrumental:", isInstrumental);
