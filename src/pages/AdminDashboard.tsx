@@ -94,6 +94,7 @@ interface AdminOrder {
   solo_moment?: string | null;
   song_title?: string | null;
   cover_url?: string | null;
+  pix_receipt_url?: string | null;
 }
 
 const AdminDashboard = () => {
@@ -178,7 +179,8 @@ const AdminDashboard = () => {
           solo_instrument,
           solo_moment,
           song_title,
-          cover_url
+          cover_url,
+          pix_receipt_url
         `)
         .order('created_at', { ascending: false });
 
@@ -1787,28 +1789,72 @@ const AdminDashboard = () => {
                       </details>
                     )}
                     
-                    {/* PIX Confirmation Alert */}
+                    {/* PIX Confirmation Alert with Receipt Preview */}
                     {order.payment_status === 'AWAITING_PIX' && (
-                      <div className="flex items-center gap-2 p-2 sm:p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-                        <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs sm:text-sm font-medium text-yellow-400">Aguardando confirmação do PIX</p>
-                          <p className="text-[10px] sm:text-xs text-muted-foreground">Verifique o pagamento e confirme manualmente</p>
+                      <div className="p-2 sm:p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg space-y-3">
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs sm:text-sm font-medium text-yellow-400">Aguardando confirmação do PIX</p>
+                            <p className="text-[10px] sm:text-xs text-muted-foreground">Verifique o comprovante e confirme manualmente</p>
+                          </div>
+                          <Button 
+                            onClick={() => confirmPixPayment(order.id, order.user_id)} 
+                            size="sm" 
+                            className="bg-yellow-500 hover:bg-yellow-600 text-black shrink-0 text-xs sm:text-sm"
+                            disabled={confirmingPix === order.id}
+                          >
+                            {confirmingPix === order.id ? (
+                              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
+                            )}
+                            <span className="hidden sm:inline">{confirmingPix === order.id ? 'Confirmando...' : 'Confirmar PIX'}</span>
+                            <span className="sm:hidden">{confirmingPix === order.id ? '...' : 'Confirmar'}</span>
+                          </Button>
                         </div>
-                        <Button 
-                          onClick={() => confirmPixPayment(order.id, order.user_id)} 
-                          size="sm" 
-                          className="bg-yellow-500 hover:bg-yellow-600 text-black shrink-0 text-xs sm:text-sm"
-                          disabled={confirmingPix === order.id}
-                        >
-                          {confirmingPix === order.id ? (
-                            <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1" />
-                          )}
-                          <span className="hidden sm:inline">{confirmingPix === order.id ? 'Confirmando...' : 'Confirmar PIX'}</span>
-                          <span className="sm:hidden">{confirmingPix === order.id ? '...' : 'Confirmar'}</span>
-                        </Button>
+                        
+                        {/* PIX Receipt Preview */}
+                        {order.pix_receipt_url && (
+                          <div className="flex items-start gap-3 p-2 bg-background/50 rounded-lg border border-yellow-500/20">
+                            <a 
+                              href={order.pix_receipt_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="shrink-0"
+                            >
+                              <img 
+                                src={order.pix_receipt_url} 
+                                alt="Comprovante PIX" 
+                                className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg border-2 border-yellow-500/30 hover:border-yellow-500 transition-colors cursor-pointer"
+                              />
+                            </a>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-yellow-400">📄 Comprovante Enviado</p>
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                Clique na imagem para ampliar e verificar os dados do pagamento.
+                              </p>
+                              <a 
+                                href={order.pix_receipt_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-[10px] text-primary hover:underline mt-1 inline-block"
+                              >
+                                Ver em tamanho original →
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {/* No receipt warning */}
+                        {!order.pix_receipt_url && (
+                          <div className="flex items-center gap-2 p-2 bg-orange-500/10 rounded border border-orange-500/20">
+                            <AlertCircle className="w-4 h-4 text-orange-400 shrink-0" />
+                            <p className="text-[10px] sm:text-xs text-orange-400">
+                              Cliente não enviou comprovante. Verifique o extrato bancário.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     )}
                     

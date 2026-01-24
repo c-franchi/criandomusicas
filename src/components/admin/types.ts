@@ -80,4 +80,5 @@ export interface ApprovedMusicTrack {
   lyric_body: string | null;
   user_name: string | null;
   created_at: string;
+  story: string | null;
 }
