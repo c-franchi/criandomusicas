@@ -180,7 +180,7 @@ const Testimonials = () => {
             <div className="text-sm text-muted-foreground">Avaliação Média</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">98%</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text">100%</div>
             <div className="text-sm text-muted-foreground">Clientes Satisfeitos</div>
           </div>
           <div className="text-center">

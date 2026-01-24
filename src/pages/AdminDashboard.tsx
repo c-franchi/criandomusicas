@@ -185,7 +185,7 @@ const AdminDashboard = () => {
           let user_whatsapp = null;
           let user_name = null;
           
-          // Fetch lyric title
+          // Fetch lyric title - try approved_lyric_id first, otherwise get latest lyric for the order
           if (order.approved_lyric_id) {
             const { data: lyricData } = await supabase
               .from('lyrics')
@@ -193,6 +193,16 @@ const AdminDashboard = () => {
               .eq('id', order.approved_lyric_id)
               .maybeSingle();
             lyric_title = lyricData?.title;
+          } else {
+            // Fallback: get latest lyric title for this order
+            const { data: latestLyric } = await supabase
+              .from('lyrics')
+              .select('title')
+              .eq('order_id', order.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            lyric_title = latestLyric?.title;
           }
           
           // Fetch track URL
