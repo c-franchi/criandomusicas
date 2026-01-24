@@ -31,6 +31,8 @@ interface Order {
   lyric_title?: string;
   amount?: number;
   is_instrumental?: boolean;
+  has_custom_lyric?: boolean;
+  song_title?: string;
 }
 
 const Dashboard = () => {
@@ -76,7 +78,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental')
+        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental, has_custom_lyric, song_title')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -339,7 +341,7 @@ const Dashboard = () => {
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg mb-1 break-words">
-                      {order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
+                      {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
                     </h3>
                     <p className="text-sm text-muted-foreground mb-2">
                       {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
@@ -348,7 +350,12 @@ const Dashboard = () => {
                       <Badge className={getStatusColor(order.status || 'DRAFT')}>
                         {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
                       </Badge>
-                      {order.is_instrumental && (
+                      {order.has_custom_lyric && (
+                        <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
+                          📝 Letra Própria
+                        </Badge>
+                      )}
+                      {order.is_instrumental && !order.has_custom_lyric && (
                         <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
                           🎹 Instrumental
                         </Badge>
