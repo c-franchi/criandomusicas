@@ -42,6 +42,7 @@ interface OrderData {
   solo_instrument: string | null;
   solo_moment: string | null;
   instrumentation_notes: string | null;
+  cover_url: string | null;
 }
 
 interface LyricData {
@@ -419,9 +420,17 @@ const OrderDetails = () => {
             <CardContent className="space-y-4">
               {/* Album Art & Controls */}
               <div className="flex items-center gap-6">
-                <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center shadow-lg">
-                  <Music className="w-12 h-12 text-primary-foreground" />
-                </div>
+                {order.cover_url ? (
+                  <img 
+                    src={order.cover_url} 
+                    alt="Capa da música"
+                    className="w-24 h-24 rounded-xl object-cover shadow-lg"
+                  />
+                ) : (
+                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center shadow-lg">
+                    <Music className="w-12 h-12 text-primary-foreground" />
+                  </div>
+                )}
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-1">{getSongTitle()}</h3>
                   <p className="text-muted-foreground text-sm mb-3">{order.music_style}</p>

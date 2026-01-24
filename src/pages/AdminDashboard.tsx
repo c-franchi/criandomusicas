@@ -31,7 +31,8 @@ import {
   MessageCircle,
   Video,
   Camera,
-  Loader2
+  Loader2,
+  ImageIcon
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -92,6 +93,7 @@ interface AdminOrder {
   solo_instrument?: string | null;
   solo_moment?: string | null;
   song_title?: string | null;
+  cover_url?: string | null;
 }
 
 const AdminDashboard = () => {
@@ -147,6 +149,9 @@ const AdminDashboard = () => {
   
   // PIX confirmation loading
   const [confirmingPix, setConfirmingPix] = useState<string | null>(null);
+  
+  // Cover generation loading
+  const [generatingCover, setGeneratingCover] = useState<string | null>(null);
 
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
@@ -172,7 +177,8 @@ const AdminDashboard = () => {
           instruments,
           solo_instrument,
           solo_moment,
-          song_title
+          song_title,
+          cover_url
         `)
         .order('created_at', { ascending: false });
 
@@ -857,6 +863,39 @@ const AdminDashboard = () => {
       });
     } finally {
       setUploadingMusic(null);
+    }
+  };
+
+  // Generate cover image with DALL-E
+  const generateCoverImage = async (orderId: string) => {
+    setGeneratingCover(orderId);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-cover-image', {
+        body: { orderId }
+      });
+
+      if (error) throw error;
+
+      if (data?.cover_url) {
+        // Update local state
+        setOrders(prev => prev.map(o => 
+          o.id === orderId ? { ...o, cover_url: data.cover_url } : o
+        ));
+
+        toast({
+          title: '🎨 Capa gerada com sucesso!',
+          description: 'A imagem foi salva no pedido.',
+        });
+      }
+    } catch (error) {
+      console.error('Error generating cover:', error);
+      toast({
+        title: 'Erro ao gerar capa',
+        description: error instanceof Error ? error.message : 'Tente novamente',
+        variant: 'destructive',
+      });
+    } finally {
+      setGeneratingCover(null);
     }
   };
 
@@ -1895,6 +1934,33 @@ const AdminDashboard = () => {
                         <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
                           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Marcar Entregue
+                        </Button>
+                      )}
+                      {/* Generate Cover Button - show when MUSIC_GENERATING or later */}
+                      {['MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'].includes(order.status) && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => generateCoverImage(order.id)}
+                          disabled={generatingCover === order.id}
+                          className="flex-1 sm:flex-none text-xs sm:text-sm border-purple-500/50 text-purple-500 hover:bg-purple-500/10"
+                        >
+                          {generatingCover === order.id ? (
+                            <>
+                              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                              Gerando...
+                            </>
+                          ) : order.cover_url ? (
+                            <>
+                              <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                              Nova Capa
+                            </>
+                          ) : (
+                            <>
+                              <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                              Gerar Capa
+                            </>
+                          )}
                         </Button>
                       )}
                       <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
