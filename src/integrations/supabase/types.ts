@@ -233,6 +233,7 @@ export type Database = {
           music_type: string | null
           payment_method: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
+          pix_receipt_url: string | null
           prompt_validation_score: number | null
           pronunciations: Json | null
           purpose: string | null
@@ -278,6 +279,7 @@ export type Database = {
           music_type?: string | null
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pix_receipt_url?: string | null
           prompt_validation_score?: number | null
           pronunciations?: Json | null
           purpose?: string | null
@@ -323,6 +325,7 @@ export type Database = {
           music_type?: string | null
           payment_method?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
+          pix_receipt_url?: string | null
           prompt_validation_score?: number | null
           pronunciations?: Json | null
           purpose?: string | null

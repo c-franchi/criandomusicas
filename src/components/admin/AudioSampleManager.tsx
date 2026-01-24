@@ -97,7 +97,7 @@ const AudioSampleManager = ({
       for (const track of tracksData) {
         const { data: orderData } = await supabase
           .from('orders')
-          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title')
+          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title, story')
           .eq('id', track.order_id)
           .single();
 
@@ -129,7 +129,8 @@ const AudioSampleManager = ({
           cover_url: orderData?.cover_url || null,
           lyric_body: lyricData?.body || null,
           user_name: userName,
-          created_at: orderData?.created_at || ''
+          created_at: orderData?.created_at || '',
+          story: orderData?.story || null
         });
       }
 
@@ -253,16 +254,32 @@ const AudioSampleManager = ({
         return parts.length > 0 ? parts.join(' • ') : `Uma ${track.music_type || 'música'} especial`;
       };
 
-      // Determine occasion from music_type
+      // Determine occasion from real data (purpose, story) - not static mapping
       const getOccasion = () => {
-        const typeToOccasion: Record<string, string> = {
-          'romantica': 'Casamento, Dia dos Namorados',
-          'homenagem': 'Aniversário, Homenagem',
-          'infantil': 'Aniversário Infantil',
-          'motivacional': 'Superação, Motivação',
-          'parodia': 'Festa, Diversão'
-        };
-        return typeToOccasion[track.music_type || ''] || track.music_type || '';
+        // Priority 1: Use purpose if available
+        if (track.purpose) {
+          return track.purpose;
+        }
+        
+        // Priority 2: Extract keywords from story
+        if (track.story) {
+          const storyLower = track.story.toLowerCase();
+          if (storyLower.includes('trilha sonora') || storyLower.includes('vídeo') || storyLower.includes('video')) return 'Trilha Sonora';
+          if (storyLower.includes('casamento') || storyLower.includes('noiva') || storyLower.includes('noivo')) return 'Casamento';
+          if (storyLower.includes('aniversário') || storyLower.includes('aniversario')) return 'Aniversário';
+          if (storyLower.includes('formatura')) return 'Formatura';
+          if (storyLower.includes('dia das mães') || storyLower.includes('mãe')) return 'Dia das Mães';
+          if (storyLower.includes('dia dos pais') || storyLower.includes('pai')) return 'Dia dos Pais';
+          if (storyLower.includes('natal')) return 'Natal';
+          if (storyLower.includes('namorados') || storyLower.includes('amor')) return 'Romântico';
+        }
+        
+        // Priority 3: Use music_type with proper casing
+        if (track.music_type) {
+          return track.music_type.charAt(0).toUpperCase() + track.music_type.slice(1);
+        }
+        
+        return 'Especial';
       };
       
       const audioData = editingAudio || newAudio;

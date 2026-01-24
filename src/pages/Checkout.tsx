@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock } from 'lucide-react';
+import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,6 +67,13 @@ export default function Checkout() {
   const [pixConfirmed, setPixConfirmed] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [pixConfig, setPixConfig] = useState<PixConfigData | null>(null);
+  
+  // PIX Receipt Upload States
+  const [showReceiptUpload, setShowReceiptUpload] = useState(false);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch PIX config
   useEffect(() => {
@@ -402,10 +409,67 @@ export default function Checkout() {
     setTimeout(() => setCopiedKey(false), 3000);
   };
 
-  // Confirm PIX payment was made
+  // Handle receipt file selection
+  const handleReceiptSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setReceiptFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setReceiptPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Upload receipt and confirm PIX payment
+  const confirmWithReceipt = async () => {
+    if (!receiptFile || !order || !user) return;
+    
+    setUploadingReceipt(true);
+    
+    try {
+      // Upload receipt to pix-receipts bucket
+      const fileExt = receiptFile.name.split('.').pop();
+      const fileName = `${user.id}/${order.id}-${Date.now()}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('pix-receipts')
+        .upload(fileName, receiptFile);
+      
+      if (uploadError) throw uploadError;
+      
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from('pix-receipts')
+        .getPublicUrl(fileName);
+      
+      // Update order with receipt URL and status
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          pix_receipt_url: urlData.publicUrl,
+          payment_status: 'AWAITING_PIX',
+          payment_method: 'pix'
+        })
+        .eq('id', order.id);
+      
+      if (updateError) throw updateError;
+      
+      setPixConfirmed(true);
+      setShowReceiptUpload(false);
+      toast.success('Comprovante enviado! Aguardando confirmação.');
+    } catch (error) {
+      console.error('Error uploading receipt:', error);
+      toast.error('Erro ao enviar comprovante. Tente novamente.');
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
+  // Confirm PIX payment was made - now opens receipt upload modal
   const confirmPixPayment = () => {
-    setPixConfirmed(true);
-    toast.success('Aguardando confirmação do pagamento PIX (até 30 minutos)');
+    setShowReceiptUpload(true);
   };
 
   const formatPrice = (cents: number) => {
@@ -809,10 +873,79 @@ export default function Checkout() {
                 Já Fiz o Pagamento PIX
               </Button>
 
+              {/* Receipt Upload Modal */}
+              {showReceiptUpload && (
+                <Card className="mt-4 p-4 border-2 border-primary/30 bg-primary/5">
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <Upload className="w-8 h-8 mx-auto text-primary mb-2" />
+                      <h3 className="font-semibold">Envie o Comprovante</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Para agilizar a confirmação, envie uma foto ou screenshot do comprovante PIX
+                      </p>
+                    </div>
+
+                    {/* Receipt Preview */}
+                    {receiptPreview && (
+                      <div className="flex justify-center">
+                        <img 
+                          src={receiptPreview} 
+                          alt="Preview do comprovante" 
+                          className="max-w-[200px] max-h-[200px] rounded-lg border object-contain"
+                        />
+                      </div>
+                    )}
+
+                    {/* File Input */}
+                    <div className="space-y-2">
+                      <input
+                        ref={receiptInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleReceiptSelect}
+                        className="hidden"
+                      />
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => receiptInputRef.current?.click()}
+                      >
+                        <ImageIcon className="w-4 h-4 mr-2" />
+                        {receiptFile ? 'Alterar Imagem' : 'Selecionar Comprovante'}
+                      </Button>
+                    </div>
+
+                    {/* Submit Button */}
+                    <Button 
+                      className="w-full" 
+                      onClick={confirmWithReceipt}
+                      disabled={!receiptFile || uploadingReceipt}
+                    >
+                      {uploadingReceipt ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Confirmar Pagamento
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </Card>
+              )}
+
               <Button 
                 variant="ghost" 
                 className="w-full" 
-                onClick={() => setShowPixSection(false)}
+                onClick={() => {
+                  setShowPixSection(false);
+                  setShowReceiptUpload(false);
+                  setReceiptFile(null);
+                  setReceiptPreview(null);
+                }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Voltar às opções de pagamento
