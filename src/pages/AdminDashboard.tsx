@@ -486,16 +486,19 @@ const AdminDashboard = () => {
     }
   }, [isAdmin, fetchOrders, fetchPricing, fetchAudioSamples, fetchVouchers, fetchPixConfig]);
 
-  // Auto-refresh orders every 30 seconds
+  // Track whether details accordion is open to pause auto-refresh
+  const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // Auto-refresh orders every 30 seconds (pause when accordion is open)
   useEffect(() => {
-    if (!isAdmin) return;
+    if (!isAdmin || detailsOpen) return;
     
     const intervalId = setInterval(() => {
       fetchOrders();
     }, 30000); // 30 seconds
 
     return () => clearInterval(intervalId);
-  }, [isAdmin, fetchOrders]);
+  }, [isAdmin, fetchOrders, detailsOpen]);
 
   const updatePricingConfig = (id: string, field: keyof PricingConfig, value: any) => {
     setPricingConfigs(prev => prev.map(config => 
@@ -1697,34 +1700,64 @@ const AdminDashboard = () => {
                       </div>
                     </div>
                     
-                    {/* Final Prompt with copy buttons - LYRICS first, then STYLE */}
-                    {order.final_prompt && (
-                      <details className="text-xs sm:text-sm">
+                    {/* Cover Image Preview */}
+                    {order.cover_url && (
+                      <div className="flex items-center gap-3 p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
+                        <img 
+                          src={order.cover_url} 
+                          alt="Capa da música" 
+                          className="w-16 h-16 rounded-lg object-cover shadow-md"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-purple-400">🎨 Capa Gerada</p>
+                          <a 
+                            href={order.cover_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-[10px] text-muted-foreground hover:text-primary truncate block"
+                          >
+                            Ver em tamanho original
+                          </a>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Final Prompt with copy buttons - ONLY STYLE for Suno */}
+                    {order.style_prompt && (
+                      <details 
+                        className="text-xs sm:text-sm"
+                        onToggle={(e) => setDetailsOpen((e.target as HTMLDetailsElement).open)}
+                      >
                         <summary className="cursor-pointer text-primary hover:underline font-medium">
                           📝 Ver Prompt Final (para Suno/Udio)
                         </summary>
                         <div className="mt-2 space-y-3">
-                          {/* STYLE section - always first for production */}
-                          {order.style_prompt && (
-                            <div className="relative">
-                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">📋 STYLE (copie primeiro):</p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
-                                onClick={() => copyToClipboard(order.style_prompt!, 'Style')}
-                              >
-                                <Copy className="w-3 h-3 sm:mr-1" />
-                                <span className="hidden sm:inline">Copiar Style</span>
-                              </Button>
-                              <pre className="p-2 sm:p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap pr-10 sm:pr-20">
-                                {order.style_prompt}
-                              </pre>
+                          {/* STYLE section - the only thing Suno needs */}
+                          <div className="relative">
+                            <div className="flex items-center justify-between mb-1">
+                              <p className="text-[10px] sm:text-xs text-muted-foreground font-semibold">
+                                📋 STYLE ({order.style_prompt.length} caracteres)
+                              </p>
+                              {order.style_prompt.length > 1000 && (
+                                <span className="text-[10px] text-red-400">⚠️ Excede 1000 chars</span>
+                              )}
                             </div>
-                          )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
+                              onClick={() => copyToClipboard(order.style_prompt!, 'Style')}
+                            >
+                              <Copy className="w-3 h-3 sm:mr-1" />
+                              <span className="hidden sm:inline">Copiar Style</span>
+                            </Button>
+                            <pre className="p-2 sm:p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap pr-10 sm:pr-20">
+                              {order.style_prompt}
+                            </pre>
+                          </div>
                           
                           {/* LYRICS section - only for vocal tracks */}
-                          {!order.is_instrumental && (
+                          {!order.is_instrumental && order.final_prompt && (
                             <div className="relative">
                               <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">🎤 LETRA (copie no campo lyrics):</p>
                               <Button
@@ -1747,25 +1780,6 @@ const AdminDashboard = () => {
                                   const lyricsMatch = order.final_prompt!.match(/\[Lyrics\]\n?([\s\S]*)/i);
                                   return lyricsMatch ? lyricsMatch[1].trim() : order.final_prompt;
                                 })()}
-                              </pre>
-                            </div>
-                          )}
-                          
-                          {/* For instrumental, show the full prompt */}
-                          {order.is_instrumental && (
-                            <div className="relative">
-                              <p className="text-[10px] sm:text-xs text-muted-foreground mb-1 font-semibold">🎹 PROMPT COMPLETO:</p>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="absolute top-5 sm:top-6 right-1 sm:right-2 text-[10px] sm:text-xs h-6 sm:h-8 px-1.5 sm:px-2"
-                                onClick={() => copyToClipboard(order.final_prompt!, 'Prompt Instrumental')}
-                              >
-                                <Copy className="w-3 h-3 sm:mr-1" />
-                                <span className="hidden sm:inline">Copiar Tudo</span>
-                              </Button>
-                              <pre className="p-2 sm:p-3 bg-muted rounded-lg text-[10px] sm:text-xs overflow-x-auto whitespace-pre-wrap pr-10 sm:pr-20">
-                                {order.final_prompt}
                               </pre>
                             </div>
                           )}

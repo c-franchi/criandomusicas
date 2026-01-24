@@ -210,49 +210,33 @@ serve(async (req) => {
           }`
         : 'No featured solo - balanced ensemble arrangement';
 
-      const systemPrompt = `You are a professional music producer specializing in creating technical prompts for AI music generation (Suno, Udio, etc).
+      const systemPrompt = `You are a professional music producer creating ULTRA-CONCISE prompts for AI music generation (Suno, Udio).
 
-Your task is to create a detailed technical style prompt for an INSTRUMENTAL track (NO VOCALS).
+Create a style prompt for an INSTRUMENTAL track (NO VOCALS).
 
-CRITICAL RULES:
-1. The prompt must be in ENGLISH
-2. Be specific with genres, subgenres, and sonic characteristics
-3. Include technical production details
-4. ⚠️ DO NOT MENTION ANY FAMOUS ARTIST OR BAND NAMES as references
-5. Focus on instrumental arrangement, dynamics, and production
-6. This is a pure instrumental piece - NO VOCALS, NO LYRICS
+⚠️ CRITICAL: OUTPUT MUST BE UNDER 950 CHARACTERS TOTAL. Be extremely concise.
+⚠️ NO artist/band names. NO explanations. Just the prompt.
 
-OUTPUT FORMAT (follow exactly, in English):
-
+FORMAT (very brief, in English):
 [Style]
-Genre: (main genre and subgenre, NO artist names)
-Mood/Atmosphere: (detailed emotional climate)
-Instrumentation: (list all instruments with specific playing style and arrangement details)
-${soloInstrument && soloInstrument !== 'none' ? 'Featured Solo: (detailed solo instrument characteristics and placement)' : ''}
-Tempo: (BPM and rhythmic feel)
-Key: (suggested key signature)
-Production Notes: (technical production notes, mix, effects, dynamics)
-Structure: (suggested song structure for instrumental - intro, themes, bridge, variations, outro)
+Genre: (genre/subgenre)
+Mood: (1-2 words)
+Instruments: (list briefly)
+${soloInstrument && soloInstrument !== 'none' ? 'Solo: (instrument + moment)' : ''}
+Tempo: (BPM)
+Key: (key)
+Production: (brief notes)
+Structure: (brief structure)`;
 
-Do not include explanations, only the structured technical prompt.
-NEVER mention artist names, bands, or specific songs.`;
+      const userPrompt = `INSTRUMENTAL track style prompt (UNDER 950 CHARS):
+Type: ${musicType}, Style: ${style}
+Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
+Atmosphere: ${atmosphere}
+Instruments: ${instrumentsList}
+${soloInfo}
+${instrumentationNotes ? `Notes: ${instrumentationNotes}` : ''}
 
-      const userPrompt = `Create the style prompt for this INSTRUMENTAL track:
-
-CONTEXT:
-- Type: ${musicType}
-- Musical Style: ${style}
-- Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
-- Atmosphere: ${atmosphere} (${atmosphereMap[atmosphere] || 'balanced production'})
-- Primary Instruments: ${instrumentsList}
-- ${soloInfo}
-${instrumentationNotes ? `- Client Notes: ${instrumentationNotes}` : ''}
-
-REMEMBER: 
-- This is an INSTRUMENTAL track - NO VOCALS
-- DO NOT mention any artist names, bands, or songs as reference
-- Describe specific sonic characteristics instead of comparing to artists
-- Focus on instrumental arrangement and production quality`;
+BE VERY CONCISE - under 950 characters total.`;
 
       console.log("Calling AI Gateway for instrumental style prompt...");
 
@@ -325,50 +309,32 @@ REMEMBER:
         lyricsForGeneration = phoneticLyrics;
       }
 
-      const systemPrompt = `Você é um produtor musical profissional especializado em criar prompts técnicos para IAs de geração musical (Suno, Udio, etc).
+      const systemPrompt = `You are a music producer creating ULTRA-CONCISE prompts for AI music (Suno, Udio).
 
-Sua tarefa é criar um prompt de estilo musical detalhado e técnico que será usado para gerar a música.
+⚠️ CRITICAL: OUTPUT MUST BE UNDER 950 CHARACTERS TOTAL. Be extremely concise.
+⚠️ NO artist/band names. NO explanations. Just the prompt in English.
 
-REGRAS CRÍTICAS:
-1. O prompt deve ser em INGLÊS (padrão da indústria musical)
-2. Seja específico com gêneros, subgêneros e características sonoras
-3. Inclua detalhes técnicos de produção
-4. ${hasMonologue ? 'IMPORTANTE: A música contém trechos falados/declamados. Inclua instruções para spoken word sections.' : 'Não há trechos falados'}
-5. ⚠️ NÃO MENCIONE NOMES DE ARTISTAS FAMOSOS OU BANDAS como referência (isso pode bloquear a geração no Suno/Udio)
-6. Em vez de artistas, descreva características sonoras específicas (tipo de voz, instrumentação, produção)
-
-FORMATO DE SAÍDA OBRIGATÓRIO (siga exatamente, em inglês):
-
+FORMAT (very brief):
 [Style]
-Genre: (gênero musical principal e subgênero, SEM nomes de artistas)
-Mood/Atmosphere: (clima emocional detalhado)
-Instrumentation: (instrumentos principais, separados por vírgula)
-Vocal Style: (${vocalStyle})
-Tempo: (BPM e feel)
-Key: (tonalidade sugerida)
-Production Notes: (notas técnicas de produção, mix, efeitos)
-${hasMonologue ? 'Spoken Word: (instruções específicas para partes faladas - deve ser claramente diferenciado do canto)' : ''}
+Genre: (genre/subgenre)
+Mood: (1-2 words)
+Instruments: (brief list)
+Vocal: (${vocalStyle.split(',')[0]})
+Tempo: (BPM)
+Key: (key)
+Production: (brief)
+${hasMonologue ? 'Spoken: (brief instruction)' : ''}`;
 
-Não inclua explicações, apenas o prompt técnico estruturado.
-NUNCA mencione nomes de artistas, bandas ou músicas específicas.`;
+      const userPrompt = `Create VOCAL track style prompt (UNDER 950 CHARS):
+Type: ${musicType}, Emotion: ${emotion} (${emotionIntensity}/5)
+Style: ${style}, Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
+Atmosphere: ${atmosphere}, Voice: ${vocalStyle}
+${hasMonologue ? 'Has spoken word sections' : ''}
 
-      const userPrompt = `Crie o prompt de estilo musical para esta música:
+Lyrics context (first 500 chars):
+${lyricsForGeneration.substring(0, 500)}
 
-CONTEXTO DA MÚSICA:
-- Tipo: ${musicType}
-- Emoção desejada: ${emotion} (intensidade ${emotionIntensity}/5)
-- Estilo musical: ${style}
-- Ritmo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
-- Atmosfera: ${atmosphere} (${atmosphereMap[atmosphere] || 'balanced production'})
-- Tipo de voz: ${vocalStyle}
-- Contém monólogo/spoken word: ${hasMonologue ? 'SIM - deve ter seções claramente faladas, não cantadas' : 'NÃO'}
-
-LETRA APROVADA (para contexto do mood e narrativa):
-${lyricsForGeneration.substring(0, 1500)}
-
-LEMBRE-SE: 
-- NÃO mencione nomes de artistas, bandas ou músicas como referência
-- Descreva características sonoras específicas em vez de comparar com artistas`;
+BE VERY CONCISE - under 950 characters total. No artist names.`;
 
       console.log("Calling AI Gateway for vocal style prompt...");
 
