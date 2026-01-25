@@ -41,10 +41,14 @@ const Auth = () => {
     }
   }, [isRecoverySession, resetPasswordMode]);
 
-  // Clean up URL hash after detecting recovery mode
+  // Clean up URL hash AFTER session is confirmed (delay to let Supabase process)
   useEffect(() => {
     if (resetPasswordMode && window.location.hash.includes('type=recovery')) {
-      window.history.replaceState(null, '', window.location.pathname);
+      // Delay hash cleanup to ensure Supabase has processed the token
+      const timer = setTimeout(() => {
+        window.history.replaceState(null, '', window.location.pathname);
+      }, 1000);
+      return () => clearTimeout(timer);
     }
   }, [resetPasswordMode]);
 
@@ -207,14 +211,20 @@ const Auth = () => {
 
     try {
       const redirectUrl = `${window.location.origin}/auth`;
+      
+      // Use Supabase to generate the recovery link and send custom email
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
       });
 
       if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('rate limit')) {
+          errorMessage = 'Aguarde alguns segundos antes de solicitar novamente.';
+        }
         toast({
           title: 'Erro ao enviar email',
-          description: error.message,
+          description: errorMessage,
           variant: 'destructive',
         });
       } else {
@@ -271,20 +281,38 @@ const Auth = () => {
     }
 
     try {
+      // CRITICAL: Verify session exists before attempting to update password
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: 'Sessão expirada',
+          description: 'O link de recuperação expirou ou já foi usado. Solicite um novo link.',
+          variant: 'destructive',
+        });
+        setResetPasswordMode(false);
+        setLoading(false);
+        return;
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('session missing') || error.message.includes('Auth session missing')) {
+          errorMessage = 'Sessão expirada. Solicite um novo link de recuperação.';
+        }
         toast({
           title: 'Erro ao redefinir senha',
-          description: error.message,
+          description: errorMessage,
           variant: 'destructive',
         });
       } else {
         toast({
           title: 'Senha alterada!',
-          description: 'Sua nova senha foi definida com sucesso.',
+          description: 'Sua nova senha foi definida com sucesso. Faça login com a nova senha.',
         });
         setResetPasswordMode(false);
         setNewPassword('');
