@@ -34,6 +34,12 @@ interface OrderData {
   has_custom_lyric: boolean | null;
 }
 
+// Get plan ID from URL params
+const getPlanIdFromUrl = (): string => {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('planId') || 'single';
+};
+
 interface VoucherValidation {
   valid: boolean;
   error?: string;
@@ -354,8 +360,16 @@ export default function Checkout() {
       // Update payment method to card
       await supabase.from('orders').update({ payment_method: 'card' }).eq('id', order.id);
 
+      // Get plan ID from URL or determine based on order type
+      let planId = getPlanIdFromUrl();
+      if (order.has_custom_lyric) {
+        planId = 'single_custom_lyric';
+      } else if (order.is_instrumental && !planId.includes('instrumental')) {
+        planId = `${planId}_instrumental`;
+      }
+
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { orderId: order.id, planId: 'single' },
+        body: { orderId: order.id, planId },
       });
 
       if (error) throw error;

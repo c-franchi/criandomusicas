@@ -9,6 +9,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBanner } from "@/components/PushNotificationPrompt";
+import CreditsBanner from "@/components/CreditsBanner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -315,6 +316,9 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Credits Banner */}
+        <CreditsBanner className="mb-6" />
 
         {/* New Order Button */}
         <div className="mb-8 text-center">

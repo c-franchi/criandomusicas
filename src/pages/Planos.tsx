@@ -109,11 +109,14 @@ const Planos = () => {
         description: `Você escolheu o plano.`,
       });
 
+      // Navigate to briefing with plan info
+      const params = new URLSearchParams();
       if (isInstrumental) {
-        navigate("/briefing?instrumental=true");
-      } else {
-        navigate("/briefing");
+        params.set('instrumental', 'true');
       }
+      params.set('planId', planId);
+      
+      navigate(`/briefing?${params.toString()}`);
     } catch (error) {
       toast({
         title: "Erro",

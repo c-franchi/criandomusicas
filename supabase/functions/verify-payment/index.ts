@@ -66,6 +66,43 @@ serve(async (req) => {
         .eq('user_id', user.id)
         .single();
 
+      // Get plan ID from session metadata
+      const planId = session.metadata?.plan_id || 'single';
+      
+      // Determine credits based on plan
+      const PLAN_CREDITS: Record<string, number> = {
+        'single': 1,
+        'single_instrumental': 1,
+        'single_custom_lyric': 1,
+        'package': 3,
+        'package_instrumental': 3,
+        'subscription': 5,
+        'subscription_instrumental': 5,
+      };
+      
+      const creditsToAdd = PLAN_CREDITS[planId] || 1;
+      
+      // Create credits record for multi-song packages
+      if (creditsToAdd > 1) {
+        const { error: creditsError } = await supabaseClient
+          .from('user_credits')
+          .insert({
+            user_id: user.id,
+            plan_id: planId,
+            total_credits: creditsToAdd,
+            used_credits: 1, // First song is being created now
+            stripe_session_id: sessionId,
+            is_active: true,
+          });
+        
+        if (creditsError) {
+          logStep("Warning: Failed to create credits", { error: creditsError.message });
+          // Don't fail the payment verification for this
+        } else {
+          logStep("Credits created", { planId, credits: creditsToAdd });
+        }
+      }
+
       // Update the order status to PAID
       const { error: updateError } = await supabaseClient
         .from('orders')
@@ -79,7 +116,7 @@ serve(async (req) => {
       if (updateError) {
         throw new Error(`Failed to update order: ${updateError.message}`);
       }
-      logStep("Order updated to PAID", { orderId });
+      logStep("Order updated to PAID", { orderId, planId, creditsAdded: creditsToAdd > 1 ? creditsToAdd : 0 });
 
       // Notify admin about new paid order
       try {
