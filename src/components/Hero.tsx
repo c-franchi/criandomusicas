@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -7,8 +7,12 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import heroImage from "@/assets/hero-music.jpg";
 
 const Hero = () => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
+
+  // Get display name - prefer profile name, fallback to email
+  const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
+  const initials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -27,10 +31,17 @@ const Hero = () => {
       <div className="absolute top-6 right-6 z-20">
         {user ? (
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="flex items-center gap-2">
-              <User className="w-4 h-4" />
-              {user.email}
-            </Badge>
+            <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
+              <Avatar className="w-8 h-8 border-2 border-primary/50">
+                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                <AvatarFallback className="bg-primary/20 text-primary text-xs font-medium">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-foreground max-w-[150px] truncate">
+                {displayName}
+              </span>
+            </Link>
             <Button variant="outline" size="sm" onClick={() => signOut()}>
               Sair
             </Button>
