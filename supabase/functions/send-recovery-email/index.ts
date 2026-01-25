@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "resend";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -11,7 +12,7 @@ const corsHeaders = {
 
 interface RecoveryEmailRequest {
   email: string;
-  resetUrl: string;
+  redirectUrl: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,15 +22,42 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { email, resetUrl }: RecoveryEmailRequest = await req.json();
+    const { email, redirectUrl }: RecoveryEmailRequest = await req.json();
 
-    console.log("Sending recovery email to:", email);
-    console.log("Reset URL:", resetUrl);
+    console.log("Processing recovery email request for:", email);
+    console.log("Redirect URL:", redirectUrl);
 
     // Validate required fields
-    if (!email || !resetUrl) {
-      throw new Error("Missing required fields: email and resetUrl");
+    if (!email || !redirectUrl) {
+      throw new Error("Missing required fields: email and redirectUrl");
     }
+
+    // Create Supabase admin client to generate recovery link
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
+
+    // Generate the recovery link using admin API
+    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+      type: "recovery",
+      email: email,
+      options: {
+        redirectTo: redirectUrl,
+      },
+    });
+
+    if (linkError) {
+      console.error("Error generating recovery link:", linkError);
+      throw new Error(`Failed to generate recovery link: ${linkError.message}`);
+    }
+
+    if (!linkData?.properties?.action_link) {
+      throw new Error("No recovery link generated");
+    }
+
+    const resetUrl = linkData.properties.action_link;
+    console.log("Recovery link generated successfully");
 
     const emailHtml = `
 <!DOCTYPE html>
