@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,20 +8,61 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Music, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { Music, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Auth = () => {
-  const { user, signIn, signUp } = useAuth();
+  const { user, loading: authLoading, signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  const [resetPasswordMode, setResetPasswordMode] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Redirect if already authenticated
-  if (user) {
+  // Check for password reset token in URL hash
+  useEffect(() => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const type = hashParams.get('type');
+    
+    if (accessToken && type === 'recovery') {
+      setResetPasswordMode(true);
+      // Clear the hash from URL
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  // Check for error in URL params
+  useEffect(() => {
+    const error = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+    
+    if (error) {
+      toast({
+        title: 'Erro de autenticação',
+        description: errorDescription || error,
+        variant: 'destructive',
+      });
+    }
+  }, [searchParams, toast]);
+
+  // Show loading while auth is initializing
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Redirect if already authenticated (and not in reset password mode)
+  if (user && !resetPasswordMode) {
     return <Navigate to="/" replace />;
   }
 
@@ -30,23 +71,47 @@ const Auth = () => {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const email = (formData.get('email') as string).trim().toLowerCase();
     const password = formData.get('password') as string;
 
-    const { error } = await signIn(email, password);
-
-    if (error) {
+    if (!email || !password) {
       toast({
-        title: 'Erro no login',
-        description: error.message === 'Invalid login credentials' 
-          ? 'Email ou senha incorretos' 
-          : error.message,
+        title: 'Campos obrigatórios',
+        description: 'Preencha email e senha.',
         variant: 'destructive',
       });
-    } else {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await signIn(email, password);
+
+      if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Email ou senha incorretos. Verifique seus dados.';
+        } else if (error.message.includes('Email not confirmed')) {
+          errorMessage = 'Email não confirmado. Verifique sua caixa de entrada.';
+        }
+        
+        toast({
+          title: 'Erro no login',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Login realizado!',
+          description: 'Bem-vindo de volta!',
+        });
+      }
+    } catch (err) {
+      console.error('Sign in error:', err);
       toast({
-        title: 'Login realizado!',
-        description: 'Bem-vindo de volta!',
+        title: 'Erro inesperado',
+        description: 'Tente novamente em alguns instantes.',
+        variant: 'destructive',
       });
     }
     setLoading(false);
@@ -57,24 +122,58 @@ const Auth = () => {
     setLoading(true);
 
     const formData = new FormData(e.currentTarget);
-    const email = formData.get('email') as string;
+    const email = (formData.get('email') as string).trim().toLowerCase();
     const password = formData.get('password') as string;
-    const name = formData.get('name') as string;
+    const name = (formData.get('name') as string).trim();
 
-    const { error } = await signUp(email, password, name);
-
-    if (error) {
+    if (!email || !password || !name) {
       toast({
-        title: 'Erro no cadastro',
-        description: error.message === 'User already registered'
-          ? 'Este email já está cadastrado'
-          : error.message,
+        title: 'Campos obrigatórios',
+        description: 'Preencha todos os campos.',
         variant: 'destructive',
       });
-    } else {
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
       toast({
-        title: 'Cadastro realizado!',
-        description: 'Verifique seu email para confirmar a conta.',
+        title: 'Senha muito curta',
+        description: 'A senha deve ter pelo menos 6 caracteres.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await signUp(email, password, name);
+
+      if (error) {
+        let errorMessage = error.message;
+        if (error.message.includes('already registered') || error.message.includes('already exists')) {
+          errorMessage = 'Este email já está cadastrado. Tente fazer login.';
+        } else if (error.message.includes('valid email')) {
+          errorMessage = 'Digite um email válido.';
+        }
+        
+        toast({
+          title: 'Erro no cadastro',
+          description: errorMessage,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Conta criada com sucesso!',
+          description: 'Você já está logado.',
+        });
+      }
+    } catch (err) {
+      console.error('Sign up error:', err);
+      toast({
+        title: 'Erro inesperado',
+        description: 'Tente novamente em alguns instantes.',
+        variant: 'destructive',
       });
     }
     setLoading(false);
@@ -84,27 +183,206 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    const redirectUrl = `${window.location.origin}/auth`;
-    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-      redirectTo: redirectUrl,
-    });
-
-    if (error) {
+    const email = resetEmail.trim().toLowerCase();
+    
+    if (!email) {
       toast({
-        title: 'Erro ao enviar email',
-        description: error.message,
+        title: 'Email obrigatório',
+        description: 'Digite seu email para recuperar a senha.',
         variant: 'destructive',
       });
-    } else {
-      toast({
-        title: 'Email enviado!',
-        description: 'Verifique sua caixa de entrada para redefinir sua senha.',
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const redirectUrl = `${window.location.origin}/auth`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
       });
-      setForgotPasswordMode(false);
-      setResetEmail('');
+
+      if (error) {
+        toast({
+          title: 'Erro ao enviar email',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Email enviado!',
+          description: 'Verifique sua caixa de entrada para redefinir sua senha.',
+        });
+        setForgotPasswordMode(false);
+        setResetEmail('');
+      }
+    } catch (err) {
+      console.error('Forgot password error:', err);
+      toast({
+        title: 'Erro inesperado',
+        description: 'Tente novamente.',
+        variant: 'destructive',
+      });
     }
     setLoading(false);
   };
+
+  const handleResetPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha a nova senha e a confirmação.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: 'Senhas não coincidem',
+        description: 'A nova senha e a confirmação devem ser iguais.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: 'Senha muito curta',
+        description: 'A senha deve ter pelo menos 6 caracteres.',
+        variant: 'destructive',
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: 'Erro ao redefinir senha',
+          description: error.message,
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Senha alterada!',
+          description: 'Sua nova senha foi definida com sucesso.',
+        });
+        setResetPasswordMode(false);
+        setNewPassword('');
+        setConfirmPassword('');
+        // Sign out and redirect to login
+        await supabase.auth.signOut();
+      }
+    } catch (err) {
+      console.error('Reset password error:', err);
+      toast({
+        title: 'Erro inesperado',
+        description: 'Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+    setLoading(false);
+  };
+
+  // Reset password form
+  if (resetPasswordMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Music className="w-8 h-8 text-primary" />
+              <h1 className="text-2xl font-bold gradient-text">Criando Músicas</h1>
+            </div>
+            <p className="text-muted-foreground">
+              Defina sua nova senha
+            </p>
+          </div>
+
+          <Card className="glass-card border-border/50">
+            <CardHeader className="text-center">
+              <CardTitle>Redefinir Senha</CardTitle>
+              <CardDescription>
+                Digite e confirme sua nova senha
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleResetPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nova Senha</Label>
+                  <div className="relative">
+                    <Input
+                      id="new-password"
+                      type={showNewPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      minLength={6}
+                      required
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmar Senha</Label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    minLength={6}
+                    required
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar Nova Senha'
+                  )}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  className="w-full"
+                  onClick={() => {
+                    setResetPasswordMode(false);
+                    supabase.auth.signOut();
+                  }}
+                >
+                  Cancelar
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-6">
@@ -160,7 +438,14 @@ const Auth = () => {
                       className="w-full" 
                       disabled={loading}
                     >
-                      {loading ? 'Enviando...' : 'Enviar link de recuperação'}
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        'Enviar link de recuperação'
+                      )}
                     </Button>
                     <Button 
                       type="button" 
@@ -180,6 +465,7 @@ const Auth = () => {
                         name="email"
                         type="email"
                         placeholder="seu@email.com"
+                        autoComplete="email"
                         required
                       />
                     </div>
@@ -191,6 +477,7 @@ const Auth = () => {
                           name="password"
                           type={showSignInPassword ? "text" : "password"}
                           placeholder="••••••••"
+                          autoComplete="current-password"
                           required
                           className="pr-10"
                         />
@@ -208,7 +495,14 @@ const Auth = () => {
                       className="w-full" 
                       disabled={loading}
                     >
-                      {loading ? 'Entrando...' : 'Entrar'}
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Entrando...
+                        </>
+                      ) : (
+                        'Entrar'
+                      )}
                     </Button>
                     <Button 
                       type="button" 
@@ -231,6 +525,7 @@ const Auth = () => {
                       name="name"
                       type="text"
                       placeholder="Seu nome"
+                      autoComplete="name"
                       required
                     />
                   </div>
@@ -241,6 +536,7 @@ const Auth = () => {
                       name="email"
                       type="email"
                       placeholder="seu@email.com"
+                      autoComplete="email"
                       required
                     />
                   </div>
@@ -252,6 +548,7 @@ const Auth = () => {
                         name="password"
                         type={showSignUpPassword ? "text" : "password"}
                         placeholder="••••••••"
+                        autoComplete="new-password"
                         minLength={6}
                         required
                         className="pr-10"
@@ -264,13 +561,21 @@ const Auth = () => {
                         {showSignUpPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
+                    <p className="text-xs text-muted-foreground">Mínimo 6 caracteres</p>
                   </div>
                   <Button 
                     type="submit" 
                     className="w-full" 
                     disabled={loading}
                   >
-                    {loading ? 'Criando conta...' : 'Criar conta'}
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Criando conta...
+                      </>
+                    ) : (
+                      'Criar conta'
+                    )}
                   </Button>
                 </form>
               </TabsContent>
