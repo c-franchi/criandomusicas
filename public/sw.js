@@ -1,6 +1,6 @@
 // Service Worker for Push Notifications
-// Version: 2.4.0 - Audio sample auto-description + video delete fix
-const SW_VERSION = '2.4.0';
+// Version: 2.5.0 - Password reset redirect + profile display on Hero + PWA sync
+const SW_VERSION = '2.5.0';
 
 self.addEventListener('push', function(event) {
   console.log('[SW v' + SW_VERSION + '] Push received');

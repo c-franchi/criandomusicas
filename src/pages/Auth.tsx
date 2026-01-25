@@ -318,15 +318,19 @@ const Auth = () => {
           variant: 'destructive',
         });
       } else {
-        toast({
-          title: 'Senha alterada!',
-          description: 'Sua nova senha foi definida com sucesso. Faça login com a nova senha.',
-        });
+        // Sign out first to clear recovery session
+        await supabase.auth.signOut();
+        
+        // Reset all state
         setResetPasswordMode(false);
         setNewPassword('');
         setConfirmPassword('');
-        // Sign out and redirect to login
-        await supabase.auth.signOut();
+        toast({
+          title: 'Senha alterada com sucesso!',
+          description: 'Faça login com sua nova senha.',
+        });
+        
+        // Show login form - already reset state above
       }
     } catch (err) {
       console.error('Reset password error:', err);
