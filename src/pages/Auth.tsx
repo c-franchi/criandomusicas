@@ -212,19 +212,27 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/auth`;
       
-      // Use Supabase to generate the recovery link and send custom email
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
+      // Call custom Edge Function to send branded Portuguese email
+      const { data, error } = await supabase.functions.invoke('send-recovery-email', {
+        body: { email, redirectUrl },
       });
 
       if (error) {
-        let errorMessage = error.message;
-        if (error.message.includes('rate limit')) {
+        console.error('Edge function error:', error);
+        let errorMessage = 'Não foi possível enviar o email. Tente novamente.';
+        if (error.message?.includes('rate limit')) {
           errorMessage = 'Aguarde alguns segundos antes de solicitar novamente.';
         }
         toast({
           title: 'Erro ao enviar email',
           description: errorMessage,
+          variant: 'destructive',
+        });
+      } else if (data?.error) {
+        console.error('Email send error:', data.error);
+        toast({
+          title: 'Erro ao enviar email',
+          description: data.error,
           variant: 'destructive',
         });
       } else {
