@@ -626,6 +626,48 @@ export type Database = {
           },
         ]
       }
+      user_credits: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          plan_id: string
+          purchased_at: string | null
+          stripe_session_id: string | null
+          total_credits: number
+          updated_at: string | null
+          used_credits: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          plan_id: string
+          purchased_at?: string | null
+          stripe_session_id?: string | null
+          total_credits: number
+          updated_at?: string | null
+          used_credits?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          plan_id?: string
+          purchased_at?: string | null
+          stripe_session_id?: string | null
+          total_credits?: number
+          updated_at?: string | null
+          used_credits?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -44,3 +44,9 @@ verify_jwt = false
 
 [functions.send-recovery-email]
 verify_jwt = false
+
+[functions.check-credits]
+verify_jwt = false
+
+[functions.use-credit]
+verify_jwt = false

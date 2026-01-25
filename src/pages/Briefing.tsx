@@ -1226,8 +1226,12 @@ const Briefing = () => {
       // Salvar dados completos no localStorage para uso posterior
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
-      // Redirecionar para checkout
-      navigate(`/checkout/${orderData.id}`);
+      // Get planId from URL for checkout
+      const urlParams = new URLSearchParams(window.location.search);
+      const planId = urlParams.get('planId') || 'single';
+      
+      // Redirecionar para checkout com planId
+      navigate(`/checkout/${orderData.id}?planId=${planId}`);
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
