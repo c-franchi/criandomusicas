@@ -88,12 +88,28 @@ function splitTwoLyrics(text: string): { v1: string; v2: string } {
 function extractTitleAndBody(raw: string, providedTitle?: string): { title: string; body: string } {
   const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
   
-  // If title was provided by user, use it
+  // If title was provided by user, use it EXACTLY - no extraction from generated text
   if (providedTitle && providedTitle.trim()) {
-    return { title: providedTitle.trim(), body: raw.trim() };
+    // Remove any AI-generated title from the body to avoid duplication
+    let bodyLines = [...lines];
+    
+    // Check if first non-empty, non-tag line looks like an AI-generated title
+    for (let i = 0; i < Math.min(5, bodyLines.length); i++) {
+      const line = bodyLines[i];
+      // Skip empty lines and structural tags
+      if (!line || line.startsWith('[') || line.startsWith('#')) continue;
+      
+      // If this looks like a title line (short, not a verse), remove it
+      if (line.length < 100 && !line.includes('\n')) {
+        bodyLines = bodyLines.filter((_, idx) => idx !== i);
+        break;
+      }
+    }
+    
+    return { title: providedTitle.trim(), body: bodyLines.join('\n').trim() };
   }
   
-  // Look for a title line (not a tag like [Intro])
+  // Auto-generate: Look for a title line (not a tag like [Intro])
   let titleIdx = -1;
   for (let i = 0; i < Math.min(5, lines.length); i++) {
     const line = lines[i];
@@ -200,7 +216,11 @@ REGRAS OBRIGATÓRIAS:
     - Se é uma ocasião especial, referencie-a (ex: "Nossos 25 Anos", "O Dia Que Você Nasceu")
     - Se é homenagem, mencione a relação (ex: "Mãe, Minha Estrela", "Pai de Ouro")
     - NUNCA use títulos genéricos como "Música Especial", "Homenagem", "Para Você"
-    - O título deve vir na PRIMEIRA LINHA, antes do [Intro]` : `O título da música é: "${songName}". Use-o na primeira linha.`}
+    - O título deve vir na PRIMEIRA LINHA, antes do [Intro]` : `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"
+    - NÃO crie ou invente outro título
+    - Use EXATAMENTE este título em AMBAS as versões
+    - Coloque este título na PRIMEIRA LINHA de cada versão, antes do [Intro]
+    - Este título foi escolhido pelo usuário e DEVE ser respeitado`}
 11. A música será cantada por ${voiceDescription}. Adapte o tom e as referências de gênero adequadamente.
 
 ${hasMonologue ? `
@@ -276,7 +296,9 @@ INSTRUÇÕES FINAIS:
   - Cada versão DEVE ter um título ÚNICO, CRIATIVO e ESPECÍFICO para esta história
   - Extraia nomes, datas, relações e momentos-chave da história para compor o título
   - Exemplo: Se a história menciona "minha avó Rosa que faz 80 anos", o título pode ser "Rosa, 80 Primaveras" ou "Vovó Rosa, Eterna Flor"
-  - NÃO use títulos genéricos como "Música Para Você" ou "Homenagem Especial"` : `Use o título "${songName}" para ambas as versões`}
+  - NÃO use títulos genéricos como "Música Para Você" ou "Homenagem Especial"` : `⚠️ TÍTULO OBRIGATÓRIO EM AMBAS AS VERSÕES: "${songName}"
+  - NÃO invente outro título, use EXATAMENTE "${songName}"
+  - Coloque "${songName}" como primeira linha de cada versão`}
 - NÃO inclua comentários, explicações ou metadados
 - APENAS as letras com as tags estruturadas`;
 
