@@ -11,8 +11,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { Music, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+// Detect recovery mode synchronously on initial load
+const getInitialResetMode = () => {
+  if (typeof window === 'undefined') return false;
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const type = hashParams.get('type');
+  return type === 'recovery';
+};
+
 const Auth = () => {
-  const { user, loading: authLoading, signIn, signUp } = useAuth();
+  const { user, loading: authLoading, signIn, signUp, isRecoverySession } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -20,23 +28,25 @@ const Auth = () => {
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
-  const [resetPasswordMode, setResetPasswordMode] = useState(false);
+  // Initialize synchronously to catch recovery mode before auth redirect
+  const [resetPasswordMode, setResetPasswordMode] = useState(getInitialResetMode);
   const [resetEmail, setResetEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Check for password reset token in URL hash
+  // Sync recovery session from auth context
   useEffect(() => {
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const type = hashParams.get('type');
-    
-    if (accessToken && type === 'recovery') {
+    if (isRecoverySession && !resetPasswordMode) {
       setResetPasswordMode(true);
-      // Clear the hash from URL
+    }
+  }, [isRecoverySession, resetPasswordMode]);
+
+  // Clean up URL hash after detecting recovery mode
+  useEffect(() => {
+    if (resetPasswordMode && window.location.hash.includes('type=recovery')) {
       window.history.replaceState(null, '', window.location.pathname);
     }
-  }, []);
+  }, [resetPasswordMode]);
 
   // Check for error in URL params
   useEffect(() => {
@@ -61,8 +71,8 @@ const Auth = () => {
     );
   }
 
-  // Redirect if already authenticated (and not in reset password mode)
-  if (user && !resetPasswordMode) {
+  // Redirect if already authenticated (and not in reset password mode or recovery session)
+  if (user && !resetPasswordMode && !isRecoverySession) {
     return <Navigate to="/" replace />;
   }
 
