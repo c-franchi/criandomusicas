@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit } from "lucide-react";
+import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { supabase } from "@/integrations/supabase/client";
 import WhatsAppModal from "@/components/WhatsAppModal";
+import { useCredits, getPlanLabel } from "@/hooks/useCredits";
 
 interface ChatMessage {
   id: string;
@@ -1226,7 +1227,36 @@ const Briefing = () => {
       // Salvar dados completos no localStorage para uso posterior
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
-      // Get planId from URL for checkout
+      // Verificar se usuário tem créditos disponíveis
+      const { data: creditsData } = await supabase.functions.invoke('check-credits');
+      
+      if (creditsData?.has_credits && creditsData?.total_available > 0) {
+        // Usar crédito diretamente, sem checkout
+        const { data: useCreditResult, error: useCreditError } = await supabase.functions.invoke('use-credit', {
+          body: { orderId: orderData.id }
+        });
+
+        if (useCreditError || !useCreditResult?.success) {
+          console.error('Error using credit:', useCreditError || useCreditResult?.error);
+          // Se falhar ao usar crédito, ir para checkout normal
+          const urlParams = new URLSearchParams(window.location.search);
+          const planId = urlParams.get('planId') || 'single';
+          navigate(`/checkout/${orderData.id}?planId=${planId}`);
+          return;
+        }
+
+        // Crédito usado com sucesso!
+        toast({
+          title: '✨ Crédito utilizado!',
+          description: `Você usou 1 crédito. Restam ${useCreditResult.remaining_credits} músicas no seu pacote.`,
+        });
+
+        // Redirecionar direto para criação da música
+        navigate(`/criar-musica?orderId=${orderData.id}`);
+        return;
+      }
+
+      // Sem créditos, ir para checkout
       const urlParams = new URLSearchParams(window.location.search);
       const planId = urlParams.get('planId') || 'single';
       
