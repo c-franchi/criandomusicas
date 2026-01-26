@@ -35,13 +35,13 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { planId } = await req.json();
+    const { planId, voucherCode } = await req.json();
     if (!planId || !PLAN_PRICES[planId]) {
       throw new Error("Invalid plan ID");
     }
 
     const planConfig = PLAN_PRICES[planId];
-    logStep("Plan selected", { planId, ...planConfig });
+    logStep("Plan selected", { planId, ...planConfig, voucherCode: voucherCode || 'none' });
 
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization")!;
@@ -85,8 +85,69 @@ serve(async (req) => {
     // Get origin for redirect URLs
     const origin = req.headers.get("origin") || "https://criandomusicas.lovable.app";
 
+    // Handle voucher/coupon if provided
+    let stripeCouponId: string | undefined;
+    if (voucherCode) {
+      // Fetch voucher from database
+      const { data: voucher, error: voucherError } = await supabaseClient
+        .from('vouchers')
+        .select('*')
+        .eq('code', voucherCode.toUpperCase().trim())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (voucherError || !voucher) {
+        logStep("Voucher not found or invalid", { code: voucherCode });
+      } else {
+        // Check validity
+        const now = new Date();
+        const isValid = 
+          (!voucher.valid_from || new Date(voucher.valid_from) <= now) &&
+          (!voucher.valid_until || new Date(voucher.valid_until) >= now) &&
+          (voucher.max_uses === null || voucher.current_uses < voucher.max_uses) &&
+          (!voucher.plan_ids || voucher.plan_ids.length === 0 || voucher.plan_ids.includes(planId));
+
+        if (isValid) {
+          // Use existing Stripe coupon ID if available, or create one dynamically
+          if (voucher.stripe_coupon_id) {
+            stripeCouponId = voucher.stripe_coupon_id;
+            logStep("Using existing Stripe coupon", { couponId: stripeCouponId });
+          } else {
+            // Create a Stripe coupon dynamically
+            try {
+              const couponParams: Stripe.CouponCreateParams = {
+                duration: 'once',
+                name: `Voucher ${voucher.code}`,
+              };
+
+              if (voucher.discount_type === 'percent') {
+                couponParams.percent_off = voucher.discount_value;
+              } else {
+                couponParams.amount_off = voucher.discount_value;
+                couponParams.currency = 'brl';
+              }
+
+              const stripeCoupon = await stripe.coupons.create(couponParams);
+              stripeCouponId = stripeCoupon.id;
+              logStep("Created Stripe coupon", { couponId: stripeCouponId });
+
+              // Optionally update the voucher with the Stripe coupon ID for future use
+              await supabaseClient
+                .from('vouchers')
+                .update({ stripe_coupon_id: stripeCouponId })
+                .eq('id', voucher.id);
+            } catch (couponError) {
+              logStep("Error creating Stripe coupon", { error: String(couponError) });
+            }
+          }
+        } else {
+          logStep("Voucher validation failed", { code: voucherCode });
+        }
+      }
+    }
+
     // Create a subscription session with Stripe price ID
-    const session = await stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{
@@ -95,7 +156,7 @@ serve(async (req) => {
       }],
       mode: "subscription",
       success_url: `${origin}/planos?subscription=success&plan=${planId}`,
-      cancel_url: `${origin}/planos`,
+      cancel_url: `${origin}/creator-checkout/${planId}`,
       metadata: {
         user_id: user.id,
         plan_id: planId,
@@ -110,7 +171,14 @@ serve(async (req) => {
           credits: String(planConfig.credits),
         },
       },
-    });
+    };
+
+    // Add discount if voucher was validated
+    if (stripeCouponId) {
+      sessionParams.discounts = [{ coupon: stripeCouponId }];
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
