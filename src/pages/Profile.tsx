@@ -14,12 +14,14 @@ import {
   Music,
   Camera,
   Loader2,
-  Package
+  Package,
+  Gift
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import CreditsManagement from "@/components/CreditsManagement";
+import CreditTransfer from "@/components/CreditTransfer";
 
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
@@ -234,9 +236,9 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Tabs for Profile and Credits */}
+        {/* Tabs for Profile, Credits, and Transfers */}
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="profile" className="flex items-center gap-2">
               <User className="w-4 h-4" />
               Perfil
@@ -244,6 +246,10 @@ const Profile = () => {
             <TabsTrigger value="credits" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
               Créditos
+            </TabsTrigger>
+            <TabsTrigger value="transfer" className="flex items-center gap-2">
+              <Gift className="w-4 h-4" />
+              Transferir
             </TabsTrigger>
           </TabsList>
           
@@ -347,6 +353,10 @@ const Profile = () => {
           
           <TabsContent value="credits">
             <CreditsManagement />
+          </TabsContent>
+          
+          <TabsContent value="transfer">
+            <CreditTransfer />
           </TabsContent>
         </Tabs>
       </div>

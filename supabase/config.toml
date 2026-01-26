@@ -50,3 +50,9 @@ verify_jwt = false
 
 [functions.use-credit]
 verify_jwt = false
+
+[functions.transfer-credits]
+verify_jwt = false
+
+[functions.accept-credit-transfer]
+verify_jwt = false

@@ -89,6 +89,62 @@ export type Database = {
         }
         Relationships: []
       }
+      credit_transfers: {
+        Row: {
+          accepted_at: string | null
+          created_at: string | null
+          credit_type: string
+          credits_amount: number
+          expires_at: string | null
+          from_user_id: string
+          id: string
+          message: string | null
+          source_credit_id: string
+          status: string
+          to_user_email: string
+          to_user_id: string | null
+          transfer_code: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string | null
+          credit_type?: string
+          credits_amount: number
+          expires_at?: string | null
+          from_user_id: string
+          id?: string
+          message?: string | null
+          source_credit_id: string
+          status?: string
+          to_user_email: string
+          to_user_id?: string | null
+          transfer_code: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string | null
+          credit_type?: string
+          credits_amount?: number
+          expires_at?: string | null
+          from_user_id?: string
+          id?: string
+          message?: string | null
+          source_credit_id?: string
+          status?: string
+          to_user_email?: string
+          to_user_id?: string | null
+          transfer_code?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_transfers_source_credit_id_fkey"
+            columns: ["source_credit_id"]
+            isOneToOne: false
+            referencedRelation: "user_credits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_logs: {
         Row: {
           created_at: string
