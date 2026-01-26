@@ -123,6 +123,8 @@ const Briefing = () => {
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [availableCredits, setAvailableCredits] = useState(0);
   const [isUsingCredit, setIsUsingCredit] = useState(false);
+  const [isEditingSingleField, setIsEditingSingleField] = useState(false);
+  const [editingFieldStep, setEditingFieldStep] = useState<number | null>(null);
   
   const initialFormData: BriefingFormData = {
     isInstrumental: false,
@@ -705,7 +707,7 @@ const Briefing = () => {
     return uniqueWords.slice(0, 8);
   };
 
-  const addBotMessage = (msg: Omit<ChatMessage, 'id'>) => {
+  const addBotMessage = (msg: Omit<ChatMessage, 'id'>, targetStep?: number) => {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -723,7 +725,9 @@ const Briefing = () => {
       }
       
       // Se for step 5 (qual instrumento terá solo), preencher com instrumentos selecionados
-      if (msg.field === 'soloInstrument' && currentStep === 5) {
+      // Usar targetStep se fornecido, senão usar currentStep
+      const stepToCheck = targetStep ?? currentStep;
+      if (msg.field === 'soloInstrument' && stepToCheck === 5) {
         const instrumentOptions = formData.instruments.map(instId => {
           const inst = INSTRUMENT_OPTIONS.find(i => i.id === instId);
           return { id: instId, label: inst?.label || instId };
@@ -905,12 +909,23 @@ const Briefing = () => {
       ? { ...formData, autoGenerateName: option.id === 'auto', songName: '' }
       : { ...formData, [field]: option.id };
     
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setFormData(updatedFormData as BriefingFormData);
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData as BriefingFormData);
+      }, 500);
+      return;
+    }
+
     const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
       setTimeout(() => {
-        addBotMessage(chatFlow[nextStep]);
+        addBotMessage(chatFlow[nextStep], nextStep);
       }, 500);
     } else {
       showConfirmationScreen(updatedFormData as BriefingFormData);
@@ -933,7 +948,19 @@ const Briefing = () => {
     setShowCustomStyleInput(false);
     setStepHistory(prev => [...prev, currentStep]);
 
-    const nextStep = getNextStep(currentStep, { ...formData, style: 'outros', customStyle });
+    const updatedFormData = { ...formData, style: 'outros', customStyle };
+
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData);
+      }, 500);
+      return;
+    }
+
+    const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
@@ -941,7 +968,7 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      showConfirmationScreen({ ...formData, style: 'outros', customStyle });
+      showConfirmationScreen(updatedFormData);
     }
   };
 
@@ -953,7 +980,19 @@ const Briefing = () => {
     addUserMessage(yes ? "✅ Sim" : "❌ Não");
     setStepHistory(prev => [...prev, currentStep]);
 
-    const nextStep = getNextStep(currentStep, { ...formData, [currentMsg.field]: yes });
+    const updatedFormData = { ...formData, [currentMsg.field]: yes };
+
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData as BriefingFormData);
+      }, 500);
+      return;
+    }
+
+    const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
@@ -961,7 +1000,7 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      showConfirmationScreen({ ...formData, [currentMsg.field]: yes } as BriefingFormData);
+      showConfirmationScreen(updatedFormData as BriefingFormData);
     }
   };
 
@@ -971,7 +1010,19 @@ const Briefing = () => {
     addUserMessage(`${value}/5 - ${labels[value - 1]}`);
     setStepHistory(prev => [...prev, currentStep]);
 
-    const nextStep = getNextStep(currentStep, { ...formData, emotionIntensity: value });
+    const updatedFormData = { ...formData, emotionIntensity: value };
+
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData);
+      }, 500);
+      return;
+    }
+
+    const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
@@ -1015,6 +1066,18 @@ const Briefing = () => {
     setStepHistory(prev => [...prev, currentStep]);
     
     const updatedFormData = { ...formData, instruments: selectedInstruments };
+    
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setSelectedInstruments([]);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData);
+      }, 500);
+      return;
+    }
+
     const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
     setSelectedInstruments([]);
@@ -1040,7 +1103,19 @@ const Briefing = () => {
     setSelectedSuggestions([]);
     setStepHistory(prev => [...prev, currentStep]);
 
-    const nextStep = getNextStep(currentStep, { ...formData, mandatoryWords: finalValue });
+    const updatedFormData = { ...formData, mandatoryWords: finalValue };
+
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData);
+      }, 500);
+      return;
+    }
+
+    const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
@@ -1096,7 +1171,19 @@ const Briefing = () => {
     setInputValue("");
     setStepHistory(prev => [...prev, currentStep]);
 
-    const nextStep = getNextStep(currentStep, { ...formData, [field]: value });
+    const updatedFormData = { ...formData, [field]: value };
+
+    // Se estiver editando um único campo, voltar para confirmação
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setTimeout(() => {
+        showConfirmationScreen(updatedFormData as BriefingFormData);
+      }, 500);
+      return;
+    }
+
+    const nextStep = getNextStep(currentStep, updatedFormData);
     setCurrentStep(nextStep);
 
     if (nextStep < chatFlow.length) {
@@ -1104,7 +1191,7 @@ const Briefing = () => {
         addBotMessage(chatFlow[nextStep]);
       }, 500);
     } else {
-      showConfirmationScreen({ ...formData, [field]: value } as BriefingFormData);
+      showConfirmationScreen(updatedFormData as BriefingFormData);
     }
   };
 
@@ -1123,10 +1210,17 @@ const Briefing = () => {
     setStepHistory([]);
     setMessages([]);
     setSelectedInstruments([]);
+    setIsEditingSingleField(true);
+    setEditingFieldStep(step);
     
-    // Reiniciar desde o início até o step desejado
+    // Para instrumentos, restaurar a seleção atual
+    if (step === 3 && formData.instruments.length > 0) {
+      setSelectedInstruments(formData.instruments);
+    }
+    
+    // Mostrar apenas a pergunta específica
     setTimeout(() => {
-      addBotMessage(chatFlow[step]);
+      addBotMessage(chatFlow[step], step);
     }, 300);
   };
 
