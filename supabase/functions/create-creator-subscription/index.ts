@@ -12,14 +12,14 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CREATOR-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Map plan IDs to Stripe price amounts (in cents)
-const PLAN_PRICES: Record<string, { amount: number; credits: number; name: string }> = {
-  'creator_start': { amount: 2990, credits: 50, name: 'Creator Start' },
-  'creator_pro': { amount: 4990, credits: 150, name: 'Creator Pro' },
-  'creator_studio': { amount: 7990, credits: 300, name: 'Creator Studio' },
-  'creator_start_instrumental': { amount: 2390, credits: 50, name: 'Creator Start Instrumental' },
-  'creator_pro_instrumental': { amount: 3990, credits: 150, name: 'Creator Pro Instrumental' },
-  'creator_studio_instrumental': { amount: 6390, credits: 300, name: 'Creator Studio Instrumental' },
+// Map plan IDs to Stripe price IDs and config
+const PLAN_PRICES: Record<string, { priceId: string; credits: number; name: string }> = {
+  'creator_start': { priceId: 'price_1SttuCCqEk0oYMYYZiZ1STDQ', credits: 50, name: 'Creator Start' },
+  'creator_pro': { priceId: 'price_1SttueCqEk0oYMYYw1wy4Obg', credits: 150, name: 'Creator Pro' },
+  'creator_studio': { priceId: 'price_1SttuwCqEk0oYMYYRa3G4KIL', credits: 300, name: 'Creator Studio' },
+  'creator_start_instrumental': { priceId: 'price_1SttvFCqEk0oYMYYfEimVHzi', credits: 50, name: 'Creator Start Instrumental' },
+  'creator_pro_instrumental': { priceId: 'price_1SttvvCqEk0oYMYYr6NCCjTr', credits: 150, name: 'Creator Pro Instrumental' },
+  'creator_studio_instrumental': { priceId: 'price_1SttwHCqEk0oYMYY74BSnV1W', credits: 300, name: 'Creator Studio Instrumental' },
 };
 
 serve(async (req) => {
@@ -85,26 +85,16 @@ serve(async (req) => {
     // Get origin for redirect URLs
     const origin = req.headers.get("origin") || "https://criandomusicas.lovable.app";
 
-    // Create a subscription session with inline price
+    // Create a subscription session with Stripe price ID
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
       line_items: [{
-        price_data: {
-          currency: 'brl',
-          product_data: {
-            name: planConfig.name,
-            description: `${planConfig.credits} músicas/mês - Renovação automática`,
-          },
-          unit_amount: planConfig.amount,
-          recurring: {
-            interval: 'month',
-          },
-        },
+        price: planConfig.priceId,
         quantity: 1,
       }],
       mode: "subscription",
-      success_url: `${origin}/dashboard?subscription=success&plan=${planId}`,
+      success_url: `${origin}/planos?subscription=success&plan=${planId}`,
       cancel_url: `${origin}/planos`,
       metadata: {
         user_id: user.id,
