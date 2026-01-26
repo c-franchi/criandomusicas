@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles } from "lucide-react";
+import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles, CreditCard, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
@@ -12,6 +12,13 @@ import { supabase } from "@/integrations/supabase/client";
 import WhatsAppModal from "@/components/WhatsAppModal";
 import CreditsBanner from "@/components/CreditsBanner";
 import { useCredits, getPlanLabel } from "@/hooks/useCredits";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ChatMessage {
   id: string;
@@ -112,6 +119,10 @@ const Briefing = () => {
   const [stepHistory, setStepHistory] = useState<number[]>([]);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [pendingFinish, setPendingFinish] = useState(false);
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+  const [availableCredits, setAvailableCredits] = useState(0);
+  const [isUsingCredit, setIsUsingCredit] = useState(false);
   
   const initialFormData: BriefingFormData = {
     isInstrumental: false,
@@ -1232,28 +1243,10 @@ const Briefing = () => {
       const { data: creditsData } = await supabase.functions.invoke('check-credits');
       
       if (creditsData?.has_credits && creditsData?.total_available > 0) {
-        // Usar crédito diretamente, sem checkout
-        const { data: useCreditResult, error: useCreditError } = await supabase.functions.invoke('use-credit', {
-          body: { orderId: orderData.id }
-        });
-
-        if (useCreditError || !useCreditResult?.success) {
-          console.error('Error using credit:', useCreditError || useCreditResult?.error);
-          // Se falhar ao usar crédito, ir para checkout normal
-          const urlParams = new URLSearchParams(window.location.search);
-          const planId = urlParams.get('planId') || 'single';
-          navigate(`/checkout/${orderData.id}?planId=${planId}`);
-          return;
-        }
-
-        // Crédito usado com sucesso!
-        toast({
-          title: '✨ Crédito utilizado!',
-          description: `Você usou 1 crédito. Restam ${useCreditResult.remaining_credits} músicas no seu pacote.`,
-        });
-
-        // Redirecionar direto para criação da música
-        navigate(`/criar-musica?orderId=${orderData.id}`);
+        // Mostrar modal de confirmação ao invés de usar automaticamente
+        setPendingOrderId(orderData.id);
+        setAvailableCredits(creditsData.total_available);
+        setShowCreditModal(true);
         return;
       }
 
@@ -1271,6 +1264,64 @@ const Briefing = () => {
         variant: 'destructive'
       });
     }
+  };
+
+  // Handler para usar crédito do modal
+  const handleUseCredit = async () => {
+    if (!pendingOrderId) return;
+    
+    setIsUsingCredit(true);
+    try {
+      const { data: useCreditResult, error: useCreditError } = await supabase.functions.invoke('use-credit', {
+        body: { orderId: pendingOrderId }
+      });
+
+      if (useCreditError || !useCreditResult?.success) {
+        console.error('Error using credit:', useCreditError || useCreditResult?.error);
+        toast({
+          title: 'Erro ao usar crédito',
+          description: 'Ocorreu um erro. Você será redirecionado para o checkout.',
+          variant: 'destructive'
+        });
+        // Se falhar, ir para checkout
+        const urlParams = new URLSearchParams(window.location.search);
+        const planId = urlParams.get('planId') || 'single';
+        navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
+        return;
+      }
+
+      // Crédito usado com sucesso!
+      toast({
+        title: '✨ Crédito utilizado!',
+        description: `Você usou 1 crédito. Restam ${useCreditResult.remaining_credits} músicas no seu pacote.`,
+      });
+
+      // Limpar briefing salvo
+      clearSavedBriefing();
+      
+      // Redirecionar direto para criação da música
+      navigate(`/criar-musica?orderId=${pendingOrderId}`);
+    } catch (error) {
+      console.error('Error using credit:', error);
+      toast({
+        title: 'Erro ao usar crédito',
+        description: 'Tente novamente.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsUsingCredit(false);
+      setShowCreditModal(false);
+    }
+  };
+
+  // Handler para ir ao checkout ao invés de usar crédito
+  const handleGoToCheckout = () => {
+    if (!pendingOrderId) return;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const planId = urlParams.get('planId') || 'single';
+    setShowCreditModal(false);
+    navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
   };
 
   const getFieldLabel = (field: string, value: string | boolean | number | string[]): string => {
@@ -1972,6 +2023,62 @@ const Briefing = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Confirmação de Créditos */}
+      <Dialog open={showCreditModal} onOpenChange={setShowCreditModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Sparkles className="w-5 h-5 text-primary" />
+              Você tem créditos disponíveis!
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Você possui <span className="font-bold text-primary">{availableCredits} música{availableCredits !== 1 ? 's' : ''}</span> disponível{availableCredits !== 1 ? 'is' : ''} no seu pacote.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground">
+              Deseja usar um crédito para criar esta música ou prefere comprar um novo pacote?
+            </p>
+            
+            <div className="grid gap-3">
+              <Button 
+                onClick={handleUseCredit} 
+                disabled={isUsingCredit}
+                className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              >
+                <div className="flex items-center gap-2 w-full">
+                  {isUsingCredit ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Zap className="w-5 h-5" />
+                  )}
+                  <span className="font-semibold">Usar 1 crédito</span>
+                </div>
+                <span className="text-xs opacity-80 ml-7">
+                  Restará {availableCredits - 1} música{availableCredits - 1 !== 1 ? 's' : ''} no pacote
+                </span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                onClick={handleGoToCheckout}
+                disabled={isUsingCredit}
+                className="w-full h-auto py-4 flex flex-col items-start gap-1"
+              >
+                <div className="flex items-center gap-2 w-full">
+                  <CreditCard className="w-5 h-5" />
+                  <span className="font-semibold">Ir para checkout</span>
+                </div>
+                <span className="text-xs opacity-80 ml-7">
+                  Comprar novo pacote ou música avulsa
+                </span>
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
