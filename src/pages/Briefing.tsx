@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
 import { supabase } from "@/integrations/supabase/client";
 import WhatsAppModal from "@/components/WhatsAppModal";
+import CreditsBanner from "@/components/CreditsBanner";
 import { useCredits, getPlanLabel } from "@/hooks/useCredits";
 
 interface ChatMessage {
@@ -1656,6 +1657,11 @@ const Briefing = () => {
           </div>
         </div>
       </header>
+
+      {/* Credits Banner */}
+      <div className="max-w-3xl mx-auto px-4 pt-4">
+        <CreditsBanner showBuyButton={false} />
+      </div>
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto">
