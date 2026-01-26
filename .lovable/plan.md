@@ -1,314 +1,529 @@
 
-# Plano de Implementacao: Compartilhamento de Vouchers e Creditos
+# Plano Completo: Correções de Bugs + Novos Recursos + Reestruturação Homepage
 
-## Visao Geral
+## Visão Geral
 
-Este plano cobre duas funcionalidades solicitadas:
-
-1. **Painel Admin**: Adicionar botoes para compartilhar vouchers criados nas redes sociais
-2. **Usuarios**: Permitir que usuarios transfiram creditos para amigos
+Este plano aborda 4 correções de bugs, implementação de 2 novos recursos, e uma reestruturação completa da homepage com novos planos para criadores de conteúdo.
 
 ---
 
-## Parte 1: Compartilhamento de Vouchers pelo Admin
+## PARTE 1: Correções de Bugs
 
-### Objetivo
-Permitir que administradores compartilhem vouchers criados diretamente nas redes sociais (WhatsApp, Facebook, Instagram, Twitter) com uma mensagem pre-formatada e atraente.
+### Bug 1: Transferência de Créditos por Código/Link Compartilhável
 
-### Implementacao
+**Problema**: Atualmente só é possível transferir créditos via email. Usuário solicita opção de compartilhar via código/link.
 
-#### 1.1 Adicionar Botao de Compartilhamento na Lista de Vouchers
-
-**Arquivo**: `src/pages/AdminSettings.tsx`
-
-Adicionar um novo botao "Compartilhar" ao lado dos botoes de editar e excluir em cada card de voucher (linhas 762-775).
-
-```text
-Estrutura atual:
-[Badge Status] [Editar] [Excluir]
-
-Nova estrutura:
-[Badge Status] [Compartilhar] [Editar] [Excluir]
-```
-
-#### 1.2 Criar Funcoes de Compartilhamento
-
-Adicionar funcoes para gerar links de compartilhamento com mensagens formatadas:
-
-```typescript
-const generateVoucherShareText = (voucher: Voucher) => {
-  const discount = voucher.discount_type === 'percent'
-    ? `${voucher.discount_value}% de desconto`
-    : `R$ ${(voucher.discount_value / 100).toFixed(2).replace('.', ',')} de desconto`;
-  
-  const expiry = voucher.valid_until 
-    ? `\nValido ate: ${format(new Date(voucher.valid_until), "dd/MM/yyyy", { locale: ptBR })}` 
-    : '';
-  
-  return `🎵 CUPOM DE DESCONTO 🎵\n\n` +
-    `Use o codigo: *${voucher.code}*\n` +
-    `Desconto: ${discount}\n` +
-    `${expiry}\n\n` +
-    `🎶 Crie sua musica personalizada em:\n` +
-    `https://criandomusicas.com.br/planos`;
-};
-
-const shareVoucherWhatsApp = (voucher: Voucher) => {
-  const text = generateVoucherShareText(voucher);
-  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-};
-
-const shareVoucherFacebook = (voucher: Voucher) => {
-  const url = `https://criandomusicas.com.br/planos?voucher=${voucher.code}`;
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
-};
-
-const shareVoucherTwitter = (voucher: Voucher) => {
-  const text = `🎵 Use o cupom ${voucher.code} e ganhe desconto na sua musica personalizada! 🎶`;
-  const url = `https://criandomusicas.com.br/planos`;
-  window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-};
-
-const copyVoucherLink = async (voucher: Voucher) => {
-  const text = generateVoucherShareText(voucher);
-  await navigator.clipboard.writeText(text);
-  toast({ title: 'Cupom copiado!', description: 'Cole nas suas redes sociais.' });
-};
-```
-
-#### 1.3 UI do Botao de Compartilhamento
-
-Adicionar um `DropdownMenu` com as opcoes de compartilhamento:
-
-```tsx
-<DropdownMenu>
-  <DropdownMenuTrigger asChild>
-    <Button variant="ghost" size="sm">
-      <Share2 className="w-4 h-4" />
-    </Button>
-  </DropdownMenuTrigger>
-  <DropdownMenuContent align="end">
-    <DropdownMenuItem onClick={() => shareVoucherWhatsApp(voucher)}>
-      <WhatsAppIcon /> WhatsApp
-    </DropdownMenuItem>
-    <DropdownMenuItem onClick={() => shareVoucherFacebook(voucher)}>
-      <Facebook /> Facebook
-    </DropdownMenuItem>
-    <DropdownMenuItem onClick={() => shareVoucherTwitter(voucher)}>
-      <Twitter /> Twitter/X
-    </DropdownMenuItem>
-    <DropdownMenuSeparator />
-    <DropdownMenuItem onClick={() => copyVoucherLink(voucher)}>
-      <Copy /> Copiar Texto
-    </DropdownMenuItem>
-  </DropdownMenuContent>
-</DropdownMenu>
-```
-
----
-
-## Parte 2: Transferencia de Creditos entre Usuarios
-
-### Objetivo
-Permitir que usuarios transfiram creditos disponiveis para amigos atraves de email ou codigo.
-
-### Arquitetura
-
-```text
-                 Usuario A                    Sistema                    Usuario B
-                     |                           |                           |
-                     |  Solicita transferencia   |                           |
-                     |  (email + qtd creditos)   |                           |
-                     |-------------------------->|                           |
-                     |                           |  Valida creditos          |
-                     |                           |  Cria registro pendente   |
-                     |                           |  Envia notificacao        |
-                     |                           |-------------------------->|
-                     |                           |                           |
-                     |                           |  Usuario B aceita         |
-                     |                           |<--------------------------|
-                     |                           |                           |
-                     |                           |  Transfere creditos       |
-                     |  Notifica sucesso         |  Atualiza saldos          |
-                     |<--------------------------|-------------------------->|
-```
-
-### 2.1 Criar Tabela de Transferencias
-
-**Migracao SQL**:
-
-```sql
--- Tabela para rastrear transferencias de creditos
-CREATE TABLE public.credit_transfers (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  from_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  to_user_email TEXT NOT NULL,
-  to_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
-  credits_amount INTEGER NOT NULL CHECK (credits_amount > 0),
-  credit_type TEXT NOT NULL DEFAULT 'vocal', -- 'vocal' ou 'instrumental'
-  source_credit_id UUID NOT NULL REFERENCES public.user_credits(id),
-  status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'accepted', 'rejected', 'expired'
-  transfer_code TEXT UNIQUE NOT NULL,
-  message TEXT, -- Mensagem opcional do remetente
-  created_at TIMESTAMPTZ DEFAULT now(),
-  accepted_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ DEFAULT (now() + INTERVAL '7 days')
-);
-
--- RLS Policies
-ALTER TABLE public.credit_transfers ENABLE ROW LEVEL SECURITY;
-
--- Usuarios podem ver transferencias que enviaram
-CREATE POLICY "Users can view their sent transfers"
-  ON public.credit_transfers FOR SELECT
-  USING (auth.uid() = from_user_id);
-
--- Usuarios podem ver transferencias destinadas a eles
-CREATE POLICY "Users can view transfers to their email"
-  ON public.credit_transfers FOR SELECT
-  USING (
-    to_user_id = auth.uid() OR
-    to_user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
-  );
-
--- Usuarios podem criar transferencias de seus proprios creditos
-CREATE POLICY "Users can create transfers"
-  ON public.credit_transfers FOR INSERT
-  WITH CHECK (auth.uid() = from_user_id);
-
--- Usuarios podem atualizar transferencias destinadas a eles (aceitar/rejeitar)
-CREATE POLICY "Users can update transfers to them"
-  ON public.credit_transfers FOR UPDATE
-  USING (
-    to_user_id = auth.uid() OR
-    to_user_email = (SELECT email FROM auth.users WHERE id = auth.uid())
-  );
-```
-
-### 2.2 Criar Edge Function para Transferencia
-
-**Arquivo**: `supabase/functions/transfer-credits/index.ts`
-
-```typescript
-// Funcionalidades:
-// 1. Validar creditos disponiveis do remetente
-// 2. Criar registro de transferencia com codigo unico
-// 3. Reservar creditos (decrementar do remetente temporariamente)
-// 4. Enviar notificacao por email ao destinatario
-```
-
-### 2.3 Criar Edge Function para Aceitar Transferencia
-
-**Arquivo**: `supabase/functions/accept-credit-transfer/index.ts`
-
-```typescript
-// Funcionalidades:
-// 1. Validar codigo de transferencia
-// 2. Verificar se nao expirou
-// 3. Criar novo registro de creditos para o destinatario
-// 4. Marcar transferencia como aceita
-// 5. Notificar remetente
-```
-
-### 2.4 Interface do Usuario - Componente de Transferencia
+**Solução**:
 
 **Arquivo**: `src/components/CreditTransfer.tsx`
 
-Criar componente com duas abas:
+Adicionar uma nova aba "Resgatar Código" e funcionalidade de compartilhar link:
 
-```tsx
-<Tabs>
-  <TabsList>
-    <TabsTrigger>Enviar Creditos</TabsTrigger>
-    <TabsTrigger>Transferencias Recebidas</TabsTrigger>
-  </TabsList>
-  
-  <TabsContent value="send">
-    {/* Formulario para enviar creditos */}
-    <Input placeholder="Email do amigo" />
-    <Select placeholder="Tipo de credito" />
-    <Input type="number" placeholder="Quantidade" />
-    <Textarea placeholder="Mensagem (opcional)" />
-    <Button>Enviar Creditos</Button>
-  </TabsContent>
-  
-  <TabsContent value="received">
-    {/* Lista de transferencias pendentes */}
-    {pendingTransfers.map(transfer => (
-      <Card>
-        <p>{transfer.from_user_email} te enviou {transfer.credits_amount} creditos</p>
-        <Button onClick={() => acceptTransfer(transfer.id)}>Aceitar</Button>
-        <Button variant="outline" onClick={() => rejectTransfer(transfer.id)}>Recusar</Button>
-      </Card>
-    ))}
-  </TabsContent>
-</Tabs>
+1. Ao criar uma transferência, gerar link compartilhável
+2. O destinatário pode inserir o código manualmente ou clicar no link
+3. Adicionar botões de compartilhamento (WhatsApp, copiar link)
+
+```text
+Nova estrutura de abas:
+[Enviar] [Recebidas] [Resgatar Código]
+
+Na aba "Enviar":
+- Adicionar opção "Gerar Código para Compartilhar" que cria transferência sem email específico
+- Mostrar link/código gerado com botões de compartilhamento
+
+Na aba "Resgatar Código":
+- Input para código de transferência
+- Botão "Resgatar Créditos"
 ```
 
-### 2.5 Integrar na Pagina de Perfil
+**Arquivo**: `supabase/functions/transfer-credits/index.ts`
 
-**Arquivo**: `src/pages/Profile.tsx`
+- Modificar para aceitar transferências sem `toEmail` (apenas código)
+- O `to_user_id` será preenchido quando alguém resgatar
 
-Adicionar nova aba "Compartilhar" ou integrar ao componente `CreditsManagement`:
+**Arquivo**: `supabase/functions/accept-credit-transfer/index.ts`
 
-```tsx
-<TabsList>
-  <TabsTrigger value="profile">Perfil</TabsTrigger>
-  <TabsTrigger value="credits">Creditos</TabsTrigger>
-  <TabsTrigger value="transfer">Compartilhar</TabsTrigger> {/* NOVO */}
-</TabsList>
-```
-
-### 2.6 Notificacoes
-
-Enviar emails usando Resend (ja configurado) para:
-- Destinatario: "Voce recebeu X creditos de [Nome]!"
-- Remetente: "Sua transferencia foi aceita/recusada"
+- Adicionar método de aceitar por `transfer_code` diretamente
 
 ---
 
-## Arquivos a Modificar/Criar
+### Bug 2: Sessão PIX Clicável (Não Apenas o Botão)
 
-### Modificacoes:
-1. `src/pages/AdminSettings.tsx` - Adicionar compartilhamento de vouchers
-2. `src/components/CreditsManagement.tsx` - Adicionar botao para transferir
-3. `src/pages/Profile.tsx` - Adicionar aba de transferencias
+**Problema**: Na página de checkout, ao mostrar a opção de enviar comprovante PIX, apenas o botão é clicável. O usuário quer que toda a área seja clicável.
+
+**Solução**:
+
+**Arquivo**: `src/pages/Checkout.tsx` (linhas ~1078-1140)
+
+Transformar o card de upload em área clicável completa:
+
+```tsx
+// Antes (apenas botão clicável)
+<Card className="mt-4 p-4 ...">
+  <input ref={receiptInputRef} type="file" className="hidden" />
+  <Button onClick={() => receiptInputRef.current?.click()}>
+    Selecionar Comprovante
+  </Button>
+  <Button onClick={confirmWithReceipt} disabled={!receiptFile}>
+    Confirmar Pagamento
+  </Button>
+</Card>
+
+// Depois (área toda clicável para selecionar, botão separado para confirmar)
+<Card 
+  className="mt-4 p-4 cursor-pointer hover:border-primary/50 transition-all ..."
+  onClick={() => !receiptFile && receiptInputRef.current?.click()}
+>
+  <input ref={receiptInputRef} type="file" className="hidden" />
+  {/* Área de drop/preview */}
+  <div className="text-center">
+    {receiptPreview ? <img ... /> : <Upload icon />}
+    <p>Clique ou arraste para adicionar comprovante</p>
+  </div>
+  {/* Botão confirmar fora da área de click do card */}
+  <Button 
+    onClick={(e) => { e.stopPropagation(); confirmWithReceipt(); }}
+    disabled={!receiptFile}
+  >
+    Confirmar Pagamento
+  </Button>
+</Card>
+```
+
+---
+
+### Bug 3: Título da Música Sendo Substituído pelo Prompt
+
+**Problema**: Quando o usuário define um título para a música, ele está sendo sobrescrito pelo sistema.
+
+**Análise**: O código em `generate-lyrics/index.ts` já tem lógica para respeitar `songName` quando `autoGenerateName = false`. Porém, o título pode estar sendo sobrescrito em dois lugares:
+
+1. **`generate-lyrics`**: A função `extractTitleAndBody` pode estar extraindo título da letra gerada
+2. **`generate-style-prompt`**: Pode estar salvando título incorreto
+
+**Solução**:
+
+**Arquivo**: `supabase/functions/generate-lyrics/index.ts` (linhas ~88-129)
+
+A função `extractTitleAndBody` já tem lógica correta, mas precisa garantir que o título do usuário seja passado corretamente:
+
+```typescript
+// Melhorar a função extractTitleAndBody
+function extractTitleAndBody(raw: string, providedTitle?: string): { title: string; body: string } {
+  // Se título foi fornecido pelo usuário, usar EXATAMENTE ele
+  if (providedTitle && providedTitle.trim()) {
+    // Remover QUALQUER título gerado pela IA do corpo da letra
+    let bodyLines = raw.split(/\r?\n/).filter(l => l.trim());
+    
+    // Remove primeira linha se não for uma tag estrutural [Intro], [Verse], etc.
+    if (bodyLines.length > 0) {
+      const firstLine = bodyLines[0].trim();
+      if (!firstLine.startsWith('[') && firstLine.length < 100) {
+        bodyLines = bodyLines.slice(1);
+      }
+    }
+    
+    return { title: providedTitle.trim(), body: bodyLines.join('\n').trim() };
+  }
+  // ... resto da lógica para auto-geração
+}
+```
+
+**Arquivo**: `supabase/functions/generate-style-prompt/index.ts`
+
+Verificar que o `songTitle` passado do frontend está sendo respeitado:
+
+```typescript
+// Garantir que o título do usuário tem prioridade
+if (songTitle && songTitle.trim()) {
+  updateData.song_title = songTitle.trim();
+  console.log("Using USER-PROVIDED song_title:", songTitle);
+} else if (isInstrumental && generatedInstrumentalTitle) {
+  updateData.song_title = generatedInstrumentalTitle;
+}
+```
+
+**Arquivo**: `src/pages/CreateSong.tsx`
+
+Garantir que `editedTitle` é preservado do `briefingData.songName`:
+
+```typescript
+// Na função loadExistingOrder e ao carregar briefing
+setEditedTitle(orderData.song_title || briefingData.songName || '');
+```
+
+---
+
+### Bug 4: Pedidos Duplicados no Dashboard
+
+**Problema**: A imagem mostra dois cards para o mesmo pedido "Feliz Aniversário Maurício".
+
+**Análise**: O realtime subscription pode estar adicionando duplicatas quando:
+1. Um INSERT é detectado para um pedido que já existe na lista
+2. Race condition entre fetch inicial e subscription
+
+**Solução**:
+
+**Arquivo**: `src/pages/Dashboard.tsx` (linhas ~140-160)
+
+Adicionar verificação de duplicatas no handler de INSERT:
+
+```typescript
+if (payload.eventType === 'INSERT') {
+  const newOrder = payload.new as Order;
+  
+  // CORREÇÃO: Verificar se o pedido já existe antes de adicionar
+  setOrders(prev => {
+    const exists = prev.some(o => o.id === newOrder.id);
+    if (exists) {
+      console.log('Order already exists, skipping INSERT:', newOrder.id);
+      return prev;
+    }
+    // Fetch lyric title and add
+    return [{ ...newOrder, lyric_title: null }, ...prev];
+  });
+}
+```
+
+**Arquivo**: `src/pages/AdminDashboard.tsx`
+
+Aplicar mesma correção na subscription do admin.
+
+---
+
+## PARTE 2: Novos Recursos
+
+### Recurso 1: Compartilhamento de Créditos via Código/Link
+
+Já coberto no Bug 1, mas detalhando o fluxo completo:
+
+```text
+FLUXO DE COMPARTILHAMENTO POR CÓDIGO:
+
+1. Usuário A clica "Gerar Código" em CreditTransfer
+2. Sistema cria registro em credit_transfers com:
+   - transfer_code: gerado automaticamente
+   - to_user_email: null (para código compartilhável)
+   - status: 'pending'
+3. Usuário A recebe código (ex: "CRED-ABC123") e link
+4. Usuário A compartilha via WhatsApp, copy, etc.
+5. Usuário B acessa /resgatar?code=CRED-ABC123 ou insere código manualmente
+6. Sistema valida código e associa to_user_id ao Usuário B
+7. Usuário B aceita e recebe os créditos
+```
+
+**Novos componentes/arquivos**:
+- Modificar `src/components/CreditTransfer.tsx` - adicionar aba "Resgatar Código"
+- Modificar `supabase/functions/transfer-credits/index.ts` - aceitar modo "código"
+- Modificar `supabase/functions/accept-credit-transfer/index.ts` - aceitar por código direto
+
+---
+
+### Recurso 2: Compartilhamento de Vouchers nas Redes Sociais (Admin)
+
+Já implementado no arquivo `src/components/VoucherShareMenu.tsx`, mas precisamos garantir que está integrado corretamente no AdminSettings.
+
+**Verificar**: `src/pages/AdminSettings.tsx` deve ter o componente `VoucherShareMenu` renderizado nos cards de vouchers.
+
+---
+
+## PARTE 3: Reestruturação da Homepage - Planos para Criadores
+
+### 3.1 Nova Seção: "Para Criadores de Conteúdo"
+
+**Novo arquivo**: `src/components/CreatorSection.tsx`
+
+Criar seção destacada abaixo dos planos atuais:
+
+```tsx
+const CreatorSection = () => {
+  return (
+    <section className="py-16 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10">
+      <div className="max-w-6xl mx-auto px-6">
+        {/* Badge */}
+        <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+          🎬 Para Criadores de Conteúdo
+        </Badge>
+        
+        {/* Headline */}
+        <h2 className="text-4xl font-bold mb-6">
+          Músicas Originais para Seu Conteúdo
+        </h2>
+        
+        {/* Subheadline + Comparação sutil com Suno */}
+        <p className="text-xl text-muted-foreground mb-8 max-w-3xl">
+          Esqueça prompts complexos e edição manual. Você descreve, nós criamos. 
+          Músicas prontas para YouTube, TikTok, Reels e podcasts.
+        </p>
+        
+        {/* Diferenciais Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          <Card>
+            <CardHeader>
+              <FileText className="w-8 h-8 text-primary mb-2" />
+              <CardTitle>Letras Curadas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              Identidade musical consistente para seu canal
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <ImageIcon className="w-8 h-8 text-primary mb-2" />
+              <CardTitle>Capas Prontas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              Thumbnails profissionais para seus vídeos
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <Clock className="w-8 h-8 text-primary mb-2" />
+              <CardTitle>Formatos Curtos</CardTitle>
+            </CardHeader>
+            <CardContent>
+              Otimizado para 30s, 60s e formatos de Reels
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <Users className="w-8 h-8 text-primary mb-2" />
+              <CardTitle>Suporte Humano</CardTitle>
+            </CardHeader>
+            <CardContent>
+              Aprovação de letra e ajustes com nossa equipe
+            </CardContent>
+          </Card>
+        </div>
+        
+        {/* CTA */}
+        <Button size="lg" variant="hero" asChild>
+          <Link to="/planos#creator">
+            Conhecer Planos de Criador
+            <ArrowRight className="ml-2" />
+          </Link>
+        </Button>
+      </div>
+    </section>
+  );
+};
+```
+
+---
+
+### 3.2 Novos Planos de Assinatura para Criadores
+
+**Banco de dados**: Adicionar novos registros na tabela `pricing_config`:
+
+```sql
+INSERT INTO pricing_config (id, name, price_cents, price_promo_cents, features, is_popular, is_active, sort_order) VALUES
+('creator_start', 'Creator Start', 4990, NULL, 
+ '["3 músicas/mês", "Capas inclusas", "Formatos curtos (30s, 60s)", "Entrega em 48h", "Suporte por email"]'::jsonb, 
+ false, true, 10),
+ 
+('creator_pro', 'Creator Pro', 9990, NULL,
+ '["8 músicas/mês", "Capas inclusas", "Formatos curtos", "Entrega prioritária 24h", "Suporte VIP WhatsApp", "Revisões ilimitadas de letra"]'::jsonb,
+ true, true, 11),
+ 
+('creator_studio', 'Creator Studio', 19990, NULL,
+ '["20 músicas/mês", "Capas + Vídeos básicos", "Todos os formatos", "Entrega express 12h", "Suporte dedicado", "Diretor de conta"]'::jsonb,
+ false, true, 12);
+```
+
+---
+
+### 3.3 Atualizar Componente PricingPlans
+
+**Arquivo**: `src/components/PricingPlans.tsx`
+
+Modificar para mostrar dois blocos:
+
+```text
+ESTRUTURA PROPOSTA:
+
+1. [Toggle Vocal/Instrumental - existente]
+
+2. BLOCO 1: "Para Presentes e Homenagens" (planos avulsos existentes)
+   - Single, Package 3, Package 5
+   - Destaque: uso único, sem prazo, presente perfeito
+
+3. SEPARADOR VISUAL
+
+4. BLOCO 2: "Para Criadores de Conteúdo" (novas assinaturas)
+   - Creator Start, Creator Pro, Creator Studio
+   - Destaque: créditos mensais, renovação automática
+   
+5. TABELA COMPARATIVA (opcional): Avulso vs Assinatura
+```
+
+---
+
+### 3.4 Seção Explicativa: Avulso vs Assinatura
+
+**Novo arquivo ou adicionar em PricingPlans**:
+
+```tsx
+const PlanComparisonSection = () => (
+  <Card className="my-12 p-8 border-primary/20">
+    <h3 className="text-2xl font-bold mb-6 text-center">
+      Qual opção é ideal para você?
+    </h3>
+    
+    <div className="grid md:grid-cols-2 gap-8">
+      {/* Avulso */}
+      <div className="space-y-4">
+        <Badge variant="outline">Pacotes Avulsos</Badge>
+        <h4 className="text-xl font-semibold">Presente Único e Especial</h4>
+        <ul className="space-y-2 text-muted-foreground">
+          <li>✓ Ideal para aniversários, casamentos, homenagens</li>
+          <li>✓ Créditos nunca expiram</li>
+          <li>✓ 2 opções de letra para escolher</li>
+          <li>✓ Entrega em até 48h</li>
+        </ul>
+        <Button variant="outline" asChild>
+          <Link to="#planos">Ver Pacotes</Link>
+        </Button>
+      </div>
+      
+      {/* Assinatura */}
+      <div className="space-y-4">
+        <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
+          Assinatura Creator
+        </Badge>
+        <h4 className="text-xl font-semibold">Conteúdo em Volume</h4>
+        <ul className="space-y-2 text-muted-foreground">
+          <li>✓ Músicas todo mês para YouTube, TikTok, Podcasts</li>
+          <li>✓ Preço unitário até 60% menor</li>
+          <li>✓ Formatos otimizados (30s, 60s)</li>
+          <li>✓ Suporte prioritário</li>
+          <li>⚠️ Créditos renovam mensalmente</li>
+        </ul>
+        <Button variant="hero" asChild>
+          <Link to="/planos#creator">Assinar Agora</Link>
+        </Button>
+      </div>
+    </div>
+  </Card>
+);
+```
+
+---
+
+### 3.5 Atualizar FAQ
+
+**Arquivo**: `src/components/FAQ.tsx`
+
+Adicionar novas perguntas:
+
+```typescript
+const newFaqs = [
+  // ... FAQs existentes ...
+  {
+    question: "Posso usar as músicas em vídeos monetizados?",
+    answer: "Sim! As músicas criadas são 100% originais e você tem todos os direitos para uso comercial, incluindo monetização no YouTube, TikTok, Instagram e outras plataformas."
+  },
+  {
+    question: "Como funciona a assinatura Creator?",
+    answer: "Na assinatura, você recebe créditos todo mês para criar músicas. Os créditos são renovados automaticamente e você pode cancelar quando quiser. É ideal para quem produz conteúdo regularmente."
+  },
+  {
+    question: "Os créditos da assinatura expiram?",
+    answer: "Sim, os créditos da assinatura Creator renovam mensalmente. Créditos não utilizados não acumulam para o mês seguinte. Se você prefere créditos que nunca expiram, escolha os pacotes avulsos."
+  },
+  {
+    question: "Posso cancelar minha assinatura?",
+    answer: "Sim, você pode cancelar sua assinatura a qualquer momento. Você continua com acesso até o fim do período pago e seus créditos restantes podem ser usados até lá."
+  }
+];
+```
+
+---
+
+### 3.6 Atualizar Index.tsx
+
+**Arquivo**: `src/pages/Index.tsx`
+
+Adicionar novas seções:
+
+```tsx
+import CreatorSection from "@/components/CreatorSection";
+import PlanComparison from "@/components/PlanComparison";
+
+const Index = () => {
+  return (
+    <main className="min-h-screen bg-background">
+      <SEO ... />
+      <Hero />
+      <ProcessSteps />
+      <AudioSamples />
+      <InstrumentalShowcase />
+      <WhyChooseUs />
+      <PricingPlans />           {/* Planos avulsos existentes */}
+      <CreatorSection />          {/* NOVA: Seção para criadores */}
+      <PlanComparison />          {/* NOVA: Comparação Avulso vs Assinatura */}
+      <CustomLyricHighlight />
+      <VideoServiceSection />
+      <Testimonials />
+      <ReactionVideosShowcase />
+      <FAQ />                     {/* Atualizado com novas perguntas */}
+      <CTA />
+      <Footer />
+      <CookieConsent />
+      <ScrollToTop />
+    </main>
+  );
+};
+```
+
+---
+
+## PARTE 4: Arquivos a Criar/Modificar
 
 ### Novos Arquivos:
-1. `src/components/CreditTransfer.tsx` - Componente de transferencia
-2. `src/components/VoucherShareMenu.tsx` - Menu de compartilhamento de vouchers
-3. `supabase/functions/transfer-credits/index.ts` - Edge function para iniciar transferencia
-4. `supabase/functions/accept-credit-transfer/index.ts` - Edge function para aceitar
-5. Migracao SQL para tabela `credit_transfers`
+1. `src/components/CreatorSection.tsx` - Seção destacada para criadores
+2. `src/components/PlanComparison.tsx` - Comparação Avulso vs Assinatura
+3. `src/components/CreatorPricingCards.tsx` - Cards dos planos de assinatura
+
+### Arquivos a Modificar:
+1. `src/components/CreditTransfer.tsx` - Adicionar código compartilhável
+2. `src/pages/Checkout.tsx` - Área PIX toda clicável
+3. `src/pages/Dashboard.tsx` - Corrigir duplicatas
+4. `src/pages/AdminDashboard.tsx` - Corrigir duplicatas
+5. `src/pages/Index.tsx` - Adicionar novas seções
+6. `src/components/FAQ.tsx` - Novas perguntas
+7. `src/components/PricingPlans.tsx` - Reestruturar com blocos
+8. `src/pages/Planos.tsx` - Adicionar planos Creator
+9. `supabase/functions/generate-lyrics/index.ts` - Preservar título do usuário
+10. `supabase/functions/generate-style-prompt/index.ts` - Preservar título
+11. `supabase/functions/transfer-credits/index.ts` - Modo código
+12. `supabase/functions/accept-credit-transfer/index.ts` - Aceitar por código
+
+### Migração SQL:
+- Adicionar planos `creator_start`, `creator_pro`, `creator_studio` na `pricing_config`
 
 ---
 
-## Secao Tecnica
+## Ordem de Implementação Sugerida
 
-### Dependencias Utilizadas
-- `lucide-react`: Icones (Share2, Copy, Gift, Send)
-- `sonner`/`use-toast`: Notificacoes
-- `@radix-ui/react-dropdown-menu`: Menu de compartilhamento
-- `supabase`: Operacoes de banco de dados
+1. **Fase 1 - Correções de Bugs** (Prioridade Alta)
+   - Bug 4: Pedidos duplicados (rápido, crítico)
+   - Bug 3: Título da música (impacta UX)
+   - Bug 2: Área PIX clicável (UX)
+   - Bug 1: Código compartilhável (parcialmente novo recurso)
 
-### Fluxo de Seguranca para Transferencias
+2. **Fase 2 - Estrutura para Criadores**
+   - Migração SQL dos novos planos
+   - Componente CreatorSection
+   - Componente PlanComparison
+   - Atualização PricingPlans.tsx
+   - Atualização Planos.tsx
 
-1. **Validacao de Propriedade**: Verificar se o usuario possui os creditos que deseja transferir
-2. **Limite de Transferencia**: Nao permitir transferir mais creditos do que possui
-3. **Expiracao**: Transferencias pendentes expiram apos 7 dias
-4. **Codigo Unico**: Cada transferencia tem um codigo unico para identificacao
-5. **RLS Policies**: Garantir que usuarios so vejam suas proprias transferencias
-
-### Consideracoes de UX
-
-1. **Compartilhamento de Vouchers (Admin)**:
-   - Botao discreto mas acessivel
-   - Mensagens pre-formatadas e atraentes
-   - Suporte a todas as principais redes sociais
-
-2. **Transferencia de Creditos (Usuario)**:
-   - Interface simples e intuitiva
-   - Confirmacao antes de enviar
-   - Feedback claro sobre status da transferencia
-   - Badge de notificacao para transferencias pendentes
+3. **Fase 3 - Finalizações**
+   - Atualizar FAQ
+   - Atualizar Index.tsx
+   - Testes de integração
+   - Deploy das edge functions
 
