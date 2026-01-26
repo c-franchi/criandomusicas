@@ -256,17 +256,18 @@ const Briefing = () => {
     
     if (!data.musicType) return 1; // Primeiro após isInstrumental
     if (data.isInstrumental) {
-      // Fluxo instrumental
+      // Fluxo instrumental - solos são APENAS para instrumental
       if (!data.style) return 2;
       if (data.instruments.length === 0) return 3;
+      // Solo steps (4-6) APENAS para instrumental
       if (!data.soloInstrument && data.soloInstrument !== 'none') return 4;
-      if (data.soloInstrument && data.soloInstrument !== 'none' && !data.soloMoment) return 5;
-      if (!data.rhythm) return 6;
-      if (!data.atmosphere) return 7;
-      if (!data.story) return 8;
+      if (data.soloInstrument === 'want_solo' && !data.soloMoment) return 6;
+      if (!data.rhythm) return 7;
+      if (!data.atmosphere) return 8;
+      if (!data.story) return 9;
       return 100; // Vai para confirmação
     } else {
-      // Fluxo cantada
+      // Fluxo cantada - NUNCA passa por steps de solo (4-6)
       if (!data.emotion) return 10;
       if (!data.story) return 12;
       if (!data.voiceType) return 14;

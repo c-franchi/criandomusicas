@@ -22,6 +22,26 @@ const PLAN_CREDITS: Record<string, number> = {
   'subscription_instrumental': 5,
 };
 
+// Credit type compatibility:
+// - 'vocal' credits can be used for: vocal songs, custom lyric songs
+// - 'instrumental' credits can be used for: instrumental songs only
+const getCreditType = (planId: string): 'vocal' | 'instrumental' => {
+  return planId.includes('instrumental') ? 'instrumental' : 'vocal';
+};
+
+// Check if a credit can be used for a specific order type
+const isCreditCompatible = (planId: string, orderType: 'vocal' | 'instrumental' | 'custom_lyric'): boolean => {
+  const creditType = getCreditType(planId);
+  
+  if (creditType === 'instrumental') {
+    // Instrumental credits only work for instrumental orders
+    return orderType === 'instrumental';
+  }
+  
+  // Vocal credits work for vocal and custom lyric orders
+  return orderType === 'vocal' || orderType === 'custom_lyric';
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -35,6 +55,15 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
+    // Parse optional orderType from body
+    let orderType: 'vocal' | 'instrumental' | 'custom_lyric' | null = null;
+    try {
+      const body = await req.json();
+      orderType = body?.orderType || null;
+    } catch {
+      // No body or invalid JSON is fine
+    }
+
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header provided");
@@ -45,7 +74,7 @@ serve(async (req) => {
     
     const user = userData.user;
     if (!user) throw new Error("User not authenticated");
-    logStep("User authenticated", { userId: user.id });
+    logStep("User authenticated", { userId: user.id, orderType });
 
     // Fetch active credits for this user
     const { data: credits, error: creditsError } = await supabaseClient
@@ -53,7 +82,7 @@ serve(async (req) => {
       .select('*')
       .eq('user_id', user.id)
       .eq('is_active', true)
-      .order('purchased_at', { ascending: false });
+      .order('purchased_at', { ascending: true }); // FIFO - oldest first
 
     if (creditsError) {
       logStep("Error fetching credits", { error: creditsError.message });
@@ -62,36 +91,60 @@ serve(async (req) => {
 
     logStep("Credits fetched", { count: credits?.length || 0 });
 
-    // Calculate available credits
+    // Calculate available credits, optionally filtering by compatibility
     let totalAvailable = 0;
+    let totalVocal = 0;
+    let totalInstrumental = 0;
     let activePackage = null;
 
     if (credits && credits.length > 0) {
       for (const credit of credits) {
         const available = credit.total_credits - credit.used_credits;
         if (available > 0) {
-          totalAvailable += available;
-          if (!activePackage) {
-            activePackage = {
-              id: credit.id,
-              plan_id: credit.plan_id,
-              total_credits: credit.total_credits,
-              used_credits: credit.used_credits,
-              available_credits: available,
-              purchased_at: credit.purchased_at,
-              expires_at: credit.expires_at,
-            };
+          const creditType = getCreditType(credit.plan_id);
+          
+          if (creditType === 'vocal') {
+            totalVocal += available;
+          } else {
+            totalInstrumental += available;
+          }
+          
+          // If orderType specified, only count compatible credits
+          const isCompatible = orderType ? isCreditCompatible(credit.plan_id, orderType) : true;
+          
+          if (isCompatible) {
+            totalAvailable += available;
+            if (!activePackage) {
+              activePackage = {
+                id: credit.id,
+                plan_id: credit.plan_id,
+                total_credits: credit.total_credits,
+                used_credits: credit.used_credits,
+                available_credits: available,
+                purchased_at: credit.purchased_at,
+                expires_at: credit.expires_at,
+                credit_type: creditType,
+              };
+            }
           }
         }
       }
     }
 
-    logStep("Credits calculated", { totalAvailable, hasActivePackage: !!activePackage });
+    logStep("Credits calculated", { 
+      totalAvailable, 
+      totalVocal, 
+      totalInstrumental, 
+      hasActivePackage: !!activePackage,
+      orderType 
+    });
 
     return new Response(JSON.stringify({
       success: true,
       has_credits: totalAvailable > 0,
       total_available: totalAvailable,
+      total_vocal: totalVocal,
+      total_instrumental: totalInstrumental,
       active_package: activePackage,
       all_packages: credits?.map(c => ({
         id: c.id,
@@ -101,6 +154,7 @@ serve(async (req) => {
         available_credits: c.total_credits - c.used_credits,
         purchased_at: c.purchased_at,
         is_active: c.is_active,
+        credit_type: getCreditType(c.plan_id),
       })) || [],
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -114,6 +168,8 @@ serve(async (req) => {
       error: errorMessage,
       has_credits: false,
       total_available: 0,
+      total_vocal: 0,
+      total_instrumental: 0,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200, // Return 200 even on error so frontend can handle gracefully
