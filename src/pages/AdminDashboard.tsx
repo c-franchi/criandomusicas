@@ -314,7 +314,52 @@ const AdminDashboard = () => {
       const isInstrumental = orderData.is_instrumental === true;
       const hasCustomLyric = orderData.has_custom_lyric === true;
 
-      // 2. Update payment status to PAID
+      // 2. Determine plan from amount and type
+      let planId = 'single';
+      const amount = orderData.amount || 0;
+      
+      // Determine plan based on amount (cents)
+      if (amount >= 10990) {
+        planId = isInstrumental ? 'subscription_instrumental' : 'subscription'; // 5 músicas
+      } else if (amount >= 9990) {
+        planId = isInstrumental ? 'package_instrumental' : 'package'; // 3 músicas
+      } else {
+        planId = isInstrumental ? 'single_instrumental' : (hasCustomLyric ? 'single_custom_lyric' : 'single'); // 1 música
+      }
+
+      // 3. Create credits for multi-song packages
+      const PLAN_CREDITS: Record<string, number> = {
+        'single': 1,
+        'single_instrumental': 1,
+        'single_custom_lyric': 1,
+        'package': 3,
+        'package_instrumental': 3,
+        'subscription': 5,
+        'subscription_instrumental': 5,
+      };
+      
+      const creditsToAdd = PLAN_CREDITS[planId] || 1;
+      
+      if (creditsToAdd > 1) {
+        const { error: creditsError } = await supabase
+          .from('user_credits')
+          .insert({
+            user_id: userId,
+            plan_id: planId,
+            total_credits: creditsToAdd,
+            used_credits: 1, // First song is being created now
+            is_active: true,
+          });
+        
+        if (creditsError) {
+          console.error('Failed to create credits:', creditsError);
+          // Continue - don't fail the payment confirmation
+        } else {
+          console.log('Credits created for PIX payment:', { planId, credits: creditsToAdd });
+        }
+      }
+
+      // 4. Update payment status to PAID
       // For instrumental OR custom lyric: skip to LYRICS_APPROVED (no AI lyrics needed)
       // For vocal: go to LYRICS_PENDING (start lyrics generation)
       const newStatus = (isInstrumental || hasCustomLyric) ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
