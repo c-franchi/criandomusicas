@@ -356,7 +356,12 @@ const CreateSong = () => {
     setSelectedLyric(lyric);
     setOriginalSelectedLyric(lyric);
     setEditedLyric(lyric.body);
-    setEditedTitle(lyric.title);
+    // CRITICAL: Preserve user-provided title from briefing if available
+    // Only use lyric.title if user didn't provide a custom songName
+    const userProvidedTitle = briefingData?.songName && !briefingData?.autoGenerateName 
+      ? briefingData.songName 
+      : lyric.title;
+    setEditedTitle(userProvidedTitle);
     setStep("editing");
   };
 

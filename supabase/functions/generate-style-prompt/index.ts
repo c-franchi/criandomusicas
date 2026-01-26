@@ -488,14 +488,17 @@ ${cleanedLyrics}`;
       updateData.status = 'LYRICS_APPROVED';
     }
 
-    // Save song_title to order if provided, or use AI-generated title for instrumental
-    if (songTitle) {
-      updateData.song_title = songTitle;
-      console.log("Saving provided song_title to order:", songTitle);
+    // CRITICAL: Save song_title to order - USER-PROVIDED title has absolute priority
+    // Never overwrite user-provided title with AI-generated content
+    if (songTitle && songTitle.trim()) {
+      updateData.song_title = songTitle.trim();
+      console.log("Saving USER-PROVIDED song_title to order:", songTitle);
     } else if (isInstrumental && generatedInstrumentalTitle) {
+      // Only use AI-generated title if user didn't provide one (instrumental only)
       updateData.song_title = generatedInstrumentalTitle;
       console.log("Saving AI-generated instrumental title:", generatedInstrumentalTitle);
     }
+    // Note: For vocal tracks without provided title, the title comes from generate-lyrics
 
     // Only save approved_lyric_id if it's a valid UUID (not "custom" string)
     if (!isInstrumental && isValidUuid(lyricId)) {
