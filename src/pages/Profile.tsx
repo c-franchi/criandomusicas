@@ -15,13 +15,15 @@ import {
   Camera,
   Loader2,
   Package,
-  Gift
+  Gift,
+  Crown
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import CreditsManagement from "@/components/CreditsManagement";
 import CreditTransfer from "@/components/CreditTransfer";
+import CreatorSubscriptionManager from "@/components/CreatorSubscriptionManager";
 
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
@@ -236,20 +238,24 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Tabs for Profile, Credits, and Transfers */}
+        {/* Tabs for Profile, Credits, Subscription and Transfers */}
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
-            <TabsTrigger value="profile" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsTrigger value="profile" className="flex items-center gap-1 text-xs sm:text-sm">
               <User className="w-4 h-4" />
-              Perfil
+              <span className="hidden sm:inline">Perfil</span>
             </TabsTrigger>
-            <TabsTrigger value="credits" className="flex items-center gap-2">
+            <TabsTrigger value="subscription" className="flex items-center gap-1 text-xs sm:text-sm">
+              <Crown className="w-4 h-4" />
+              <span className="hidden sm:inline">Assinatura</span>
+            </TabsTrigger>
+            <TabsTrigger value="credits" className="flex items-center gap-1 text-xs sm:text-sm">
               <Package className="w-4 h-4" />
-              Créditos
+              <span className="hidden sm:inline">Créditos</span>
             </TabsTrigger>
-            <TabsTrigger value="transfer" className="flex items-center gap-2">
+            <TabsTrigger value="transfer" className="flex items-center gap-1 text-xs sm:text-sm">
               <Gift className="w-4 h-4" />
-              Transferir
+              <span className="hidden sm:inline">Transferir</span>
             </TabsTrigger>
           </TabsList>
           
@@ -351,6 +357,10 @@ const Profile = () => {
             </Card>
           </TabsContent>
           
+          <TabsContent value="subscription">
+            <CreatorSubscriptionManager />
+          </TabsContent>
+
           <TabsContent value="credits">
             <CreditsManagement />
           </TabsContent>
