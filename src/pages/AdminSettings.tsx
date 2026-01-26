@@ -22,8 +22,9 @@ import {
   Video,
   Camera,
   Trash2,
-  CalendarIcon
+  CalendarIcon,
 } from "lucide-react";
+import VoucherShareMenu from "@/components/VoucherShareMenu";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Calendar } from "@/components/ui/calendar";
@@ -763,6 +764,7 @@ const AdminSettings = () => {
                           <Badge variant={voucher.is_active ? 'default' : 'secondary'}>
                             {voucher.is_active ? 'Ativo' : 'Inativo'}
                           </Badge>
+                          <VoucherShareMenu voucher={voucher} />
                           <Button variant="ghost" size="sm" onClick={() => {
                             setEditingVoucher(voucher);
                             setVoucherDialogOpen(true);
