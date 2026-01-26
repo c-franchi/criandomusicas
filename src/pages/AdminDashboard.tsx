@@ -314,20 +314,7 @@ const AdminDashboard = () => {
       const isInstrumental = orderData.is_instrumental === true;
       const hasCustomLyric = orderData.has_custom_lyric === true;
 
-      // 2. Determine plan from amount and type
-      let planId = 'single';
-      const amount = orderData.amount || 0;
-      
-      // Determine plan based on amount (cents)
-      if (amount >= 10990) {
-        planId = isInstrumental ? 'subscription_instrumental' : 'subscription'; // 5 músicas
-      } else if (amount >= 9990) {
-        planId = isInstrumental ? 'package_instrumental' : 'package'; // 3 músicas
-      } else {
-        planId = isInstrumental ? 'single_instrumental' : (hasCustomLyric ? 'single_custom_lyric' : 'single'); // 1 música
-      }
-
-      // 3. Create credits for multi-song packages
+      // 2. Get plan from order (source of truth) or fallback to amount-based detection
       const PLAN_CREDITS: Record<string, number> = {
         'single': 1,
         'single_instrumental': 1,
@@ -337,9 +324,25 @@ const AdminDashboard = () => {
         'subscription': 5,
         'subscription_instrumental': 5,
       };
+
+      let planId = orderData.plan_id;
+      
+      // Fallback for older orders without plan_id
+      if (!planId) {
+        const amount = orderData.amount || 0;
+        if (amount >= 10990) {
+          planId = isInstrumental ? 'subscription_instrumental' : 'subscription';
+        } else if (amount >= 9990) {
+          planId = isInstrumental ? 'package_instrumental' : 'package';
+        } else {
+          planId = isInstrumental ? 'single_instrumental' : (hasCustomLyric ? 'single_custom_lyric' : 'single');
+        }
+      }
       
       const creditsToAdd = PLAN_CREDITS[planId] || 1;
+      console.log('PIX Payment - Plan detection:', { savedPlanId: orderData.plan_id, resolvedPlanId: planId, creditsToAdd });
       
+      // 3. Create credits for multi-song packages
       if (creditsToAdd > 1) {
         const { error: creditsError } = await supabase
           .from('user_credits')

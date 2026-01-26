@@ -1366,6 +1366,7 @@ const Briefing = () => {
           user_id: user?.id,
           status: 'AWAITING_PAYMENT',
           payment_status: 'PENDING',
+          plan_id: selectedPlanId, // Save the selected plan for credit tracking
           is_instrumental: briefingData.isInstrumental,
           has_custom_lyric: briefingData.hasCustomLyric,
           is_confidential: briefingData.isConfidential,
