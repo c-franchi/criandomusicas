@@ -3,12 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Mic, Users, Clock, Star, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PlanTypeToggle from "@/components/PlanTypeToggle";
+import { Loader2 } from "lucide-react";
 import SEO from "@/components/SEO";
 import CreditsBanner from "@/components/CreditsBanner";
 import {
@@ -62,6 +63,21 @@ const Planos = () => {
   const [creatorInstrumentalPlans, setCreatorInstrumentalPlans] = useState<PricingPlan[]>([]);
   const [customLyricPlan, setCustomLyricPlan] = useState<PricingPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Check for subscription success
+  useEffect(() => {
+    const subscriptionStatus = searchParams.get('subscription');
+    const planFromUrl = searchParams.get('plan');
+    
+    if (subscriptionStatus === 'success' && planFromUrl) {
+      toast({
+        title: "🎉 Assinatura ativada!",
+        description: `Seu plano ${planFromUrl.replace(/_/g, ' ').replace('creator ', 'Creator ')} está ativo. Comece a criar!`,
+      });
+    }
+  }, [searchParams, toast]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -467,19 +483,56 @@ const Planos = () => {
 
                       <div className="mt-auto">
                         <Button
-                          onClick={() => {
-                            toast({
-                              title: "Em breve!",
-                              description: "Os planos Creator serão lançados em breve. Cadastre-se para ser notificado!",
-                            });
+                          onClick={async () => {
+                            if (!user) {
+                              toast({
+                                title: "Login necessário",
+                                description: "Faça login para assinar um plano Creator.",
+                                variant: "destructive",
+                              });
+                              navigate('/auth?redirect=/planos#creator');
+                              return;
+                            }
+                            
+                            setSubscribingPlan(plan.id);
+                            try {
+                              const { data, error } = await supabase.functions.invoke('create-creator-subscription', {
+                                body: { planId: plan.id }
+                              });
+                              
+                              if (error) throw error;
+                              
+                              if (data?.url) {
+                                window.location.href = data.url;
+                              } else {
+                                throw new Error('URL de checkout não retornada');
+                              }
+                            } catch (err: any) {
+                              console.error('Error creating subscription:', err);
+                              toast({
+                                title: "Erro",
+                                description: err.message || "Não foi possível iniciar a assinatura. Tente novamente.",
+                                variant: "destructive",
+                              });
+                            } finally {
+                              setSubscribingPlan(null);
+                            }
                           }}
+                          disabled={subscribingPlan === plan.id}
                           className={`w-full py-3 font-semibold transition-all duration-300 ${
                             isPopular 
                               ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/30" 
                               : "bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
                           }`}
                         >
-                          Assinar {plan.name.replace(' Instrumental', '')}
+                          {subscribingPlan === plan.id ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Processando...
+                            </>
+                          ) : (
+                            `Assinar ${plan.name.replace(' Instrumental', '')}`
+                          )}
                         </Button>
                       </div>
                     </CardContent>
