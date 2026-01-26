@@ -485,56 +485,27 @@ const Planos = () => {
 
                       <div className="mt-auto">
                         <Button
-                          onClick={async () => {
+                          onClick={() => {
                             if (!user) {
                               toast({
                                 title: "Login necessário",
                                 description: "Faça login para assinar um plano Creator.",
                                 variant: "destructive",
                               });
-                              navigate('/auth?redirect=/planos#creator');
+                              navigate(`/auth?redirect=/creator-checkout/${plan.id}`);
                               return;
                             }
                             
-                            setSubscribingPlan(plan.id);
-                            try {
-                              const { data, error } = await supabase.functions.invoke('create-creator-subscription', {
-                                body: { planId: plan.id }
-                              });
-                              
-                              if (error) throw error;
-                              
-                              if (data?.url) {
-                                window.location.href = data.url;
-                              } else {
-                                throw new Error('URL de checkout não retornada');
-                              }
-                            } catch (err: any) {
-                              console.error('Error creating subscription:', err);
-                              toast({
-                                title: "Erro",
-                                description: err.message || "Não foi possível iniciar a assinatura. Tente novamente.",
-                                variant: "destructive",
-                              });
-                            } finally {
-                              setSubscribingPlan(null);
-                            }
+                            // Navigate to Creator checkout page with voucher support
+                            navigate(`/creator-checkout/${plan.id}`);
                           }}
-                          disabled={subscribingPlan === plan.id}
                           className={`w-full py-3 font-semibold transition-all duration-300 ${
                             isPopular 
                               ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/30" 
                               : "bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
                           }`}
                         >
-                          {subscribingPlan === plan.id ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Processando...
-                            </>
-                          ) : (
-                            `Assinar ${plan.name.replace(' Instrumental', '')}`
-                          )}
+                          {`Assinar ${plan.name.replace(' Instrumental', '')}`}
                         </Button>
                       </div>
                     </CardContent>

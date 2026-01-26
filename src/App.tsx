@@ -37,6 +37,7 @@ const MusicRules = lazy(() => import("./pages/MusicRules"));
 const MusicShare = lazy(() => import("./pages/MusicShare"));
 const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
+const CreatorCheckout = lazy(() => import("./pages/CreatorCheckout"));
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
               <Route path="/order/:orderId" element={<Order />} />
               <Route path="/video-checkout/:orderId" element={<VideoCheckout />} />
               <Route path="/video-upload/:videoOrderId" element={<VideoUpload />} />
+              <Route path="/creator-checkout/:planId" element={<CreatorCheckout />} />
               
               {/* Catch-all route */}
               <Route path="*" element={<NotFound />} />
