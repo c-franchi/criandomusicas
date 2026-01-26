@@ -12,14 +12,14 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CREATOR-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Map plan IDs to Stripe price IDs and config
+// Map plan IDs to Stripe price IDs and config (PRODUCTION)
 const PLAN_PRICES: Record<string, { priceId: string; credits: number; name: string }> = {
-  'creator_start': { priceId: 'price_1SttuCCqEk0oYMYYZiZ1STDQ', credits: 50, name: 'Creator Start' },
-  'creator_pro': { priceId: 'price_1SttueCqEk0oYMYYw1wy4Obg', credits: 150, name: 'Creator Pro' },
-  'creator_studio': { priceId: 'price_1SttuwCqEk0oYMYYRa3G4KIL', credits: 300, name: 'Creator Studio' },
-  'creator_start_instrumental': { priceId: 'price_1SttvFCqEk0oYMYYfEimVHzi', credits: 50, name: 'Creator Start Instrumental' },
-  'creator_pro_instrumental': { priceId: 'price_1SttvvCqEk0oYMYYr6NCCjTr', credits: 150, name: 'Creator Pro Instrumental' },
-  'creator_studio_instrumental': { priceId: 'price_1SttwHCqEk0oYMYY74BSnV1W', credits: 300, name: 'Creator Studio Instrumental' },
+  'creator_start': { priceId: 'price_1StxcNEE1g2DASjfQjDpFjKH', credits: 50, name: 'Creator Start' },
+  'creator_pro': { priceId: 'price_1StxcoEE1g2DASjflhQMQWph', credits: 150, name: 'Creator Pro' },
+  'creator_studio': { priceId: 'price_1Stxd1EE1g2DASjfk6zQSMXp', credits: 300, name: 'Creator Studio' },
+  'creator_start_instrumental': { priceId: 'price_1StxdIEE1g2DASjfxz5jlr5e', credits: 50, name: 'Creator Start Instrumental' },
+  'creator_pro_instrumental': { priceId: 'price_1StxdXEE1g2DASjfp97OFEMM', credits: 150, name: 'Creator Pro Instrumental' },
+  'creator_studio_instrumental': { priceId: 'price_1StxdnEE1g2DASjfPKhtgXMA', credits: 300, name: 'Creator Studio Instrumental' },
 };
 
 serve(async (req) => {
