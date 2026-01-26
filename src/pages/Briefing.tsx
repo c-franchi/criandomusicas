@@ -99,6 +99,7 @@ const INSTRUMENT_OPTIONS = [
   { id: "sintetizador", label: "✨ Sintetizadores/Eletrônico" },
   { id: "flauta", label: "🎶 Flauta" },
   { id: "harpa", label: "🎵 Harpa" },
+  { id: "outro", label: "✏️ Outro (digitar)" },
 ];
 
 const Briefing = () => {
@@ -116,6 +117,8 @@ const Briefing = () => {
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
   const [showCustomStyleInput, setShowCustomStyleInput] = useState(false);
+  const [showCustomInstrumentInput, setShowCustomInstrumentInput] = useState(false);
+  const [customInstrumentValue, setCustomInstrumentValue] = useState("");
   const [stepHistory, setStepHistory] = useState<number[]>([]);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [pendingFinish, setPendingFinish] = useState(false);
@@ -1041,11 +1044,42 @@ const Briefing = () => {
   };
 
   const handleInstrumentToggle = (instId: string) => {
+    // Se clicou em "Outro", mostrar input customizado
+    if (instId === 'outro') {
+      setShowCustomInstrumentInput(true);
+      return;
+    }
+    
     setSelectedInstruments(prev => 
       prev.includes(instId) 
         ? prev.filter(i => i !== instId)
         : [...prev, instId]
     );
+  };
+
+  const handleAddCustomInstrument = () => {
+    const value = customInstrumentValue.trim();
+    if (!value) {
+      toast({
+        title: 'Digite o nome do instrumento',
+        variant: 'destructive'
+      });
+      return;
+    }
+    
+    // Adicionar instrumento personalizado (prefixado com "custom:")
+    const customId = `custom:${value}`;
+    if (!selectedInstruments.includes(customId)) {
+      setSelectedInstruments(prev => [...prev, customId]);
+    }
+    
+    setCustomInstrumentValue("");
+    setShowCustomInstrumentInput(false);
+    
+    toast({
+      title: '✓ Instrumento adicionado',
+      description: value
+    });
   };
 
   const handleInstrumentsSubmit = () => {
@@ -1057,8 +1091,14 @@ const Briefing = () => {
       return;
     }
 
+    // Map instrument IDs to labels, handling custom instruments
     const labels = selectedInstruments
-      .map(id => INSTRUMENT_OPTIONS.find(i => i.id === id)?.label || id)
+      .map(id => {
+        if (id.startsWith('custom:')) {
+          return `✏️ ${id.replace('custom:', '')}`;
+        }
+        return INSTRUMENT_OPTIONS.find(i => i.id === id)?.label || id;
+      })
       .join(', ');
     
     setFormData(prev => ({ ...prev, instruments: selectedInstruments }));
@@ -1880,9 +1920,10 @@ const Briefing = () => {
             )}
 
             {/* Multi-select (instrumentos) */}
-            {currentBotMessage.inputType === 'multi-select' && currentBotMessage.options && (
+            {currentBotMessage.inputType === 'multi-select' && currentBotMessage.options && !showCustomInstrumentInput && (
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
+                  {/* Mostrar instrumentos pré-definidos */}
                   {currentBotMessage.options.map((option) => (
                     <Badge
                       key={option.id}
@@ -1894,6 +1935,25 @@ const Briefing = () => {
                       {option.label}
                     </Badge>
                   ))}
+                  
+                  {/* Mostrar instrumentos personalizados já adicionados */}
+                  {selectedInstruments
+                    .filter(id => id.startsWith('custom:'))
+                    .map(id => {
+                      const name = id.replace('custom:', '');
+                      return (
+                        <Badge
+                          key={id}
+                          variant="default"
+                          className="cursor-pointer py-2 px-3 text-sm bg-accent"
+                          onClick={() => setSelectedInstruments(prev => prev.filter(i => i !== id))}
+                        >
+                          <Check className="w-3 h-3 mr-1" />
+                          ✏️ {name}
+                        </Badge>
+                      );
+                    })
+                  }
                 </div>
                 <div className="flex gap-2">
                   <Button 
@@ -1905,6 +1965,41 @@ const Briefing = () => {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {/* Input de instrumento personalizado */}
+            {showCustomInstrumentInput && (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Digite o nome do instrumento:</p>
+                <div className="flex gap-2">
+                  <Input
+                    value={customInstrumentValue}
+                    onChange={(e) => setCustomInstrumentValue(e.target.value)}
+                    placeholder="Ex: Gaita, Berimbau, Kalimba..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomInstrument();
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <Button onClick={handleAddCustomInstrument}>
+                    <Check className="w-4 h-4" />
+                  </Button>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setShowCustomInstrumentInput(false);
+                    setCustomInstrumentValue("");
+                  }}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-1" />
+                  Voltar aos instrumentos
+                </Button>
               </div>
             )}
 
