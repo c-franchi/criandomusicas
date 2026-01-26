@@ -189,7 +189,14 @@ const PricingPlans = () => {
   };
 
   const handlePlanSelect = (planId: string) => {
-    navigate("/briefing", { state: { isInstrumental } });
+    // Get the correct plan ID based on type
+    const finalPlanId = isInstrumental ? `${planId}_instrumental` : planId;
+    const params = new URLSearchParams();
+    params.set('planId', finalPlanId);
+    if (isInstrumental) {
+      params.set('instrumental', 'true');
+    }
+    navigate(`/briefing?${params.toString()}`);
   };
 
   if (loading) {
