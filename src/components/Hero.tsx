@@ -1,17 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard, Zap } from "lucide-react";
+import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard, Zap, Crown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCredits } from "@/hooks/useCredits";
+import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import heroImage from "@/assets/hero-music.jpg";
 
 const Hero = () => {
   const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
+  const { hasActiveSubscription, planDetails, loading: subscriptionLoading } = useCreatorSubscription();
 
   // Get display name - prefer profile name, fallback to email
   const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
@@ -34,6 +36,15 @@ const Hero = () => {
       <div className="absolute top-6 right-6 z-20">
         {user ? (
           <div className="flex items-center gap-3">
+            {/* Creator Subscription Badge */}
+            {!subscriptionLoading && hasActiveSubscription && planDetails && (
+              <Link to="/perfil?tab=subscription">
+                <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30 gap-1.5 cursor-pointer hover:from-amber-500/30 hover:to-orange-500/30 transition-colors">
+                  <Crown className="w-3 h-3" />
+                  {planDetails.name.replace('Creator ', '')}
+                </Badge>
+              </Link>
+            )}
             {/* Credits Badge - Show if user has credits */}
             {!creditsLoading && hasCredits && (
               <Link to="/perfil?tab=credits">
