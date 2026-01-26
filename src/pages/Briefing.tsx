@@ -102,12 +102,27 @@ const INSTRUMENT_OPTIONS = [
   { id: "outro", label: "✏️ Outro (digitar)" },
 ];
 
+// Plan labels for display
+const PLAN_LABELS: Record<string, { name: string; credits: number; icon: string }> = {
+  'single': { name: 'Música Única', credits: 1, icon: '🎵' },
+  'single_instrumental': { name: 'Instrumental Única', credits: 1, icon: '🎹' },
+  'single_custom_lyric': { name: 'Letra Própria', credits: 1, icon: '📝' },
+  'package': { name: 'Pacote 3 Músicas', credits: 3, icon: '🎶' },
+  'package_instrumental': { name: 'Pacote 3 Instrumentais', credits: 3, icon: '🎹' },
+  'subscription': { name: 'Pacote 5 Músicas', credits: 5, icon: '👑' },
+  'subscription_instrumental': { name: 'Pacote 5 Instrumentais', credits: 5, icon: '🎹' },
+};
+
 const Briefing = () => {
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } = useSpeechToText();
+  
+  // Plan selection state
+  const [showPlanSelection, setShowPlanSelection] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -211,12 +226,21 @@ const Briefing = () => {
     }
   }, [transcript, resetTranscript]);
 
-  // Iniciar chat (mostrar opção de continuar se há dados salvos, ou iniciar direto em instrumental)
+  // Iniciar chat (verificar planId ou mostrar seleção de pacote)
   useEffect(() => {
     const timer = setTimeout(() => {
-      // Verificar se veio com parâmetro instrumental na URL
       const urlParams = new URLSearchParams(window.location.search);
+      const planIdFromUrl = urlParams.get('planId');
       const startAsInstrumental = urlParams.get('instrumental') === 'true';
+      
+      // Se não tem planId na URL, mostrar seleção de pacote primeiro
+      if (!planIdFromUrl) {
+        setShowPlanSelection(true);
+        return;
+      }
+      
+      // Definir o plano selecionado
+      setSelectedPlanId(planIdFromUrl);
       
       if (startAsInstrumental) {
         // Entrar direto no fluxo instrumental, pulando a primeira pergunta
@@ -1374,8 +1398,17 @@ const Briefing = () => {
       // Salvar dados completos no localStorage para uso posterior
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
-      // Verificar se usuário tem créditos disponíveis
-      const { data: creditsData } = await supabase.functions.invoke('check-credits');
+      // Determinar tipo de crédito necessário
+      const orderType = briefingData.isInstrumental 
+        ? 'instrumental' 
+        : briefingData.hasCustomLyric 
+          ? 'custom_lyric' 
+          : 'vocal';
+      
+      // Verificar se usuário tem créditos compatíveis disponíveis
+      const { data: creditsData } = await supabase.functions.invoke('check-credits', {
+        body: { orderType }
+      });
       
       if (creditsData?.has_credits && creditsData?.total_available > 0) {
         // Mostrar modal de confirmação ao invés de usar automaticamente
@@ -1385,9 +1418,8 @@ const Briefing = () => {
         return;
       }
 
-      // Sem créditos, ir para checkout
-      const urlParams = new URLSearchParams(window.location.search);
-      const planId = urlParams.get('planId') || 'single';
+      // Sem créditos compatíveis, ir para checkout com planId correto
+      const planId = selectedPlanId || 'single';
       
       // Redirecionar para checkout com planId
       navigate(`/checkout/${orderData.id}?planId=${planId}`);
@@ -1419,8 +1451,7 @@ const Briefing = () => {
           variant: 'destructive'
         });
         // Se falhar, ir para checkout
-        const urlParams = new URLSearchParams(window.location.search);
-        const planId = urlParams.get('planId') || 'single';
+        const planId = selectedPlanId || 'single';
         navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
         return;
       }
@@ -1453,8 +1484,7 @@ const Briefing = () => {
   const handleGoToCheckout = () => {
     if (!pendingOrderId) return;
     
-    const urlParams = new URLSearchParams(window.location.search);
-    const planId = urlParams.get('planId') || 'single';
+    const planId = selectedPlanId || 'single';
     setShowCreditModal(false);
     navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
   };
@@ -1578,6 +1608,196 @@ const Briefing = () => {
   const currentBotMessage = messages[messages.length - 1];
   const showInput = currentBotMessage?.type === 'bot' && currentBotMessage?.inputType && !showConfirmation;
   const suggestedKeywords = extractKeywords(formData.story);
+
+  // Get plan info for display
+  const currentPlanInfo = selectedPlanId ? PLAN_LABELS[selectedPlanId] : null;
+
+  // Handler para selecionar plano
+  const handlePlanSelection = (planId: string) => {
+    setSelectedPlanId(planId);
+    setShowPlanSelection(false);
+    
+    // Atualizar URL com o planId
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('planId', planId);
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+    
+    // Se for instrumental, configurar formData
+    if (planId.includes('instrumental')) {
+      setFormData(prev => ({ ...prev, isInstrumental: true }));
+      setCurrentStep(1);
+      addBotMessage(chatFlow[1]);
+    } else if (planId.includes('custom_lyric')) {
+      setFormData(prev => ({ ...prev, hasCustomLyric: true }));
+      setCurrentStep(22);
+      addBotMessage(chatFlow[22]);
+    } else {
+      addBotMessage(chatFlow[0]);
+    }
+  };
+
+  // Tela de seleção de pacote
+  if (showPlanSelection) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+          <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="mr-1">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Music className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-semibold">Escolha seu Pacote</h1>
+              <p className="text-sm text-muted-foreground">Selecione o plano para continuar</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+            {/* Credits Banner */}
+            <CreditsBanner showBuyButton={false} />
+
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold mb-2">Qual tipo de música você quer criar?</h2>
+              <p className="text-muted-foreground">Escolha o pacote ideal para você</p>
+            </div>
+
+            {/* Single Music Options */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Zap className="w-5 h-5 text-primary" />
+                Música Única
+              </h3>
+              
+              <div className="grid gap-3">
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary"
+                  onClick={() => handlePlanSelection('single')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">🎤</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Música Cantada</p>
+                      <p className="text-sm text-muted-foreground">Com letra e vocal profissional</p>
+                    </div>
+                    <Badge variant="secondary">1 música</Badge>
+                  </div>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary"
+                  onClick={() => handlePlanSelection('single_instrumental')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">🎹</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Música Instrumental</p>
+                      <p className="text-sm text-muted-foreground">Apenas música, sem vocal</p>
+                    </div>
+                    <Badge variant="secondary">1 música</Badge>
+                  </div>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary"
+                  onClick={() => handlePlanSelection('single_custom_lyric')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">📝</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Já Tenho a Letra</p>
+                      <p className="text-sm text-muted-foreground">Traga sua própria composição</p>
+                    </div>
+                    <Badge variant="secondary">1 música</Badge>
+                  </div>
+                </Button>
+              </div>
+            </div>
+
+            {/* Package Options */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="text-lg font-semibold flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-accent" />
+                Pacotes com Desconto
+              </h3>
+              
+              <div className="grid gap-3">
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-accent border-accent/30 bg-accent/5"
+                  onClick={() => handlePlanSelection('package')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">🎶</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Pacote 3 Músicas Cantadas</p>
+                      <p className="text-sm text-muted-foreground">Economize comprando em pacote</p>
+                    </div>
+                    <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                  </div>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-accent border-accent/30 bg-accent/5"
+                  onClick={() => handlePlanSelection('package_instrumental')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">🎹</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Pacote 3 Instrumentais</p>
+                      <p className="text-sm text-muted-foreground">Trilhas personalizadas</p>
+                    </div>
+                    <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                  </div>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary border-primary/30 bg-primary/5"
+                  onClick={() => handlePlanSelection('subscription')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">👑</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Pacote 5 Músicas Cantadas</p>
+                      <p className="text-sm text-muted-foreground">Melhor custo-benefício!</p>
+                    </div>
+                    <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                  </div>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary border-primary/30 bg-primary/5"
+                  onClick={() => handlePlanSelection('subscription_instrumental')}
+                >
+                  <div className="flex items-center gap-3 w-full">
+                    <span className="text-2xl">🎹</span>
+                    <div className="flex-1">
+                      <p className="font-semibold">Pacote 5 Instrumentais</p>
+                      <p className="text-sm text-muted-foreground">Trilhas em quantidade</p>
+                    </div>
+                    <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                  </div>
+                </Button>
+              </div>
+            </div>
+
+            <p className="text-center text-sm text-muted-foreground pt-4">
+              💡 Pacotes permitem criar múltiplas músicas com economia. Use quando quiser!
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Tela de confirmação
   if (showConfirmation) {
@@ -1837,10 +2057,19 @@ const Briefing = () => {
           <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
             <Music className="w-5 h-5 text-primary" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="font-semibold">Briefing Musical</h1>
             <p className="text-sm text-muted-foreground">Converse comigo para criar sua música</p>
           </div>
+          {/* Plan Badge */}
+          {currentPlanInfo && (
+            <Badge variant="outline" className="text-sm px-3 py-1 border-primary/50 bg-primary/10">
+              {currentPlanInfo.icon} {currentPlanInfo.name}
+              {currentPlanInfo.credits > 1 && (
+                <span className="ml-1 text-muted-foreground">({currentPlanInfo.credits}x)</span>
+              )}
+            </Badge>
+          )}
         </div>
       </header>
 
