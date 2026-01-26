@@ -80,6 +80,17 @@ serve(async (req) => {
         'subscription_instrumental': 5,
       };
       
+      // Plan display names
+      const PLAN_NAMES: Record<string, string> = {
+        'single': 'Música Única',
+        'single_instrumental': 'Música Única Instrumental',
+        'single_custom_lyric': 'Música com Letra Personalizada',
+        'package': 'Pacote 3 Músicas',
+        'package_instrumental': 'Pacote 3 Músicas Instrumental',
+        'subscription': 'Pacote 5 Músicas',
+        'subscription_instrumental': 'Pacote 5 Músicas Instrumental',
+      };
+      
       const creditsToAdd = PLAN_CREDITS[planId] || 1;
       
       // Create credits record for multi-song packages
@@ -117,6 +128,31 @@ serve(async (req) => {
         throw new Error(`Failed to update order: ${updateError.message}`);
       }
       logStep("Order updated to PAID", { orderId, planId, creditsAdded: creditsToAdd > 1 ? creditsToAdd : 0 });
+
+      // Send purchase confirmation email
+      try {
+        const purchaseType = creditsToAdd > 1 ? 'package' : 'single';
+        const planName = PLAN_NAMES[planId] || 'Música Personalizada';
+        const isInstrumental = planId.includes('instrumental');
+        
+        await supabaseClient.functions.invoke('send-purchase-email', {
+          body: {
+            email: user.email,
+            userName: profileData?.name || 'Cliente',
+            purchaseType,
+            planName,
+            amount: session.amount_total || 0,
+            currency: session.currency || 'brl',
+            orderId,
+            credits: creditsToAdd,
+            isInstrumental,
+          }
+        });
+        logStep("Purchase confirmation email sent");
+      } catch (emailError) {
+        console.error("Failed to send purchase email:", emailError);
+        // Don't fail the whole request for this
+      }
 
       // Notify admin about new paid order
       try {
