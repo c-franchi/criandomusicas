@@ -194,6 +194,7 @@ serve(async (req) => {
 
     let stylePrompt: string;
     let finalPrompt: string;
+    let generatedInstrumentalTitle: string = '';
 
     if (isInstrumental) {
       // === PROMPT PARA MÚSICA INSTRUMENTAL ===
@@ -209,6 +210,49 @@ serve(async (req) => {
             'bridge section'
           }`
         : 'No featured solo - balanced ensemble arrangement';
+
+      // First, generate a creative title for the instrumental track
+      const titlePrompt = `Generate a creative, evocative title for an instrumental music track.
+
+Track details:
+- Type: ${musicType}
+- Style: ${style}
+- Atmosphere: ${atmosphere}
+- Instruments: ${instrumentsList}
+- Mood: ${rhythm === 'lento' ? 'Slow, contemplative' : rhythm === 'animado' ? 'Energetic, upbeat' : 'Balanced, flowing'}
+
+Requirements:
+- Title in Portuguese (Brazil)
+- 2-5 words maximum
+- Evocative and memorable
+- No quotes, just the title text
+- Examples: "Aurora Dourada", "Ventos do Sul", "Despertar Épico"
+
+Return ONLY the title, nothing else.`;
+
+      console.log("Generating instrumental title...");
+      const titleResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "user", content: titlePrompt }
+          ],
+          max_tokens: 50,
+          temperature: 0.8,
+        }),
+      });
+
+      let generatedTitle = '';
+      if (titleResponse.ok) {
+        const titleData = await titleResponse.json();
+        generatedTitle = titleData.choices?.[0]?.message?.content?.trim().replace(/["']/g, '') || '';
+        console.log("Generated instrumental title:", generatedTitle);
+      }
 
       const systemPrompt = `You are a professional music producer creating ULTRA-CONCISE prompts for AI music generation (Suno, Udio).
 
@@ -286,6 +330,11 @@ BE VERY CONCISE - under 950 characters total.`;
       finalPrompt = `${stylePrompt}
 
 [Instrumental Track - No Lyrics]`;
+
+      // Save generated title for instrumental
+      if (generatedTitle && !songTitle) {
+        generatedInstrumentalTitle = generatedTitle;
+      }
 
     } else {
       // === PROMPT PARA MÚSICA CANTADA (código original) ===
@@ -439,10 +488,13 @@ ${cleanedLyrics}`;
       updateData.status = 'LYRICS_APPROVED';
     }
 
-    // Save song_title to order if provided
+    // Save song_title to order if provided, or use AI-generated title for instrumental
     if (songTitle) {
       updateData.song_title = songTitle;
-      console.log("Saving song_title to order:", songTitle);
+      console.log("Saving provided song_title to order:", songTitle);
+    } else if (isInstrumental && generatedInstrumentalTitle) {
+      updateData.song_title = generatedInstrumentalTitle;
+      console.log("Saving AI-generated instrumental title:", generatedInstrumentalTitle);
     }
 
     // Only save approved_lyric_id if it's a valid UUID (not "custom" string)
