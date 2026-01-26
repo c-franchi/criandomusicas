@@ -88,23 +88,35 @@ serve(async (req) => {
 
     const planId = creatorSub.metadata?.plan_id || null;
     const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
-    const subscriptionEnd = new Date(creatorSub.current_period_end * 1000).toISOString();
-    const currentPeriodStart = new Date(creatorSub.current_period_start * 1000).toISOString();
+    
+    // Validate timestamps before converting
+    const currentPeriodEnd = creatorSub.current_period_end;
+    const currentPeriodStartTs = creatorSub.current_period_start;
+
+    if (!currentPeriodEnd || !currentPeriodStartTs || typeof currentPeriodEnd !== 'number' || typeof currentPeriodStartTs !== 'number') {
+      logStep("Invalid subscription period data", { currentPeriodEnd, currentPeriodStartTs });
+      throw new Error("Subscription period data is missing or invalid");
+    }
+
+    const subscriptionEnd = new Date(currentPeriodEnd * 1000).toISOString();
+    const currentPeriodStart = new Date(currentPeriodStartTs * 1000).toISOString();
 
     logStep("Active creator subscription found", { 
       subscriptionId: creatorSub.id, 
       planId, 
       creditsTotal,
-      subscriptionEnd 
+      subscriptionEnd,
+      currentPeriodStart
     });
 
-    // Count orders created in current billing period
+    // Count orders created in current billing period with relevant statuses
     const { count: usedCredits, error: countError } = await supabaseClient
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', user.id)
       .gte('created_at', currentPeriodStart)
       .in('payment_status', ['PAID'])
+      .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
       .not('plan_id', 'is', null);
 
     if (countError) {
