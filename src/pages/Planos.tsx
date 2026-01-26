@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Mic, Users, Clock, Star, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -38,6 +38,9 @@ const formatPrice = (cents: number): string => {
 const getCreditsForPlan = (planId: string): number => {
   if (planId.includes('subscription')) return 5;
   if (planId.includes('package')) return 3;
+  if (planId.includes('creator_studio')) return 300;
+  if (planId.includes('creator_pro')) return 150;
+  if (planId.includes('creator_start')) return 50;
   return 1;
 };
 
@@ -55,6 +58,8 @@ const Planos = () => {
   const [isInstrumental, setIsInstrumental] = useState(false);
   const [vocalPlans, setVocalPlans] = useState<PricingPlan[]>([]);
   const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
+  const [creatorPlans, setCreatorPlans] = useState<PricingPlan[]>([]);
+  const [creatorInstrumentalPlans, setCreatorInstrumentalPlans] = useState<PricingPlan[]>([]);
   const [customLyricPlan, setCustomLyricPlan] = useState<PricingPlan | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -70,13 +75,17 @@ const Planos = () => {
         if (error) throw error;
 
         if (data) {
-          // Separate vocal, instrumental, and custom lyric plans
+          // Separate vocal, instrumental, creator, and custom lyric plans
           const vocal = data.filter(p => ['single', 'package', 'subscription'].includes(p.id));
-          const instrumental = data.filter(p => p.id.includes('instrumental'));
+          const instrumental = data.filter(p => ['single_instrumental', 'package_instrumental', 'subscription_instrumental'].includes(p.id));
+          const creator = data.filter(p => ['creator_start', 'creator_pro', 'creator_studio'].includes(p.id));
+          const creatorInst = data.filter(p => p.id.startsWith('creator_') && p.id.includes('instrumental'));
           const customLyric = data.find(p => p.id === 'single_custom_lyric');
           
           setVocalPlans(vocal.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
           setInstrumentalPlans(instrumental.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
+          setCreatorPlans(creator.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
+          setCreatorInstrumentalPlans(creatorInst.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
           if (customLyric) {
             setCustomLyricPlan({ ...customLyric, features: Array.isArray(customLyric.features) ? customLyric.features as string[] : [] });
           }
@@ -166,16 +175,19 @@ const Planos = () => {
           </div>
         )}
 
-        {/* Header */}
+        {/* Section: Para Presentes e Homenagens */}
         <div className="text-center mb-8">
+          <Badge className="mb-4 bg-primary/20 text-primary border-primary/30 px-4 py-2">
+            🎁 Para Presentes e Momentos Especiais
+          </Badge>
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="p-3 rounded-xl bg-gradient-to-r from-primary to-accent music-glow">
               <Crown className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold gradient-text">Escolha Seu Plano</h1>
+            <h1 className="text-4xl font-bold gradient-text">Planos Avulsos</h1>
           </div>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-            Transforme suas histórias em músicas incríveis. Escolha o plano ideal para você.
+            Ideal para presentes únicos: aniversários, casamentos, homenagens. Créditos que nunca expiram!
           </p>
           
           {/* Toggle Vocal/Instrumental */}
@@ -327,12 +339,191 @@ const Planos = () => {
           </div>
         )}
 
+        {/* ========== SECTION: Para Criadores de Conteúdo ========== */}
+        <div id="creator" className="mb-16 pt-16 border-t border-border/30">
+          <div className="text-center mb-12">
+            <Badge className="mb-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 border-purple-500/30 px-4 py-2">
+              🎬 Para Criadores de Conteúdo
+            </Badge>
+            <h2 className="text-4xl font-bold gradient-text mb-4">
+              Planos de Assinatura Mensal
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed mb-6">
+              Músicas originais em volume para YouTube, TikTok, Reels e Podcasts. 
+              Sem prompts complexos, sem edição - você descreve, nós criamos.
+            </p>
+            
+            {/* Toggle Vocal/Instrumental para Creator */}
+            <PlanTypeToggle 
+              isInstrumental={isInstrumental} 
+              onToggle={setIsInstrumental}
+              className="mb-4"
+            />
+            
+            {isInstrumental && (
+              <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse mb-4">
+                🎹 Trilhas instrumentais com 20% de desconto!
+              </Badge>
+            )}
+          </div>
+
+          {/* Diferenciais Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
+              <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
+              <h4 className="font-semibold text-foreground mb-1">Letras Curadas</h4>
+              <p className="text-sm text-muted-foreground">Identidade musical consistente</p>
+            </div>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
+              <Video className="w-8 h-8 text-primary mx-auto mb-2" />
+              <h4 className="font-semibold text-foreground mb-1">Pronto para Postar</h4>
+              <p className="text-sm text-muted-foreground">Formatos 30s, 60s, completo</p>
+            </div>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
+              <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
+              <h4 className="font-semibold text-foreground mb-1">Uso Comercial</h4>
+              <p className="text-sm text-muted-foreground">Monetize sem preocupações</p>
+            </div>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
+              <Users className="w-8 h-8 text-primary mx-auto mb-2" />
+              <h4 className="font-semibold text-foreground mb-1">Suporte Humano</h4>
+              <p className="text-sm text-muted-foreground">Aprovação e ajustes</p>
+            </div>
+          </div>
+
+          {/* Creator Plans Grid */}
+          {loading ? (
+            <div className="flex justify-center items-center py-16">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : (
+            <div className="grid lg:grid-cols-3 gap-8 mb-12">
+              {(isInstrumental ? creatorInstrumentalPlans : creatorPlans).map((plan) => {
+                const credits = getCreditsForPlan(plan.id);
+                const pricePerMusic = Math.round((plan.price_promo_cents || plan.price_cents) / credits);
+                const isPopular = plan.is_popular || plan.id.includes('creator_pro');
+                
+                // Icons based on plan
+                const PlanIcon = plan.id.includes('studio') ? Crown : 
+                                 plan.id.includes('pro') ? Star : Zap;
+                
+                return (
+                  <Card
+                    key={plan.id}
+                    className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
+                      isPopular 
+                        ? "ring-2 ring-purple-500 border-purple-500/50 shadow-lg shadow-purple-500/20" 
+                        : "border-border/50 hover:border-purple-500/30"
+                    }`}
+                  >
+                    {isPopular && (
+                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-4 py-1">
+                        ⭐ Mais Popular
+                      </Badge>
+                    )}
+
+                    {/* Credits Badge */}
+                    <Badge className="absolute -top-3 right-4 bg-purple-500 text-white px-3 py-1 font-bold">
+                      <Music className="w-3 h-3 mr-1" />
+                      {credits} músicas/mês
+                    </Badge>
+
+                    <CardHeader className="text-center pb-4 pt-8">
+                      <div className="flex justify-center mb-4">
+                        <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
+                          <PlanIcon className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                      <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
+                        {plan.name}
+                      </CardTitle>
+                      
+                      <CardDescription className="text-4xl font-bold text-purple-400">
+                        {plan.price_display}
+                      </CardDescription>
+
+                      {/* Price per music */}
+                      <div className="mt-3 space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          = {formatPrice(pricePerMusic)} por música
+                        </p>
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                          Créditos renovam mensalmente
+                        </Badge>
+                      </div>
+                    </CardHeader>
+
+                    <CardContent className="flex-1 flex flex-col">
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-start gap-3">
+                            <div className="p-1 rounded-full bg-purple-500/20 mt-0.5">
+                              <Check className="w-3 h-3 text-purple-400 flex-shrink-0" />
+                            </div>
+                            <span className="text-card-foreground leading-relaxed text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="mt-auto">
+                        <Button
+                          onClick={() => {
+                            toast({
+                              title: "Em breve!",
+                              description: "Os planos Creator serão lançados em breve. Cadastre-se para ser notificado!",
+                            });
+                          }}
+                          className={`w-full py-3 font-semibold transition-all duration-300 ${
+                            isPopular 
+                              ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/30" 
+                              : "bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
+                          }`}
+                        >
+                          Assinar {plan.name.replace(' Instrumental', '')}
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Why Choose Us Section */}
+          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5">
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl text-purple-400">
+                Por que usar Criando Músicas em vez de ferramentas genéricas?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-3 gap-6 text-center">
+                <div>
+                  <div className="text-3xl mb-2">🎯</div>
+                  <h4 className="font-semibold text-foreground mb-1">Sem Prompts Técnicos</h4>
+                  <p className="text-sm text-muted-foreground">Você descreve o que quer, nós criamos</p>
+                </div>
+                <div>
+                  <div className="text-3xl mb-2">✨</div>
+                  <h4 className="font-semibold text-foreground mb-1">Letra + Música Prontas</h4>
+                  <p className="text-sm text-muted-foreground">Não é geração bruta - é conteúdo curado</p>
+                </div>
+                <div>
+                  <div className="text-3xl mb-2">📱</div>
+                  <h4 className="font-semibold text-foreground mb-1">Pronto para Publicar</h4>
+                  <p className="text-sm text-muted-foreground">Direto do seu painel para as redes</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* How Credits Work Section */}
         <Card className="mb-16 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
               <HelpCircle className="w-6 h-6 text-primary" />
-              Como funcionam os créditos?
+              Perguntas Frequentes
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -342,36 +533,46 @@ const Planos = () => {
                   O que são créditos de música?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Cada crédito permite criar 1 música completa. Ao comprar um pacote de 3 ou 5 músicas, 
-                  você recebe créditos que podem ser usados a qualquer momento, sem prazo de validade.
+                  Cada crédito permite criar 1 música completa. Nos pacotes avulsos, 
+                  os créditos nunca expiram. Nas assinaturas Creator, renovam mensalmente.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-2">
                 <AccordionTrigger className="text-left">
-                  Posso usar créditos vocais para música instrumental?
+                  Posso usar as músicas em vídeos monetizados?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Não. Créditos vocais podem ser usados para músicas cantadas e músicas com letra própria. 
-                  Créditos instrumentais são exclusivos para músicas instrumentais. 
-                  Os tipos são separados para garantir a melhor qualidade em cada estilo.
+                  Sim! As músicas criadas são 100% originais e você tem todos os direitos 
+                  para uso comercial, incluindo monetização no YouTube, TikTok e Instagram.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-3">
                 <AccordionTrigger className="text-left">
-                  Os créditos expiram?
+                  Os créditos da assinatura acumulam?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Não! Seus créditos nunca expiram. Use quando quiser, no seu ritmo.
+                  Não. Os créditos das assinaturas Creator renovam mensalmente e não acumulam. 
+                  Se você prefere créditos que nunca expiram, escolha os pacotes avulsos.
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="item-4">
                 <AccordionTrigger className="text-left">
-                  Vale a pena comprar pacotes?
+                  Posso cancelar minha assinatura?
                 </AccordionTrigger>
                 <AccordionContent>
-                  Sim! Com pacotes você economiza até 55% por música. É ideal para quem quer 
-                  criar várias músicas para diferentes ocasiões: aniversários, casamentos, 
-                  homenagens, etc.
+                  Sim, você pode cancelar a qualquer momento. Você continua com acesso 
+                  até o fim do período pago e pode usar seus créditos restantes.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-5">
+                <AccordionTrigger className="text-left">
+                  Qual a diferença entre Avulso e Assinatura?
+                </AccordionTrigger>
+                <AccordionContent>
+                  <strong>Avulso:</strong> Ideal para presentes únicos. Créditos nunca expiram. 
+                  <br /><br />
+                  <strong>Assinatura Creator:</strong> Ideal para criadores de conteúdo que precisam 
+                  de músicas em volume todo mês, com preço unitário muito mais baixo.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
