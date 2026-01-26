@@ -40,10 +40,10 @@ const getCreditsForPlan = (planId: string): number => {
   // Pacotes avulsos
   if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
-  // Planos Creator - valores reais
-  if (planId.includes('creator_studio')) return 20;
-  if (planId.includes('creator_pro')) return 8;
-  if (planId.includes('creator_start')) return 3;
+  // Planos Creator - valores mensais reais
+  if (planId.includes('creator_studio')) return 300;
+  if (planId.includes('creator_pro')) return 150;
+  if (planId.includes('creator_start')) return 50;
   return 1;
 };
 
