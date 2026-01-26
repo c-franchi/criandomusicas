@@ -142,17 +142,32 @@ const Dashboard = () => {
           
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order;
-            // Fetch lyric title if available
-            let lyric_title = null;
-            if (newOrder.approved_lyric_id) {
-              const { data: lyricData } = await supabase
-                .from('lyrics')
-                .select('title')
-                .eq('id', newOrder.approved_lyric_id)
-                .maybeSingle();
-              lyric_title = lyricData?.title;
-            }
-            setOrders(prev => [{ ...newOrder, lyric_title }, ...prev]);
+            
+            // CORREÇÃO: Verificar se o pedido já existe antes de adicionar
+            setOrders(prev => {
+              const exists = prev.some(o => o.id === newOrder.id);
+              if (exists) {
+                console.log('Order already exists, skipping INSERT:', newOrder.id);
+                return prev;
+              }
+              
+              // Fetch lyric title async and update
+              (async () => {
+                let lyric_title = null;
+                if (newOrder.approved_lyric_id) {
+                  const { data: lyricData } = await supabase
+                    .from('lyrics')
+                    .select('title')
+                    .eq('id', newOrder.approved_lyric_id)
+                    .maybeSingle();
+                  lyric_title = lyricData?.title;
+                  // Update with title after async fetch
+                  setOrders(p => p.map(o => o.id === newOrder.id ? { ...o, lyric_title } : o));
+                }
+              })();
+              
+              return [{ ...newOrder, lyric_title: null }, ...prev];
+            });
             toast({
               title: '🎵 Novo pedido criado!',
               description: 'Seu pedido foi adicionado à lista.',

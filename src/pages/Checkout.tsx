@@ -1075,31 +1075,17 @@ export default function Checkout() {
                 Já Fiz o Pagamento PIX
               </Button>
 
-              {/* Receipt Upload Modal */}
+              {/* Receipt Upload Modal - ÁREA TODA CLICÁVEL */}
               {showReceiptUpload && (
                 <Card className="mt-4 p-4 border-2 border-primary/30 bg-primary/5">
                   <div className="space-y-4">
-                    <div className="text-center">
-                      <Upload className="w-8 h-8 mx-auto text-primary mb-2" />
-                      <h3 className="font-semibold">Envie o Comprovante</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Para agilizar a confirmação, envie uma foto ou screenshot do comprovante PIX
-                      </p>
-                    </div>
-
-                    {/* Receipt Preview */}
-                    {receiptPreview && (
-                      <div className="flex justify-center">
-                        <img 
-                          src={receiptPreview} 
-                          alt="Preview do comprovante" 
-                          className="max-w-[200px] max-h-[200px] rounded-lg border object-contain"
-                        />
-                      </div>
-                    )}
-
-                    {/* File Input */}
-                    <div className="space-y-2">
+                    {/* Área clicável para selecionar arquivo */}
+                    <div 
+                      className={`cursor-pointer rounded-lg border-2 border-dashed p-6 transition-all hover:border-primary/50 hover:bg-primary/10 ${
+                        receiptPreview ? 'border-green-500/50' : 'border-muted-foreground/30'
+                      }`}
+                      onClick={() => receiptInputRef.current?.click()}
+                    >
                       <input
                         ref={receiptInputRef}
                         type="file"
@@ -1107,14 +1093,27 @@ export default function Checkout() {
                         onChange={handleReceiptSelect}
                         className="hidden"
                       />
-                      <Button
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => receiptInputRef.current?.click()}
-                      >
-                        <ImageIcon className="w-4 h-4 mr-2" />
-                        {receiptFile ? 'Alterar Imagem' : 'Selecionar Comprovante'}
-                      </Button>
+                      
+                      {receiptPreview ? (
+                        <div className="flex flex-col items-center gap-3">
+                          <img 
+                            src={receiptPreview} 
+                            alt="Preview do comprovante" 
+                            className="max-w-[200px] max-h-[200px] rounded-lg border object-contain"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Clique para alterar a imagem
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="text-center">
+                          <Upload className="w-10 h-10 mx-auto text-primary mb-3" />
+                          <h3 className="font-semibold mb-1">Envie o Comprovante</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Clique ou arraste uma foto/screenshot do comprovante PIX
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Submit Button */}
