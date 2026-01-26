@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Gift, Send, Inbox, Clock, CheckCircle, XCircle, Loader2, AlertCircle } from 'lucide-react';
+import { Gift, Send, Inbox, Clock, CheckCircle, XCircle, Loader2, AlertCircle, Copy, Share2, Link2, Key } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,6 +69,15 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
   const [creditType, setCreditType] = useState<'vocal' | 'instrumental'>('vocal');
   const [amount, setAmount] = useState(1);
   const [message, setMessage] = useState('');
+  
+  // Code sharing state
+  const [shareMode, setShareMode] = useState<'email' | 'code'>('email');
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [copiedCode, setCopiedCode] = useState(false);
+  
+  // Redeem code state
+  const [redeemCode, setRedeemCode] = useState('');
+  const [redeeming, setRedeeming] = useState(false);
 
   const fetchTransfers = useCallback(async () => {
     if (!user) return;
@@ -107,15 +116,24 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
   }, [fetchTransfers]);
 
   const handleSendCredits = async () => {
-    if (!email || !amount || amount <= 0) {
-      toast({ title: 'Erro', description: 'Preencha todos os campos obrigatórios.', variant: 'destructive' });
-      return;
-    }
+    // Validações para modo email
+    if (shareMode === 'email') {
+      if (!email || !amount || amount <= 0) {
+        toast({ title: 'Erro', description: 'Preencha todos os campos obrigatórios.', variant: 'destructive' });
+        return;
+      }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast({ title: 'Erro', description: 'Digite um email válido.', variant: 'destructive' });
-      return;
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        toast({ title: 'Erro', description: 'Digite um email válido.', variant: 'destructive' });
+        return;
+      }
+    } else {
+      // Modo código - apenas quantidade obrigatória
+      if (!amount || amount <= 0) {
+        toast({ title: 'Erro', description: 'Selecione a quantidade de créditos.', variant: 'destructive' });
+        return;
+      }
     }
 
     const availableForType = creditType === 'vocal' ? totalVocal : totalInstrumental;
@@ -132,7 +150,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
     try {
       const { data, error } = await supabase.functions.invoke('transfer-credits', {
         body: { 
-          toEmail: email, 
+          toEmail: shareMode === 'email' ? email : null, // null = código compartilhável
           amount, 
           creditType,
           message: message.trim() || null
@@ -145,15 +163,24 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         throw new Error(data.error || 'Erro ao transferir créditos');
       }
 
-      toast({ 
-        title: 'Créditos enviados!', 
-        description: `${amount} crédito(s) enviado(s) para ${email}` 
-      });
-      
-      // Reset form
-      setEmail('');
-      setAmount(1);
-      setMessage('');
+      if (shareMode === 'code') {
+        // Modo código - mostrar código gerado
+        setGeneratedCode(data.transfer?.code);
+        toast({ 
+          title: 'Código gerado!', 
+          description: 'Compartilhe o código com seu amigo.' 
+        });
+      } else {
+        // Modo email
+        toast({ 
+          title: 'Créditos enviados!', 
+          description: `${amount} crédito(s) enviado(s) para ${email}` 
+        });
+        // Reset form
+        setEmail('');
+        setAmount(1);
+        setMessage('');
+      }
       
       // Refresh data
       refreshCredits();
@@ -163,6 +190,55 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
       toast({ title: 'Erro ao enviar', description: errorMessage, variant: 'destructive' });
     } finally {
       setSending(false);
+    }
+  };
+
+  // Copiar código
+  const copyCode = async (code: string) => {
+    await navigator.clipboard.writeText(code);
+    setCopiedCode(true);
+    toast({ title: 'Código copiado!' });
+    setTimeout(() => setCopiedCode(false), 3000);
+  };
+
+  // Compartilhar via WhatsApp
+  const shareWhatsApp = (code: string) => {
+    const text = `🎵 Presente para você! Use o código ${code} para resgatar créditos de música personalizada no site Criando Músicas!\n\nhttps://criandomusicas.lovable.app/perfil`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  // Resgatar código
+  const handleRedeemCode = async () => {
+    if (!redeemCode.trim()) {
+      toast({ title: 'Erro', description: 'Digite o código de transferência.', variant: 'destructive' });
+      return;
+    }
+
+    setRedeeming(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('accept-credit-transfer', {
+        body: { transferCode: redeemCode.trim().toUpperCase(), action: 'accept' },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        throw new Error(data.error || 'Erro ao resgatar código');
+      }
+
+      toast({ 
+        title: 'Créditos resgatados!', 
+        description: 'Os créditos foram adicionados à sua conta.' 
+      });
+
+      setRedeemCode('');
+      refreshCredits();
+      fetchTransfers();
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      toast({ title: 'Erro ao resgatar', description: errorMessage, variant: 'destructive' });
+    } finally {
+      setRedeeming(false);
     }
   };
 
@@ -267,7 +343,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         </div>
 
         <Tabs defaultValue="send" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="send" className="flex items-center gap-2">
               <Send className="w-4 h-4" />
               Enviar
@@ -281,6 +357,10 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="redeem" className="flex items-center gap-2">
+              <Key className="w-4 h-4" />
+              Resgatar
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="send" className="space-y-4">
@@ -291,18 +371,86 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                   Você não tem créditos disponíveis para transferir.
                 </p>
               </div>
+            ) : generatedCode ? (
+              // Mostrar código gerado
+              <div className="space-y-4">
+                <div className="text-center p-6 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5">
+                  <Gift className="w-10 h-10 text-primary mx-auto mb-3" />
+                  <p className="text-sm text-muted-foreground mb-2">Código de Transferência:</p>
+                  <code className="text-2xl font-mono font-bold text-primary block mb-4">
+                    {generatedCode}
+                  </code>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => copyCode(generatedCode)}
+                    >
+                      {copiedCode ? <CheckCircle className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
+                      Copiar
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => shareWhatsApp(generatedCode)}
+                      className="text-green-600 border-green-600/50 hover:bg-green-600/10"
+                    >
+                      <Share2 className="w-4 h-4 mr-1" />
+                      WhatsApp
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  O código expira em 7 dias. Compartilhe com seu amigo!
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => {
+                    setGeneratedCode(null);
+                    setAmount(1);
+                    setMessage('');
+                  }}
+                >
+                  Gerar Novo Código
+                </Button>
+              </div>
             ) : (
               <>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email do amigo</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="amigo@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+                {/* Toggle Email / Código */}
+                <div className="flex gap-2 mb-4">
+                  <Button 
+                    variant={shareMode === 'email' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setShareMode('email')}
+                    className="flex-1"
+                  >
+                    <Send className="w-4 h-4 mr-1" />
+                    Por Email
+                  </Button>
+                  <Button 
+                    variant={shareMode === 'code' ? 'default' : 'outline'} 
+                    size="sm"
+                    onClick={() => setShareMode('code')}
+                    className="flex-1"
+                  >
+                    <Link2 className="w-4 h-4 mr-1" />
+                    Gerar Código
+                  </Button>
                 </div>
+
+                {shareMode === 'email' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email do amigo</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="amigo@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -349,11 +497,13 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
 
                 <Button 
                   onClick={handleSendCredits} 
-                  disabled={sending || !email || amount > availableForType}
+                  disabled={sending || (shareMode === 'email' && !email) || amount > availableForType}
                   className="w-full"
                 >
                   {sending ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Enviando...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</>
+                  ) : shareMode === 'code' ? (
+                    <><Link2 className="w-4 h-4 mr-2" />Gerar Código para {amount} Crédito(s)</>
                   ) : (
                     <><Send className="w-4 h-4 mr-2" />Enviar {amount} Crédito(s)</>
                   )}
@@ -439,6 +589,44 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Aba Resgatar Código */}
+          <TabsContent value="redeem" className="space-y-4">
+            <div className="text-center mb-4">
+              <Key className="w-10 h-10 text-primary mx-auto mb-2" />
+              <h4 className="font-medium">Resgatar Código de Créditos</h4>
+              <p className="text-sm text-muted-foreground">
+                Recebeu um código de um amigo? Insira aqui para receber seus créditos.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="redeemCode">Código de Transferência</Label>
+              <Input
+                id="redeemCode"
+                placeholder="TRF-XXXXXXXX"
+                value={redeemCode}
+                onChange={(e) => setRedeemCode(e.target.value.toUpperCase())}
+                className="font-mono text-center text-lg"
+              />
+            </div>
+
+            <Button 
+              onClick={handleRedeemCode} 
+              disabled={redeeming || !redeemCode.trim()}
+              className="w-full"
+            >
+              {redeeming ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Resgatando...</>
+              ) : (
+                <><Gift className="w-4 h-4 mr-2" />Resgatar Créditos</>
+              )}
+            </Button>
+
+            <p className="text-xs text-center text-muted-foreground">
+              Os códigos expiram em 7 dias após a criação.
+            </p>
           </TabsContent>
         </Tabs>
       </Card>

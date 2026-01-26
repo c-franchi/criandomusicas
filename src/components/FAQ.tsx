@@ -42,6 +42,23 @@ const faqs = [
   {
     question: "E se eu não gostar do resultado?",
     answer: "Nossa taxa de satisfação é de 98%! Quanto mais detalhes você colocar no briefing, melhor fica a música. Você aprova a letra antes, então não tem surpresas."
+  },
+  // Novas perguntas para criadores
+  {
+    question: "Posso usar as músicas em vídeos monetizados?",
+    answer: "Sim! As músicas criadas são 100% originais e você tem todos os direitos para uso comercial, incluindo monetização no YouTube, TikTok, Instagram e outras plataformas. Não há risco de strikes ou reivindicações."
+  },
+  {
+    question: "Como funciona a assinatura Creator?",
+    answer: "Na assinatura, você recebe créditos todo mês para criar músicas. É ideal para criadores de conteúdo que precisam de várias músicas regularmente. Os créditos são renovados automaticamente e você pode cancelar quando quiser."
+  },
+  {
+    question: "Os créditos da assinatura expiram?",
+    answer: "Sim, os créditos da assinatura Creator renovam mensalmente. Créditos não utilizados não acumulam para o mês seguinte. Se você prefere créditos que nunca expiram, escolha os pacotes avulsos."
+  },
+  {
+    question: "Posso cancelar minha assinatura?",
+    answer: "Sim, você pode cancelar sua assinatura a qualquer momento pelo painel do usuário. Você continua com acesso até o fim do período pago e seus créditos restantes podem ser usados até lá."
   }
 ];
 

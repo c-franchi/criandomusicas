@@ -7,7 +7,8 @@ const corsHeaders = {
 };
 
 interface ActionRequest {
-  transferId: string;
+  transferId?: string;
+  transferCode?: string; // Novo: aceitar por código
   action: 'accept' | 'reject';
 }
 
@@ -45,11 +46,11 @@ serve(async (req) => {
 
     const userId = userData.user.id;
     const userEmail = userData.user.email?.toLowerCase();
-    const { transferId, action }: ActionRequest = await req.json();
+    const { transferId, transferCode, action }: ActionRequest = await req.json();
 
-    console.log('[ACCEPT-CREDIT-TRANSFER] Request:', { userId, transferId, action });
+    console.log('[ACCEPT-CREDIT-TRANSFER] Request:', { userId, transferId, transferCode, action });
 
-    if (!transferId || !action || !['accept', 'reject'].includes(action)) {
+    if ((!transferId && !transferCode) || !action || !['accept', 'reject'].includes(action)) {
       return new Response(
         JSON.stringify({ success: false, error: 'Dados inválidos' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -62,24 +63,51 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // Get the transfer
-    const { data: transfer, error: transferError } = await supabaseAdmin
-      .from('credit_transfers')
-      .select('*')
-      .eq('id', transferId)
-      .single();
-
-    if (transferError || !transfer) {
-      console.error('[ACCEPT-CREDIT-TRANSFER] Transfer not found:', transferError);
-      return new Response(
-        JSON.stringify({ success: false, error: 'Transferência não encontrada' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Get the transfer - by ID or by code
+    let transfer;
+    if (transferCode) {
+      const { data, error } = await supabaseAdmin
+        .from('credit_transfers')
+        .select('*')
+        .eq('transfer_code', transferCode.toUpperCase())
+        .single();
+      if (error || !data) {
+        console.error('[ACCEPT-CREDIT-TRANSFER] Transfer not found by code:', error);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Código de transferência inválido' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      transfer = data;
+    } else {
+      const { data, error } = await supabaseAdmin
+        .from('credit_transfers')
+        .select('*')
+        .eq('id', transferId)
+        .single();
+      if (error || !data) {
+        console.error('[ACCEPT-CREDIT-TRANSFER] Transfer not found:', error);
+        return new Response(
+          JSON.stringify({ success: false, error: 'Transferência não encontrada' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      transfer = data;
     }
 
-    // Verify the transfer belongs to this user
+    // Verify the transfer belongs to this user (by ID, by email, ou código sem destinatário específico)
+    const isCodeShare = transfer.to_user_email?.includes('@share.local');
     const isRecipient = transfer.to_user_id === userId || 
-                        transfer.to_user_email === userEmail;
+                        transfer.to_user_email === userEmail ||
+                        isCodeShare; // Códigos compartilháveis podem ser resgatados por qualquer pessoa
+
+    // Verificar se é o próprio remetente tentando resgatar
+    if (transfer.from_user_id === userId) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Você não pode resgatar seus próprios créditos' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     if (!isRecipient) {
       return new Response(

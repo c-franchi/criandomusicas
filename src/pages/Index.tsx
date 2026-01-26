@@ -14,6 +14,8 @@ import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
 import ScrollToTop from "@/components/ScrollToTop";
+import CreatorSection from "@/components/CreatorSection";
+import PlanComparison from "@/components/PlanComparison";
 
 const Index = () => {
   return (
@@ -30,6 +32,8 @@ const Index = () => {
       <InstrumentalShowcase />
       <WhyChooseUs />
       <PricingPlans />
+      <CreatorSection />
+      <PlanComparison />
       <CustomLyricHighlight />
       <VideoServiceSection />
       <Testimonials />

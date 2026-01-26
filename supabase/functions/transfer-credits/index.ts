@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 interface TransferRequest {
-  toEmail: string;
+  toEmail?: string | null; // Opcional - se null, cria código compartilhável
   amount: number;
   creditType: 'vocal' | 'instrumental';
   message?: string | null;
@@ -59,29 +59,31 @@ serve(async (req) => {
 
     console.log('[TRANSFER-CREDITS] Request:', { fromUserId, toEmail, amount, creditType });
 
-    // Validate input
-    if (!toEmail || !amount || amount <= 0) {
+    // Validate input - só quantidade obrigatória
+    if (!amount || amount <= 0) {
       return new Response(
-        JSON.stringify({ success: false, error: 'Dados inválidos' }),
+        JSON.stringify({ success: false, error: 'Quantidade inválida' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(toEmail)) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Email inválido' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Se email fornecido, validar formato
+    if (toEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(toEmail)) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Email inválido' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
-    // Can't transfer to yourself
-    if (toEmail.toLowerCase() === userData.user.email?.toLowerCase()) {
-      return new Response(
-        JSON.stringify({ success: false, error: 'Você não pode transferir créditos para si mesmo' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      // Can't transfer to yourself
+      if (toEmail.toLowerCase() === userData.user.email?.toLowerCase()) {
+        return new Response(
+          JSON.stringify({ success: false, error: 'Você não pode transferir créditos para si mesmo' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
 
     // Use service role to perform admin operations
@@ -138,9 +140,12 @@ serve(async (req) => {
       );
     }
 
-    // Check if recipient already exists
-    const { data: recipientUsers } = await supabaseAdmin.auth.admin.listUsers();
-    const recipientUser = recipientUsers?.users?.find(u => u.email?.toLowerCase() === toEmail.toLowerCase());
+    // Check if recipient already exists (only if email provided)
+    let recipientUser = null;
+    if (toEmail) {
+      const { data: recipientUsers } = await supabaseAdmin.auth.admin.listUsers();
+      recipientUser = recipientUsers?.users?.find(u => u.email?.toLowerCase() === toEmail.toLowerCase());
+    }
 
     // Generate unique transfer code
     const transferCode = generateTransferCode();
@@ -150,7 +155,7 @@ serve(async (req) => {
       .from('credit_transfers')
       .insert({
         from_user_id: fromUserId,
-        to_user_email: toEmail.toLowerCase(),
+        to_user_email: toEmail?.toLowerCase() || `code-${transferCode}@share.local`, // placeholder para códigos
         to_user_id: recipientUser?.id || null,
         credits_amount: amount,
         credit_type: creditType,
