@@ -98,7 +98,7 @@ const AudioSampleManager = ({
       for (const track of tracksData) {
         const { data: orderData } = await supabase
           .from('orders')
-          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title, story')
+          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title, story, is_instrumental')
           .eq('id', track.order_id)
           .single();
 
@@ -119,12 +119,17 @@ const AudioSampleManager = ({
           userName = profileData?.name;
         }
 
+        // Determine the effective music_type based on is_instrumental flag
+        const effectiveMusicType = orderData?.is_instrumental 
+          ? 'instrumental' 
+          : (orderData?.music_type || null);
+
         enrichedTracks.push({
           order_id: track.order_id,
           audio_url: track.audio_url || '',
           lyric_title: lyricData?.title || null,
           song_title: orderData?.song_title || null,
-          music_type: orderData?.music_type || null,
+          music_type: effectiveMusicType,
           music_style: orderData?.music_style || null,
           purpose: orderData?.purpose || null,
           cover_url: orderData?.cover_url || null,
