@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,10 +40,38 @@ const Dashboard = () => {
   const { user, profile, loading } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+
+  // Handle subscription success query param
+  useEffect(() => {
+    const subscriptionSuccess = searchParams.get('subscription');
+    const planId = searchParams.get('plan');
+
+    if (subscriptionSuccess === 'success') {
+      // Get plan name for display
+      const planNames: Record<string, string> = {
+        'creator_start': 'Creator Start',
+        'creator_pro': 'Creator Pro',
+        'creator_studio': 'Creator Studio',
+        'creator_start_instrumental': 'Creator Start Instrumental',
+        'creator_pro_instrumental': 'Creator Pro Instrumental',
+        'creator_studio_instrumental': 'Creator Studio Instrumental',
+      };
+      const planName = planId ? planNames[planId] || 'Creator' : 'Creator';
+
+      toast({
+        title: '🎉 Assinatura Ativada!',
+        description: `Sua assinatura ${planName} foi confirmada. Seus créditos já estão disponíveis!`,
+      });
+
+      // Clear URL params
+      setSearchParams({});
+    }
+  }, [searchParams, setSearchParams, toast]);
 
   const confirmDeleteOrder = async () => {
     if (!deleteOrderId) return;

@@ -155,7 +155,7 @@ serve(async (req) => {
         quantity: 1,
       }],
       mode: "subscription",
-      success_url: `${origin}/planos?subscription=success&plan=${planId}`,
+      success_url: `${origin}/dashboard?subscription=success&plan=${planId}`,
       cancel_url: `${origin}/creator-checkout/${planId}`,
       metadata: {
         user_id: user.id,

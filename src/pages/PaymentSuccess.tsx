@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Navigate, Link } from "react-router-dom";
+import { useSearchParams, Navigate, Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, Music, Loader2, XCircle } from "lucide-react";
@@ -9,11 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [verifying, setVerifying] = useState(true);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(3);
 
   const orderId = searchParams.get('order_id');
   const sessionId = searchParams.get('session_id');
@@ -54,6 +56,24 @@ const PaymentSuccess = () => {
     }
   }, [orderId, sessionId, user, toast]);
 
+  // Auto-redirect countdown after verification success
+  useEffect(() => {
+    if (!verified) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          navigate('/dashboard');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [verified, navigate]);
+
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -90,8 +110,11 @@ const PaymentSuccess = () => {
               <CheckCircle className="w-10 h-10 text-green-500" />
             </div>
             <h1 className="text-2xl font-bold mb-2">Pagamento Confirmado! 🎉</h1>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4">
               Sua música personalizada está sendo criada. Você pode acompanhar o progresso em tempo real.
+            </p>
+            <p className="text-sm text-muted-foreground mb-6">
+              Redirecionando em {countdown}s...
             </p>
             <div className="space-y-3">
               <Button asChild className="w-full" size="lg">
