@@ -70,20 +70,22 @@ serve(async (req) => {
       }
     }
 
-    // Convert musical prompt to visual art prompt - REALISTIC IMAGES
-    const visualPrompt = `Create a PHOTOREALISTIC, cinematic album cover art. Theme: ${basePrompt}. 
+    // Convert musical prompt to visual art prompt - ABSTRACT/LANDSCAPE FOCUS
+    // CRITICAL: Avoid people, hands, faces to prevent AI distortion issues
+    const visualPrompt = `Create a stunning CINEMATIC album cover art. Theme: ${basePrompt}. 
     
     CRITICAL REQUIREMENTS:
-    - ULTRA REALISTIC photography style, NOT illustration, NOT cartoon, NOT digital art
-    - Professional DSLR camera quality, 85mm lens aesthetic
-    - Cinematic lighting with dramatic shadows and highlights
-    - Real textures: skin, fabric, nature, architecture
+    - ABSOLUTELY NO HUMANS, NO PEOPLE, NO HANDS, NO FACES, NO BODY PARTS
+    - Focus on: landscapes, nature, abstract shapes, light rays, atmospheric fog, silhouettes of objects
+    - Musical instruments shown ONLY as artistic silhouettes or abstract shapes in distance
+    - Professional DSLR photography style with dramatic cinematic lighting
+    - Deep color grading: moody shadows, vibrant accent colors, atmospheric depth
+    - Visual elements: cosmic scenes, ocean waves, mountain silhouettes, dramatic skies, abstract light patterns
     - NO text, NO letters, NO words, NO typography whatsoever
-    - ${order.is_instrumental ? 'Capture an atmospheric landscape or abstract natural scene' : 'Feature authentic human emotion and connection'}
-    - Professional color grading like high-end music videos
+    - ${order.is_instrumental ? 'Ethereal atmospheric landscape with dramatic lighting, abstract nature elements' : 'Abstract emotional scene with symbolic elements like floating lights, cosmic dust, aurora'}
+    - High contrast with beautiful bokeh and depth of field
     - Commercial quality suitable for Spotify/Apple Music covers
-    - Avoid any cartoonish, anime, or illustrated elements
-    - Focus on depth of field and bokeh for professional look`;
+    - Style: cinematic movie poster aesthetic, abstract art photography`;
 
     console.log('Generating image with prompt:', visualPrompt.substring(0, 200) + '...');
 

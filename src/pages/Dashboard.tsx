@@ -345,71 +345,75 @@ const Dashboard = () => {
             </Card>
           ) : (
             orders.map((order) => (
-              <Card key={order.id} className="p-4 sm:p-6">
-                {/* Mobile-first layout */}
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-lg mb-1 break-words">
-                      {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
-                    </p>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge className={getStatusColor(order.status || 'DRAFT')}>
-                        {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
-                      </Badge>
-                      {order.has_custom_lyric && (
-                        <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
-                          📝 Letra Própria
+              <Link key={order.id} to={`/pedido/${order.id}`} className="block group">
+                <Card className="p-4 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
+                  {/* Mobile-first layout */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-lg mb-1 break-words group-hover:text-primary transition-colors">
+                        {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
+                      </p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge className={getStatusColor(order.status || 'DRAFT')}>
+                          {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
                         </Badge>
-                      )}
-                      {order.is_instrumental && !order.has_custom_lyric && (
-                        <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
-                          🎹 Instrumental
-                        </Badge>
-                      )}
-                      <span className="text-xs sm:text-sm text-muted-foreground">
-                        Criado em {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
-                      </span>
+                        {order.has_custom_lyric && (
+                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
+                            📝 Letra Própria
+                          </Badge>
+                        )}
+                        {order.is_instrumental && !order.has_custom_lyric && (
+                          <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
+                            🎹 Instrumental
+                          </Badge>
+                        )}
+                        <span className="text-xs sm:text-sm text-muted-foreground">
+                          Criado em {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Price and actions - stacks on mobile */}
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
+                      <div className="text-xl sm:text-2xl font-bold text-primary">
+                        R$ {(order.amount / 100).toFixed(2).replace('.', ',')}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" className="pointer-events-none">
+                          <span className="hidden xs:inline">Ver </span>Detalhes
+                          <ExternalLink className="w-4 h-4 ml-1 sm:ml-2" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDeleteOrderId(order.id);
+                          }}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          title="Excluir pedido"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                   
-                  {/* Price and actions - stacks on mobile */}
-                  <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
-                    <div className="text-xl sm:text-2xl font-bold text-primary">
-                      R$ {(order.amount / 100).toFixed(2).replace('.', ',')}
+                  {order.story && (
+                    <div className="border-t pt-4">
+                      <h4 className="font-medium mb-2 text-sm">História:</h4>
+                      <p className="text-sm text-muted-foreground break-words">
+                        {order.story.slice(0, 150)}
+                        {order.story.length > 150 ? '...' : ''}
+                      </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <Link to={`/pedido/${order.id}`}>
-                          <span className="hidden xs:inline">Ver </span>Detalhes
-                          <ExternalLink className="w-4 h-4 ml-1 sm:ml-2" />
-                        </Link>
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => setDeleteOrderId(order.id)}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        title="Excluir pedido"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                
-                {order.story && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-medium mb-2 text-sm">História:</h4>
-                    <p className="text-sm text-muted-foreground break-words">
-                      {order.story.slice(0, 150)}
-                      {order.story.length > 150 ? '...' : ''}
-                    </p>
-                  </div>
-                )}
-              </Card>
+                  )}
+                </Card>
+              </Link>
             ))
           )}
         </div>
