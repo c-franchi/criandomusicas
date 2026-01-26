@@ -61,6 +61,25 @@ const Dashboard = () => {
         'creator_pro_instrumental': 'Creator Pro Instrumental',
         'creator_studio_instrumental': 'Creator Studio Instrumental',
       };
+      
+      const planCredits: Record<string, number> = {
+        'creator_start': 50,
+        'creator_pro': 150,
+        'creator_studio': 300,
+        'creator_start_instrumental': 50,
+        'creator_pro_instrumental': 150,
+        'creator_studio_instrumental': 300,
+      };
+      
+      const planPrices: Record<string, number> = {
+        'creator_start': 2990,
+        'creator_pro': 4990,
+        'creator_studio': 7990,
+        'creator_start_instrumental': 2390,
+        'creator_pro_instrumental': 3990,
+        'creator_studio_instrumental': 6390,
+      };
+      
       const planName = planId ? planNames[planId] || 'Creator' : 'Creator';
 
       toast({
@@ -68,10 +87,42 @@ const Dashboard = () => {
         description: `Sua assinatura ${planName} foi confirmada. Seus créditos já estão disponíveis!`,
       });
 
+      // Send purchase confirmation email for subscription
+      if (planId && user?.email) {
+        const sendSubscriptionEmail = async () => {
+          try {
+            const renewalDate = new Date();
+            renewalDate.setMonth(renewalDate.getMonth() + 1);
+            
+            await supabase.functions.invoke('send-purchase-email', {
+              body: {
+                email: user.email,
+                userName: profile?.name || 'Cliente',
+                purchaseType: 'subscription',
+                planName,
+                amount: planPrices[planId] || 2990,
+                currency: 'brl',
+                credits: planCredits[planId] || 50,
+                isInstrumental: planId.includes('instrumental'),
+                renewalDate: renewalDate.toLocaleDateString('pt-BR', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                }),
+              }
+            });
+            console.log('Subscription confirmation email sent');
+          } catch (error) {
+            console.error('Failed to send subscription email:', error);
+          }
+        };
+        sendSubscriptionEmail();
+      }
+
       // Clear URL params
       setSearchParams({});
     }
-  }, [searchParams, setSearchParams, toast]);
+  }, [searchParams, setSearchParams, toast, user?.email, profile?.name]);
 
   const confirmDeleteOrder = async () => {
     if (!deleteOrderId) return;
