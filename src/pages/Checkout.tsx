@@ -76,6 +76,7 @@ export default function Checkout() {
   const [pixConfirmed, setPixConfirmed] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
   const [pixConfig, setPixConfig] = useState<PixConfigData | null>(null);
+  const [currentPlanInfo, setCurrentPlanInfo] = useState<{ id: string; name: string; credits: number } | null>(null);
   
   // PIX Receipt Upload States
   const [showReceiptUpload, setShowReceiptUpload] = useState(false);
@@ -83,6 +84,17 @@ export default function Checkout() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
+
+  // Plan labels for display
+  const PLAN_LABELS: Record<string, { name: string; credits: number }> = {
+    'single': { name: 'Música Única', credits: 1 },
+    'single_instrumental': { name: 'Instrumental Única', credits: 1 },
+    'single_custom_lyric': { name: 'Letra Própria', credits: 1 },
+    'package': { name: 'Pacote 3 Músicas', credits: 3 },
+    'package_instrumental': { name: 'Pacote 3 Instrumentais', credits: 3 },
+    'subscription': { name: 'Pacote 5 Músicas', credits: 5 },
+    'subscription_instrumental': { name: 'Pacote 5 Instrumentais', credits: 5 },
+  };
 
   // Fetch PIX config
   useEffect(() => {
@@ -142,22 +154,39 @@ export default function Checkout() {
           setPixConfirmed(true);
         }
 
-        // Determine correct pricing based on order type
-        let pricingId = 'single';
-        if (data.has_custom_lyric) {
-          pricingId = 'single_custom_lyric';
-        } else if (data.is_instrumental) {
-          pricingId = 'single_instrumental';
+        // Determine correct pricing based on planId from URL
+        const urlPlanId = getPlanIdFromUrl();
+        let pricingId = urlPlanId;
+        
+        // Fallback: if planId not set correctly, determine from order type
+        if (!pricingId || pricingId === 'single') {
+          if (data.has_custom_lyric) {
+            pricingId = 'single_custom_lyric';
+          } else if (data.is_instrumental) {
+            pricingId = 'single_instrumental';
+          } else {
+            pricingId = 'single';
+          }
         }
 
         // Fetch correct pricing
         const { data: pricingData } = await supabase
           .from('pricing_config')
-          .select('price_cents, price_promo_cents')
+          .select('price_cents, price_promo_cents, name')
           .eq('id', pricingId)
           .single();
         
         const basePrice = pricingData?.price_promo_cents || pricingData?.price_cents || 1990;
+
+        // Set plan info for display
+        const planInfo = PLAN_LABELS[pricingId];
+        if (planInfo) {
+          setCurrentPlanInfo({
+            id: pricingId,
+            name: pricingData?.name || planInfo.name,
+            credits: planInfo.credits
+          });
+        }
 
         // If amount is 0 or different from expected, update it
         if (data.amount === 0 || data.amount !== basePrice) {
@@ -692,10 +721,19 @@ export default function Checkout() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold">Finalizar Pedido</h1>
             <p className="text-muted-foreground">Complete o pagamento para gerar sua música</p>
           </div>
+          {/* Plan Badge */}
+          {currentPlanInfo && (
+            <Badge variant="outline" className="text-sm px-3 py-1 border-primary/50 bg-primary/10">
+              {currentPlanInfo.name}
+              {currentPlanInfo.credits > 1 && (
+                <span className="ml-1 text-muted-foreground">({currentPlanInfo.credits}x)</span>
+              )}
+            </Badge>
+          )}
         </div>
 
         {/* Order Summary */}
