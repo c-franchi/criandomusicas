@@ -56,3 +56,12 @@ verify_jwt = false
 
 [functions.accept-credit-transfer]
 verify_jwt = false
+
+[functions.create-creator-subscription]
+verify_jwt = false
+
+[functions.check-creator-subscription]
+verify_jwt = false
+
+[functions.cancel-creator-subscription]
+verify_jwt = false

@@ -697,6 +697,36 @@ const AdminSettings = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
+                      {/* Planos Destino */}
+                      <div>
+                        <Label>Válido para planos (opcional)</Label>
+                        <Select
+                          value={(editingVoucher || newVoucher).plan_ids?.[0] || 'all'}
+                          onValueChange={(v) => {
+                            const planIds = v === 'all' ? null : [v];
+                            editingVoucher 
+                              ? setEditingVoucher({ ...editingVoucher, plan_ids: planIds })
+                              : setNewVoucher({ ...newVoucher, plan_ids: planIds });
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Todos os planos" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Todos os planos</SelectItem>
+                            <SelectItem value="single">Música Única</SelectItem>
+                            <SelectItem value="package">Pacote 3 Músicas</SelectItem>
+                            <SelectItem value="subscription">Pacote 5 Músicas</SelectItem>
+                            <SelectItem value="single_instrumental">Música Única (Instrumental)</SelectItem>
+                            <SelectItem value="creator_start">Creator Start</SelectItem>
+                            <SelectItem value="creator_pro">Creator Pro</SelectItem>
+                            <SelectItem value="creator_studio">Creator Studio</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Deixe em branco para permitir em todos os planos
+                        </p>
+                      </div>
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={(editingVoucher || newVoucher).is_active ?? true}

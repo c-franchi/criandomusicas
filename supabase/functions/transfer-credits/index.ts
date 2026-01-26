@@ -8,10 +8,13 @@ const corsHeaders = {
 
 interface TransferRequest {
   toEmail?: string | null; // Opcional - se null, cria código compartilhável
-  amount: number;
+  amount?: number; // Ignorado - sempre será 1
   creditType: 'vocal' | 'instrumental';
   message?: string | null;
 }
+
+// IMPORTANTE: Transferência sempre limitada a 1 crédito por vez
+const TRANSFER_LIMIT = 1;
 
 function generateTransferCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

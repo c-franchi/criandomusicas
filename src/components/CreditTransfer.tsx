@@ -118,8 +118,8 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
   const handleSendCredits = async () => {
     // Validações para modo email
     if (shareMode === 'email') {
-      if (!email || !amount || amount <= 0) {
-        toast({ title: 'Erro', description: 'Preencha todos os campos obrigatórios.', variant: 'destructive' });
+      if (!email) {
+        toast({ title: 'Erro', description: 'Preencha o email do destinatário.', variant: 'destructive' });
         return;
       }
 
@@ -128,19 +128,16 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         toast({ title: 'Erro', description: 'Digite um email válido.', variant: 'destructive' });
         return;
       }
-    } else {
-      // Modo código - apenas quantidade obrigatória
-      if (!amount || amount <= 0) {
-        toast({ title: 'Erro', description: 'Selecione a quantidade de créditos.', variant: 'destructive' });
-        return;
-      }
     }
 
+    // Transferência sempre é de 1 crédito
+    const transferAmount = 1;
+
     const availableForType = creditType === 'vocal' ? totalVocal : totalInstrumental;
-    if (amount > availableForType) {
+    if (availableForType < 1) {
       toast({ 
         title: 'Créditos insuficientes', 
-        description: `Você tem apenas ${availableForType} crédito(s) ${creditType === 'vocal' ? 'vocal' : 'instrumental'} disponível.`, 
+        description: `Você não tem crédito(s) ${creditType === 'vocal' ? 'vocal' : 'instrumental'} disponível.`, 
         variant: 'destructive' 
       });
       return;
@@ -151,7 +148,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
       const { data, error } = await supabase.functions.invoke('transfer-credits', {
         body: { 
           toEmail: shareMode === 'email' ? email : null, // null = código compartilhável
-          amount, 
+          amount: transferAmount, // Sempre 1
           creditType,
           message: message.trim() || null
         },
@@ -471,15 +468,14 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="amount">Quantidade</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      min={1}
-                      max={availableForType}
-                      value={amount}
-                      onChange={(e) => setAmount(Math.min(parseInt(e.target.value) || 1, availableForType))}
-                    />
+                    <Label>Quantidade</Label>
+                    <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
+                      <p className="text-2xl font-bold text-primary">1</p>
+                      <p className="text-xs text-muted-foreground">crédito por transferência</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Cada código permite o resgate de 1 música.
+                    </p>
                   </div>
                 </div>
 
@@ -497,15 +493,15 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
 
                 <Button 
                   onClick={handleSendCredits} 
-                  disabled={sending || (shareMode === 'email' && !email) || amount > availableForType}
+                  disabled={sending || (shareMode === 'email' && !email) || availableForType < 1}
                   className="w-full"
                 >
                   {sending ? (
                     <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</>
                   ) : shareMode === 'code' ? (
-                    <><Link2 className="w-4 h-4 mr-2" />Gerar Código para {amount} Crédito(s)</>
+                    <><Link2 className="w-4 h-4 mr-2" />Gerar Código para 1 Crédito</>
                   ) : (
-                    <><Send className="w-4 h-4 mr-2" />Enviar {amount} Crédito(s)</>
+                    <><Send className="w-4 h-4 mr-2" />Enviar 1 Crédito</>
                   )}
                 </Button>
 
