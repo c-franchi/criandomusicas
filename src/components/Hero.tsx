@@ -1,14 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
+import { useCredits } from "@/hooks/useCredits";
 import heroImage from "@/assets/hero-music.jpg";
 
 const Hero = () => {
   const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
+  const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
 
   // Get display name - prefer profile name, fallback to email
   const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
@@ -31,6 +34,15 @@ const Hero = () => {
       <div className="absolute top-6 right-6 z-20">
         {user ? (
           <div className="flex items-center gap-3">
+            {/* Credits Badge - Show if user has credits */}
+            {!creditsLoading && hasCredits && (
+              <Link to="/perfil?tab=credits">
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1.5 cursor-pointer hover:bg-green-500/30 transition-colors">
+                  <Zap className="w-3 h-3" />
+                  {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
+                </Badge>
+              </Link>
+            )}
             <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
               <Avatar className="w-8 h-8 border-2 border-primary/50">
                 <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
@@ -101,8 +113,19 @@ const Hero = () => {
                 </Button>
               </Link>
               <Link to="/briefing">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
-                  Nova Música
+                <Button 
+                  variant={hasCredits ? "hero" : "outline"} 
+                  size="lg" 
+                  className={`text-lg px-8 py-6 group ${hasCredits ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400' : ''}`}
+                >
+                  {hasCredits ? (
+                    <>
+                      <Zap className="w-5 h-5 mr-2" />
+                      Usar Crédito
+                    </>
+                  ) : (
+                    'Nova Música'
+                  )}
                 </Button>
               </Link>
             </>

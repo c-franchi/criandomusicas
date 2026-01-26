@@ -26,6 +26,8 @@ interface CreditsState {
   loading: boolean;
   hasCredits: boolean;
   totalAvailable: number;
+  totalVocal: number;
+  totalInstrumental: number;
   activePackage: ActivePackage | null;
   allPackages: CreditPackage[];
   error: string | null;
@@ -37,6 +39,8 @@ export function useCredits() {
     loading: true,
     hasCredits: false,
     totalAvailable: 0,
+    totalVocal: 0,
+    totalInstrumental: 0,
     activePackage: null,
     allPackages: [],
     error: null,
@@ -48,6 +52,8 @@ export function useCredits() {
         loading: false,
         hasCredits: false,
         totalAvailable: 0,
+        totalVocal: 0,
+        totalInstrumental: 0,
         activePackage: null,
         allPackages: [],
         error: null,
@@ -74,6 +80,8 @@ export function useCredits() {
         loading: false,
         hasCredits: data.has_credits || false,
         totalAvailable: data.total_available || 0,
+        totalVocal: data.total_vocal || 0,
+        totalInstrumental: data.total_instrumental || 0,
         activePackage: data.active_package || null,
         allPackages: data.all_packages || [],
         error: null,
@@ -142,4 +150,16 @@ export const PLAN_LABELS: Record<string, string> = {
 
 export const getPlanLabel = (planId: string): string => {
   return PLAN_LABELS[planId] || planId;
+};
+
+// Get credit type from plan ID
+export const getCreditType = (planId: string): 'vocal' | 'instrumental' => {
+  return planId.includes('instrumental') ? 'instrumental' : 'vocal';
+};
+
+// Get number of credits for a plan
+export const getCreditsForPlan = (planId: string): number => {
+  if (planId.includes('subscription')) return 5;
+  if (planId.includes('package')) return 3;
+  return 1;
 };

@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2 } from 'lucide-react';
+import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
+import { useCredits, getPlanLabel } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -60,6 +61,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isVIP, loading: vipLoading } = useVIPAccess(user?.id, user?.email || undefined);
+  const { hasCredits, totalAvailable, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
 
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +71,7 @@ export default function Checkout() {
   const [applyingVoucher, setApplyingVoucher] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [processingVIP, setProcessingVIP] = useState(false);
+  const [processingCredit, setProcessingCredit] = useState(false);
   const [showPixSection, setShowPixSection] = useState(false);
   const [pixConfirmed, setPixConfirmed] = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
@@ -510,6 +513,68 @@ export default function Checkout() {
     return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
   };
 
+  // Handle using credits to pay
+  const handleUseCredit = async () => {
+    if (!order) return;
+
+    setProcessingCredit(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('use-credit', {
+        body: { orderId: order.id },
+      });
+
+      if (error) throw error;
+
+      if (!data.success) {
+        if (data.wrong_type) {
+          toast.error(data.error);
+        } else if (data.needs_purchase) {
+          toast.error('Você não tem créditos compatíveis disponíveis');
+        } else {
+          toast.error(data.error || 'Erro ao usar crédito');
+        }
+        setProcessingCredit(false);
+        return;
+      }
+
+      toast.success('Crédito utilizado com sucesso!');
+      
+      // Trigger generation and redirect based on order type
+      const isInstrumental = order.is_instrumental === true;
+      
+      if (isInstrumental) {
+        toast.info('Preparando sua música instrumental...');
+        navigate('/dashboard');
+      } else {
+        navigate(`/criar-musica?orderId=${order.id}`);
+      }
+    } catch (error) {
+      console.error('Error using credit:', error);
+      toast.error('Erro ao usar crédito');
+      setProcessingCredit(false);
+    }
+  };
+
+  // Determine if credits are compatible with this order type
+  const getOrderType = (): 'vocal' | 'instrumental' | 'custom_lyric' => {
+    if (order?.is_instrumental) return 'instrumental';
+    if (order?.has_custom_lyric) return 'custom_lyric';
+    return 'vocal';
+  };
+
+  // Check if active package is compatible with order type
+  const isCreditsCompatible = (): boolean => {
+    if (!activePackage || !order) return false;
+    const creditType = activePackage.plan_id.includes('instrumental') ? 'instrumental' : 'vocal';
+    const orderType = getOrderType();
+    
+    if (creditType === 'instrumental') {
+      return orderType === 'instrumental';
+    }
+    return orderType === 'vocal' || orderType === 'custom_lyric';
+  };
+
   if (authLoading || vipLoading || loading || processingVIP) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -679,6 +744,60 @@ export default function Checkout() {
             )}
           </CardContent>
         </Card>
+
+        {/* Credits Payment Option - Show if user has compatible credits */}
+        {!showPixSection && hasCredits && isCreditsCompatible() && !creditsLoading && (
+          <Card className="border-2 border-green-500/50 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Zap className="h-5 w-5 text-green-400" />
+                Usar Crédito Disponível
+                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 ml-2">
+                  {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
+                </Badge>
+              </CardTitle>
+              <CardDescription>
+                Você tem créditos! Use um para criar esta música sem pagar.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/30">
+                <Music className="h-5 w-5 text-green-400" />
+                <div className="flex-1">
+                  <p className="font-medium text-green-400">
+                    {activePackage && getPlanLabel(activePackage.plan_id)}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {activePackage?.used_credits || 0}/{activePackage?.total_credits || 0} usados • 
+                    Restam {(activePackage?.total_credits || 0) - (activePackage?.used_credits || 0) - 1} após esta música
+                  </p>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleUseCredit} 
+                disabled={processingCredit}
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white"
+              >
+                {processingCredit ? (
+                  <>
+                    <Music className="h-4 w-4 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Usar 1 Crédito (Grátis!)
+                  </>
+                )}
+              </Button>
+              
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">ou pague normalmente abaixo</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Voucher Section - Only show if not in PIX mode */}
         {!showPixSection && (

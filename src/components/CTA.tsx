@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, ArrowRight, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useCredits } from "@/hooks/useCredits";
 
 interface PricingConfig {
   id: string;
@@ -15,6 +17,8 @@ interface PricingConfig {
 
 const CTA = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { hasCredits, totalAvailable } = useCredits();
   const [pricing, setPricing] = useState<PricingConfig | null>(null);
   
   useEffect(() => {
@@ -79,14 +83,31 @@ const CTA = () => {
           ))}
         </div>
         
-        {/* Pricing */}
+        {/* Pricing or Credits Display */}
         <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-2xl p-8 mb-8 max-w-md mx-auto">
-          <div className="text-4xl font-bold gradient-text mb-2">{displayPrice}</div>
-          <div className="text-muted-foreground mb-4">Música completa personalizada</div>
-          {promoPrice && (
-            <div className="text-sm text-muted-foreground">
-              <span className="line-through">{originalPrice}</span> • Promoção por tempo limitado
-            </div>
+          {user && hasCredits ? (
+            <>
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <Zap className="w-8 h-8 text-green-400" />
+                <span className="text-4xl font-bold text-green-400">{totalAvailable}</span>
+              </div>
+              <div className="text-green-400 font-medium mb-2">
+                Crédito{totalAvailable !== 1 ? 's' : ''} disponível{totalAvailable !== 1 ? 'is' : ''}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Crie sua próxima música sem pagar!
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="text-4xl font-bold gradient-text mb-2">{displayPrice}</div>
+              <div className="text-muted-foreground mb-4">Música completa personalizada</div>
+              {promoPrice && (
+                <div className="text-sm text-muted-foreground">
+                  <span className="line-through">{originalPrice}</span> • Promoção por tempo limitado
+                </div>
+              )}
+            </>
           )}
         </div>
         
@@ -94,11 +115,20 @@ const CTA = () => {
         <Button 
           variant="hero" 
           size="lg" 
-          className="text-lg px-8 py-6 group"
+          className={`text-lg px-8 py-6 group ${user && hasCredits ? 'bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400' : ''}`}
           onClick={() => navigate('/briefing')}
         >
-          Criar minha música agora
-          <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+          {user && hasCredits ? (
+            <>
+              <Zap className="w-5 h-5 mr-2" />
+              Usar meu crédito agora
+            </>
+          ) : (
+            <>
+              Criar minha música agora
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </>
+          )}
         </Button>
       </div>
     </section>
