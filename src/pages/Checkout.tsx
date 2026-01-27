@@ -219,15 +219,85 @@ export default function Checkout() {
         const success = await bypassPaymentForVIP(order.id, user.id);
         
         if (success) {
-          toast.success('Música liberada! Redirecionando...');
-          setTimeout(() => {
-            // VIP: redirect based on order type
-            if (order.is_instrumental) {
-              navigate('/dashboard');
-            } else {
-              navigate(`/criar-musica?orderId=${order.id}`);
+          // Fetch full order data to get briefing info
+          const { data: orderData } = await supabase
+            .from('orders')
+            .select('*')
+            .eq('id', order.id)
+            .single();
+            
+          if (orderData) {
+            const isInstrumental = orderData.is_instrumental === true;
+            const hasCustomLyric = orderData.has_custom_lyric === true;
+            
+            // Build briefing from order data
+            const briefing = {
+              musicType: orderData.music_type || 'homenagem',
+              emotion: orderData.emotion || 'alegria',
+              emotionIntensity: orderData.emotion_intensity || 3,
+              style: orderData.music_style || 'pop',
+              rhythm: orderData.rhythm || 'moderado',
+              atmosphere: orderData.atmosphere || 'festivo',
+              structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+              hasMonologue: orderData.has_monologue || false,
+              monologuePosition: orderData.monologue_position || 'bridge',
+              mandatoryWords: orderData.mandatory_words || '',
+              restrictedWords: orderData.restricted_words || '',
+              voiceType: orderData.voice_type || 'feminina',
+              instruments: orderData.instruments || [],
+              soloInstrument: orderData.solo_instrument || null,
+              soloMoment: orderData.solo_moment || null,
+              instrumentationNotes: orderData.instrumentation_notes || ''
+            };
+
+            // Trigger generation based on type
+            try {
+              if (isInstrumental) {
+                // For instrumental, skip lyrics and generate style prompt directly
+                await supabase.functions.invoke('generate-style-prompt', {
+                  body: {
+                    orderId: order.id,
+                    isInstrumental: true,
+                    briefing
+                  }
+                });
+                toast.success('Música instrumental liberada! Redirecionando...');
+                setTimeout(() => navigate('/dashboard'), 1500);
+              } else if (hasCustomLyric) {
+                // For custom lyrics, redirect to approval page
+                toast.success('Letra pronta para revisão! Redirecionando...');
+                setTimeout(() => navigate(`/criar-musica?orderId=${order.id}`), 1500);
+              } else {
+                // For vocal music, generate lyrics first
+                await supabase.functions.invoke('generate-lyrics', {
+                  body: {
+                    orderId: order.id,
+                    story: orderData.story,
+                    briefing
+                  }
+                });
+                toast.success('Letras sendo geradas! Redirecionando...');
+                setTimeout(() => navigate(`/criar-musica?orderId=${order.id}`), 1500);
+              }
+            } catch (genError) {
+              console.error('VIP generation error:', genError);
+              // Still redirect even if generation fails
+              if (isInstrumental) {
+                navigate('/dashboard');
+              } else {
+                navigate(`/criar-musica?orderId=${order.id}`);
+              }
             }
-          }, 1500);
+          } else {
+            toast.success('Música liberada! Redirecionando...');
+            setTimeout(() => {
+              if (order.is_instrumental) {
+                navigate('/dashboard');
+              } else {
+                navigate(`/criar-musica?orderId=${order.id}`);
+              }
+            }, 1500);
+          }
         } else {
           setProcessingVIP(false);
           toast.error('Erro ao processar acesso VIP');
