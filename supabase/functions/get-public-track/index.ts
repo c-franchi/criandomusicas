@@ -51,16 +51,19 @@ serve(async (req) => {
       );
     }
 
-    // Fetch order info for title/style/cover
+    // Fetch order info for title/style/cover - song_title takes priority
     const { data: orderData } = await supabase
       .from("orders")
-      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url")
+      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric")
       .eq("id", orderId)
       .single();
 
     let title = "Música Personalizada";
     
-    if (orderData?.approved_lyric_id) {
+    // Priority: song_title (user-provided or AI-generated) > lyric title > fallback
+    if (orderData?.song_title) {
+      title = orderData.song_title;
+    } else if (orderData?.approved_lyric_id) {
       const { data: lyricData } = await supabase
         .from("lyrics")
         .select("title")
