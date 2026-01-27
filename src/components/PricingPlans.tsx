@@ -326,13 +326,13 @@ const PricingPlans = () => {
                 <div className="mt-6">
                   <Button 
                     onClick={() => handlePlanSelect(plan.id)} 
-                    variant={plan.is_popular ? "default" : "outline"}
+                    variant="default"
                     className={`w-full ${
                       plan.is_popular 
                         ? isInstrumental 
                           ? "bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
                           : "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white" 
-                        : ""
+                        : "bg-primary hover:bg-primary/90 text-primary-foreground"
                     }`}
                   >
                     {getButtonText(plan.id)}

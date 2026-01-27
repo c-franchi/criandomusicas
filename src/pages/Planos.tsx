@@ -341,11 +341,8 @@ const Planos = () => {
                         className={`w-full py-3 font-semibold transition-all duration-300 ${
                           plan.is_popular 
                             ? "bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white music-glow" 
-                            : plan.id.includes("subscription")
-                            ? "bg-gradient-to-r from-accent to-primary hover:from-accent/90 hover:to-primary/90 text-white"
-                            : ""
+                            : "bg-primary hover:bg-primary/90 text-primary-foreground"
                         }`}
-                        variant={plan.id === "single" && !hasPromo ? "outline" : "default"}
                       >
                         {getButtonText(plan.id)}
                       </Button>
@@ -502,7 +499,7 @@ const Planos = () => {
                           className={`w-full py-3 font-semibold transition-all duration-300 ${
                             isPopular 
                               ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/30" 
-                              : "bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30"
+                              : "bg-purple-600 hover:bg-purple-500 text-white"
                           }`}
                         >
                           {`Assinar ${plan.name.replace(' Instrumental', '')}`}
