@@ -1,99 +1,131 @@
 
-# Correção da Pronúncia "UTI" → "utei"
+# Plano: Melhoria de Contraste e Cores em Todo o Site
 
-## Contexto do Problema
+## Problema Identificado
+Analisando as imagens e o código, identifiquei vários problemas de contraste de cores que dificultam a leitura:
 
-O sistema de pronúncia fonética foi acionado corretamente para o termo "UTI", porém a pronúncia registrada foi `U-T-I` (soletrado letra por letra), quando o correto em português brasileiro é `utei` (como se pronuncia naturalmente "UTI" - Unidade de Terapia Intensiva).
-
-**Situação Atual no Pedido:**
-- Termo detectado: `UTI`
-- Pronúncia registrada: `U-T-I` (incorreto - soletrado)
-- Pronúncia correta: `utei` (como se fala naturalmente)
-
-O `final_prompt` atual mostra: `"...na U-T-I, sem vida..."` quando deveria ser `"...na utei, sem vida..."`
+### Problemas Específicos:
+1. **ProcessSteps.tsx** (imagem 1): Badges "3 músicas" e "5 músicas" com texto difícil de ler sobre fundo claro
+2. **PlanComparison.tsx** (imagem 2): Badge "Assinatura Creator" com texto roxo (`text-primary`) sobre fundo roxo claro (`from-purple-500/20 to-pink-500/20`) - contraste muito baixo
+3. **CreatorSection.tsx**: Textos verde e azul com pouco contraste (`text-green-600`, `text-blue-600` sobre fundos escuros)
+4. **Badges gerais**: Uso inconsistente de cores de texto em badges com fundos semitransparentes
 
 ---
 
-## Plano de Ação
+## Solução Proposta
 
-### Etapa 1: Corrigir o Pedido Atual
-Atualizar o campo `pronunciations` e regenerar o `final_prompt` com a pronúncia correta:
+### 1. ProcessSteps.tsx - Badges de Pacotes
+**Problema**: Badge com `text-accent-foreground` sobre `bg-accent/20`
 
-```sql
-UPDATE public.orders 
-SET pronunciations = '[{"term": "UTI", "phonetic": "utei"}]'::jsonb
-WHERE id = '276c6328-1bfe-45e1-ab9f-386b1231c5fb';
-```
+**Correção**:
+- Badge "3 músicas": trocar de `text-accent-foreground` para `text-white`
+- Badge "5 músicas": trocar de `text-primary` para `text-white`
+- Aumentar opacidade dos fundos de `/20` para `/80`
 
-Depois, chamar a função `generate-style-prompt` novamente para regenerar o `final_prompt` com "utei" em vez de "U-T-I".
+### 2. PlanComparison.tsx - Badge "Assinatura Creator"
+**Problema**: `text-primary` (roxo) sobre `from-purple-500/20` (roxo claro)
 
-### Etapa 2: Criar Dicionário de Pronúncias Brasileiras Comuns
-Adicionar uma lista de termos brasileiros comuns que já possuem pronúncia padrão, para pré-popular o modal de pronúncia:
+**Correção**:
+- Trocar `text-primary` para `text-white`
+- Aumentar opacidade do fundo para `/80` ou usar gradiente sólido
 
-| Termo | Pronúncia Correta |
-|-------|------------------|
-| UTI | utei |
-| ONU | onu |
-| PIX | pix |
-| FIFA | fifa |
-| NASA | nasa |
-| INSS | inésse |
-| CPF | cê pê éfe |
-| RG | érre gê |
-| PIB | pib |
-| CEO | ci-i-ôu |
+### 3. CreatorSection.tsx - Badges de Status
+**Problema**: `text-green-600` e `text-blue-600` com baixo contraste em tema escuro
 
-### Etapa 3: Atualizar o Modal de Pronúncia
-Melhorar o `PronunciationModal.tsx` para:
-1. Mostrar sugestões de pronúncia para termos conhecidos
-2. Adicionar exemplos mais claros (incluindo UTI → utei)
-3. Detectar automaticamente siglas brasileiras comuns e sugerir a pronúncia padrão
+**Correção**:
+- Trocar para `text-green-400` e `text-blue-400` (cores mais claras)
+- Garantir que o fundo tenha contraste adequado
+
+### 4. CreditsBanner.tsx - Badge Compacto
+**Problema**: `text-amber-600` pode ter baixo contraste
+
+**Correção**:
+- Trocar para `text-amber-400` para melhor visibilidade
+
+---
+
+## Arquivos a Modificar
+
+| Arquivo | Alterações |
+|---------|------------|
+| `src/components/ProcessSteps.tsx` | Melhorar contraste dos badges de pacotes |
+| `src/components/PlanComparison.tsx` | Corrigir badge "Assinatura Creator" |
+| `src/components/CreatorSection.tsx` | Ajustar cores dos badges de status |
+| `src/components/CreditsBanner.tsx` | Ajustar cores do badge compact |
+| `src/components/Hero.tsx` | Verificar badges de créditos/subscription |
 
 ---
 
 ## Detalhes Técnicos
 
-### Arquivos a Modificar
+### Regra de Contraste WCAG
+Para atingir AA (mínimo recomendado):
+- Texto normal: ratio mínimo de 4.5:1
+- Texto grande: ratio mínimo de 3:1
 
-1. **Edge Functions** (`generate-lyrics/index.ts` e `generate-style-prompt/index.ts`):
-   - Adicionar dicionário `BRAZILIAN_PRONUNCIATIONS` com termos comuns
-   - Pré-popular pronúncias conhecidas antes de solicitar ao usuário
+### Padrão de Cores Corrigido
 
-2. **PronunciationModal.tsx**:
-   - Exibir sugestão automática para termos conhecidos
-   - Atualizar exemplos para incluir "UTI → utei"
+```text
+┌─────────────────────────────────────────────────────────┐
+│  ANTES (baixo contraste)                                │
+│  ┌──────────────────────────┐                           │
+│  │ bg-purple-500/20         │ ← fundo roxo claro        │
+│  │ text-primary (roxo)      │ ← texto roxo = ruim!      │
+│  └──────────────────────────┘                           │
+│                                                         │
+│  DEPOIS (alto contraste)                                │
+│  ┌──────────────────────────┐                           │
+│  │ bg-purple-500/80         │ ← fundo roxo sólido       │
+│  │ text-white               │ ← texto branco = ótimo!   │
+│  └──────────────────────────┘                           │
+└─────────────────────────────────────────────────────────┘
+```
 
-3. **Correção Imediata**:
-   - Atualizar banco de dados com pronúncia correta
-   - Regenerar o prompt do pedido atual
+### Alterações Específicas por Componente
 
-### Dicionário Proposto
+**ProcessSteps.tsx (linhas 86-97)**:
+```tsx
+// ANTES:
+<Badge variant="secondary" className="bg-accent/20 text-accent-foreground border-accent/30">
+  3 músicas
+</Badge>
 
-```typescript
-const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
-  'UTI': 'utei',
-  'ONU': 'onu',
-  'FIFA': 'fifa',
-  'NASA': 'nasa',
-  'PIX': 'pix',
-  'INSS': 'inésse',
-  'PIB': 'pib',
-  // Termos que devem ser soletrados
-  'CPF': 'cê pê éfe',
-  'RG': 'érre gê',
-  'CEO': 'ci-i-ôu',
-  'DJ': 'di-jêi',
-};
+// DEPOIS:
+<Badge variant="secondary" className="bg-accent text-white border-accent">
+  3 músicas
+</Badge>
+```
+
+**PlanComparison.tsx (linha 93)**:
+```tsx
+// ANTES:
+<Badge className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-primary border-primary/30">
+  Assinatura Creator
+</Badge>
+
+// DEPOIS:
+<Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
+  Assinatura Creator
+</Badge>
+```
+
+**CreatorSection.tsx (linhas 99 e 103)**:
+```tsx
+// ANTES:
+<span className="text-sm font-medium text-green-600">100% Original</span>
+<span className="text-sm font-medium text-blue-600">Monetizável</span>
+
+// DEPOIS:
+<span className="text-sm font-medium text-green-400">100% Original</span>
+<span className="text-sm font-medium text-blue-400">Monetizável</span>
 ```
 
 ---
 
 ## Resultado Esperado
 
-1. **Pedido atual**: O `final_prompt` será regenerado com `"...na utei, sem vida..."` em vez de `"...na U-T-I, sem vida..."`
-
-2. **Pedidos futuros**: Quando "UTI" for detectado, o sistema já sugerirá automaticamente "utei" como pronúncia, facilitando para o usuário
-
-3. **Modal melhorado**: Exemplos mais claros distinguindo entre:
-   - Termos pronunciados como palavra (UTI → utei)
-   - Termos soletrados (CPF → cê pê éfe)
+Após as correções:
+- Todos os badges terão contraste de pelo menos 4.5:1
+- Textos serão facilmente legíveis em todos os dispositivos
+- Consistência visual em todo o site
+- Conformidade com diretrizes WCAG 2.1 AA
