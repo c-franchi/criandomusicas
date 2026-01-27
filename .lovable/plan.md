@@ -1,84 +1,101 @@
 
-# Plano: Redirecionamento após Compra e Exibição de Créditos Creator
+# Correção: Créditos Creator Start Não Exibidos
 
-## Visão Geral
+## Diagnóstico Completo
 
-Serão feitas duas correções principais:
-1. Redirecionar automaticamente para o dashboard após confirmação de pagamento
-2. Corrigir o bug de "Invalid time value" que impede a exibição dos créditos das assinaturas Creator
-
----
-
-## Problema 1: Redirecionamento após Pagamento
-
-### Situação Atual
-- **Pacotes Avulsos**: Página `PaymentSuccess.tsx` mostra confirmação com botões, mas usuário precisa clicar para navegar
-- **Assinaturas Creator**: Redireciona para `/planos?subscription=success` em vez do dashboard
-
-### Solução
-
-**1.1 - PaymentSuccess.tsx (Pacotes Avulsos)**
-
-Adicionar redirecionamento automático após verificação bem-sucedida:
-- Após pagamento confirmado, redirecionar para `/dashboard` após 3 segundos
-- Exibir contador regressivo na tela de sucesso
-- Manter botões disponíveis caso usuário queira navegar antes
-
-**1.2 - create-creator-subscription (Edge Function)**
-
-Alterar a URL de sucesso:
-```text
-Atual:   /planos?subscription=success&plan=${planId}
-Novo:    /dashboard?subscription=success&plan=${planId}
+### Problema Identificado
+Os logs mostram repetidamente o erro:
 ```
-
-**1.3 - Dashboard.tsx**
-
-Adicionar tratamento para o parâmetro `subscription=success`:
-- Detectar parâmetro na URL
-- Exibir toast de confirmação da assinatura Creator
-- Limpar parâmetros da URL após exibição
-
----
-
-## Problema 2: Créditos Creator Não Exibidos
-
-### Diagnóstico
-Os logs mostram erro `Invalid time value` na função `check-creator-subscription`. O erro ocorre ao converter timestamps do Stripe para datas JavaScript.
+[CHECK-CREATOR-SUBSCRIPTION] Invalid subscription period data - {}
+[CHECK-CREATOR-SUBSCRIPTION] ERROR - {"message":"Subscription period data is missing or invalid"}
+```
 
 ### Causa Raiz
-Na linha 91-92 do `check-creator-subscription`:
+A função `check-creator-subscription` tenta acessar `creatorSub.current_period_start` e `creatorSub.current_period_end` diretamente do objeto retornado por `stripe.subscriptions.list()`. 
+
+Na versão da API Stripe `2025-08-27.basil`, esses campos **não são incluídos** na resposta de listagem. Eles existem apenas:
+1. Dentro de `items.data[0].current_period_start/end` (nos itens da assinatura)
+2. Quando se faz `stripe.subscriptions.retrieve()` para obter a assinatura completa
+
+### Evidência
+Ao buscar a assinatura diretamente (`sub_1StzKREE1g2DASjfmN56ucMd`):
+- `items.data[0].current_period_start`: **1769470577** 
+- `items.data[0].current_period_end`: **1772148977**
+- Metadata `plan_type: 'creator'` está presente
+
+A assinatura **existe e está ativa**, mas a função não consegue ler os dados de período.
+
+---
+
+## Solução Proposta
+
+### Modificação na Edge Function `check-creator-subscription`
+
+Alterar a lógica para obter os dados de período de duas fontes alternativas:
+
+1. **Opção A (mais eficiente)**: Ler de `items.data[0]` que já vem na resposta da listagem
+2. **Opção B (fallback)**: Fazer um `retrieve()` da subscription se os campos estiverem ausentes
+
+**Código atual (linhas 89-102):**
 ```typescript
-const subscriptionEnd = new Date(creatorSub.current_period_end * 1000).toISOString();
-const currentPeriodStart = new Date(creatorSub.current_period_start * 1000).toISOString();
+const planId = creatorSub.metadata?.plan_id || null;
+const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
+
+// Validate timestamps before converting
+const currentPeriodEnd = creatorSub.current_period_end;
+const currentPeriodStartTs = creatorSub.current_period_start;
+
+if (!currentPeriodEnd || !currentPeriodStartTs || ...) {
+  logStep("Invalid subscription period data", ...);
+  throw new Error("Subscription period data is missing or invalid");
+}
 ```
 
-Se `current_period_start` ou `current_period_end` forem undefined ou inválidos, a conversão falha.
-
-### Solução
-
-**2.1 - check-creator-subscription (Edge Function)**
-
-Adicionar validação antes de converter timestamps:
+**Código corrigido:**
 ```typescript
-// Validar timestamps antes de converter
-const currentPeriodEnd = creatorSub.current_period_end;
-const currentPeriodStart = creatorSub.current_period_start;
+const planId = creatorSub.metadata?.plan_id || null;
+const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
 
-if (!currentPeriodEnd || !currentPeriodStart) {
-  throw new Error("Subscription period data is missing");
+// Get period data - try from subscription root first, then from items
+let currentPeriodEndTs = creatorSub.current_period_end;
+let currentPeriodStartTs = creatorSub.current_period_start;
+
+// Fallback: read from subscription items if not in root
+if (!currentPeriodEndTs || !currentPeriodStartTs) {
+  const firstItem = creatorSub.items?.data?.[0];
+  if (firstItem) {
+    currentPeriodEndTs = firstItem.current_period_end;
+    currentPeriodStartTs = firstItem.current_period_start;
+  }
 }
 
-const subscriptionEnd = new Date(currentPeriodEnd * 1000).toISOString();
-const currentPeriodStartDate = new Date(currentPeriodStart * 1000).toISOString();
+// Ultimate fallback: retrieve full subscription
+if (!currentPeriodEndTs || !currentPeriodStartTs) {
+  logStep("Fetching full subscription details");
+  const fullSub = await stripe.subscriptions.retrieve(creatorSub.id);
+  currentPeriodEndTs = fullSub.current_period_end;
+  currentPeriodStartTs = fullSub.current_period_start;
+}
+
+if (!currentPeriodEndTs || !currentPeriodStartTs || ...) {
+  // Only throw after all fallbacks exhausted
+  throw new Error("Subscription period data is missing or invalid");
+}
 ```
 
-**2.2 - Melhoria na contagem de créditos usados**
+---
 
-Ajustar a query que conta pedidos para incluir todos os status relevantes:
-```typescript
-.in('status', ['PAID', 'MUSIC_READY', 'LYRICS_PENDING', 'LYRICS_APPROVED', 'GENERATING', 'COMPLETED'])
-```
+## Verificação de Correções Anteriores
+
+### O que já foi implementado (e está correto):
+
+1. **Validação de timestamps** - Já existe, mas falha porque os dados não estão disponíveis
+2. **Contagem de créditos usados** - Query correta com status `.in('status', ['PAID', 'LYRICS_PENDING', ...])`  
+3. **Metadata da assinatura** - Está sendo setado corretamente no `create-creator-subscription`
+
+### O que falta corrigir:
+
+1. **Leitura de período da assinatura** - Precisa fallback para `items.data[0]` ou `retrieve()`
 
 ---
 
@@ -86,49 +103,44 @@ Ajustar a query que conta pedidos para incluir todos os status relevantes:
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/PaymentSuccess.tsx` | Adicionar redirecionamento automático após 3s |
-| `supabase/functions/create-creator-subscription/index.ts` | Alterar success_url para /dashboard |
-| `src/pages/Dashboard.tsx` | Tratar subscription=success query param |
-| `supabase/functions/check-creator-subscription/index.ts` | Validar timestamps antes de converter |
+| `supabase/functions/check-creator-subscription/index.ts` | Adicionar fallbacks para leitura de período |
 
 ---
 
-## Fluxo Após Implementação
+## Comportamento Esperado Após Correção
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    PACOTES AVULSOS                          │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Pagamento no Stripe                                      │
-│ 2. Redirect para /pagamento-sucesso                         │
-│ 3. Verificação automática do pagamento                      │
-│ 4. Toast de sucesso + contador 3s                           │
-│ 5. Redirect automático para /dashboard                      │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│                 ASSINATURAS CREATOR                         │
-├─────────────────────────────────────────────────────────────┤
-│ 1. Pagamento no Stripe                                      │
-│ 2. Redirect direto para /dashboard?subscription=success     │
-│ 3. Dashboard detecta parâmetro                              │
-│ 4. Toast de confirmação da assinatura                       │
-│ 5. Créditos exibidos corretamente via useCreatorSubscription│
-└─────────────────────────────────────────────────────────────┘
-```
+1. Usuário com assinatura Creator Start ativa acessa o dashboard
+2. `useCreatorSubscription` hook chama `check-creator-subscription`
+3. Função encontra a assinatura ativa no Stripe
+4. **NOVO**: Lê `current_period_start/end` de `items.data[0]` 
+5. Calcula créditos usados/restantes corretamente
+6. Retorna dados completos para o frontend
+7. `CreatorSubscriptionManager` exibe:
+   - Nome do plano (Creator Start)
+   - Créditos restantes (50 de 50)
+   - Data de renovação
+   - Botão de cancelar assinatura
 
 ---
 
 ## Seção Técnica
 
-### Dependências
-- Nenhuma nova dependência necessária
+### Tipo TypeScript para Subscription Item
+```typescript
+interface SubscriptionItem {
+  id: string;
+  current_period_start: number;
+  current_period_end: number;
+  // ... outros campos
+}
+```
 
 ### Edge Functions a Reimplantar
-1. `create-creator-subscription`
-2. `check-creator-subscription`
+1. `check-creator-subscription`
 
-### Considerações
-- O redirecionamento de 3 segundos dá tempo para o usuário ler a confirmação
-- Os botões de navegação permanecem disponíveis para ação imediata
-- A validação de timestamps previne crashes futuros
+### Teste Sugerido
+Após deploy, verificar logs para confirmar:
+```
+[CHECK-CREATOR-SUBSCRIPTION] Active creator subscription found - {..., subscriptionEnd: "2026-...", currentPeriodStart: "2026-..."}
+[CHECK-CREATOR-SUBSCRIPTION] Credits calculated - {creditsTotal: 50, creditsUsed: 0, creditsRemaining: 50}
+```
