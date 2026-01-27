@@ -39,28 +39,28 @@ const AudioSamples = () => {
   const fallbackSamples: AudioSample[] = [
     {
       id: "1",
-      title: t('audioSamples.fallback.sample1.title'),
-      description: t('audioSamples.fallback.sample1.description'),
-      style: t('audioSamples.fallback.sample1.style'),
-      occasion: t('audioSamples.fallback.sample1.occasion'),
+      title: t('samples.fallback.sample1.title', 'Tribute Song'),
+      description: t('samples.fallback.sample1.description', 'A special tribute for an unforgettable moment'),
+      style: t('samples.fallback.sample1.style', 'Pop'),
+      occasion: t('samples.fallback.sample1.occasion', 'Birthday'),
       audio_url: "",
       cover_url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop"
     },
     {
       id: "2",
-      title: t('audioSamples.fallback.sample2.title'),
-      description: t('audioSamples.fallback.sample2.description'),
-      style: t('audioSamples.fallback.sample2.style'),
-      occasion: t('audioSamples.fallback.sample2.occasion'),
+      title: t('samples.fallback.sample2.title', 'Motivational Song'),
+      description: t('samples.fallback.sample2.description', 'An inspiring track to lift your spirits'),
+      style: t('samples.fallback.sample2.style', 'Rock'),
+      occasion: t('samples.fallback.sample2.occasion', 'Motivational'),
       audio_url: "",
       cover_url: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300&h=300&fit=crop"
     },
     {
       id: "3",
-      title: t('audioSamples.fallback.sample3.title'),
-      description: t('audioSamples.fallback.sample3.description'),
-      style: t('audioSamples.fallback.sample3.style'),
-      occasion: t('audioSamples.fallback.sample3.occasion'),
+      title: t('samples.fallback.sample3.title', 'Romantic Song'),
+      description: t('samples.fallback.sample3.description', 'A beautiful melody to express love'),
+      style: t('samples.fallback.sample3.style', 'Bossa Nova'),
+      occasion: t('samples.fallback.sample3.occasion', 'Wedding'),
       audio_url: "",
       cover_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop"
     }
@@ -170,13 +170,13 @@ const AudioSamples = () => {
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">
             <Volume2 className="w-3 h-3 mr-1" />
-            {t('audioSamples.badge')}
+            {t('samples.badge')}
           </Badge>
           <h2 className="text-4xl font-bold mb-4">
-            {t('audioSamples.title')} 🎵
+            {t('samples.title')} 🎵
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {t('audioSamples.subtitle')}
+            {t('samples.subtitle')}
           </p>
         </div>
         
@@ -205,7 +205,7 @@ const AudioSamples = () => {
                     <div className="relative h-48">
                       <img 
                         src={sample.cover_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop"}
-                        alt={`${t('audioSamples.altText')}: ${sample.title}`}
+                        alt={`${t('samples.playButton')}: ${sample.title}`}
                         className={`w-full h-full object-cover transition-transform duration-500 ${
                           isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
                         }`}
@@ -237,7 +237,7 @@ const AudioSamples = () => {
                               : 'bg-primary hover:bg-primary/90 text-white'
                           }`}
                           onClick={() => togglePlay(sample)}
-                          aria-label={isPlaying ? t('audioSamples.pause', { title: sample.title }) : t('audioSamples.play', { title: sample.title })}
+                          aria-label={isPlaying ? t('samples.pauseButton') : t('samples.playButton')}
                         >
                           {isPlaying ? (
                             <Pause className="w-6 h-6" />
@@ -296,7 +296,7 @@ const AudioSamples = () => {
         <div className="flex justify-center gap-2 mt-6 md:hidden">
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <ChevronLeft className="w-4 h-4" />
-            {t('audioSamples.swipeHint')}
+            {t('samples.swipeHint')}
             <ChevronRight className="w-4 h-4" />
           </p>
         </div>

@@ -35,32 +35,35 @@ const PricingPlans = () => {
     return formatCurrency(cents, i18n.language, { convert: true });
   };
 
-  // Features for instrumental plans
-  const getInstrumentalFeatures = (planId: string): string[] => {
+  // Get translated features for vocal plans
+  const getVocalFeatures = (planId: string): string[] => {
+    const features = t(`vocalFeatures.${planId}`, { returnObjects: true }) as string[];
+    if (Array.isArray(features)) return features;
+    // Fallback if translation not available
     switch (planId) {
       case "single":
-        return [
-          t('instrumentalFeatures.single.0', { defaultValue: "1 instrumental track" }),
-          t('instrumentalFeatures.single.1', { defaultValue: "Custom arrangement" }),
-          t('instrumentalFeatures.single.2', { defaultValue: "Professional audio" }),
-          t('instrumentalFeatures.single.3', { defaultValue: "High quality" }),
-          t('instrumentalFeatures.single.4', { defaultValue: "Delivery within 48h" })
-        ];
+        return ["1 complete song", "2 personalized lyrics to choose", "Lyrics + professional audio", "High quality", "Delivery within 48h"];
       case "package":
-        return [
-          t('instrumentalFeatures.package.0', { defaultValue: "3 instrumental tracks" }),
-          t('instrumentalFeatures.package.1', { defaultValue: "Custom arrangements" }),
-          t('instrumentalFeatures.package.2', { defaultValue: "16% savings" }),
-          t('instrumentalFeatures.package.3', { defaultValue: "Professional audio" }),
-          t('instrumentalFeatures.package.4', { defaultValue: "VIP support" })
-        ];
+        return ["3 complete songs", "2 personalized lyrics each", "16% savings", "Lyrics + professional audio", "High quality", "Delivery within 48h", "VIP support"];
       case "subscription":
-        return [
-          t('instrumentalFeatures.subscription.0', { defaultValue: "Up to 5 instrumental tracks" }),
-          t('instrumentalFeatures.subscription.1', { defaultValue: "Custom arrangements" }),
-          t('instrumentalFeatures.subscription.2', { defaultValue: "Premium quality" }),
-          t('instrumentalFeatures.subscription.3', { defaultValue: "Priority queue" })
-        ];
+        return ["Up to 5 songs", "2 personalized lyrics each", "Lyrics + professional audio", "Premium quality", "Delivery within 48h", "Priority queue"];
+      default:
+        return [];
+    }
+  };
+
+  // Features for instrumental plans
+  const getInstrumentalFeatures = (planId: string): string[] => {
+    const features = t(`instrumentalFeatures.${planId}`, { returnObjects: true }) as string[];
+    if (Array.isArray(features)) return features;
+    // Fallback if translation not available
+    switch (planId) {
+      case "single":
+        return ["1 instrumental track", "Custom arrangement", "Professional audio", "High quality", "Delivery within 48h"];
+      case "package":
+        return ["3 instrumental tracks", "Custom arrangements", "16% savings", "Professional audio", "VIP support"];
+      case "subscription":
+        return ["Up to 5 instrumental tracks", "Custom arrangements", "Premium quality", "Priority queue"];
       default:
         return [];
     }
@@ -284,7 +287,7 @@ const PricingPlans = () => {
 
               <CardContent className="space-y-4 mt-auto">
                 <ul className="space-y-3 flex-1 text-center">
-                  {(isInstrumental ? getInstrumentalFeatures(plan.id) : (plan.features as string[])).map((feature, index) => (
+                  {(isInstrumental ? getInstrumentalFeatures(plan.id) : getVocalFeatures(plan.id)).map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <Check className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isInstrumental ? 'text-accent' : 'text-primary'}`} />
                       <span className="text-muted-foreground">{feature}</span>
