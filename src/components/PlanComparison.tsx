@@ -67,7 +67,7 @@ const PlanComparison = () => {
                   <span className="text-3xl font-bold text-primary">R$ 9,90</span>
                   <span className="text-muted-foreground">por música</span>
                 </div>
-                <Button variant="outline" className="w-full" asChild>
+                <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white" asChild>
                   <Link to="/planos">
                     Ver Pacotes Avulsos
                     <ArrowRight className="w-4 h-4 ml-2" />
