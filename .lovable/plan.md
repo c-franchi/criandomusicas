@@ -1,199 +1,389 @@
 
 
-# Plano de Internacionalização (i18n) Completo
+# Plano de Tradução i18n - Fase 2: Conteúdo Restante
 
-## Resumo
+## Resumo Executivo
 
-Implementação de sistema de tradução completo usando **react-i18next**, com detecção automática do idioma do navegador e troca manual. O sistema garantirá que nenhuma parte fique sem tradução através de fallback automático para português.
+O sistema i18n já está configurado com 9 namespaces e 4 idiomas (pt-BR, en, es, it). A fase inicial migrou os componentes principais da landing page. Esta fase 2 completará a tradução de todas as páginas e componentes restantes.
 
-## Idiomas Suportados
+---
 
-| Idioma | Código | Bandeira |
-|--------|--------|----------|
-| Português (Brasil) | pt-BR | 🇧🇷 |
-| Inglês | en | 🇺🇸 |
-| Espanhol | es | 🇪🇸 |
-| Italiano | it | 🇮🇹 |
+## Inventário do Estado Atual
 
-## Estrutura de Arquivos de Tradução
+### Já Traduzido
+| Componente/Página | Namespace |
+|-------------------|-----------|
+| Hero.tsx | home |
+| Footer.tsx | home |
+| FAQ.tsx | home |
+| ProcessSteps.tsx | home |
+| WhyChooseUs.tsx | home |
+| CTA.tsx | home/common |
+| PricingPlans.tsx | pricing |
+| Planos.tsx | pricing |
+| Dashboard.tsx | dashboard |
+| Auth.tsx | auth |
+| Checkout.tsx | checkout |
+| PaymentSuccess.tsx | checkout |
+
+### Infraestrutura Pronta
+- 9 namespaces criados: common, home, auth, dashboard, pricing, checkout, admin, legal, briefing
+- LanguageSelector.tsx funcionando
+- Funções de formatação (moeda/data) em i18n-format.ts
+
+---
+
+## O Que Falta Traduzir
+
+### Fase 2A: Páginas com Conteúdo Hardcoded (Prioridade Alta)
+
+#### 1. Briefing.tsx (~2800 linhas)
+**Namespace**: briefing
+**Status**: Arquivo JSON criado mas página não migrada
+**Trabalho**:
+- Substituir chatFlow array por chamadas t()
+- Traduzir opções de instrumentos, estilos, emoções
+- Traduzir mensagens de toast e modais
+- ~50 strings hardcoded a substituir
+
+#### 2. CreateSong.tsx (~1100 linhas)
+**Namespace**: briefing (reutilizar)
+**Trabalho**:
+- Traduzir etapas de seleção de letra
+- Traduzir botões de aprovação/edição
+- Traduzir mensagens de toast
+- ~30 strings hardcoded
+
+#### 3. Profile.tsx (~380 linhas)
+**Namespace**: dashboard
+**Trabalho**:
+- Tabs: Perfil, Assinatura, Créditos, Transferir
+- Labels de formulário
+- Mensagens de upload de avatar
+- ~25 strings hardcoded
+
+#### 4. OrderDetails.tsx (~700 linhas)
+**Namespace**: dashboard
+**Trabalho**:
+- Status do pedido
+- Botões de player
+- Opções de compartilhamento
+- Review form integration
+- ~35 strings hardcoded
+
+#### 5. OrderTracking.tsx (~180 linhas)
+**Namespace**: dashboard
+**Trabalho**:
+- Timeline de progresso
+- Descrições de status
+- ~20 strings hardcoded
+
+### Fase 2B: Páginas Legais (Prioridade Média)
+
+#### 6. PrivacyPolicy.tsx (~150 linhas)
+**Namespace**: legal
+**Status**: JSON tem estrutura básica, página usa texto hardcoded
+**Trabalho**:
+- Criar conteúdo completo em legal.json para todos idiomas
+- Migrar 12 seções de texto jurídico
+- ~2000 palavras por idioma
+
+#### 7. TermsOfUse.tsx (~190 linhas)
+**Namespace**: legal
+**Trabalho**:
+- Migrar 14 seções de termos
+- Incluir política de garantia e reembolso
+- ~2500 palavras por idioma
+
+#### 8. MusicRules.tsx (se existir)
+**Namespace**: legal
+**Trabalho**: Regras de conteúdo permitido/proibido
+
+### Fase 2C: Páginas Utilitárias (Prioridade Média)
+
+#### 9. NotFound.tsx (~25 linhas)
+**Namespace**: common
+**Trabalho**:
+- Título 404
+- Mensagem de erro
+- Link para home
+- 3 strings
+
+#### 10. Install.tsx (~210 linhas)
+**Namespace**: common (ou criar novo "app")
+**Trabalho**:
+- Instruções de instalação PWA
+- Instruções iOS específicas
+- Cards de recursos
+- ~20 strings
+
+#### 11. MusicShare.tsx (~240 linhas)
+**Namespace**: common
+**Trabalho**:
+- Player público
+- CTA para criar música
+- Estados de erro
+- ~10 strings
+
+### Fase 2D: Componentes Landing Page (Prioridade Média)
+
+#### 12. Testimonials.tsx (~300 linhas)
+**Namespace**: home
+**Trabalho**:
+- Títulos e subtítulos
+- Labels de estatísticas (500+, 5.0★, 100%, 48h)
+- Tipos de música
+- ~15 strings
+
+#### 13. AudioSamples.tsx (~305 linhas)
+**Namespace**: home
+**Trabalho**:
+- Título e subtítulo
+- Badge "Exemplos Reais"
+- Indicador mobile "Deslize para ver mais"
+- ~10 strings
+
+#### 14. InstrumentalShowcase.tsx (~335 linhas)
+**Namespace**: home
+**Trabalho**:
+- Badge "100% Instrumental"
+- CTA "20% de desconto"
+- ~10 strings
+
+#### 15. PlanComparison.tsx (~150 linhas)
+**Namespace**: pricing
+**Trabalho**:
+- Comparação Pacotes vs Assinatura
+- Lista de benefícios
+- ~25 strings
+
+#### 16. CreatorSection.tsx (~125 linhas)
+**Namespace**: pricing
+**Trabalho**:
+- Seção para criadores de conteúdo
+- Diferenciais
+- ~30 strings
+
+#### 17. CookieConsent.tsx (~245 linhas)
+**Namespace**: legal
+**Trabalho**:
+- Banner LGPD
+- Tipos de cookies
+- Botões aceitar/recusar
+- ~20 strings
+
+### Fase 2E: Páginas Admin (Prioridade Baixa)
+
+#### 18. AdminDashboard.tsx (~1650 linhas)
+**Namespace**: admin
+**Trabalho**:
+- Status de pedidos
+- Ações (confirmar PIX, gerar capa)
+- Toasts de sucesso/erro
+- ~80 strings
+
+#### 19. AdminSettings.tsx
+**Namespace**: admin
+**Trabalho**:
+- Configurações de vouchers
+- Configurações PIX
+- Gerenciamento de amostras
+- ~40 strings
+
+---
+
+## Estrutura de Arquivos a Atualizar
 
 ```text
-public/
-└── locales/
-    ├── pt-BR/
-    │   ├── common.json      (navegação, botões, textos globais)
-    │   ├── home.json        (página inicial)
-    │   ├── auth.json        (login/cadastro)
-    │   ├── dashboard.json   (painel do usuário)
-    │   ├── pricing.json     (planos e preços)
-    │   ├── checkout.json    (pagamento)
-    │   ├── admin.json       (painel admin)
-    │   └── legal.json       (termos, privacidade)
-    ├── en/
-    │   └── ... (mesmos 8 arquivos)
-    ├── es/
-    │   └── ... (mesmos 8 arquivos)
-    └── it/
-        └── ... (mesmos 8 arquivos)
+public/locales/
+├── pt-BR/
+│   ├── briefing.json    ← Adicionar chaves para CreateSong
+│   ├── dashboard.json   ← Adicionar Profile, OrderDetails, OrderTracking
+│   ├── home.json        ← Adicionar Testimonials, AudioSamples, Instrumental
+│   ├── legal.json       ← Expandir com conteúdo completo
+│   ├── pricing.json     ← Adicionar PlanComparison, CreatorSection
+│   ├── common.json      ← Adicionar NotFound, Install, MusicShare
+│   └── admin.json       ← Expandir com todas as strings do dashboard
+├── en/
+│   └── ... (mesmos arquivos)
+├── es/
+│   └── ... (mesmos arquivos)
+└── it/
+    └── ... (mesmos arquivos)
 ```
 
-## Escopo de Tradução
-
-### Páginas (25 arquivos)
-- Index, Auth, Dashboard, Profile
-- Briefing, CreateSong, Planos, Checkout
-- OrderDetails, OrderTracking, OrderLyricsPage
-- AdminDashboard, AdminSettings
-- PrivacyPolicy, TermsOfUse, MusicRules
-- VideoCheckout, VideoUpload, CreatorCheckout
-- Install, NotFound, PaymentSuccess, MusicShare
-
-### Componentes Principais (38 arquivos)
-- Hero, Footer, CTA, FAQ
-- ProcessSteps, WhyChooseUs, PricingPlans
-- AudioSamples, InstrumentalShowcase
-- Testimonials, CreatorSection, PlanComparison
-- CookieConsent, SEO, UpdateBanner
-- Componentes de admin
+---
 
 ## Etapas de Implementação
 
-### Etapa 1: Configuração Base
-1. Instalar dependências: `i18next`, `react-i18next`, `i18next-http-backend`, `i18next-browser-languagedetector`
-2. Criar configuração `src/lib/i18n.ts` com suporte a pt-BR, en, es, it
-3. Integrar no `main.tsx`
+### Etapa 1: Atualizar Arquivos de Tradução (Fase 2A-2D)
 
-### Etapa 2: Arquivos de Tradução Português (Base)
-1. Criar `public/locales/pt-BR/common.json` - textos globais
-2. Criar `public/locales/pt-BR/home.json` - página inicial
-3. Criar demais arquivos de namespace (auth, dashboard, pricing, checkout, admin, legal)
-4. Extrair todos os textos hardcoded do código atual
+**1.1 Expandir briefing.json**
+- Adicionar strings de CreateSong.tsx
+- Adicionar labels de modais de crédito
+- Adicionar mensagens de pronúncia
 
-### Etapa 3: Traduções para Outros Idiomas
-1. Traduzir todos os 8 arquivos para inglês (en)
-2. Traduzir todos os 8 arquivos para espanhol (es)
-3. Traduzir todos os 8 arquivos para italiano (it)
+**1.2 Expandir dashboard.json**
+- Adicionar seção "profile" com tabs e labels
+- Adicionar seção "orderDetails" com player e compartilhamento
+- Adicionar seção "orderTracking" com timeline
 
-### Etapa 4: Componente Seletor de Idioma
-1. Criar `src/components/LanguageSelector.tsx`
-2. Dropdown com bandeiras: 🇧🇷 🇺🇸 🇪🇸 🇮🇹
-3. Salvar preferência no localStorage
-4. Adicionar no Header ao lado do ThemeToggle
+**1.3 Expandir home.json**
+- Adicionar seção "testimonials" com estatísticas
+- Adicionar seção "audioSamples"
+- Adicionar seção "instrumental"
 
-### Etapa 5: Migração dos Componentes
-1. Converter textos hardcoded para usar hook `useTranslation`
-2. Exemplo de conversão:
-   ```tsx
-   // Antes
-   <h1>Conte sua história</h1>
-   
-   // Depois
-   const { t } = useTranslation('home');
-   <h1>{t('hero.title')}</h1>
-   ```
-3. Migrar todas as 25 páginas
-4. Migrar todos os 38 componentes
+**1.4 Expandir legal.json**
+- Adicionar conteúdo completo de PrivacyPolicy
+- Adicionar conteúdo completo de TermsOfUse
+- Adicionar seção "cookies" para CookieConsent
 
-### Etapa 6: Conteúdo Dinâmico
-1. Configurar `date-fns` com locales para cada idioma
-2. Adaptar formatação de moeda por região
-3. Traduzir mensagens de toast/notificação
-4. Traduzir conteúdo do FAQ e depoimentos
+**1.5 Expandir pricing.json**
+- Adicionar seção "comparison" para PlanComparison
+- Adicionar seção "creator" para CreatorSection
 
-### Etapa 7: SEO Multilíngue
-1. Atualizar componente SEO.tsx para meta tags por idioma
-2. Adicionar tags `hreflang` para cada idioma
-3. Meta description traduzida automaticamente
+**1.6 Expandir common.json**
+- Adicionar seção "notFound"
+- Adicionar seção "install"
+- Adicionar seção "share"
+
+### Etapa 2: Migrar Páginas Críticas
+
+**2.1 Migrar Briefing.tsx**
+```typescript
+const { t } = useTranslation('briefing');
+
+// Antes:
+{ id: "cantada", label: "🎤 Música Cantada", description: "Com letra e vocal" }
+
+// Depois:
+{ id: "cantada", label: t('steps.isInstrumental.sung'), description: t('steps.isInstrumental.sungDesc') }
+```
+
+**2.2 Migrar CreateSong.tsx**
+- Usar chaves de briefing.json para consistência
+- Traduzir estados de loading e erros
+
+**2.3 Migrar Profile.tsx**
+- Traduzir labels de tabs
+- Traduzir mensagens de upload
+
+**2.4 Migrar OrderDetails.tsx e OrderTracking.tsx**
+- Traduzir statusMap
+- Traduzir botões de ação
+
+### Etapa 3: Migrar Componentes Landing
+
+**3.1 Testimonials.tsx**
+**3.2 AudioSamples.tsx**
+**3.3 InstrumentalShowcase.tsx**
+**3.4 PlanComparison.tsx**
+**3.5 CreatorSection.tsx**
+**3.6 CookieConsent.tsx**
+
+### Etapa 4: Migrar Páginas Utilitárias
+
+**4.1 NotFound.tsx**
+**4.2 Install.tsx**
+**4.3 MusicShare.tsx**
+
+### Etapa 5: Migrar Páginas Legais
+
+**5.1 PrivacyPolicy.tsx**
+**5.2 TermsOfUse.tsx**
+
+### Etapa 6: Migrar Admin (Opcional)
+
+**6.1 AdminDashboard.tsx**
+**6.2 AdminSettings.tsx**
+
+---
 
 ## Detalhes Técnicos
 
-### Configuração i18n
+### Padrão de Migração
 
 ```typescript
-// src/lib/i18n.ts
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import HttpBackend from 'i18next-http-backend';
-import LanguageDetector from 'i18next-browser-languagedetector';
+// 1. Importar hook
+import { useTranslation } from 'react-i18next';
 
-i18n
-  .use(HttpBackend)
-  .use(LanguageDetector)
-  .use(initReactI18next)
-  .init({
-    fallbackLng: 'pt-BR',
-    supportedLngs: ['pt-BR', 'en', 'es', 'it'],
-    defaultNS: 'common',
-    ns: ['common', 'home', 'auth', 'dashboard', 'pricing', 'checkout', 'admin', 'legal'],
-    interpolation: { escapeValue: false },
-    backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
-    },
-    detection: {
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-    },
-  });
+// 2. Usar no componente
+const { t } = useTranslation('namespace');
 
-export default i18n;
+// 3. Para arrays dinâmicos
+const items = t('section.items', { returnObjects: true }) as Array<{...}>;
+
+// 4. Para interpolação
+t('message', { count: 5, name: 'João' })
 ```
 
-### Componente LanguageSelector
+### Formatação de Moeda por Idioma
 
 ```typescript
-// Dropdown no header com opções:
-// 🇧🇷 Português
-// 🇺🇸 English  
-// 🇪🇸 Español
-// 🇮🇹 Italiano
+import { formatCurrency } from '@/lib/i18n-format';
+import { useTranslation } from 'react-i18next';
+
+const { i18n } = useTranslation();
+const price = formatCurrency(9990, i18n.language); // R$ 99,90 ou $23.00
 ```
 
-### Tipagem TypeScript para Autocompletar
+### Formatação de Data por Idioma
 
 ```typescript
-// src/types/i18n.d.ts
-import 'i18next';
-import common from '../../public/locales/pt-BR/common.json';
+import { formatLocalizedDate } from '@/lib/i18n-format';
 
-declare module 'i18next' {
-  interface CustomTypeOptions {
-    defaultNS: 'common';
-    resources: {
-      common: typeof common;
-      // ... outros namespaces
-    };
-  }
-}
+const date = formatLocalizedDate(new Date(), 'pt-BR'); // 27 de janeiro de 2026
 ```
 
-## Garantias Contra Textos Não Traduzidos
+---
 
-| Mecanismo | Descrição |
-|-----------|-----------|
-| Fallback automático | Se tradução não existir, mostra em português |
-| Tipagem TypeScript | Chaves tipadas garantem que existam em todos idiomas |
-| Namespaces organizados | Facilita encontrar e manter traduções |
-| Script de validação | Pode verificar chaves faltantes antes do deploy |
+## Contagem de Strings por Componente
 
-## Estimativa de Trabalho
+| Componente | Strings Estimadas | Complexidade |
+|------------|-------------------|--------------|
+| Briefing.tsx | ~50 | Alta |
+| CreateSong.tsx | ~30 | Média |
+| Profile.tsx | ~25 | Baixa |
+| OrderDetails.tsx | ~35 | Média |
+| OrderTracking.tsx | ~20 | Baixa |
+| PrivacyPolicy.tsx | ~40 (seções) | Média |
+| TermsOfUse.tsx | ~50 (seções) | Média |
+| Testimonials.tsx | ~15 | Baixa |
+| AudioSamples.tsx | ~10 | Baixa |
+| InstrumentalShowcase.tsx | ~10 | Baixa |
+| PlanComparison.tsx | ~25 | Média |
+| CreatorSection.tsx | ~30 | Média |
+| CookieConsent.tsx | ~20 | Baixa |
+| NotFound.tsx | ~3 | Baixa |
+| Install.tsx | ~20 | Baixa |
+| MusicShare.tsx | ~10 | Baixa |
+| AdminDashboard.tsx | ~80 | Alta |
+| AdminSettings.tsx | ~40 | Média |
+| **TOTAL** | **~513 strings** | |
 
-| Etapa | Complexidade |
-|-------|--------------|
-| Configuração i18n | Baixa |
-| Arquivos PT-BR (8) | Média |
-| Arquivos EN (8) | Alta |
-| Arquivos ES (8) | Alta |
-| Arquivos IT (8) | Alta |
-| Migração componentes | Média |
-| LanguageSelector | Baixa |
-| SEO multilíngue | Média |
+---
+
+## Ordem de Execução Recomendada
+
+1. **Atualizar JSONs de tradução** para todos os 4 idiomas
+2. **Briefing.tsx** (página mais complexa, fluxo crítico)
+3. **CreateSong.tsx** (complemento do briefing)
+4. **Profile.tsx + OrderDetails.tsx + OrderTracking.tsx** (área logada)
+5. **Testimonials + AudioSamples + InstrumentalShowcase** (landing page)
+6. **PlanComparison + CreatorSection** (pricing)
+7. **CookieConsent + NotFound + Install + MusicShare** (utilitários)
+8. **PrivacyPolicy + TermsOfUse** (legal - conteúdo extenso)
+9. **AdminDashboard + AdminSettings** (admin - baixa prioridade)
+
+---
 
 ## Resultado Final
 
-- Seletor de idioma com 4 opções (🇧🇷 🇺🇸 🇪🇸 🇮🇹) no header
-- Detecção automática do idioma do navegador
-- Preferência salva no localStorage
-- Todas as páginas e componentes traduzidos
-- Fallback garantido para português
-- Fácil adicionar novos idiomas no futuro
+Após a conclusão desta fase:
+- 100% das páginas públicas traduzidas
+- 100% dos componentes da landing traduzidos
+- Sistema de checkout completo em 4 idiomas
+- Páginas legais com conteúdo localizado
+- Admin Dashboard traduzido (opcional)
+- Experiência consistente em pt-BR, en, es, it
 
