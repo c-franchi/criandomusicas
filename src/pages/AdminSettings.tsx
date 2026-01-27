@@ -697,37 +697,50 @@ const AdminSettings = () => {
                           </PopoverContent>
                         </Popover>
                       </div>
-                      {/* Planos Destino */}
+                      {/* Planos Destino - Multi-select */}
                       <div>
                         <Label>Válido para planos (opcional)</Label>
-                        <Select
-                          value={(editingVoucher || newVoucher).plan_ids?.[0] || 'all'}
-                          onValueChange={(v) => {
-                            const planIds = v === 'all' ? null : [v];
-                            editingVoucher 
-                              ? setEditingVoucher({ ...editingVoucher, plan_ids: planIds })
-                              : setNewVoucher({ ...newVoucher, plan_ids: planIds });
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Todos os planos" />
-                          </SelectTrigger>
-                          <SelectContent className="max-h-60 overflow-y-auto">
-                            <SelectItem value="all">Todos os planos</SelectItem>
-                            <SelectItem value="single">Música Única</SelectItem>
-                            <SelectItem value="package">Pacote 3 Músicas</SelectItem>
-                            <SelectItem value="subscription">Pacote 5 Músicas</SelectItem>
-                            <SelectItem value="single_instrumental">Música Única (Instrumental)</SelectItem>
-                            <SelectItem value="creator_start">Creator Start</SelectItem>
-                            <SelectItem value="creator_pro">Creator Pro</SelectItem>
-                            <SelectItem value="creator_studio">Creator Studio</SelectItem>
-                            <SelectItem value="creator_start_instrumental">Creator Start (Instrumental)</SelectItem>
-                            <SelectItem value="creator_pro_instrumental">Creator Pro (Instrumental)</SelectItem>
-                            <SelectItem value="creator_studio_instrumental">Creator Studio (Instrumental)</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-background">
+                          {[
+                            { id: 'single', label: 'Música Única' },
+                            { id: 'package', label: 'Pacote 3 Músicas' },
+                            { id: 'subscription', label: 'Pacote 5 Músicas' },
+                            { id: 'single_instrumental', label: 'Música Única (Instrumental)' },
+                            { id: 'creator_start', label: 'Creator Start' },
+                            { id: 'creator_pro', label: 'Creator Pro' },
+                            { id: 'creator_studio', label: 'Creator Studio' },
+                            { id: 'creator_start_instrumental', label: 'Creator Start (Instrumental)' },
+                            { id: 'creator_pro_instrumental', label: 'Creator Pro (Instrumental)' },
+                            { id: 'creator_studio_instrumental', label: 'Creator Studio (Instrumental)' },
+                          ].map((plan) => {
+                            const currentPlanIds = (editingVoucher || newVoucher).plan_ids || [];
+                            const isChecked = currentPlanIds.includes(plan.id);
+                            return (
+                              <label key={plan.id} className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 p-1 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    let newPlanIds: string[];
+                                    if (e.target.checked) {
+                                      newPlanIds = [...currentPlanIds, plan.id];
+                                    } else {
+                                      newPlanIds = currentPlanIds.filter(id => id !== plan.id);
+                                    }
+                                    const finalPlanIds = newPlanIds.length === 0 ? null : newPlanIds;
+                                    editingVoucher 
+                                      ? setEditingVoucher({ ...editingVoucher, plan_ids: finalPlanIds })
+                                      : setNewVoucher({ ...newVoucher, plan_ids: finalPlanIds });
+                                  }}
+                                  className="w-4 h-4 rounded border-primary text-primary focus:ring-primary"
+                                />
+                                <span className="text-sm">{plan.label}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Deixe em branco para permitir em todos os planos
+                          Deixe todos desmarcados para permitir em todos os planos
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
