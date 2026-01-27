@@ -68,8 +68,6 @@ const PricingPlans = () => {
         return [];
     }
   };
-    }
-  };
 
   useEffect(() => {
     const fetchPlans = async () => {
