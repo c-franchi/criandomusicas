@@ -89,16 +89,36 @@ serve(async (req) => {
     const planId = creatorSub.metadata?.plan_id || null;
     const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
     
-    // Validate timestamps before converting
-    const currentPeriodEnd = creatorSub.current_period_end;
-    const currentPeriodStartTs = creatorSub.current_period_start;
+    // Get period data - try from subscription root first, then from items
+    let currentPeriodEndTs = creatorSub.current_period_end;
+    let currentPeriodStartTs = creatorSub.current_period_start;
 
-    if (!currentPeriodEnd || !currentPeriodStartTs || typeof currentPeriodEnd !== 'number' || typeof currentPeriodStartTs !== 'number') {
-      logStep("Invalid subscription period data", { currentPeriodEnd, currentPeriodStartTs });
+    // Fallback: read from subscription items if not in root (Stripe API 2025-08-27.basil)
+    if (!currentPeriodEndTs || !currentPeriodStartTs) {
+      logStep("Period data not in root, checking items.data[0]");
+      const firstItem = creatorSub.items?.data?.[0];
+      if (firstItem) {
+        currentPeriodEndTs = firstItem.current_period_end;
+        currentPeriodStartTs = firstItem.current_period_start;
+        logStep("Found period data in items", { currentPeriodEndTs, currentPeriodStartTs });
+      }
+    }
+
+    // Ultimate fallback: retrieve full subscription
+    if (!currentPeriodEndTs || !currentPeriodStartTs) {
+      logStep("Fetching full subscription details via retrieve()");
+      const fullSub = await stripe.subscriptions.retrieve(creatorSub.id);
+      currentPeriodEndTs = fullSub.current_period_end;
+      currentPeriodStartTs = fullSub.current_period_start;
+      logStep("Retrieved period data", { currentPeriodEndTs, currentPeriodStartTs });
+    }
+
+    if (!currentPeriodEndTs || !currentPeriodStartTs || typeof currentPeriodEndTs !== 'number' || typeof currentPeriodStartTs !== 'number') {
+      logStep("Invalid subscription period data after all fallbacks", { currentPeriodEndTs, currentPeriodStartTs });
       throw new Error("Subscription period data is missing or invalid");
     }
 
-    const subscriptionEnd = new Date(currentPeriodEnd * 1000).toISOString();
+    const subscriptionEnd = new Date(currentPeriodEndTs * 1000).toISOString();
     const currentPeriodStart = new Date(currentPeriodStartTs * 1000).toISOString();
 
     logStep("Active creator subscription found", { 
