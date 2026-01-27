@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,7 @@ import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { useCredits, getPlanLabel } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/i18n-format';
 
 interface PixConfigData {
   pix_key: string;
@@ -57,6 +59,7 @@ interface VoucherValidation {
 }
 
 export default function Checkout() {
+  const { t, i18n } = useTranslation('checkout');
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -214,7 +217,7 @@ export default function Checkout() {
     const processVIPAccess = async () => {
       if (!vipLoading && isVIP && order && user && !processingVIP && order.payment_status !== 'AWAITING_PIX') {
         setProcessingVIP(true);
-        toast.info('Acesso VIP detectado! Liberando geração de música...');
+        toast.info(t('toast.vipDetected'));
         
         const success = await bypassPaymentForVIP(order.id, user.id);
         
@@ -261,7 +264,7 @@ export default function Checkout() {
                     briefing
                   }
                 });
-                toast.success('Música instrumental liberada! Redirecionando...');
+                toast.success(t('toast.paymentConfirmed'));
                 setTimeout(() => navigate('/dashboard'), 1500);
               } else if (hasCustomLyric) {
                 // For custom lyrics, redirect to approval page
@@ -310,7 +313,7 @@ export default function Checkout() {
 
   const validateVoucher = async () => {
     if (!voucherCode.trim()) {
-      toast.error('Digite um código de voucher');
+      toast.error(t('voucher.placeholder'));
       return;
     }
 
@@ -327,13 +330,13 @@ export default function Checkout() {
       setVoucherResult(data);
 
       if (data.valid) {
-        toast.success('Voucher válido!');
+        toast.success(t('toast.voucherValid'));
       } else {
-        toast.error(data.error || 'Voucher inválido');
+        toast.error(data.error || t('voucher.invalid'));
       }
     } catch (error) {
       console.error('Error validating voucher:', error);
-      toast.error('Erro ao validar voucher');
+      toast.error(t('errors.voucherValidation'));
     } finally {
       setValidatingVoucher(false);
     }
@@ -532,7 +535,7 @@ export default function Checkout() {
     if (!pixConfig) return;
     navigator.clipboard.writeText(pixConfig.pix_key);
     setCopiedKey(true);
-    toast.success('Chave PIX copiada!');
+    toast.success(t('toast.pixKeyCopied'));
     setTimeout(() => setCopiedKey(false), 3000);
   };
 
@@ -605,10 +608,10 @@ export default function Checkout() {
       
       setPixConfirmed(true);
       setShowReceiptUpload(false);
-      toast.success('Comprovante enviado! Aguardando confirmação.');
+      toast.success(t('toast.receiptSent'));
     } catch (error) {
       console.error('Error uploading receipt:', error);
-      toast.error('Erro ao enviar comprovante. Tente novamente.');
+      toast.error(t('errors.receiptUpload'));
     } finally {
       setUploadingReceipt(false);
     }
@@ -620,7 +623,7 @@ export default function Checkout() {
   };
 
   const formatPrice = (cents: number) => {
-    return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
+    return formatCurrency(cents, i18n.language);
   };
 
   // Handle using credits to pay
@@ -640,28 +643,28 @@ export default function Checkout() {
         if (data.wrong_type) {
           toast.error(data.error);
         } else if (data.needs_purchase) {
-          toast.error('Você não tem créditos compatíveis disponíveis');
+          toast.error(t('errors.incompatibleCredits'));
         } else {
-          toast.error(data.error || 'Erro ao usar crédito');
+          toast.error(data.error || t('errors.creditUse'));
         }
         setProcessingCredit(false);
         return;
       }
 
-      toast.success('Crédito utilizado com sucesso!');
+      toast.success(t('toast.creditUsed'));
       
       // Trigger generation and redirect based on order type
       const isInstrumental = order.is_instrumental === true;
       
       if (isInstrumental) {
-        toast.info('Preparando sua música instrumental...');
+        toast.info(t('toast.preparingInstrumental'));
         navigate('/dashboard');
       } else {
         navigate(`/criar-musica?orderId=${order.id}`);
       }
     } catch (error) {
       console.error('Error using credit:', error);
-      toast.error('Erro ao usar crédito');
+      toast.error(t('errors.creditUse'));
       setProcessingCredit(false);
     }
   };

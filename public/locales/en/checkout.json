@@ -1,45 +1,144 @@
 {
   "title": "Complete Order",
   "subtitle": "Complete payment to start your song",
+  "loading": "Loading...",
+  "processingVIP": "Processing VIP access...",
+  "orderNotFound": "Order not found",
+  "backToHome": "Back to Home",
   "summary": {
-    "title": "Order summary",
+    "title": "Order Summary",
+    "type": "Type",
+    "style": "Style",
+    "emotion": "Emotion",
+    "story": "Story",
+    "yourLyric": "Your Lyrics",
     "plan": "Plan",
     "subtotal": "Subtotal",
     "discount": "Discount",
-    "total": "Total"
+    "total": "Total",
+    "customLyric": "Custom Lyrics",
+    "instrumental": "Instrumental",
+    "personalizedMusic": "Personalized Music",
+    "toDefine": "To be defined"
   },
-  "payment": {
-    "title": "Payment method",
-    "card": "Credit card",
-    "pix": "PIX",
-    "credit": "Use credit"
-  },
-  "pix": {
-    "title": "Pay with PIX",
-    "instructions": "Scan the QR Code or copy the code",
-    "copy": "Copy code",
-    "copied": "Code copied!",
-    "waiting": "Waiting for payment confirmation...",
-    "upload": "Upload receipt"
+  "credits": {
+    "title": "Use Available Credit",
+    "description": "You have credits! Use one to create this song for free.",
+    "available": "{{count}} credit available",
+    "available_plural": "{{count}} credits available",
+    "used": "{{used}}/{{total}} used",
+    "remaining": "{{remaining}} remaining after this song",
+    "useButton": "Use 1 Credit (Free!)",
+    "processing": "Processing...",
+    "orPayBelow": "or pay normally below",
+    "incompatible": {
+      "title": "Incompatible credits",
+      "instrumental": "instrumental",
+      "instrumentals": "instrumentals",
+      "vocal": "vocal",
+      "vocals": "vocals",
+      "requiresType": "but this order requires {{type}} credit.",
+      "tip": "Your {{creditType}} credits can be used to create {{musicType}} songs.",
+      "instrumentalMusic": "instrumental",
+      "vocalMusic": "vocal or custom lyrics"
+    }
   },
   "voucher": {
-    "title": "Discount coupon",
-    "placeholder": "Enter code",
-    "apply": "Apply",
-    "applied": "Coupon applied!",
-    "invalid": "Invalid coupon",
-    "remove": "Remove coupon"
+    "title": "Have a voucher?",
+    "description": "Enter your discount code",
+    "placeholder": "Enter voucher code",
+    "apply": "Use voucher",
+    "applied": "Voucher applied!",
+    "code": "Code",
+    "discount": "Discount",
+    "invalid": "Invalid voucher",
+    "validating": "Validating...",
+    "valid": "Valid voucher!",
+    "finalPrice": "Final price",
+    "free": "FREE!",
+    "generateFree": "Generate Free Song",
+    "applyDiscount": "Apply Discount"
+  },
+  "payment": {
+    "title": "Payment Method",
+    "card": {
+      "title": "Credit Card",
+      "description": "Secure payment via Stripe"
+    },
+    "pix": {
+      "title": "PIX",
+      "description": "Instant payment",
+      "howItWorks": "How PIX payment works:",
+      "step1": "Scan the QR Code or copy the PIX key",
+      "step2": "Make the payment in your bank app",
+      "step3": "Send the receipt to confirm",
+      "step4": "Wait for verification (up to 30 minutes)",
+      "scanOrCopy": "Scan the QR Code or copy the PIX key below",
+      "amountToPay": "Amount to pay:",
+      "pixKey": "PIX Key (CNPJ):",
+      "name": "Name:",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "alreadyPaid": "I Already Made the PIX Payment",
+      "backToOptions": "Back to payment options"
+    },
+    "securePayment": "Secure payment • Protected data"
+  },
+  "receipt": {
+    "title": "Send Receipt",
+    "description": "Click or drag a photo/screenshot of the PIX receipt",
+    "clickToChange": "Click to change image",
+    "confirm": "Confirm Payment",
+    "uploading": "Uploading..."
+  },
+  "pixWaiting": {
+    "title": "Waiting for PIX Confirmation",
+    "description": "After payment, we'll confirm within 30 minutes and you'll receive a notification.",
+    "backToDashboard": "Back to Dashboard",
+    "trackStatus": "Track your order status on the Dashboard"
+  },
+  "badges": {
+    "secure": "Secure Payment",
+    "fast": "Music in Minutes",
+    "premium": "Premium AI"
   },
   "success": {
     "title": "Payment confirmed!",
     "subtitle": "Your order was successfully received",
     "orderNumber": "Order number",
     "next": "Next steps",
-    "cta": "View my order"
+    "cta": "View my order",
+    "redirecting": "Redirecting in {{seconds}}s...",
+    "trackOrder": "Track Order",
+    "viewOrders": "View My Orders",
+    "verifying": "Verifying payment...",
+    "verifyingDescription": "Please wait while we confirm your payment.",
+    "confirmed": "Payment Confirmed!",
+    "confirmedDescription": "Your personalized music is being created. You can track progress in real time."
   },
   "errors": {
-    "paymentFailed": "Payment failed. Please try again.",
-    "cardDeclined": "Card declined",
-    "insufficientFunds": "Insufficient funds"
+    "orderNotYours": "This order doesn't belong to you",
+    "loadingOrder": "Error loading order",
+    "paymentFailed": "Error processing payment",
+    "voucherValidation": "Error validating voucher",
+    "voucherApply": "Error applying voucher",
+    "creditUse": "Error using credit",
+    "incompatibleCredits": "You don't have compatible credits available",
+    "receiptUpload": "Error uploading receipt. Please try again.",
+    "verificationFailed": "Could not verify payment.",
+    "somethingWrong": "Oops! Something went wrong",
+    "tryAgain": "Try Again",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "toast": {
+    "pixKeyCopied": "PIX key copied!",
+    "voucherValid": "Valid voucher!",
+    "voucherApplied": "Voucher applied!",
+    "creditUsed": "Credit used successfully!",
+    "receiptSent": "Receipt sent! Waiting for confirmation.",
+    "vipDetected": "VIP access detected! Enabling music generation...",
+    "preparingInstrumental": "Preparing your instrumental music...",
+    "generatingLyrics": "Generating your song lyrics...",
+    "paymentConfirmed": "Payment confirmed!"
   }
 }

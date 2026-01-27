@@ -1,45 +1,144 @@
 {
   "title": "Completa Ordine",
-  "subtitle": "Completa il pagamento per iniziare la tua canzone",
+  "subtitle": "Completa il pagamento per creare la tua canzone",
+  "loading": "Caricamento...",
+  "processingVIP": "Elaborazione accesso VIP...",
+  "orderNotFound": "Ordine non trovato",
+  "backToHome": "Torna alla Home",
   "summary": {
-    "title": "Riepilogo ordine",
+    "title": "Riepilogo Ordine",
+    "type": "Tipo",
+    "style": "Stile",
+    "emotion": "Emozione",
+    "story": "Storia",
+    "yourLyric": "Il Tuo Testo",
     "plan": "Piano",
     "subtotal": "Subtotale",
     "discount": "Sconto",
-    "total": "Totale"
+    "total": "Totale",
+    "customLyric": "Testo Proprio",
+    "instrumental": "Strumentale",
+    "personalizedMusic": "Musica Personalizzata",
+    "toDefine": "Da definire"
   },
-  "payment": {
-    "title": "Metodo di pagamento",
-    "card": "Carta di credito",
-    "pix": "PIX",
-    "credit": "Usa credito"
-  },
-  "pix": {
-    "title": "Paga con PIX",
-    "instructions": "Scansiona il codice QR o copia il codice",
-    "copy": "Copia codice",
-    "copied": "Codice copiato!",
-    "waiting": "In attesa di conferma del pagamento...",
-    "upload": "Carica ricevuta"
+  "credits": {
+    "title": "Usa Credito Disponibile",
+    "description": "Hai dei crediti! Usane uno per creare questa canzone gratis.",
+    "available": "{{count}} credito disponibile",
+    "available_plural": "{{count}} crediti disponibili",
+    "used": "{{used}}/{{total}} usati",
+    "remaining": "{{remaining}} rimasti dopo questa canzone",
+    "useButton": "Usa 1 Credito (Gratis!)",
+    "processing": "Elaborazione...",
+    "orPayBelow": "o paga normalmente sotto",
+    "incompatible": {
+      "title": "Crediti non compatibili",
+      "instrumental": "strumentale",
+      "instrumentals": "strumentali",
+      "vocal": "vocale",
+      "vocals": "vocali",
+      "requiresType": "ma questo ordine richiede credito {{type}}.",
+      "tip": "I tuoi crediti {{creditType}} possono essere usati per creare canzoni {{musicType}}.",
+      "instrumentalMusic": "strumentali",
+      "vocalMusic": "cantate o con testo proprio"
+    }
   },
   "voucher": {
-    "title": "Coupon sconto",
-    "placeholder": "Inserisci il codice",
-    "apply": "Applica",
+    "title": "Hai un coupon?",
+    "description": "Inserisci il tuo codice sconto",
+    "placeholder": "Inserisci il codice coupon",
+    "apply": "Usa coupon",
     "applied": "Coupon applicato!",
+    "code": "Codice",
+    "discount": "Sconto",
     "invalid": "Coupon non valido",
-    "remove": "Rimuovi coupon"
+    "validating": "Validazione...",
+    "valid": "Coupon valido!",
+    "finalPrice": "Prezzo finale",
+    "free": "GRATIS!",
+    "generateFree": "Genera Canzone Gratis",
+    "applyDiscount": "Applica Sconto"
+  },
+  "payment": {
+    "title": "Metodo di Pagamento",
+    "card": {
+      "title": "Carta di Credito",
+      "description": "Pagamento sicuro via Stripe"
+    },
+    "pix": {
+      "title": "PIX",
+      "description": "Pagamento istantaneo",
+      "howItWorks": "Come funziona il pagamento PIX:",
+      "step1": "Scansiona il codice QR o copia la chiave PIX",
+      "step2": "Effettua il pagamento nella tua app bancaria",
+      "step3": "Invia la ricevuta per confermare",
+      "step4": "Attendi la verifica (fino a 30 minuti)",
+      "scanOrCopy": "Scansiona il codice QR o copia la chiave PIX sotto",
+      "amountToPay": "Importo da pagare:",
+      "pixKey": "Chiave PIX (CNPJ):",
+      "name": "Nome:",
+      "copy": "Copia",
+      "copied": "Copiato!",
+      "alreadyPaid": "Ho Già Effettuato il Pagamento PIX",
+      "backToOptions": "Torna alle opzioni di pagamento"
+    },
+    "securePayment": "Pagamento sicuro • Dati protetti"
+  },
+  "receipt": {
+    "title": "Invia la Ricevuta",
+    "description": "Clicca o trascina una foto/screenshot della ricevuta PIX",
+    "clickToChange": "Clicca per cambiare immagine",
+    "confirm": "Conferma Pagamento",
+    "uploading": "Caricamento..."
+  },
+  "pixWaiting": {
+    "title": "In Attesa di Conferma PIX",
+    "description": "Dopo il pagamento, confermeremo entro 30 minuti e riceverai una notifica.",
+    "backToDashboard": "Torna alla Dashboard",
+    "trackStatus": "Segui lo stato del tuo ordine nella Dashboard"
+  },
+  "badges": {
+    "secure": "Pagamento Sicuro",
+    "fast": "Musica in Minuti",
+    "premium": "IA Premium"
   },
   "success": {
     "title": "Pagamento confermato!",
     "subtitle": "Il tuo ordine è stato ricevuto con successo",
     "orderNumber": "Numero ordine",
     "next": "Prossimi passi",
-    "cta": "Vedi il mio ordine"
+    "cta": "Vedi il mio ordine",
+    "redirecting": "Reindirizzamento in {{seconds}}s...",
+    "trackOrder": "Segui Ordine",
+    "viewOrders": "Vedi I Miei Ordini",
+    "verifying": "Verifica pagamento...",
+    "verifyingDescription": "Attendi mentre confermiamo il tuo pagamento.",
+    "confirmed": "Pagamento Confermato!",
+    "confirmedDescription": "La tua musica personalizzata è in creazione. Puoi seguire il progresso in tempo reale."
   },
   "errors": {
-    "paymentFailed": "Pagamento fallito. Riprova.",
-    "cardDeclined": "Carta rifiutata",
-    "insufficientFunds": "Fondi insufficienti"
+    "orderNotYours": "Questo ordine non ti appartiene",
+    "loadingOrder": "Errore nel caricamento ordine",
+    "paymentFailed": "Errore nell'elaborazione del pagamento",
+    "voucherValidation": "Errore nella validazione coupon",
+    "voucherApply": "Errore nell'applicazione coupon",
+    "creditUse": "Errore nell'uso del credito",
+    "incompatibleCredits": "Non hai crediti compatibili disponibili",
+    "receiptUpload": "Errore nel caricamento ricevuta. Riprova.",
+    "verificationFailed": "Impossibile verificare il pagamento.",
+    "somethingWrong": "Ops! Qualcosa è andato storto",
+    "tryAgain": "Riprova",
+    "backToDashboard": "Torna alla Dashboard"
+  },
+  "toast": {
+    "pixKeyCopied": "Chiave PIX copiata!",
+    "voucherValid": "Coupon valido!",
+    "voucherApplied": "Coupon applicato!",
+    "creditUsed": "Credito utilizzato con successo!",
+    "receiptSent": "Ricevuta inviata! In attesa di conferma.",
+    "vipDetected": "Accesso VIP rilevato! Abilitazione generazione musica...",
+    "preparingInstrumental": "Preparazione della tua musica strumentale...",
+    "generatingLyrics": "Generazione dei testi della tua canzone...",
+    "paymentConfirmed": "Pagamento confermato!"
   }
 }
