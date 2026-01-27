@@ -37,34 +37,16 @@ const PricingPlans = () => {
 
   // Get translated features for vocal plans
   const getVocalFeatures = (planId: string): string[] => {
+    const features = t(`vocalFeatures.${planId}`, { returnObjects: true }) as string[];
+    if (Array.isArray(features)) return features;
+    // Fallback if translation not available
     switch (planId) {
       case "single":
-        return [
-          t('vocalFeatures.single.0', { defaultValue: "1 complete song" }),
-          t('vocalFeatures.single.1', { defaultValue: "2 personalized lyrics to choose" }),
-          t('vocalFeatures.single.2', { defaultValue: "Lyrics + professional audio" }),
-          t('vocalFeatures.single.3', { defaultValue: "High quality" }),
-          t('vocalFeatures.single.4', { defaultValue: "Delivery within 48h" })
-        ];
+        return ["1 complete song", "2 personalized lyrics to choose", "Lyrics + professional audio", "High quality", "Delivery within 48h"];
       case "package":
-        return [
-          t('vocalFeatures.package.0', { defaultValue: "3 complete songs" }),
-          t('vocalFeatures.package.1', { defaultValue: "2 personalized lyrics each" }),
-          t('vocalFeatures.package.2', { defaultValue: "16% savings" }),
-          t('vocalFeatures.package.3', { defaultValue: "Lyrics + professional audio" }),
-          t('vocalFeatures.package.4', { defaultValue: "High quality" }),
-          t('vocalFeatures.package.5', { defaultValue: "Delivery within 48h" }),
-          t('vocalFeatures.package.6', { defaultValue: "VIP support" })
-        ];
+        return ["3 complete songs", "2 personalized lyrics each", "16% savings", "Lyrics + professional audio", "High quality", "Delivery within 48h", "VIP support"];
       case "subscription":
-        return [
-          t('vocalFeatures.subscription.0', { defaultValue: "Up to 5 songs" }),
-          t('vocalFeatures.subscription.1', { defaultValue: "2 personalized lyrics each" }),
-          t('vocalFeatures.subscription.2', { defaultValue: "Lyrics + professional audio" }),
-          t('vocalFeatures.subscription.3', { defaultValue: "Premium quality" }),
-          t('vocalFeatures.subscription.4', { defaultValue: "Delivery within 48h" }),
-          t('vocalFeatures.subscription.5', { defaultValue: "Priority queue" })
-        ];
+        return ["Up to 5 songs", "2 personalized lyrics each", "Lyrics + professional audio", "Premium quality", "Delivery within 48h", "Priority queue"];
       default:
         return [];
     }
@@ -72,32 +54,20 @@ const PricingPlans = () => {
 
   // Features for instrumental plans
   const getInstrumentalFeatures = (planId: string): string[] => {
+    const features = t(`instrumentalFeatures.${planId}`, { returnObjects: true }) as string[];
+    if (Array.isArray(features)) return features;
+    // Fallback if translation not available
     switch (planId) {
       case "single":
-        return [
-          t('instrumentalFeatures.single.0', { defaultValue: "1 instrumental track" }),
-          t('instrumentalFeatures.single.1', { defaultValue: "Custom arrangement" }),
-          t('instrumentalFeatures.single.2', { defaultValue: "Professional audio" }),
-          t('instrumentalFeatures.single.3', { defaultValue: "High quality" }),
-          t('instrumentalFeatures.single.4', { defaultValue: "Delivery within 48h" })
-        ];
+        return ["1 instrumental track", "Custom arrangement", "Professional audio", "High quality", "Delivery within 48h"];
       case "package":
-        return [
-          t('instrumentalFeatures.package.0', { defaultValue: "3 instrumental tracks" }),
-          t('instrumentalFeatures.package.1', { defaultValue: "Custom arrangements" }),
-          t('instrumentalFeatures.package.2', { defaultValue: "16% savings" }),
-          t('instrumentalFeatures.package.3', { defaultValue: "Professional audio" }),
-          t('instrumentalFeatures.package.4', { defaultValue: "VIP support" })
-        ];
+        return ["3 instrumental tracks", "Custom arrangements", "16% savings", "Professional audio", "VIP support"];
       case "subscription":
-        return [
-          t('instrumentalFeatures.subscription.0', { defaultValue: "Up to 5 instrumental tracks" }),
-          t('instrumentalFeatures.subscription.1', { defaultValue: "Custom arrangements" }),
-          t('instrumentalFeatures.subscription.2', { defaultValue: "Premium quality" }),
-          t('instrumentalFeatures.subscription.3', { defaultValue: "Priority queue" })
-        ];
+        return ["Up to 5 instrumental tracks", "Custom arrangements", "Premium quality", "Priority queue"];
       default:
         return [];
+    }
+  };
     }
   };
 
