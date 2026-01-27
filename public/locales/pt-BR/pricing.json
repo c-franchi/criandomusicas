@@ -6,24 +6,32 @@
     "included": "Incluso",
     "notIncluded": "Não incluso"
   },
-  "cta": "Escolher Plano",
+  "cta": "Quero esse plano",
+  "ctaCredits": "Quero {{credits}} créditos",
   "comparison": {
     "title": "Compare os Planos",
     "subtitle": "Veja o que cada plano oferece"
   },
   "plans": {
-    "basic": {
-      "name": "Básico",
-      "description": "Perfeito para começar"
+    "single": {
+      "name": "Música Única",
+      "description": "Para momentos especiais"
     },
-    "standard": {
-      "name": "Padrão",
-      "description": "O mais escolhido"
+    "package": {
+      "name": "Pacote 3 Músicas",
+      "description": "Ideal para criativos"
     },
-    "premium": {
-      "name": "Premium",
-      "description": "Experiência completa"
+    "subscription": {
+      "name": "Pacote 5 Músicas",
+      "description": "Para quem cria muito"
     }
+  },
+  "instrumental": {
+    "single": "Trilha instrumental única",
+    "package": "Trilhas para projetos",
+    "subscription": "Trilhas ilimitadas",
+    "discount": "🎹 Músicas instrumentais com 20% de desconto!",
+    "discountBadge": "-20%"
   },
   "features_list": {
     "song": "Música personalizada",
@@ -32,13 +40,112 @@
     "cover": "Capa do álbum",
     "video": "Vídeo com letra",
     "priority": "Entrega prioritária",
-    "instrumental": "Versão instrumental"
+    "instrumentalVersion": "Versão instrumental"
   },
+  "toggle": {
+    "vocal": "Com Voz",
+    "instrumental": "Instrumental"
+  },
+  "section": {
+    "giftsTitle": "🎁 Para Presentes e Momentos Especiais",
+    "giftsSubtitle": "Planos Avulsos",
+    "giftsDescription": "Ideal para presentes únicos: aniversários, casamentos, homenagens. Créditos que nunca expiram!",
+    "creatorTitle": "🎬 Para Criadores de Conteúdo",
+    "creatorSubtitle": "Planos de Assinatura Mensal",
+    "creatorDescription": "Músicas originais em volume para YouTube, TikTok, Reels e Podcasts. Sem prompts complexos, sem edição - você descreve, nós criamos.",
+    "instrumentalCreatorDiscount": "🎹 Trilhas instrumentais com 20% de desconto!"
+  },
+  "badges": {
+    "musics": "{{count}} músicas",
+    "musicsPerMonth": "{{count}} músicas/mês",
+    "promo": "🔥 PROMOÇÃO",
+    "noExpiry": "Use quando quiser, sem prazo!",
+    "renewsMonthly": "Créditos renovam mensalmente",
+    "savings": "Economia de {{percent}}% ({{amount}})"
+  },
+  "pricePerMusic": "= {{price}} por música",
   "creator": {
     "title": "Planos Creator",
     "subtitle": "Para quem quer criar músicas regularmente",
     "monthly": "Mensal",
     "yearly": "Anual",
-    "savePercent": "Economize {{percent}}%"
-  }
+    "savePercent": "Economize {{percent}}%",
+    "subscribe": "Assinar {{plan}}",
+    "features": {
+      "curatedLyrics": "Letras Curadas",
+      "curatedLyricsDesc": "Identidade musical consistente",
+      "readyToPost": "Pronto para Postar",
+      "readyToPostDesc": "Formatos 30s, 60s, completo",
+      "commercialUse": "Uso Comercial",
+      "commercialUseDesc": "Monetize sem preocupações",
+      "humanSupport": "Suporte Humano",
+      "humanSupportDesc": "Aprovação e ajustes"
+    },
+    "whyUs": {
+      "title": "Por que usar Criando Músicas em vez de ferramentas genéricas?",
+      "noPrompts": "Sem Prompts Técnicos",
+      "noPromptsDesc": "Você descreve o que quer, nós criamos",
+      "lyricsAndMusic": "Letra + Música Prontas",
+      "lyricsAndMusicDesc": "Não é geração bruta - é conteúdo curado",
+      "readyToPublish": "Pronto para Publicar",
+      "readyToPublishDesc": "Direto do seu painel para as redes"
+    }
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "questions": [
+      {
+        "q": "O que são créditos de música?",
+        "a": "Cada crédito permite criar 1 música completa. Nos pacotes avulsos, os créditos nunca expiram. Nas assinaturas Creator, renovam mensalmente."
+      },
+      {
+        "q": "Posso usar as músicas em vídeos monetizados?",
+        "a": "Sim! As músicas criadas são 100% originais e você tem todos os direitos para uso comercial, incluindo monetização no YouTube, TikTok e Instagram."
+      },
+      {
+        "q": "Os créditos da assinatura acumulam?",
+        "a": "Não. Os créditos das assinaturas Creator renovam mensalmente e não acumulam. Se você prefere créditos que nunca expiram, escolha os pacotes avulsos."
+      },
+      {
+        "q": "Posso cancelar minha assinatura?",
+        "a": "Sim, você pode cancelar a qualquer momento. Você continua com acesso até o fim do período pago e pode usar seus créditos restantes."
+      },
+      {
+        "q": "Qual a diferença entre Avulso e Assinatura?",
+        "a": "Avulso: Ideal para presentes únicos. Créditos nunca expiram.\n\nAssinatura Creator: Ideal para criadores de conteúdo que precisam de músicas em volume todo mês, com preço unitário muito mais baixo."
+      }
+    ]
+  },
+  "customLyric": {
+    "badge": "Novidade!",
+    "title": "Já Tem Sua Letra Pronta?",
+    "description": "Traga sua própria composição e nós transformamos em música profissional por um preço especial!",
+    "specialPrice": "Preço Especial",
+    "cta": "Usar Minha Letra",
+    "discount": "{{percent}}% de desconto!"
+  },
+  "footer": {
+    "guarantee": "🎵 Garantia de satisfação de 100%",
+    "delivery": "Todos os planos incluem entrega em até 48h diretamente na plataforma e suporte técnico especializado",
+    "back": "← Voltar ao início",
+    "payment": "💳 Aceitamos Pix, cartão de crédito e débito",
+    "satisfaction": "Garantia de satisfação."
+  },
+  "errors": {
+    "loginRequired": "Você precisa estar logado para escolher um plano.",
+    "saveFailed": "Não foi possível salvar sua escolha. Tente novamente."
+  },
+  "toasts": {
+    "planSelected": "Plano selecionado!",
+    "subscriptionSuccess": "🎉 Assinatura ativada!",
+    "subscriptionDescription": "Seu plano {{plan}} está ativo. Comece a criar!",
+    "loginNeeded": "Login necessário",
+    "loginNeededDescription": "Faça login para assinar um plano Creator."
+  },
+  "seo": {
+    "title": "Planos e Preços",
+    "description": "Escolha o plano ideal para criar sua música personalizada. Opções a partir de R$ 47,90 com entrega em até 48h. Pacotes para músicas vocais e instrumentais."
+  },
+  "noContract": "Sem contrato • Cancele quando quiser",
+  "choosePlan": "Escolha o plano ideal para você e comece a criar sua música personalizada agora."
 }

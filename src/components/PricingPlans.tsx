@@ -6,7 +6,7 @@ import { Check, Zap, Crown, Music } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import PlanTypeToggle from "@/components/PlanTypeToggle";
-
+import { useTranslation } from "react-i18next";
 interface PricingPlan {
   id: string;
   name: string;
@@ -42,6 +42,7 @@ const getInstrumentalFeatures = (planId: string): string[] => {
 
 const PricingPlans = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('pricing');
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -147,16 +148,11 @@ const PricingPlans = () => {
   };
 
   const getButtonText = (planId: string) => {
-    switch (planId) {
-      case "single":
-        return "Quero esse plano";
-      case "package":
-        return "Quero esse plano";
-      case "subscription":
-        return "Quero esse plano";
-      default:
-        return "Quero esse plano";
+    const credits = planId === 'subscription' ? 5 : planId === 'package' ? 3 : 1;
+    if (credits > 1) {
+      return t('ctaCredits', { credits });
     }
+    return t('cta');
   };
 
   // Get matching instrumental plan for a vocal plan
@@ -216,13 +212,13 @@ const PricingPlans = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
           <h2 className="text-4xl font-bold gradient-text mb-4">
-            Escolha a melhor forma de criar sua música
+            {t('title')}
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-2">
-            Sem contrato • Cancele quando quiser
+            {t('noContract')}
           </p>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-            Escolha o plano ideal para você e comece a criar sua música personalizada agora.
+            {t('choosePlan')}
           </p>
           
           {/* Toggle Vocal/Instrumental */}
@@ -234,7 +230,7 @@ const PricingPlans = () => {
           
           {isInstrumental && (
             <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
-              🎹 Músicas instrumentais com 20% de desconto!
+              {t('instrumental.discount')}
             </Badge>
           )}
         </div>
@@ -252,7 +248,7 @@ const PricingPlans = () => {
               {plan.is_popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                   <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-1">
-                    Mais Popular
+                    {t('popular')}
                   </Badge>
                 </div>
               )}
@@ -260,7 +256,7 @@ const PricingPlans = () => {
               {!isInstrumental && plan.price_promo_cents && (
                 <div className="absolute -top-3 right-4">
                   <Badge className="bg-destructive text-destructive-foreground px-3 py-1 animate-pulse">
-                    🔥 PROMOÇÃO
+                    {t('badges.promo')}
                   </Badge>
                 </div>
               )}
@@ -268,7 +264,7 @@ const PricingPlans = () => {
               {isInstrumental && (
                 <div className="absolute -top-3 right-4">
                   <Badge className="bg-accent text-accent-foreground px-3 py-1">
-                    -20%
+                    {t('instrumental.discountBadge')}
                   </Badge>
                 </div>
               )}
@@ -307,9 +303,9 @@ const PricingPlans = () => {
                 </div>
                 
                 <CardDescription className="mt-2 text-muted-foreground">
-                  {plan.id === "single" && (isInstrumental ? "Trilha instrumental única" : "Para momentos especiais")}
-                  {plan.id === "package" && (isInstrumental ? "Trilhas para projetos" : "Ideal para criativos")}
-                  {plan.id === "subscription" && (isInstrumental ? "Trilhas ilimitadas" : "Para quem cria muito")}
+                  {plan.id === "single" && (isInstrumental ? t('instrumental.single') : t('plans.single.description'))}
+                  {plan.id === "package" && (isInstrumental ? t('instrumental.package') : t('plans.package.description'))}
+                  {plan.id === "subscription" && (isInstrumental ? t('instrumental.subscription') : t('plans.subscription.description'))}
                 </CardDescription>
               </CardHeader>
 
@@ -345,10 +341,10 @@ const PricingPlans = () => {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-4">
-            💳 Aceitamos Pix, cartão de crédito e débito
+            {t('footer.payment')}
           </p>
           <p className="text-sm text-muted-foreground">
-            {isInstrumental ? "🎹 Músicas instrumentais com 20% de desconto" : "Garantia de satisfação."}
+            {isInstrumental ? t('instrumental.discount') : t('footer.satisfaction')}
           </p>
         </div>
       </div>

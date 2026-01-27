@@ -1,36 +1,79 @@
 {
   "title": "My Orders",
   "subtitle": "Track your personalized songs",
+  "loading": "Loading your orders...",
   "empty": {
     "title": "No orders yet",
-    "subtitle": "Create your first personalized song!",
-    "cta": "Create Song"
+    "subtitle": "Create your first personalized song",
+    "cta": "Start Now"
   },
   "order": {
     "status": "Status",
     "date": "Order date",
     "plan": "Plan",
-    "view": "View details",
+    "view": "View Details",
     "track": "Track",
-    "listen": "Listen to song"
+    "listen": "Listen to song",
+    "delete": "Delete order",
+    "createdAt": "Created on {{date}}",
+    "style": "Style",
+    "type": "Type"
   },
   "statuses": {
     "DRAFT": "Draft",
-    "AWAITING_PAYMENT": "Awaiting payment",
+    "AWAITING_PAYMENT": "Awaiting Payment",
     "PAID": "Paid",
-    "BRIEFING_COMPLETE": "Briefing complete",
-    "LYRICS_PENDING": "Lyrics pending",
-    "LYRICS_GENERATED": "Lyrics generated",
-    "LYRICS_APPROVED": "Lyrics approved",
-    "MUSIC_GENERATING": "Generating music",
-    "MUSIC_READY": "Music ready",
+    "BRIEFING_COMPLETE": "Briefing Complete",
+    "LYRICS_PENDING": "Generating Lyrics",
+    "LYRICS_GENERATED": "Lyrics Generated",
+    "LYRICS_APPROVED": "Lyrics Approved",
+    "MUSIC_GENERATING": "In Production",
+    "MUSIC_READY": "Music Ready",
     "COMPLETED": "Completed",
     "CANCELLED": "Cancelled"
+  },
+  "statusesInstrumental": {
+    "LYRICS_PENDING": "Preparing Production",
+    "LYRICS_GENERATED": "Preparing Production",
+    "LYRICS_APPROVED": "Ready for Production"
   },
   "filters": {
     "all": "All",
     "pending": "Pending",
     "completed": "Completed"
+  },
+  "badges": {
+    "customLyric": "📝 Own Lyrics",
+    "instrumental": "🎹 Instrumental"
+  },
+  "buttons": {
+    "newSong": "Create New Song",
+    "home": "Back to Home",
+    "install": "Install App",
+    "profile": "My Profile",
+    "admin": "Admin Panel"
+  },
+  "deleteDialog": {
+    "title": "Delete order?",
+    "description": "This action cannot be undone. The order will be permanently removed.",
+    "cancel": "Cancel",
+    "confirm": "Delete"
+  },
+  "toasts": {
+    "newOrder": "🎵 New order created!",
+    "newOrderDesc": "Your order has been added to the list.",
+    "lyricsReady": "✨ Lyrics ready!",
+    "lyricsReadyDesc": "Your song lyrics have been generated.",
+    "musicReady": "🎵 Music ready!",
+    "musicReadyDesc": "Your music is available for download!",
+    "paymentConfirmed": "✅ Payment confirmed!",
+    "paymentConfirmedDesc": "We're generating your song lyrics.",
+    "deleteSuccess": "Order deleted",
+    "deleteSuccessDesc": "The order has been successfully removed.",
+    "deleteError": "Error deleting order",
+    "loadError": "Error loading orders",
+    "subscriptionSuccess": "🎉 Subscription Activated!",
+    "subscriptionDesc": "Your {{plan}} subscription is confirmed. Your credits are now available!"
   },
   "profile": {
     "title": "My Profile",
