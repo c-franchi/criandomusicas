@@ -97,31 +97,32 @@
   },
   "pricePerMusic": "= {{price}} per song",
   "creator": {
-    "title": "Creator Plans",
-    "subtitle": "For those who want to create songs regularly",
-    "monthly": "Monthly",
-    "yearly": "Yearly",
-    "savePercent": "Save {{percent}}%",
-    "subscribe": "Subscribe {{plan}}",
+    "badge": "For Content Creators",
+    "title": "Original Music for Your",
+    "titleHighlight": "Content",
+    "description": "Forget complex prompts and manual editing. You describe, we create. Music ready for YouTube, TikTok, Reels and podcasts.",
+    "subdescription": "Unlike other AI platforms, here you don't need to master prompts or edit audio. Receive ready music, with curated lyrics and professional quality.",
     "features": {
       "curatedLyrics": "Curated Lyrics",
-      "curatedLyricsDesc": "Consistent musical identity",
-      "readyToPost": "Ready to Post",
-      "readyToPostDesc": "30s, 60s, full formats",
-      "commercialUse": "Commercial Use",
-      "commercialUseDesc": "Monetize worry-free",
+      "curatedLyricsDesc": "Consistent musical identity for your channel. Each lyric is unique and personalized.",
+      "readyCovers": "Ready Covers",
+      "readyCoversDesc": "Professional thumbnails included. Everything ready to publish directly in your videos.",
+      "shortFormats": "Short Formats",
+      "shortFormatsDesc": "Optimized for 30s, 60s and Reels/Shorts formats. Perfect for going viral.",
       "humanSupport": "Human Support",
-      "humanSupportDesc": "Approval and adjustments"
+      "humanSupportDesc": "Lyric approval and adjustments with our team. You have full control."
     },
-    "whyUs": {
-      "title": "Why use Criando Músicas instead of generic tools?",
-      "noPrompts": "No Technical Prompts",
-      "noPromptsDesc": "You describe what you want, we create",
-      "lyricsAndMusic": "Lyrics + Music Ready",
-      "lyricsAndMusicDesc": "Not raw generation - it's curated content",
-      "readyToPublish": "Ready to Publish",
-      "readyToPublishDesc": "Straight from your dashboard to social media"
-    }
+    "whyDifferent": {
+      "title": "Why are we different?",
+      "youDescribe": "You describe what you want.",
+      "weTakeCare": "We take care of everything: composition, production, mixing and delivery. No learning curve, no complex tools. Professional music in up to 48h."
+    },
+    "badges": {
+      "original": "100% Original",
+      "monetizable": "Monetizable"
+    },
+    "cta": "Explore Creator Plans",
+    "pricing": "Plans starting at $49.90/month • Cancel anytime"
   },
   "faq": {
     "title": "Frequently Asked Questions",

@@ -97,31 +97,32 @@
   },
   "pricePerMusic": "= {{price}} per canzone",
   "creator": {
-    "title": "Piani Creator",
-    "subtitle": "Per chi vuole creare canzoni regolarmente",
-    "monthly": "Mensile",
-    "yearly": "Annuale",
-    "savePercent": "Risparmia il {{percent}}%",
-    "subscribe": "Abbonati {{plan}}",
+    "badge": "Per Creatori di Contenuti",
+    "title": "Musica Originale per il Tuo",
+    "titleHighlight": "Contenuto",
+    "description": "Dimentica prompt complessi e editing manuale. Tu descrivi, noi creiamo. Musica pronta per YouTube, TikTok, Reels e podcast.",
+    "subdescription": "A differenza di altre piattaforme AI, qui non devi padroneggiare prompt o modificare audio. Ricevi musica pronta, con testi curati e qualità professionale.",
     "features": {
       "curatedLyrics": "Testi Curati",
-      "curatedLyricsDesc": "Identità musicale coerente",
-      "readyToPost": "Pronto da Pubblicare",
-      "readyToPostDesc": "Formati 30s, 60s, completo",
-      "commercialUse": "Uso Commerciale",
-      "commercialUseDesc": "Monetizza senza preoccupazioni",
+      "curatedLyricsDesc": "Identità musicale coerente per il tuo canale. Ogni testo è unico e personalizzato.",
+      "readyCovers": "Copertine Pronte",
+      "readyCoversDesc": "Thumbnail professionali incluse. Tutto pronto per pubblicare direttamente nei tuoi video.",
+      "shortFormats": "Formati Brevi",
+      "shortFormatsDesc": "Ottimizzato per 30s, 60s e formati Reels/Shorts. Perfetto per diventare virale.",
       "humanSupport": "Supporto Umano",
-      "humanSupportDesc": "Approvazione e modifiche"
+      "humanSupportDesc": "Approvazione testi e modifiche con il nostro team. Hai il controllo totale."
     },
-    "whyUs": {
-      "title": "Perché usare Criando Músicas invece di strumenti generici?",
-      "noPrompts": "Senza Prompt Tecnici",
-      "noPromptsDesc": "Tu descrivi cosa vuoi, noi creiamo",
-      "lyricsAndMusic": "Testi + Musica Pronti",
-      "lyricsAndMusicDesc": "Non è generazione grezza - è contenuto curato",
-      "readyToPublish": "Pronto per Pubblicare",
-      "readyToPublishDesc": "Direttamente dalla tua dashboard ai social"
-    }
+    "whyDifferent": {
+      "title": "Perché siamo diversi?",
+      "youDescribe": "Tu descrivi cosa vuoi.",
+      "weTakeCare": "Noi ci occupiamo di tutto: composizione, produzione, mixaggio e consegna. Nessuna curva di apprendimento, nessuno strumento complesso. Musica professionale in massimo 48h."
+    },
+    "badges": {
+      "original": "100% Originale",
+      "monetizable": "Monetizzabile"
+    },
+    "cta": "Scopri i Piani Creator",
+    "pricing": "Piani a partire da €49,90/mese • Annulla quando vuoi"
   },
   "faq": {
     "title": "Domande Frequenti",
