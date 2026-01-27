@@ -1,115 +1,151 @@
 
-# Plano de Correção: Dashboard Invisível
+# Plano de Correção: Sistema de Créditos Incompatíveis
 
 ## Problema Identificado
 
-A página Dashboard (`/dashboard`) está renderizando uma tela completamente branca (modo claro) ou preta (modo escuro) porque o conteúdo está invisível.
+O usuário possui **4 créditos instrumentais** mas tentou criar uma música de **Letra Própria** (que requer créditos vocais). O sistema funcionou tecnicamente correto (não permitiu usar créditos incompatíveis), porém a comunicação visual foi confusa:
 
-### Causa Raiz
-O componente Dashboard usa **Framer Motion** com animações que definem o estado inicial como `opacity: 0` (invisível). Se a animação não disparar corretamente (o que pode ocorrer com lazy loading ou se houver qualquer erro silencioso durante a montagem), o conteúdo permanece permanentemente invisível.
+- O banner mostra "4 músicas disponíveis" sem indicar que são **instrumentais**
+- O usuário não entendeu por que teve que pagar tendo créditos disponíveis
+- Não há nenhum aviso explicando a incompatibilidade
 
-```text
-┌─────────────────────────────────────────────────────┐
-│                    Dashboard.tsx                     │
-├─────────────────────────────────────────────────────┤
-│  motion.div (containerVariants)                      │
-│    initial="hidden" → opacity: 0 ← PROBLEMA!        │
-│    animate="visible" → opacity: 1                    │
-│                                                      │
-│    Se a transição falhar, conteúdo fica invisível   │
-└─────────────────────────────────────────────────────┘
+---
+
+## Alterações Necessárias
+
+### 1. Atualizar CreditsBanner para mostrar tipo de crédito
+
+**Arquivo:** `src/components/CreditsBanner.tsx`
+
+**Mudanças:**
+- Mostrar separadamente créditos vocais e instrumentais quando ambos existem
+- Adicionar ícones distintos (🎤 vocal, 🎹 instrumental)
+- Exibir badges coloridos por tipo
+
+**De:**
+```tsx
+<p className="font-medium text-foreground">
+  {totalAvailable} música{totalAvailable !== 1 ? 's' : ''} disponível{totalAvailable !== 1 ? 'is' : ''}
+</p>
 ```
 
-## Solução Proposta
-
-Modificar as animações para usar valores de opacidade que garantam visibilidade mínima, mesmo se a animação falhar:
-
-### 1. Ajustar Estado Inicial das Animações
-
-**Arquivo**: `src/pages/Dashboard.tsx`
-
-Alterar de:
+**Para:**
 ```tsx
-const containerVariants = {
-  hidden: { opacity: 0 },  // Completamente invisível
-  visible: { opacity: 1, ... }
-};
+<div className="font-medium text-foreground">
+  {totalVocal > 0 && (
+    <span className="mr-2">🎤 {totalVocal} vocal{totalVocal !== 1 ? 'is' : ''}</span>
+  )}
+  {totalInstrumental > 0 && (
+    <span>🎹 {totalInstrumental} instrumental{totalInstrumental !== 1 ? 'is' : ''}</span>
+  )}
+</div>
 ```
 
-Para:
+---
+
+### 2. Adicionar aviso no Checkout para créditos incompatíveis
+
+**Arquivo:** `src/pages/Checkout.tsx`
+
+**Mudanças:**
+- Quando o usuário tem créditos mas são de tipo incompatível, exibir um card de aviso explicando
+- Mostrar qual tipo de crédito ele tem vs qual precisa
+
+**Adicionar novo componente de aviso:**
 ```tsx
-const containerVariants = {
-  hidden: { opacity: 0.01 },  // Quase invisível, mas renderiza
-  visible: { opacity: 1, ... }
-};
+{/* Incompatible Credits Warning */}
+{!showPixSection && hasCredits && !isCreditsCompatible() && (
+  <Card className="border-amber-500/50 bg-amber-500/10">
+    <CardContent className="p-4">
+      <div className="flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5" />
+        <div>
+          <p className="font-medium text-amber-600">Créditos não compatíveis</p>
+          <p className="text-sm text-muted-foreground">
+            Você tem {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''} 
+            {activePackage?.plan_id.includes('instrumental') ? ' instrumental' : ' vocal'}
+            {totalAvailable !== 1 ? 'is' : ''}, 
+            mas este pedido requer crédito 
+            {order?.is_instrumental ? ' instrumental' : ' vocal'}.
+          </p>
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+)}
 ```
 
-Ou melhor ainda, usar uma abordagem mais segura com estados sempre visíveis:
+---
+
+### 3. Atualizar Briefing para avisar sobre incompatibilidade
+
+**Arquivo:** `src/pages/Briefing.tsx`
+
+**Mudanças:**
+- Na tela de seleção de plano, indicar quais opções são compatíveis com os créditos existentes
+- Adicionar badge "✓ Você tem créditos" nas opções compatíveis
+- Adicionar aviso "Requer pagamento" nas opções incompatíveis
+
+**Exemplo na seleção de plano:**
 ```tsx
-// Usar animações que não tornam o conteúdo completamente invisível
-const containerVariants = {
-  hidden: { opacity: 1 },  // Sempre visível
-  visible: { opacity: 1 }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0.3, y: 10 },  // Parcialmente visível
-  visible: { opacity: 1, y: 0 }
-};
-```
-
-### 2. Adicionar Fallback de Segurança
-
-Garantir que o container principal sempre tenha estilos visíveis como fallback:
-
-```tsx
-<motion.div 
-  className="max-w-4xl mx-auto"
-  variants={containerVariants}
-  initial="hidden"
-  animate="visible"
-  style={{ opacity: 1 }}  // Fallback CSS que o framer-motion sobrescreve
+<Button
+  variant="outline"
+  className={`h-auto py-4 px-4 justify-start text-left ${
+    hasVocalCredits ? 'border-green-500/50 hover:border-green-500' : ''
+  }`}
+  onClick={() => handlePlanSelection('single')}
 >
-```
-
-### 3. Alternativa: Remover Animação do Container Principal
-
-A solução mais segura é manter a animação apenas nos itens filhos, não no container:
-
-```tsx
-return (
-  <div className="min-h-screen bg-background py-12 px-6">
-    <div className="max-w-4xl mx-auto">  {/* Container sem motion */}
-      <NotificationBanner />
-      
-      <motion.div variants={headerVariants} initial="hidden" animate="visible">
-        {/* Header */}
-      </motion.div>
-      
-      {/* Outros elementos com animações individuais */}
+  <div className="flex items-center gap-3 w-full">
+    <span className="text-2xl">🎤</span>
+    <div className="flex-1">
+      <p className="font-semibold">Música Cantada</p>
+      <p className="text-sm text-muted-foreground">Com letra e vocal profissional</p>
     </div>
+    {hasVocalCredits ? (
+      <Badge className="bg-green-500/20 text-green-500 border-green-500/30">
+        ✓ Usar crédito
+      </Badge>
+    ) : (
+      <Badge variant="secondary">1 música</Badge>
+    )}
   </div>
-);
+</Button>
 ```
 
-## Alterações de Código
+---
 
-### Arquivo: `src/pages/Dashboard.tsx`
+### 4. Atualizar hook useCredits para expor totais por tipo
 
-1. **Remover animação do container principal** para garantir visibilidade
-2. **Manter animações individuais** nos elementos internos (header, cards, etc.)
-3. **Usar `initial` inline** em vez de variants para maior controle
+**Arquivo:** `src/hooks/useCredits.tsx`
 
-## Benefícios
+O hook já retorna `totalVocal` e `totalInstrumental`, só precisa garantir que os componentes usem esses valores.
 
-- Dashboard sempre visível, mesmo se animações falharem
-- Mantém efeitos visuais de entrada nos elementos individuais
-- Compatibilidade melhorada com lazy loading
-- Evita problemas de tela branca/preta
+---
 
-## Testes Recomendados
+### 5. Atualizar modal de confirmação de uso de crédito no Briefing
 
-Após implementação, verificar:
-- Dashboard carrega corretamente em modo claro e escuro
-- Animações de entrada funcionam nos cards e elementos
-- Página funciona corretamente após navegação de outras rotas
+**Arquivo:** `src/pages/Briefing.tsx`
+
+**Mudanças no modal de créditos (linhas ~2172-2198):**
+- Mostrar claramente o tipo de crédito que será usado
+- Adicionar ícone e cor correspondente ao tipo
+
+---
+
+## Resumo de Arquivos a Modificar
+
+| Arquivo | Tipo de Mudança |
+|---------|----------------|
+| `src/components/CreditsBanner.tsx` | Mostrar tipos separados (vocal/instrumental) |
+| `src/pages/Checkout.tsx` | Adicionar aviso de créditos incompatíveis |
+| `src/pages/Briefing.tsx` | Indicar compatibilidade na seleção de plano |
+
+---
+
+## Resultado Esperado
+
+Após a correção:
+1. O usuário verá "🎹 4 instrumentais" em vez de "4 músicas disponíveis"
+2. Ao escolher "Letra Própria", verá aviso de que precisa de crédito vocal
+3. No Checkout, verá explicação clara de por que não pode usar seus créditos
+4. Menos confusão e melhor experiência do usuário
