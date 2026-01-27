@@ -49,7 +49,41 @@
     "badge": "Real Examples",
     "swipeHint": "Swipe to see more →",
     "playButton": "Play",
-    "pauseButton": "Pause"
+    "pauseButton": "Pause",
+    "fallback": {
+      "sample1": { "title": "Tribute Song", "description": "A special tribute for an unforgettable moment", "style": "Pop", "occasion": "Birthday" },
+      "sample2": { "title": "Motivational Song", "description": "An inspiring track to lift your spirits", "style": "Rock", "occasion": "Motivational" },
+      "sample3": { "title": "Romantic Song", "description": "A beautiful melody to express love", "style": "Bossa Nova", "occasion": "Wedding" }
+    }
+  },
+  "videoService": {
+    "badge": "Additional Service",
+    "title": "Transform your music into",
+    "titleHighlight": "video",
+    "subtitle": "Besides the music, you can receive a personalized video, ready to share and move hearts even more.",
+    "cardTitle": "Personalized Video",
+    "startingAt": "starting at",
+    "cardDescription": "Choose one of the options below to create your video with professional editing",
+    "options": {
+      "5images": { "title": "5 Images", "description": "Slideshow with smooth transitions" },
+      "10images": { "title": "10 Images", "description": "More photos, more memories" },
+      "video": { "title": "1 Video of 2 min", "description": "Complete editing of your video" }
+    },
+    "features": {
+      "professional": "Professional editing with effects",
+      "transitions": "Cinematic transitions",
+      "sync": "Music synchronization",
+      "delivery": "Delivery within 48h"
+    },
+    "loopNotice": {
+      "title": "Longer songs?",
+      "description": "If your song is longer than the content sent, the images will loop until the end of the song, creating a continuous visual experience."
+    },
+    "availability": "Available for anyone — with or without music created on the platform",
+    "cta": "I want my music in video",
+    "otherPlans": "Other video plans",
+    "whatsappMessage": "Hi! I'd like to know about other personalized video plans.",
+    "specialProjects": "Special projects? Contact us on WhatsApp for custom quotes"
   },
   "testimonials": {
     "title": "What Our Clients Say",
