@@ -407,19 +407,22 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background py-12 px-6">
-      <motion.div 
-        className="max-w-4xl mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <div className="max-w-4xl mx-auto">
         {/* Notification Banner */}
-        <NotificationBanner />
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <NotificationBanner />
+        </motion.div>
 
         {/* Header */}
         <motion.div 
           className="flex items-center justify-between mb-8"
-          variants={headerVariants}
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -462,14 +465,20 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Credits Banner */}
-        <motion.div variants={itemVariants}>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+        >
           <CreditsBanner className="mb-6" />
         </motion.div>
 
         {/* New Order Button */}
         <motion.div 
           className="mb-8 text-center"
-          variants={itemVariants}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.2 }}
         >
           <Button asChild size="lg" className="hover:scale-105 transition-transform shadow-lg hover:shadow-primary/25">
             <Link to="/briefing">
@@ -480,12 +489,13 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Orders List */}
-        <motion.div 
-          className="space-y-6"
-          variants={containerVariants}
-        >
+        <div className="space-y-6">
           {orders.length === 0 ? (
-            <motion.div variants={itemVariants}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
               <Card className="p-8 text-center">
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
@@ -506,9 +516,10 @@ const Dashboard = () => {
             orders.map((order, index) => (
               <motion.div
                 key={order.id}
-                variants={itemVariants}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1 * index }}
                 whileHover={{ scale: 1.02, y: -2 }}
-                transition={{ duration: 0.2 }}
               >
                 <Link to={`/pedido/${order.id}`} className="block group">
                   <Card className="p-4 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
@@ -582,7 +593,7 @@ const Dashboard = () => {
               </motion.div>
             ))
           )}
-        </motion.div>
+        </div>
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={!!deleteOrderId} onOpenChange={() => setDeleteOrderId(null)}>
@@ -601,7 +612,7 @@ const Dashboard = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </motion.div>
+      </div>
     </div>
   );
 };
