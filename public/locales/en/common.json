@@ -107,7 +107,19 @@
     "listenSong": "🎵 Listen to my personalized song",
     "createYours": "Create yours too!",
     "errorLoading": "Error loading song",
-    "songNotFound": "Song not found"
+    "songNotFound": "Song not found",
+    "loading": "Loading song...",
+    "notFound": "Song not found",
+    "notFoundDesc": "This song is unavailable or the link has expired.",
+    "createOwn": "Create your own song",
+    "defaultTitle": "My Song",
+    "listenTo": "Listen to",
+    "personalizedMusic": "A personalized song created with love",
+    "style": "Style",
+    "coverOf": "Cover of",
+    "pause": "Pause",
+    "listen": "Listen Now",
+    "wantToCreate": "Want to create your own exclusive song too?"
   },
   "player": {
     "play": "Play",

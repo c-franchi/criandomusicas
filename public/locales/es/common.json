@@ -107,7 +107,19 @@
     "listenSong": "🎵 Escucha mi canción personalizada",
     "createYours": "¡Crea la tuya también!",
     "errorLoading": "Error al cargar canción",
-    "songNotFound": "Canción no encontrada"
+    "songNotFound": "Canción no encontrada",
+    "loading": "Cargando canción...",
+    "notFound": "Canción no encontrada",
+    "notFoundDesc": "Esta canción no está disponible o el enlace ha expirado.",
+    "createOwn": "Crea tu propia canción",
+    "defaultTitle": "Mi Canción",
+    "listenTo": "Escucha",
+    "personalizedMusic": "Una canción personalizada creada con amor",
+    "style": "Estilo",
+    "coverOf": "Portada de",
+    "pause": "Pausar",
+    "listen": "Escuchar Música",
+    "wantToCreate": "¿Quieres crear tu propia canción exclusiva también?"
   },
   "player": {
     "play": "Reproducir",
