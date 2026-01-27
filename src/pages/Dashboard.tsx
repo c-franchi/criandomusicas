@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -357,90 +358,159 @@ const Dashboard = () => {
     }
   };
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.4, ease: [0.4, 0, 0.2, 1] as const }
+    }
+  };
+
+  const headerVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: [0.4, 0, 0.2, 1] as const }
+    }
+  };
+
   if (loading || loadingOrders) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+        >
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Carregando seus pedidos...</p>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background py-12 px-6">
-      <div className="max-w-4xl mx-auto">
+      <motion.div 
+        className="max-w-4xl mx-auto"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {/* Notification Banner */}
         <NotificationBanner />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <motion.div 
+          className="flex items-center justify-between mb-8"
+          variants={headerVariants}
+        >
           <div className="text-center flex-1">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <Music className="w-8 h-8 text-primary" />
-              <h1 className="text-3xl font-bold">Meus Pedidos</h1>
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <Music className="w-8 h-8 text-primary" />
+              </motion.div>
+              <h1 className="text-3xl font-bold gradient-text">Meus Pedidos</h1>
             </div>
             <p className="text-muted-foreground">
               Acompanhe suas músicas personalizadas
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" asChild title="Voltar para Home">
+            <Button variant="outline" size="icon" asChild title="Voltar para Home" className="hover:scale-105 transition-transform">
               <Link to="/">
                 <Home className="w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild title="Instalar App">
+            <Button variant="outline" size="icon" asChild title="Instalar App" className="hover:scale-105 transition-transform">
               <Link to="/install">
                 <Download className="w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild>
+            <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
               <Link to="/perfil" title="Meu Perfil">
                 <User className="w-4 h-4" />
               </Link>
             </Button>
             {isAdmin && (
-              <Button variant="outline" size="icon" asChild>
+              <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
                 <Link to="/admin" title="Painel Admin">
                   <Settings className="w-4 h-4" />
                 </Link>
               </Button>
             )}
           </div>
-        </div>
+        </motion.div>
 
         {/* Credits Banner */}
-        <CreditsBanner className="mb-6" />
+        <motion.div variants={itemVariants}>
+          <CreditsBanner className="mb-6" />
+        </motion.div>
 
         {/* New Order Button */}
-        <div className="mb-8 text-center">
-          <Button asChild size="lg">
+        <motion.div 
+          className="mb-8 text-center"
+          variants={itemVariants}
+        >
+          <Button asChild size="lg" className="hover:scale-105 transition-transform shadow-lg hover:shadow-primary/25">
             <Link to="/briefing">
               <Music className="w-4 h-4 mr-2" />
               Criar Nova Música
             </Link>
           </Button>
-        </div>
+        </motion.div>
 
         {/* Orders List */}
-        <div className="space-y-6">
+        <motion.div 
+          className="space-y-6"
+          variants={containerVariants}
+        >
           {orders.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Nenhum pedido ainda</h3>
-              <p className="text-muted-foreground mb-4">
-                Crie sua primeira música personalizada
-              </p>
-              <Button asChild>
-                <Link to="/briefing">Começar Agora</Link>
-              </Button>
-            </Card>
+            <motion.div variants={itemVariants}>
+              <Card className="p-8 text-center">
+                <motion.div
+                  animate={{ y: [0, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                </motion.div>
+                <h3 className="text-xl font-semibold mb-2">Nenhum pedido ainda</h3>
+                <p className="text-muted-foreground mb-4">
+                  Crie sua primeira música personalizada
+                </p>
+                <Button asChild className="hover:scale-105 transition-transform">
+                  <Link to="/briefing">Começar Agora</Link>
+                </Button>
+              </Card>
+            </motion.div>
           ) : (
-            orders.map((order) => (
-              <Link key={order.id} to={`/pedido/${order.id}`} className="block group">
-                <Card className="p-4 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
+            orders.map((order, index) => (
+              <motion.div
+                key={order.id}
+                variants={itemVariants}
+                whileHover={{ scale: 1.02, y: -2 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Link to={`/pedido/${order.id}`} className="block group">
+                  <Card className="p-4 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
                   {/* Mobile-first layout */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                     <div className="flex-1 min-w-0">
@@ -508,9 +578,10 @@ const Dashboard = () => {
                   )}
                 </Card>
               </Link>
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={!!deleteOrderId} onOpenChange={() => setDeleteOrderId(null)}>
@@ -529,7 +600,7 @@ const Dashboard = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
+      </motion.div>
     </div>
   );
 };
