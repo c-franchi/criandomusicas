@@ -72,6 +72,7 @@ interface ReviewData {
 
 const OrderDetails = () => {
   const { t, i18n } = useTranslation('dashboard');
+  const { t: tc } = useTranslation('common');
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminRole(user?.id);
@@ -238,9 +239,7 @@ const OrderDetails = () => {
     if (!track?.audio_url) return;
     
     // Get the song title - prioritize approved lyrics title, then instrumental name
-    const songTitle = order?.is_instrumental 
-      ? `Instrumental ${order?.music_type || 'Personalizado'}`
-      : (lyrics.find(l => l.is_approved)?.title || 'Minha Música');
+    const songTitle = getSongTitle();
     
     // Sanitize filename: remove special characters and replace spaces with hyphens
     const sanitizedTitle = songTitle
@@ -268,9 +267,9 @@ const OrderDetails = () => {
       return order.song_title;
     }
     if (order?.is_instrumental) {
-      return `Instrumental ${order?.music_type || 'Personalizado'}`;
+      return `${t('badges.instrumental').replace('🎹 ', '')} ${order?.music_type || ''}`.trim();
     }
-    return lyrics.find(l => l.is_approved)?.title || 'Minha Música Personalizada';
+    return lyrics.find(l => l.is_approved)?.title || t('orderDetails.music.title');
   };
 
   const getShareUrl = () => `https://criandomusicas.com.br/m/${orderId}`;
@@ -294,7 +293,7 @@ const OrderDetails = () => {
     trackShare('whatsapp');
     const title = getSongTitle();
     const shareUrl = getShareUrl();
-    const text = `🎵 Ouça minha música personalizada: ${title}\n\n🎧 Escute aqui:\n${shareUrl}`;
+    const text = `🎵 ${tc('share.listenSong')}: ${title}\n\n🎧 ${shareUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
@@ -315,7 +314,7 @@ const OrderDetails = () => {
   const shareAll = async () => {
     const title = getSongTitle();
     const shareUrl = getShareUrl();
-    const text = `🎵 Ouça minha música personalizada: ${title}\n\n🎧 Escute aqui: ${shareUrl}`;
+    const text = `🎵 ${tc('share.listenSong')}: ${title}\n\n🎧 ${shareUrl}`;
     
     // Try native share API first
     if (navigator.share) {
@@ -323,7 +322,7 @@ const OrderDetails = () => {
         trackShare('native');
         await navigator.share({
           title: `🎵 ${title}`,
-          text: `Ouça minha música personalizada: ${title}`,
+          text: `${tc('share.listenSong')}: ${title}`,
           url: shareUrl
         });
         return;
@@ -399,12 +398,12 @@ const OrderDetails = () => {
               </h1>
               {isInstrumental && (
                 <Badge className="bg-purple-500/20 text-purple-600 border-purple-500/30">
-                  🎹 Instrumental
+                  {t('badges.instrumental')}
                 </Badge>
               )}
             </div>
             <p className="text-sm text-muted-foreground">
-              {order.music_style} • Pedido #{orderId?.slice(0, 8)}
+              {order.music_style} • {t('orderTracking.order')} #{orderId?.slice(0, 8)}
             </p>
           </div>
         </div>
@@ -577,14 +576,14 @@ const OrderDetails = () => {
               
               {order.solo_instrument && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Solo de instrumento:</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('orderTracking.soloInstrument')}:</p>
                   <p className="font-medium">{order.solo_instrument} ({order.solo_moment || 'meio'})</p>
                 </div>
               )}
               
               {order.instrumentation_notes && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-1">Observações:</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('orderTracking.instrumentNotes')}:</p>
                   <p className="text-sm bg-muted p-3 rounded-lg">{order.instrumentation_notes}</p>
                 </div>
               )}
@@ -638,7 +637,7 @@ const OrderDetails = () => {
               <Button asChild variant="outline" className="w-full justify-start gap-2">
                 <Link to={`/video-checkout/${orderId}`}>
                   <Video className="w-4 h-4" />
-                  Criar Vídeo Personalizado
+                  {t('orderTracking.personalizedVideo')}
                   <Badge variant="secondary" className="ml-auto text-xs">R$ 50</Badge>
                 </Link>
               </Button>
@@ -677,7 +676,7 @@ const OrderDetails = () => {
                 </p>
               </div>
               <div>
-                <p className="text-muted-foreground">Valor</p>
+                <p className="text-muted-foreground">{t('orderTracking.amount')}</p>
                 <p className="font-medium">
                   R$ {(order.amount / 100).toFixed(2).replace('.', ',')}
                 </p>

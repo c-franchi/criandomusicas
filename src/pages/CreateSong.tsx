@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PronunciationModal from "@/components/PronunciationModal";
+import { useTranslation } from "react-i18next";
 
 interface LyricOption {
   id: string;
@@ -48,6 +49,8 @@ interface Pronunciation {
 type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
 
 const CreateSong = () => {
+  const { t } = useTranslation('dashboard');
+  const { t: tc } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user, loading: authLoading } = useAuth();
@@ -118,7 +121,7 @@ const CreateSong = () => {
       
       // Verificar se pertence ao usuário
       if (orderData.user_id !== user?.id) {
-        toast.error("Este pedido não pertence a você");
+        toast.error(t('createSong.orderNotYours'));
         navigate('/dashboard');
         return;
       }
@@ -131,7 +134,7 @@ const CreateSong = () => {
         const customLyric: LyricOption = {
           id: 'custom',
           version: 'A',
-          title: orderData.song_title || 'Minha Letra',
+          title: orderData.song_title || t('createSong.myLetter'),
           body: orderData.story || ''
         };
         setLyrics([customLyric]);
@@ -164,7 +167,7 @@ const CreateSong = () => {
         
         // Ir direto para a etapa de edição/aprovação
         setStep("editing");
-        toast.info("Revise sua letra e aprove para produção");
+        toast.info(t('createSong.reviewYourLyric'));
         return;
       }
 
@@ -205,19 +208,19 @@ const CreateSong = () => {
         const existingLyrics: LyricOption[] = lyricsData.map((l, idx) => ({
           id: l.id,
           version: l.version || String.fromCharCode(65 + idx),
-          title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+          title: l.title || `${t('createSong.version', { version: String.fromCharCode(65 + idx) })}`,
           body: l.body || ""
         }));
         setLyrics(existingLyrics);
         setStep("select");
-        toast.success("Suas letras estão prontas!", {
-          description: "Escolha entre as versões criadas para você"
+        toast.success(t('createSong.lyricsReady'), {
+          description: t('createSong.chooseVersions')
         });
       } else {
         // Aguardar letras (podem estar sendo geradas)
         setStep("generating");
-        toast.info("Aguardando letras...", {
-          description: "Suas letras estão sendo geradas"
+        toast.info(t('createSong.waitingLyrics'), {
+          description: t('createSong.lyricsBeingGenerated')
         });
         
         // Poll a cada 3 segundos por até 60 segundos
@@ -236,16 +239,16 @@ const CreateSong = () => {
             const existingLyrics: LyricOption[] = newLyrics.map((l, idx) => ({
               id: l.id,
               version: l.version || String.fromCharCode(65 + idx),
-              title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+              title: l.title || `${t('createSong.version', { version: String.fromCharCode(65 + idx) })}`,
               body: l.body || ""
             }));
             setLyrics(existingLyrics);
             setStep("select");
-            toast.success("Letras prontas!");
+            toast.success(t('createSong.lyricsReadyToast'));
           } else if (attempts >= maxAttempts) {
             clearInterval(pollInterval);
-            toast.error("Letras ainda não disponíveis", {
-              description: "Tente atualizar a página em alguns segundos"
+            toast.error(t('createSong.lyricsNotAvailable'), {
+              description: t('createSong.tryRefresh')
             });
             setStep("loading");
           }
@@ -253,15 +256,15 @@ const CreateSong = () => {
       }
     } catch (error) {
       console.error("Erro ao carregar order:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-      toast.error("Erro ao carregar pedido", { description: errorMessage });
+      const errorMessage = error instanceof Error ? error.message : t('createSong.unknownError');
+      toast.error(t('createSong.loadOrderError'), { description: errorMessage });
       navigate('/dashboard');
     }
   };
 
   const generateLyrics = async (briefing: BriefingData) => {
     if (!user) {
-      toast.error("Você precisa estar logado");
+      toast.error(t('createSong.needLogin'));
       navigate('/auth');
       return;
     }
@@ -333,20 +336,20 @@ const CreateSong = () => {
       const generatedLyrics: LyricOption[] = data.lyrics.map((l: any, idx: number) => ({
         id: l.id || `lyric-${idx}`,
         version: String.fromCharCode(65 + idx), // A, B
-        title: l.title || `Versão ${String.fromCharCode(65 + idx)}`,
+        title: l.title || `${t('createSong.version', { version: String.fromCharCode(65 + idx) })}`,
         body: l.text || l.body || ""
       }));
 
       setLyrics(generatedLyrics);
       setStep("select");
-      toast.success("Letras geradas com sucesso!", {
-        description: "Escolha entre as 2 versões criadas para você"
+      toast.success(t('createSong.generationSuccess'), {
+        description: t('createSong.chooseVersionsCreated')
       });
 
     } catch (error) {
       console.error("Erro:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-      toast.error("Erro ao gerar letras", { description: errorMessage });
+      const errorMessage = error instanceof Error ? error.message : t('createSong.unknownError');
+      toast.error(t('createSong.generateError'), { description: errorMessage });
       setStep("loading");
     } finally {
       setLoading(false);
@@ -555,12 +558,12 @@ const CreateSong = () => {
 
   const handleRequestEdit = async () => {
     if (!orderId || !briefingData || !editInstructions.trim()) {
-      toast.error("Descreva as alterações desejadas");
+      toast.error(t('createSong.describeChanges'));
       return;
     }
 
     if (hasUsedModification) {
-      toast.error("Você já utilizou sua única modificação");
+      toast.error(t('createSong.alreadyUsedModification'));
       return;
     }
 
@@ -614,14 +617,14 @@ const CreateSong = () => {
       setEditInstructions("");
       setStep("editing-modified");
       
-      toast.success("Letra modificada gerada!", {
-        description: "Você pode escolher entre a versão original ou a modificada"
+      toast.success(t('createSong.modifiedLyricGenerated'), {
+        description: t('createSong.chooseOriginalOrModified')
       });
 
     } catch (error) {
       console.error("Erro:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
-      toast.error("Erro ao regenerar", { description: errorMessage });
+      const errorMessage = error instanceof Error ? error.message : t('createSong.unknownError');
+      toast.error(t('createSong.regenerateError'), { description: errorMessage });
       setStep("editing");
     } finally {
       setLoading(false);
@@ -635,10 +638,10 @@ const CreateSong = () => {
         <Card className="max-w-md w-full text-center p-8">
           <MusicLoadingSpinner 
             size="lg" 
-            message={step === "generating" ? "Criando suas letras..." : "Carregando..."}
+            message={step === "generating" ? t('createSong.generatingLyrics') : tc('loading')}
             description={step === "generating" 
-              ? "Nossa IA está criando 2 versões únicas baseadas na sua história. Isso pode levar alguns segundos."
-              : "Preparando seu briefing..."
+              ? t('createSong.generatingDescription')
+              : t('createSong.loadingBriefing')
             }
           />
         </Card>
