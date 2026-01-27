@@ -79,6 +79,22 @@ const MusicShare = () => {
     fetchTrack();
   }, [orderId]);
 
+  // Track analytics events
+  const trackEvent = async (eventType: 'play' | 'cta_click') => {
+    if (!orderId) return;
+    try {
+      await supabase.from('share_analytics').insert({
+        order_id: orderId,
+        event_type: eventType,
+        platform: 'web',
+        referrer: document.referrer || null,
+        user_agent: navigator.userAgent,
+      });
+    } catch (e) {
+      console.error('Track error:', e);
+    }
+  };
+
   const togglePlay = () => {
     if (!audioRef.current) return;
     
@@ -86,6 +102,10 @@ const MusicShare = () => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      // Track play event only on first play
+      if (!audioRef.current.played.length) {
+        trackEvent('play');
+      }
       audioRef.current.play();
       setIsPlaying(true);
     }
@@ -200,7 +220,12 @@ const MusicShare = () => {
             <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
               Quer criar sua própria música personalizada?
             </p>
-            <Button asChild variant="secondary" className="w-full h-10 sm:h-11">
+            <Button 
+              asChild 
+              variant="secondary" 
+              className="w-full h-10 sm:h-11"
+              onClick={() => trackEvent('cta_click')}
+            >
               <Link to="/">
                 Criar minha música
               </Link>
