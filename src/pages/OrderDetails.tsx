@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import ReviewForm from "@/components/ReviewForm";
 import ReactionVideoUpload from "@/components/ReactionVideoUpload";
+import { formatLocalizedDate } from "@/lib/i18n-format";
 
 interface OrderData {
   id: string;
@@ -69,6 +71,7 @@ interface ReviewData {
 }
 
 const OrderDetails = () => {
+  const { t, i18n } = useTranslation('dashboard');
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminRole(user?.id);
@@ -147,8 +150,8 @@ const OrderDetails = () => {
       } catch (err) {
         console.error('Error fetching order:', err);
         toast({
-          title: 'Erro ao carregar pedido',
-          description: 'Tente novamente mais tarde',
+          title: t('toasts.loadError'),
+          description: t('orderDetails.back'),
           variant: 'destructive'
         });
       } finally {
@@ -254,7 +257,7 @@ const OrderDetails = () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast({ title: 'Download iniciado!' });
+    toast({ title: t('orderDetails.music.download') + '!' });
   };
 
   // Get the actual song title for sharing
@@ -305,7 +308,7 @@ const OrderDetails = () => {
     trackShare('instagram');
     // Instagram doesn't have a direct share URL, copy link and open Instagram
     navigator.clipboard.writeText(getShareUrl());
-    toast({ title: 'Link copiado!', description: 'Cole no seu Instagram para compartilhar.' });
+    toast({ title: t('orderDetails.share.copied'), description: t('orderDetails.share.instagram') });
     window.open('https://www.instagram.com/', '_blank');
   };
 
@@ -332,7 +335,7 @@ const OrderDetails = () => {
     // Fallback: copy to clipboard
     trackShare('copy');
     navigator.clipboard.writeText(text);
-    toast({ title: 'Link copiado!', description: 'Compartilhe em suas redes sociais!' });
+    toast({ title: t('orderDetails.share.copied'), description: t('orderDetails.share.shareAll') });
   };
 
   if (authLoading || loading || adminLoading) {
@@ -340,7 +343,7 @@ const OrderDetails = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando detalhes...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -356,18 +359,18 @@ const OrderDetails = () => {
 
   const getStatusInfo = () => {
     const statusMap: Record<string, { text: string; progress: number; color: string }> = {
-      'DRAFT': { text: 'Rascunho', progress: 10, color: 'text-muted-foreground' },
-      'AWAITING_PAYMENT': { text: 'Aguardando Pagamento', progress: 15, color: 'text-orange-500' },
-      'LYRICS_PENDING': { text: 'Gerando Letras...', progress: 30, color: 'text-blue-500' },
-      'LYRICS_GENERATED': { text: 'Letras Prontas', progress: 45, color: 'text-purple-500' },
-      'LYRICS_APPROVED': { text: 'Letras Aprovadas', progress: 60, color: 'text-indigo-500' },
-      'MUSIC_GENERATING': { text: 'Produzindo Música...', progress: 75, color: 'text-yellow-500' },
-      'MUSIC_READY': { text: 'Música Pronta!', progress: 95, color: 'text-green-500' },
-      'COMPLETED': { text: 'Entregue', progress: 100, color: 'text-green-600' }
+      'DRAFT': { text: t('statuses.DRAFT'), progress: 10, color: 'text-muted-foreground' },
+      'AWAITING_PAYMENT': { text: t('statuses.AWAITING_PAYMENT'), progress: 15, color: 'text-orange-500' },
+      'LYRICS_PENDING': { text: t('statuses.LYRICS_PENDING'), progress: 30, color: 'text-blue-500' },
+      'LYRICS_GENERATED': { text: t('statuses.LYRICS_GENERATED'), progress: 45, color: 'text-purple-500' },
+      'LYRICS_APPROVED': { text: t('statuses.LYRICS_APPROVED'), progress: 60, color: 'text-indigo-500' },
+      'MUSIC_GENERATING': { text: t('statuses.MUSIC_GENERATING'), progress: 75, color: 'text-yellow-500' },
+      'MUSIC_READY': { text: t('statuses.MUSIC_READY'), progress: 95, color: 'text-green-500' },
+      'COMPLETED': { text: t('statuses.COMPLETED'), progress: 100, color: 'text-green-600' }
     };
 
     if (order.payment_status === 'AWAITING_PIX') {
-      return { text: 'Aguardando PIX', progress: 15, color: 'text-yellow-500' };
+      return { text: t('statuses.AWAITING_PAYMENT'), progress: 15, color: 'text-yellow-500' };
     }
 
     return statusMap[order.status] || { text: order.status, progress: 0, color: 'text-muted-foreground' };
@@ -423,7 +426,7 @@ const OrderDetails = () => {
                 <div>
                   <Badge className={statusInfo.color}>{statusInfo.text}</Badge>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {isMusicReady ? 'Sua música está pronta para ouvir!' : 'Acompanhe o progresso'}
+                    {isMusicReady ? t('orderDetails.music.ready') : t('orderTracking.orderProgress')}
                   </p>
                 </div>
               </div>
@@ -441,7 +444,7 @@ const OrderDetails = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-600">
                 <Music className="w-5 h-5" />
-                Sua Música
+                {t('orderDetails.music.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -450,7 +453,7 @@ const OrderDetails = () => {
                 {order.cover_url ? (
                   <img 
                     src={order.cover_url} 
-                    alt="Capa da música"
+                    alt={t('orderDetails.music.title')}
                     className="w-24 h-24 rounded-xl object-cover shadow-lg"
                   />
                 ) : (
@@ -468,7 +471,7 @@ const OrderDetails = () => {
                       className="gap-2 flex-1 min-w-[120px]"
                     >
                       {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      {isPlaying ? 'Pausar' : 'Ouvir'}
+                      {isPlaying ? t('orderDetails.music.pause') : t('orderDetails.music.play')}
                     </Button>
                     <Button 
                       onClick={downloadTrack}
@@ -477,7 +480,7 @@ const OrderDetails = () => {
                       className="gap-2 flex-1 min-w-[120px]"
                     >
                       <Download className="w-4 h-4" />
-                      Baixar
+                      {t('orderDetails.music.download')}
                     </Button>
                   </div>
                 </div>
@@ -485,7 +488,7 @@ const OrderDetails = () => {
 
               {/* Share Options */}
               <div className="pt-4 border-t border-border/50 space-y-3">
-                <p className="text-sm text-muted-foreground text-center mb-2">Compartilhar sua música:</p>
+                <p className="text-sm text-muted-foreground text-center mb-2">{t('orderDetails.share.title')}:</p>
                 <div className="grid grid-cols-3 gap-2">
                   <Button 
                     onClick={shareOnWhatsApp}
@@ -526,7 +529,7 @@ const OrderDetails = () => {
                   className="w-full gap-2"
                 >
                   <Share2 className="w-4 h-4" />
-                  Compartilhar em Todas
+                  {t('orderDetails.share.shareAll')}
                 </Button>
               </div>
             </CardContent>
@@ -557,12 +560,12 @@ const OrderDetails = () => {
           <Card className="border-purple-500/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-purple-600">
-                🎹 Instrumentação
+                🎹 {t('orderDetails.briefingFields.instruments')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm text-muted-foreground mb-2">Instrumentos selecionados:</p>
+                <p className="text-sm text-muted-foreground mb-2">{t('orderDetails.briefingFields.instruments')}:</p>
                 <div className="flex flex-wrap gap-2">
                   {order.instruments.map((instrument, idx) => (
                     <Badge key={idx} variant="secondary" className="bg-purple-500/10 text-purple-600">
@@ -595,7 +598,7 @@ const OrderDetails = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="w-5 h-5" />
-                Letra Aprovada
+                {t('orderDetails.lyrics.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -610,13 +613,13 @@ const OrderDetails = () => {
         {/* Actions */}
         <Card>
           <CardHeader>
-            <CardTitle>Ações</CardTitle>
+            <CardTitle>{t('orderDetails.sections.status')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Button asChild variant="outline" className="w-full justify-start gap-2">
               <Link to={`/acompanhar/${orderId}`}>
                 <Clock className="w-4 h-4" />
-                Acompanhar em Tempo Real
+                {t('orderTracking.title')}
                 <ExternalLink className="w-4 h-4 ml-auto" />
               </Link>
             </Button>
@@ -625,7 +628,7 @@ const OrderDetails = () => {
               <Button asChild className="w-full justify-start gap-2">
                 <Link to={`/criar-musica?orderId=${orderId}`}>
                   <Music className="w-4 h-4" />
-                  Escolher Letra
+                  {t('orderDetails.lyrics.approve')}
                   <ExternalLink className="w-4 h-4 ml-auto" />
                 </Link>
               </Button>
@@ -647,7 +650,7 @@ const OrderDetails = () => {
               className="w-full justify-start gap-2"
             >
               <Share2 className="w-4 h-4" />
-              Compartilhar nas Redes
+              {t('orderDetails.share.shareAll')}
             </Button>
           </CardContent>
         </Card>
@@ -655,22 +658,22 @@ const OrderDetails = () => {
         {/* Order Info */}
         <Card>
           <CardHeader>
-            <CardTitle>Detalhes do Pedido</CardTitle>
+            <CardTitle>{t('orderDetails.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-muted-foreground">Tipo</p>
+                <p className="text-muted-foreground">{t('orderDetails.briefingFields.musicType')}</p>
                 <p className="font-medium">{order.music_type}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Estilo</p>
+                <p className="text-muted-foreground">{t('orderDetails.briefingFields.style')}</p>
                 <p className="font-medium">{order.music_style}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Criado em</p>
+                <p className="text-muted-foreground">{t('order.date')}</p>
                 <p className="font-medium">
-                  {new Date(order.created_at).toLocaleDateString('pt-BR')}
+                  {formatLocalizedDate(new Date(order.created_at), i18n.language)}
                 </p>
               </div>
               <div>
@@ -683,7 +686,7 @@ const OrderDetails = () => {
             
             {order.story && (
               <div className="mt-4 pt-4 border-t">
-                <p className="text-muted-foreground text-sm mb-2">História</p>
+                <p className="text-muted-foreground text-sm mb-2">{t('orderDetails.briefingFields.story')}</p>
                 <p className="text-sm bg-muted p-3 rounded-lg">{order.story}</p>
               </div>
             )}

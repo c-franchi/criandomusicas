@@ -9,8 +9,40 @@
   "cta": "Voglio questo piano",
   "ctaCredits": "Voglio {{credits}} crediti",
   "comparison": {
-    "title": "Confronta I Piani",
-    "subtitle": "Scopri cosa offre ogni piano"
+    "title": "Quale opzione è ideale per te?",
+    "subtitle": "Scegli tra pacchetti singoli per occasioni speciali o abbonamento per produzione di contenuti in volume.",
+    "packages": {
+      "badge": "Pacchetti Singoli",
+      "title": "Regalo Unico e Speciale",
+      "description": "Perfetto per compleanni, matrimoni, omaggi e momenti speciali che meritano una canzone unica.",
+      "features": [
+        "Ideale per occasioni speciali",
+        "I crediti non scadono mai",
+        "2 opzioni di testo tra cui scegliere",
+        "Consegna in massimo 48h",
+        "Pacchetti da 1, 3 o 5 canzoni"
+      ],
+      "startingAt": "A partire da:",
+      "perSong": "per canzone",
+      "cta": "Vedi Pacchetti Singoli"
+    },
+    "subscription": {
+      "badge": "Abbonamento Creator",
+      "forCreators": "Per Creatori",
+      "title": "Contenuto in Volume",
+      "description": "Ideale per YouTubers, TikTokers e podcasters che hanno bisogno di più canzoni originali ogni mese.",
+      "features": [
+        "Canzoni mensili per YouTube, TikTok, Podcasts",
+        "Prezzo unitario fino al 60% inferiore",
+        "Formati ottimizzati (30s, 60s)",
+        "Supporto prioritario"
+      ],
+      "warning": "I crediti si rinnovano mensilmente",
+      "startingAt": "A partire da:",
+      "perMonth": "/mese",
+      "cta": "Abbonati Ora"
+    },
+    "footer": "💳 Accettiamo Pix, carta di credito e debito • Annulla quando vuoi"
   },
   "plans": {
     "single": {

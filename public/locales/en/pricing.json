@@ -9,8 +9,40 @@
   "cta": "Choose this plan",
   "ctaCredits": "Get {{credits}} credits",
   "comparison": {
-    "title": "Compare Plans",
-    "subtitle": "See what each plan offers"
+    "title": "Which option is ideal for you?",
+    "subtitle": "Choose between single packages for special occasions or subscription for volume content production.",
+    "packages": {
+      "badge": "Single Packages",
+      "title": "Unique and Special Gift",
+      "description": "Perfect for birthdays, weddings, tributes and special moments that deserve a unique song.",
+      "features": [
+        "Ideal for special occasions",
+        "Credits never expire",
+        "2 lyric options to choose from",
+        "Delivery in up to 48h",
+        "Packages of 1, 3 or 5 songs"
+      ],
+      "startingAt": "Starting at:",
+      "perSong": "per song",
+      "cta": "View Single Packages"
+    },
+    "subscription": {
+      "badge": "Creator Subscription",
+      "forCreators": "For Creators",
+      "title": "Content in Volume",
+      "description": "Ideal for YouTubers, TikTokers and podcasters who need multiple original songs every month.",
+      "features": [
+        "Monthly songs for YouTube, TikTok, Podcasts",
+        "Unit price up to 60% lower",
+        "Optimized formats (30s, 60s)",
+        "Priority support"
+      ],
+      "warning": "Credits renew monthly",
+      "startingAt": "Starting at:",
+      "perMonth": "/month",
+      "cta": "Subscribe Now"
+    },
+    "footer": "💳 We accept Pix, credit and debit card • Cancel anytime"
   },
   "plans": {
     "single": {
