@@ -45,11 +45,57 @@
   },
   "samples": {
     "title": "Ascolta Esempi",
-    "subtitle": "Scopri alcune delle canzoni che abbiamo creato"
+    "subtitle": "Scopri alcune delle canzoni che abbiamo creato",
+    "badge": "Esempi Reali",
+    "swipeHint": "Scorri per vedere di più →",
+    "playButton": "Riproduci",
+    "pauseButton": "Pausa"
   },
   "testimonials": {
     "title": "Cosa Dicono I Nostri Clienti",
-    "subtitle": "Storie vere di chi ha trasformato momenti in musica"
+    "subtitle": "Storie vere di chi ha trasformato momenti in musica",
+    "badge": "Testimonianze Reali",
+    "stats": {
+      "songs": "500+",
+      "songsLabel": "Canzoni Create",
+      "rating": "5.0★",
+      "ratingLabel": "Valutazione Media",
+      "satisfaction": "100%",
+      "satisfactionLabel": "Soddisfazione",
+      "delivery": "48h",
+      "deliveryLabel": "Tempo Medio"
+    },
+    "musicTypes": {
+      "tribute": "Omaggio",
+      "romantic": "Romantica",
+      "birthday": "Compleanno",
+      "wedding": "Matrimonio",
+      "mothers": "Festa della Mamma",
+      "fathers": "Festa del Papà"
+    }
+  },
+  "instrumental": {
+    "title": "Tracce",
+    "titleHighlight": "Strumentali",
+    "subtitle": "Musica senza voce, perfetta per video, podcast e progetti creativi",
+    "badge": "100% Strumentale",
+    "discount": "20% di sconto",
+    "discountBadge": "-20%",
+    "features": [
+      "Perfetto per video e podcast",
+      "Ideale per contenuti di sottofondo",
+      "Uso commerciale consentito",
+      "Consegna entro 48h"
+    ],
+    "cta": "Crea Traccia Strumentale",
+    "styles": {
+      "ambient": "Ambient",
+      "cinematic": "Cinematico",
+      "lofi": "Lo-fi",
+      "classical": "Classico",
+      "electronic": "Elettronico",
+      "jazz": "Jazz"
+    }
   },
   "whyUs": {
     "title": "Perché scegliere Criando Músicas?",

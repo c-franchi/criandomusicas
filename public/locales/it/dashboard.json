@@ -1,6 +1,7 @@
 {
   "title": "I Miei Ordini",
   "subtitle": "Segui le tue canzoni personalizzate",
+  "loading": "Caricamento dei tuoi ordini...",
   "empty": {
     "title": "Nessun ordine ancora",
     "subtitle": "Crea la tua prima canzone personalizzata!",
@@ -12,25 +13,67 @@
     "plan": "Piano",
     "view": "Vedi dettagli",
     "track": "Traccia",
-    "listen": "Ascolta canzone"
+    "listen": "Ascolta canzone",
+    "delete": "Elimina ordine",
+    "createdAt": "Creato il {{date}}",
+    "style": "Stile",
+    "type": "Tipo"
   },
   "statuses": {
     "DRAFT": "Bozza",
     "AWAITING_PAYMENT": "In attesa di pagamento",
     "PAID": "Pagato",
     "BRIEFING_COMPLETE": "Briefing completo",
-    "LYRICS_PENDING": "Testo in attesa",
+    "LYRICS_PENDING": "Generazione testo",
     "LYRICS_GENERATED": "Testo generato",
     "LYRICS_APPROVED": "Testo approvato",
-    "MUSIC_GENERATING": "Generazione musica",
+    "MUSIC_GENERATING": "In produzione",
     "MUSIC_READY": "Musica pronta",
     "COMPLETED": "Completato",
     "CANCELLED": "Annullato"
+  },
+  "statusesInstrumental": {
+    "LYRICS_PENDING": "Preparazione produzione",
+    "LYRICS_GENERATED": "Preparazione produzione",
+    "LYRICS_APPROVED": "Pronto per la produzione"
   },
   "filters": {
     "all": "Tutti",
     "pending": "In attesa",
     "completed": "Completati"
+  },
+  "badges": {
+    "customLyric": "📝 Testo Proprio",
+    "instrumental": "🎹 Strumentale"
+  },
+  "buttons": {
+    "newSong": "Crea Nuova Canzone",
+    "home": "Torna alla Home",
+    "install": "Installa App",
+    "profile": "Il Mio Profilo",
+    "admin": "Pannello Admin"
+  },
+  "deleteDialog": {
+    "title": "Eliminare ordine?",
+    "description": "Questa azione non può essere annullata. L'ordine sarà rimosso permanentemente.",
+    "cancel": "Annulla",
+    "confirm": "Elimina"
+  },
+  "toasts": {
+    "newOrder": "🎵 Nuovo ordine creato!",
+    "newOrderDesc": "Il tuo ordine è stato aggiunto alla lista.",
+    "lyricsReady": "✨ Testo pronto!",
+    "lyricsReadyDesc": "Il testo della tua canzone è stato generato.",
+    "musicReady": "🎵 Musica pronta!",
+    "musicReadyDesc": "La tua musica è disponibile per il download!",
+    "paymentConfirmed": "✅ Pagamento confermato!",
+    "paymentConfirmedDesc": "Stiamo generando il testo della tua canzone.",
+    "deleteSuccess": "Ordine eliminato",
+    "deleteSuccessDesc": "L'ordine è stato rimosso con successo.",
+    "deleteError": "Errore nell'eliminazione dell'ordine",
+    "loadError": "Errore nel caricamento degli ordini",
+    "subscriptionSuccess": "🎉 Abbonamento Attivato!",
+    "subscriptionDesc": "Il tuo abbonamento {{plan}} è confermato. I tuoi crediti sono ora disponibili!"
   },
   "profile": {
     "title": "Il Mio Profilo",
@@ -39,10 +82,103 @@
     "phone": "Telefono",
     "whatsapp": "WhatsApp",
     "save": "Salva modifiche",
+    "saving": "Salvataggio...",
+    "avatarUpload": "Cambia foto",
+    "avatarUploading": "Caricamento...",
+    "avatarSuccess": "Foto aggiornata!",
+    "avatarError": "Errore nel caricamento della foto",
     "tabs": {
       "profile": "Profilo",
       "credits": "Crediti",
-      "subscription": "Abbonamento"
+      "subscription": "Abbonamento",
+      "transfer": "Trasferisci"
+    },
+    "noCredits": "Non hai crediti disponibili.",
+    "buyCredits": "Acquista crediti",
+    "noSubscription": "Non hai un abbonamento attivo.",
+    "viewPlans": "Vedi piani",
+    "creditsRemaining": "{{count}} credito rimanente",
+    "creditsRemainingPlural": "{{count}} crediti rimanenti",
+    "expiresAt": "Scade il {{date}}",
+    "neverExpires": "Non scade mai"
+  },
+  "orderDetails": {
+    "title": "Dettagli Ordine",
+    "back": "Indietro",
+    "orderNumber": "Ordine #{{id}}",
+    "createdAt": "Creato il {{date}}",
+    "sections": {
+      "status": "Stato",
+      "briefing": "Briefing",
+      "lyrics": "Testo",
+      "music": "Musica",
+      "share": "Condividi",
+      "review": "Recensione"
+    },
+    "briefingFields": {
+      "musicType": "Tipo di Musica",
+      "style": "Stile Musicale",
+      "emotion": "Emozione",
+      "rhythm": "Ritmo",
+      "atmosphere": "Atmosfera",
+      "voiceType": "Tipo di Voce",
+      "instruments": "Strumenti",
+      "story": "Storia"
+    },
+    "lyrics": {
+      "title": "Testo della Canzone",
+      "version": "Versione {{version}}",
+      "approved": "Approvato",
+      "pending": "In attesa di approvazione",
+      "approve": "Approva questo testo",
+      "edit": "Richiedi modifiche",
+      "generating": "Generazione testo...",
+      "noLyrics": "Testo non ancora disponibile"
+    },
+    "music": {
+      "title": "La Tua Canzone",
+      "download": "Scarica canzone",
+      "play": "Riproduci",
+      "pause": "Pausa",
+      "generating": "La tua canzone è in produzione...",
+      "ready": "Canzone pronta!",
+      "notReady": "Canzone non ancora disponibile"
+    },
+    "share": {
+      "title": "Condividi",
+      "whatsapp": "WhatsApp",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "copyLink": "Copia link",
+      "shareAll": "Condividi ovunque",
+      "copied": "Link copiato!"
+    },
+    "review": {
+      "title": "Lascia la tua recensione",
+      "subtitle": "Il tuo feedback è molto importante per noi!",
+      "rating": "Valutazione",
+      "comment": "Commento (opzionale)",
+      "commentPlaceholder": "Raccontaci la tua esperienza...",
+      "allowSample": "Permetti che la mia canzone venga usata come esempio",
+      "submit": "Invia recensione",
+      "thanks": "Grazie per la tua recensione!",
+      "alreadyReviewed": "Hai già recensito questo ordine"
     }
+  },
+  "orderTracking": {
+    "title": "Traccia Ordine",
+    "timeline": {
+      "orderCreated": "Ordine creato",
+      "paymentReceived": "Pagamento ricevuto",
+      "lyricsGenerated": "Testo generato",
+      "lyricsApproved": "Testo approvato",
+      "musicProduction": "Musica in produzione",
+      "musicReady": "Musica pronta!",
+      "completed": "Ordine completato"
+    },
+    "current": "Passaggio attuale",
+    "completed": "Completato",
+    "pending": "In attesa",
+    "estimatedTime": "Tempo stimato: {{time}}"
   }
 }

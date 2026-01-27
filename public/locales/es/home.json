@@ -45,11 +45,57 @@
   },
   "samples": {
     "title": "Escucha Ejemplos",
-    "subtitle": "Conoce algunas de las canciones que ya creamos"
+    "subtitle": "Conoce algunas de las canciones que ya creamos",
+    "badge": "Ejemplos Reales",
+    "swipeHint": "Desliza para ver más →",
+    "playButton": "Reproducir",
+    "pauseButton": "Pausar"
   },
   "testimonials": {
     "title": "Lo Que Dicen Nuestros Clientes",
-    "subtitle": "Historias reales de quienes convirtieron momentos en música"
+    "subtitle": "Historias reales de quienes convirtieron momentos en música",
+    "badge": "Testimonios Reales",
+    "stats": {
+      "songs": "500+",
+      "songsLabel": "Canciones Creadas",
+      "rating": "5.0★",
+      "ratingLabel": "Calificación Promedio",
+      "satisfaction": "100%",
+      "satisfactionLabel": "Satisfacción",
+      "delivery": "48h",
+      "deliveryLabel": "Tiempo Promedio"
+    },
+    "musicTypes": {
+      "tribute": "Homenaje",
+      "romantic": "Romántica",
+      "birthday": "Cumpleaños",
+      "wedding": "Boda",
+      "mothers": "Día de las Madres",
+      "fathers": "Día de los Padres"
+    }
+  },
+  "instrumental": {
+    "title": "Pistas",
+    "titleHighlight": "Instrumentales",
+    "subtitle": "Música sin vocal, perfecta para videos, podcasts y proyectos creativos",
+    "badge": "100% Instrumental",
+    "discount": "20% de descuento",
+    "discountBadge": "-20%",
+    "features": [
+      "Perfecto para videos y podcasts",
+      "Ideal para contenido de fondo",
+      "Uso comercial liberado",
+      "Entrega en hasta 48h"
+    ],
+    "cta": "Crear Pista Instrumental",
+    "styles": {
+      "ambient": "Ambiente",
+      "cinematic": "Cinematográfico",
+      "lofi": "Lo-fi",
+      "classical": "Clásico",
+      "electronic": "Electrónico",
+      "jazz": "Jazz"
+    }
   },
   "whyUs": {
     "title": "¿Por qué elegir Criando Músicas?",

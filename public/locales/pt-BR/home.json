@@ -45,11 +45,57 @@
   },
   "samples": {
     "title": "Ouça Exemplos",
-    "subtitle": "Confira algumas das músicas que já criamos"
+    "subtitle": "Confira algumas das músicas que já criamos",
+    "badge": "Exemplos Reais",
+    "swipeHint": "Deslize para ver mais →",
+    "playButton": "Ouvir",
+    "pauseButton": "Pausar"
   },
   "testimonials": {
     "title": "O Que Dizem Nossos Clientes",
-    "subtitle": "Histórias reais de quem já transformou momentos em música"
+    "subtitle": "Histórias reais de quem já transformou momentos em música",
+    "badge": "Depoimentos Reais",
+    "stats": {
+      "songs": "500+",
+      "songsLabel": "Músicas Criadas",
+      "rating": "5.0★",
+      "ratingLabel": "Avaliação Média",
+      "satisfaction": "100%",
+      "satisfactionLabel": "Satisfação",
+      "delivery": "48h",
+      "deliveryLabel": "Tempo Médio"
+    },
+    "musicTypes": {
+      "tribute": "Homenagem",
+      "romantic": "Romântica",
+      "birthday": "Aniversário",
+      "wedding": "Casamento",
+      "mothers": "Dia das Mães",
+      "fathers": "Dia dos Pais"
+    }
+  },
+  "instrumental": {
+    "title": "Trilhas",
+    "titleHighlight": "Instrumentais",
+    "subtitle": "Músicas sem vocal, perfeitas para vídeos, podcasts e projetos criativos",
+    "badge": "100% Instrumental",
+    "discount": "20% de desconto",
+    "discountBadge": "-20%",
+    "features": [
+      "Perfeito para vídeos e podcasts",
+      "Ideal para conteúdo de fundo",
+      "Uso comercial liberado",
+      "Entrega em até 48h"
+    ],
+    "cta": "Criar Trilha Instrumental",
+    "styles": {
+      "ambient": "Ambiente",
+      "cinematic": "Cinematográfico",
+      "lofi": "Lo-fi",
+      "classical": "Clássico",
+      "electronic": "Eletrônico",
+      "jazz": "Jazz"
+    }
   },
   "whyUs": {
     "title": "Por que escolher Criando Músicas?",

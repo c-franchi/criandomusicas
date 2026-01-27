@@ -4,8 +4,8 @@
   "loading": "Loading your orders...",
   "empty": {
     "title": "No orders yet",
-    "subtitle": "Create your first personalized song",
-    "cta": "Start Now"
+    "subtitle": "Create your first personalized song!",
+    "cta": "Create Song"
   },
   "order": {
     "status": "Status",
@@ -82,10 +82,103 @@
     "phone": "Phone",
     "whatsapp": "WhatsApp",
     "save": "Save changes",
+    "saving": "Saving...",
+    "avatarUpload": "Change photo",
+    "avatarUploading": "Uploading...",
+    "avatarSuccess": "Photo updated!",
+    "avatarError": "Error uploading photo",
     "tabs": {
       "profile": "Profile",
       "credits": "Credits",
-      "subscription": "Subscription"
+      "subscription": "Subscription",
+      "transfer": "Transfer"
+    },
+    "noCredits": "You don't have any credits available.",
+    "buyCredits": "Buy credits",
+    "noSubscription": "You don't have an active subscription.",
+    "viewPlans": "View plans",
+    "creditsRemaining": "{{count}} credit remaining",
+    "creditsRemainingPlural": "{{count}} credits remaining",
+    "expiresAt": "Expires on {{date}}",
+    "neverExpires": "Never expires"
+  },
+  "orderDetails": {
+    "title": "Order Details",
+    "back": "Back",
+    "orderNumber": "Order #{{id}}",
+    "createdAt": "Created on {{date}}",
+    "sections": {
+      "status": "Status",
+      "briefing": "Briefing",
+      "lyrics": "Lyrics",
+      "music": "Music",
+      "share": "Share",
+      "review": "Review"
+    },
+    "briefingFields": {
+      "musicType": "Music Type",
+      "style": "Music Style",
+      "emotion": "Emotion",
+      "rhythm": "Rhythm",
+      "atmosphere": "Atmosphere",
+      "voiceType": "Voice Type",
+      "instruments": "Instruments",
+      "story": "Story"
+    },
+    "lyrics": {
+      "title": "Song Lyrics",
+      "version": "Version {{version}}",
+      "approved": "Approved",
+      "pending": "Awaiting approval",
+      "approve": "Approve these lyrics",
+      "edit": "Request changes",
+      "generating": "Generating lyrics...",
+      "noLyrics": "Lyrics not yet available"
+    },
+    "music": {
+      "title": "Your Song",
+      "download": "Download song",
+      "play": "Play",
+      "pause": "Pause",
+      "generating": "Your song is being produced...",
+      "ready": "Song ready!",
+      "notReady": "Song not yet available"
+    },
+    "share": {
+      "title": "Share",
+      "whatsapp": "WhatsApp",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "copyLink": "Copy link",
+      "shareAll": "Share everywhere",
+      "copied": "Link copied!"
+    },
+    "review": {
+      "title": "Leave your review",
+      "subtitle": "Your feedback is very important to us!",
+      "rating": "Rating",
+      "comment": "Comment (optional)",
+      "commentPlaceholder": "Tell us about your experience...",
+      "allowSample": "Allow my song to be used as a sample",
+      "submit": "Submit review",
+      "thanks": "Thank you for your review!",
+      "alreadyReviewed": "You have already reviewed this order"
     }
+  },
+  "orderTracking": {
+    "title": "Track Order",
+    "timeline": {
+      "orderCreated": "Order created",
+      "paymentReceived": "Payment received",
+      "lyricsGenerated": "Lyrics generated",
+      "lyricsApproved": "Lyrics approved",
+      "musicProduction": "Music in production",
+      "musicReady": "Music ready!",
+      "completed": "Order completed"
+    },
+    "current": "Current step",
+    "completed": "Completed",
+    "pending": "Pending",
+    "estimatedTime": "Estimated time: {{time}}"
   }
 }
