@@ -1,146 +1,234 @@
 
-# Correção: Créditos Creator Start Não Exibidos
+# Integrar Créditos da Assinatura Creator ao Sistema Principal
 
-## Diagnóstico Completo
+## Problema Identificado
 
-### Problema Identificado
-Os logs mostram repetidamente o erro:
-```
-[CHECK-CREATOR-SUBSCRIPTION] Invalid subscription period data - {}
-[CHECK-CREATOR-SUBSCRIPTION] ERROR - {"message":"Subscription period data is missing or invalid"}
-```
+O sistema possui dois mecanismos de créditos independentes:
 
-### Causa Raiz
-A função `check-creator-subscription` tenta acessar `creatorSub.current_period_start` e `creatorSub.current_period_end` diretamente do objeto retornado por `stripe.subscriptions.list()`. 
+| Sistema | Tabela/Fonte | Hook | Componentes |
+|---------|--------------|------|-------------|
+| Pacotes Avulsos | `user_credits` | `useCredits` | CreditsBanner, CreditsManagement, CreditTransfer, Briefing |
+| Assinatura Creator | Stripe API | `useCreatorSubscription` | CreatorSubscriptionManager, Hero (badge) |
 
-Na versão da API Stripe `2025-08-27.basil`, esses campos **não são incluídos** na resposta de listagem. Eles existem apenas:
-1. Dentro de `items.data[0].current_period_start/end` (nos itens da assinatura)
-2. Quando se faz `stripe.subscriptions.retrieve()` para obter a assinatura completa
+A usuária tem uma assinatura "Creator Start" com 50 créditos, mas:
+- Na aba "Créditos" mostra "0 músicas disponíveis"
+- No Dashboard mostra "Sem créditos disponíveis"
+- Na aba "Transferir" mostra "Você não tem créditos"
+- Ao criar música, não oferece a opção de usar crédito
 
-### Evidência
-Ao buscar a assinatura diretamente (`sub_1StzKREE1g2DASjfmN56ucMd`):
-- `items.data[0].current_period_start`: **1769470577** 
-- `items.data[0].current_period_end`: **1772148977**
-- Metadata `plan_type: 'creator'` está presente
+## Solucao
 
-A assinatura **existe e está ativa**, mas a função não consegue ler os dados de período.
-
----
-
-## Solução Proposta
-
-### Modificação na Edge Function `check-creator-subscription`
-
-Alterar a lógica para obter os dados de período de duas fontes alternativas:
-
-1. **Opção A (mais eficiente)**: Ler de `items.data[0]` que já vem na resposta da listagem
-2. **Opção B (fallback)**: Fazer um `retrieve()` da subscription se os campos estiverem ausentes
-
-**Código atual (linhas 89-102):**
-```typescript
-const planId = creatorSub.metadata?.plan_id || null;
-const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
-
-// Validate timestamps before converting
-const currentPeriodEnd = creatorSub.current_period_end;
-const currentPeriodStartTs = creatorSub.current_period_start;
-
-if (!currentPeriodEnd || !currentPeriodStartTs || ...) {
-  logStep("Invalid subscription period data", ...);
-  throw new Error("Subscription period data is missing or invalid");
-}
-```
-
-**Código corrigido:**
-```typescript
-const planId = creatorSub.metadata?.plan_id || null;
-const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
-
-// Get period data - try from subscription root first, then from items
-let currentPeriodEndTs = creatorSub.current_period_end;
-let currentPeriodStartTs = creatorSub.current_period_start;
-
-// Fallback: read from subscription items if not in root
-if (!currentPeriodEndTs || !currentPeriodStartTs) {
-  const firstItem = creatorSub.items?.data?.[0];
-  if (firstItem) {
-    currentPeriodEndTs = firstItem.current_period_end;
-    currentPeriodStartTs = firstItem.current_period_start;
-  }
-}
-
-// Ultimate fallback: retrieve full subscription
-if (!currentPeriodEndTs || !currentPeriodStartTs) {
-  logStep("Fetching full subscription details");
-  const fullSub = await stripe.subscriptions.retrieve(creatorSub.id);
-  currentPeriodEndTs = fullSub.current_period_end;
-  currentPeriodStartTs = fullSub.current_period_start;
-}
-
-if (!currentPeriodEndTs || !currentPeriodStartTs || ...) {
-  // Only throw after all fallbacks exhausted
-  throw new Error("Subscription period data is missing or invalid");
-}
-```
-
----
-
-## Verificação de Correções Anteriores
-
-### O que já foi implementado (e está correto):
-
-1. **Validação de timestamps** - Já existe, mas falha porque os dados não estão disponíveis
-2. **Contagem de créditos usados** - Query correta com status `.in('status', ['PAID', 'LYRICS_PENDING', ...])`  
-3. **Metadata da assinatura** - Está sendo setado corretamente no `create-creator-subscription`
-
-### O que falta corrigir:
-
-1. **Leitura de período da assinatura** - Precisa fallback para `items.data[0]` ou `retrieve()`
+Modificar o hook `useCredits` e a edge function `check-credits` para considerar AMBOS os sistemas de créditos, dando prioridade aos créditos da assinatura Creator.
 
 ---
 
 ## Arquivos a Modificar
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `supabase/functions/check-creator-subscription/index.ts` | Adicionar fallbacks para leitura de período |
+### 1. Edge Function `check-credits` 
+
+Adicionar lógica para verificar se o usuário tem assinatura Creator ativa e incluir esses créditos no total.
+
+**Lógica:**
+1. Buscar créditos da tabela `user_credits` (comportamento atual)
+2. **NOVO:** Chamar Stripe para verificar assinatura Creator ativa
+3. Se tiver assinatura:
+   - Calcular créditos restantes baseado em `credits_total` - pedidos do ciclo atual
+   - Retornar informação sobre a fonte ("subscription" vs "package")
+4. Somar totais de ambas as fontes
+
+### 2. Hook `useCredits`
+
+Atualizar interface para incluir informações de créditos de assinatura:
+- `subscriptionCredits` - créditos da assinatura Creator
+- `packageCredits` - créditos de pacotes avulsos
+- `totalAvailable` - soma de ambos
+
+### 3. Edge Function `use-credit`
+
+Modificar para aceitar créditos de assinatura:
+- Se o usuário tem assinatura, permitir uso mesmo sem registros em `user_credits`
+- Marcar o pedido com `plan_id` do plano Creator para contabilização correta
+
+### 4. Componentes UI (ajustes menores)
+
+- `CreditsBanner`: Mostrar créditos de assinatura quando disponíveis
+- `CreditsManagement`: Diferenciar créditos de assinatura vs pacotes
+- `CreditTransfer`: Créditos de assinatura **nao podem** ser transferidos (sao mensais e resetam)
 
 ---
 
-## Comportamento Esperado Após Correção
+## Fluxo Atualizado
 
-1. Usuário com assinatura Creator Start ativa acessa o dashboard
-2. `useCreatorSubscription` hook chama `check-creator-subscription`
-3. Função encontra a assinatura ativa no Stripe
-4. **NOVO**: Lê `current_period_start/end` de `items.data[0]` 
-5. Calcula créditos usados/restantes corretamente
-6. Retorna dados completos para o frontend
-7. `CreatorSubscriptionManager` exibe:
-   - Nome do plano (Creator Start)
-   - Créditos restantes (50 de 50)
-   - Data de renovação
-   - Botão de cancelar assinatura
+```text
++-------------------------+
+|    Usuario Logado       |
++------------+------------+
+             |
+             v
++-------------------------+
+|    check-credits        |
++------------+------------+
+             |
+     +-------+--------+
+     |                |
+     v                v
++----------+    +-----------+
+| user_    |    | Stripe    |
+| credits  |    | API       |
+| (table)  |    | (Creator) |
++----+-----+    +-----+-----+
+     |                |
+     v                v
++-------------------------+
+| Soma total:             |
+| - package_credits: 0    |
+| - subscription_credits: |
+|   50 (Creator Start)    |
+| - total: 50             |
++-------------------------+
+             |
+             v
++-------------------------+
+| Frontend atualizado     |
+| mostrando 50 creditos   |
++-------------------------+
+```
 
 ---
 
-## Seção Técnica
+## Secao Tecnica
 
-### Tipo TypeScript para Subscription Item
+### Modificacoes em `check-credits/index.ts`
+
 ```typescript
-interface SubscriptionItem {
-  id: string;
-  current_period_start: number;
-  current_period_end: number;
-  // ... outros campos
+// Adicionar no inicio: importar Stripe
+import Stripe from "https://esm.sh/stripe@18.5.0";
+
+// Na funcao principal, apos buscar user_credits:
+
+// Check for Creator subscription credits
+let subscriptionCredits = 0;
+let subscriptionInfo = null;
+
+try {
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (stripeKey && user.email) {
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    
+    // Find customer
+    const customers = await stripe.customers.list({ 
+      email: user.email, 
+      limit: 1 
+    });
+    
+    if (customers.data.length > 0) {
+      // Find active creator subscription
+      const subscriptions = await stripe.subscriptions.list({
+        customer: customers.data[0].id,
+        status: "active",
+        limit: 10,
+      });
+      
+      const creatorSub = subscriptions.data.find(
+        sub => sub.metadata?.plan_type === 'creator'
+      );
+      
+      if (creatorSub) {
+        const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
+        // Get period from items
+        const firstItem = creatorSub.items?.data?.[0];
+        const periodStart = new Date(firstItem.current_period_start * 1000).toISOString();
+        
+        // Count orders in current period
+        const { count } = await supabaseClient
+          .from('orders')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', periodStart)
+          .eq('payment_status', 'PAID')
+          .not('plan_id', 'is', null);
+        
+        subscriptionCredits = Math.max(0, creditsTotal - (count || 0));
+        subscriptionInfo = {
+          plan_id: creatorSub.metadata?.plan_id,
+          credits_total: creditsTotal,
+          credits_used: count || 0,
+          credits_remaining: subscriptionCredits,
+          is_instrumental: creatorSub.metadata?.plan_id?.includes('instrumental')
+        };
+      }
+    }
+  }
+} catch (stripeError) {
+  logStep("Stripe check failed", { error: stripeError.message });
+  // Continue without subscription credits
+}
+
+// Update totals
+totalAvailable += subscriptionCredits;
+if (subscriptionInfo?.is_instrumental) {
+  totalInstrumental += subscriptionCredits;
+} else {
+  totalVocal += subscriptionCredits;
 }
 ```
 
-### Edge Functions a Reimplantar
-1. `check-creator-subscription`
+### Modificacoes em `use-credit/index.ts`
 
-### Teste Sugerido
-Após deploy, verificar logs para confirmar:
+Adicionar fallback para creditos de assinatura quando nao houver pacotes:
+
+```typescript
+// Apos verificar user_credits e nao encontrar:
+if (!creditToUse) {
+  // Check for subscription credits
+  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+  if (stripeKey && user.email) {
+    // Similar logic to check-credits
+    // If subscription has credits, mark order as paid with plan_id
+  }
+}
 ```
-[CHECK-CREATOR-SUBSCRIPTION] Active creator subscription found - {..., subscriptionEnd: "2026-...", currentPeriodStart: "2026-..."}
-[CHECK-CREATOR-SUBSCRIPTION] Credits calculated - {creditsTotal: 50, creditsUsed: 0, creditsRemaining: 50}
+
+### Modificacoes em `CreditsBanner.tsx` e `CreditsManagement.tsx`
+
+Atualizar para mostrar fonte dos creditos:
+
+```typescript
+// Adicionar badge visual indicando:
+// "50 creditos (Assinatura Creator Start)"
+// vs
+// "3 creditos (Pacote de Musicas)"
 ```
+
+---
+
+## Restricoes de Transferencia
+
+Creditos de assinatura Creator **NAO** podem ser transferidos porque:
+1. Sao creditos mensais que resetam automaticamente
+2. Estao vinculados ao ciclo de faturamento do Stripe
+3. Nao existem na tabela `user_credits`
+
+O componente `CreditTransfer` deve mostrar apenas creditos de pacotes avulsos.
+
+---
+
+## Resultado Esperado
+
+Apos as modificacoes:
+
+1. **Dashboard** mostra: "50 creditos disponiveis (Creator Start)"
+2. **Aba Creditos** mostra: Secao separada para creditos da assinatura
+3. **Aba Transferir** mostra: "Creditos de assinatura nao podem ser transferidos" + creditos avulsos (se houver)
+4. **Briefing** permite usar creditos da assinatura para criar musica
+5. **Hero badge** continua mostrando "Start" como hoje
+
+---
+
+## Prioridade de Uso
+
+Quando o usuario tem AMBOS (pacote avulso + assinatura):
+1. Usar primeiro os creditos de **pacotes avulsos** (expiram)
+2. Depois usar creditos de **assinatura** (renovam mensalmente)
+
+Isso evita que pacotes comprados expirem sem uso.
