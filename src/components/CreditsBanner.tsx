@@ -65,7 +65,7 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
 
   if (compact) {
     return (
-      <Badge className={`gap-1.5 ${isFromSubscription ? 'bg-amber-500/20 text-amber-600 border-amber-500/30' : 'bg-primary/20 text-primary border-primary/30'}`}>
+      <Badge className={`gap-1.5 ${isFromSubscription ? 'bg-amber-500 text-white border-amber-600' : 'bg-primary text-white border-primary'}`}>
         {isFromSubscription ? <Crown className="w-3 h-3" /> : <Music className="w-3 h-3" />}
         {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
       </Badge>
