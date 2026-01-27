@@ -49,7 +49,41 @@
     "badge": "Ejemplos Reales",
     "swipeHint": "Desliza para ver más →",
     "playButton": "Reproducir",
-    "pauseButton": "Pausar"
+    "pauseButton": "Pausar",
+    "fallback": {
+      "sample1": { "title": "Canción de Homenaje", "description": "Un homenaje especial para un momento inolvidable", "style": "Pop", "occasion": "Cumpleaños" },
+      "sample2": { "title": "Canción Motivacional", "description": "Una pista inspiradora para levantar el ánimo", "style": "Rock", "occasion": "Motivacional" },
+      "sample3": { "title": "Canción Romántica", "description": "Una bella melodía para expresar amor", "style": "Bossa Nova", "occasion": "Boda" }
+    }
+  },
+  "videoService": {
+    "badge": "Servicio Adicional",
+    "title": "Transforma tu música en",
+    "titleHighlight": "video",
+    "subtitle": "Además de la música, puedes recibir un video personalizado, listo para compartir y emocionar aún más.",
+    "cardTitle": "Video Personalizado",
+    "startingAt": "a partir de",
+    "cardDescription": "Elige una de las opciones abajo para crear tu video con edición profesional",
+    "options": {
+      "5images": { "title": "5 Imágenes", "description": "Slideshow con transiciones suaves" },
+      "10images": { "title": "10 Imágenes", "description": "Más fotos, más recuerdos" },
+      "video": { "title": "1 Video de 2 min", "description": "Edición completa de tu video" }
+    },
+    "features": {
+      "professional": "Edición profesional con efectos",
+      "transitions": "Transiciones cinematográficas",
+      "sync": "Sincronización con la música",
+      "delivery": "Entrega en hasta 48h"
+    },
+    "loopNotice": {
+      "title": "¿Canciones más largas?",
+      "description": "Si tu canción es más larga que el contenido enviado, las imágenes estarán en loop hasta el final de la canción, creando una experiencia visual continua."
+    },
+    "availability": "Disponible para cualquier persona — con o sin música creada en la plataforma",
+    "cta": "Quiero mi música en video",
+    "otherPlans": "Otros planes de video",
+    "whatsappMessage": "¡Hola! Me gustaría saber sobre otros planes de video personalizados.",
+    "specialProjects": "¿Proyectos especiales? Contáctanos por WhatsApp para presupuestos personalizados"
   },
   "testimonials": {
     "title": "Lo Que Dicen Nuestros Clientes",
