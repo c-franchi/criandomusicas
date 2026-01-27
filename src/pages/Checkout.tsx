@@ -59,7 +59,7 @@ interface VoucherValidation {
 }
 
 export default function Checkout() {
-  const { t, i18n } = useTranslation('checkout');
+  const { t, i18n } = useTranslation(['checkout', 'common']);
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -88,15 +88,31 @@ export default function Checkout() {
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
 
-  // Plan labels for display
-  const PLAN_LABELS: Record<string, { name: string; credits: number }> = {
-    'single': { name: 'Música Única', credits: 1 },
-    'single_instrumental': { name: 'Instrumental Única', credits: 1 },
-    'single_custom_lyric': { name: 'Letra Própria', credits: 1 },
-    'package': { name: 'Pacote 3 Músicas', credits: 3 },
-    'package_instrumental': { name: 'Pacote 3 Instrumentais', credits: 3 },
-    'subscription': { name: 'Pacote 5 Músicas', credits: 5 },
-    'subscription_instrumental': { name: 'Pacote 5 Instrumentais', credits: 5 },
+  // Plan labels for display - dynamically translated
+  const getPlanLabel = (planId: string): string => {
+    const labels: Record<string, string> = {
+      'single': t('summary.personalizedMusic'),
+      'single_instrumental': t('summary.instrumental'),
+      'single_custom_lyric': t('summary.customLyric'),
+      'package': t('summary.personalizedMusic'),
+      'package_instrumental': t('summary.instrumental'),
+      'subscription': t('summary.personalizedMusic'),
+      'subscription_instrumental': t('summary.instrumental'),
+    };
+    return labels[planId] || planId;
+  };
+
+  const getPlanCredits = (planId: string): number => {
+    const credits: Record<string, number> = {
+      'single': 1,
+      'single_instrumental': 1,
+      'single_custom_lyric': 1,
+      'package': 3,
+      'package_instrumental': 3,
+      'subscription': 5,
+      'subscription_instrumental': 5,
+    };
+    return credits[planId] || 1;
   };
 
   // Fetch PIX config
@@ -136,7 +152,7 @@ export default function Checkout() {
         if (error) throw error;
 
         if (data.user_id !== user.id) {
-          toast.error('Este pedido não pertence a você');
+          toast.error(t('errors.orderNotYours'));
           navigate('/');
           return;
         }
@@ -182,14 +198,11 @@ export default function Checkout() {
         const basePrice = pricingData?.price_promo_cents || pricingData?.price_cents || 1990;
 
         // Set plan info for display
-        const planInfo = PLAN_LABELS[pricingId];
-        if (planInfo) {
-          setCurrentPlanInfo({
-            id: pricingId,
-            name: pricingData?.name || planInfo.name,
-            credits: planInfo.credits
-          });
-        }
+        setCurrentPlanInfo({
+          id: pricingId,
+          name: getPlanLabel(pricingId),
+          credits: getPlanCredits(pricingId)
+        });
 
         // If amount is 0 or different from expected, update it
         if (data.amount === 0 || data.amount !== basePrice) {
@@ -200,7 +213,7 @@ export default function Checkout() {
         setOrder(data);
       } catch (error) {
         console.error('Error fetching order:', error);
-        toast.error('Erro ao carregar pedido');
+        toast.error(t('errors.loadingOrder'));
         navigate('/');
       } finally {
         setLoading(false);
@@ -268,7 +281,7 @@ export default function Checkout() {
                 setTimeout(() => navigate('/dashboard'), 1500);
               } else if (hasCustomLyric) {
                 // For custom lyrics, redirect to approval page
-                toast.success('Letra pronta para revisão! Redirecionando...');
+                toast.success(t('toast.paymentConfirmed'));
                 setTimeout(() => navigate(`/criar-musica?orderId=${order.id}`), 1500);
               } else {
                 // For vocal music, generate lyrics first
@@ -279,7 +292,7 @@ export default function Checkout() {
                     briefing
                   }
                 });
-                toast.success('Letras sendo geradas! Redirecionando...');
+                toast.success(t('toast.generatingLyrics'));
                 setTimeout(() => navigate(`/criar-musica?orderId=${order.id}`), 1500);
               }
             } catch (genError) {
@@ -292,7 +305,7 @@ export default function Checkout() {
               }
             }
           } else {
-            toast.success('Música liberada! Redirecionando...');
+            toast.success(t('toast.paymentConfirmed'));
             setTimeout(() => {
               if (order.is_instrumental) {
                 navigate('/dashboard');
@@ -303,7 +316,7 @@ export default function Checkout() {
           }
         } else {
           setProcessingVIP(false);
-          toast.error('Erro ao processar acesso VIP');
+          toast.error(t('errors.paymentFailed'));
         }
       }
     };
@@ -365,7 +378,7 @@ export default function Checkout() {
           // For custom lyrics, redirect directly to CreateSong page for approval
           // The prompt will be generated when the user approves the lyrics there
           if (hasCustomLyric) {
-            toast.success('Voucher aplicado! Redirecionando para aprovação da letra...');
+            toast.success(t('toast.voucherApplied'));
             setTimeout(() => {
               navigate(`/criar-musica?orderId=${order.id}`);
             }, 1000);
@@ -373,8 +386,8 @@ export default function Checkout() {
           }
           
           toast.info(isInstrumental 
-            ? 'Preparando sua música instrumental...' 
-            : 'Gerando letras da sua música...');
+            ? t('toast.preparingInstrumental') 
+            : t('toast.generatingLyrics'));
           
           // Fetch full order data for briefing
           const { data: orderData } = await supabase
@@ -432,7 +445,7 @@ export default function Checkout() {
 
           setTimeout(() => {
             if (isInstrumental) {
-              toast.success('Sua música instrumental está em produção!');
+              toast.success(t('toast.preparingInstrumental'));
               navigate('/dashboard');
             } else {
               navigate(`/criar-musica?orderId=${order.id}`);
@@ -457,10 +470,9 @@ export default function Checkout() {
       }
     } catch (error: any) {
       // Extract error message from response if available
-      const errorDetail = error?.message || error?.error || 'Erro ao aplicar voucher';
+      const errorDetail = error?.message || error?.error || t('errors.voucherApply');
       toast.error(errorDetail);
       console.error('Error applying voucher:', error);
-      toast.error('Erro ao aplicar voucher');
     } finally {
       setApplyingVoucher(false);
     }
@@ -493,11 +505,11 @@ export default function Checkout() {
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('URL de pagamento não recebida');
+        throw new Error(t('errors.paymentFailed'));
       }
     } catch (error) {
       console.error('Error creating payment:', error);
-      toast.error('Erro ao processar pagamento');
+      toast.error(t('errors.paymentFailed'));
       setProcessingPayment(false);
     }
   };
@@ -694,7 +706,7 @@ export default function Checkout() {
         <div className="text-center space-y-4">
           <Music className="h-12 w-12 animate-spin text-primary mx-auto" />
           <p className="text-muted-foreground">
-            {processingVIP ? 'Processando acesso VIP...' : 'Carregando...'}
+            {processingVIP ? t('processingVIP') : t('loading')}
           </p>
         </div>
       </div>
@@ -711,9 +723,9 @@ export default function Checkout() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="max-w-md w-full mx-4">
           <CardContent className="pt-6 text-center">
-            <p className="text-muted-foreground">Pedido não encontrado</p>
+            <p className="text-muted-foreground">{t('orderNotFound')}</p>
             <Button onClick={() => navigate('/')} className="mt-4">
-              Voltar ao Início
+              {t('backToHome')}
             </Button>
           </CardContent>
         </Card>
@@ -734,9 +746,9 @@ export default function Checkout() {
             <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-yellow-500" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Aguardando Confirmação PIX</h2>
+            <h2 className="text-2xl font-bold mb-2">{t('pixWaiting.title')}</h2>
             <p className="text-muted-foreground mb-6">
-              Após o pagamento, vamos confirmar em até 30 minutos e você receberá uma notificação.
+              {t('pixWaiting.description')}
             </p>
 
             {/* QR Code First */}
@@ -751,7 +763,7 @@ export default function Checkout() {
             {/* Price and PIX Key */}
             <Card className="p-4 bg-muted/50 mb-6 text-left">
               <div className="mb-4">
-                <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
+                <Label className="text-xs text-muted-foreground">{t('payment.pix.amountToPay')}</Label>
                 <div className="flex items-center gap-2">
                   {hasDiscount && (
                     <span className="text-sm text-muted-foreground line-through">{formatPrice(originalPrice)}</span>
@@ -767,7 +779,7 @@ export default function Checkout() {
               
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
+                  <Label className="text-xs text-muted-foreground">{t('payment.pix.pixKey')}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{pixConfig?.pix_key || '14.389.841/0001-47'}</code>
                     <Button variant="outline" size="sm" onClick={copyPixKey}>
@@ -776,7 +788,7 @@ export default function Checkout() {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Nome:</Label>
+                  <Label className="text-xs text-muted-foreground">{t('payment.pix.name')}</Label>
                   <p className="font-medium">{pixConfig?.pix_name || 'Criando Músicas'}</p>
                 </div>
               </div>
@@ -785,10 +797,10 @@ export default function Checkout() {
             <div className="flex flex-col gap-3">
               <Button variant="outline" onClick={() => navigate('/dashboard')}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar ao Dashboard
+                {t('pixWaiting.backToDashboard')}
               </Button>
               <p className="text-xs text-muted-foreground">
-                Acompanhe o status do seu pedido no Dashboard
+                {t('pixWaiting.trackStatus')}
               </p>
             </div>
           </Card>
@@ -806,8 +818,8 @@ export default function Checkout() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">Finalizar Pedido</h1>
-            <p className="text-muted-foreground">Complete o pagamento para gerar sua música</p>
+            <h1 className="text-2xl font-bold">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('subtitle')}</p>
           </div>
           {/* Plan Badge */}
           {currentPlanInfo && (
@@ -825,15 +837,15 @@ export default function Checkout() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Music className="h-5 w-5 text-primary" />
-              Resumo do Pedido
+              {t('summary.title')}
               {order.has_custom_lyric && (
                 <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 text-xs">
-                  📝 Letra Própria
+                  📝 {t('summary.customLyric')}
                 </Badge>
               )}
               {order.is_instrumental && !order.has_custom_lyric && (
                 <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
-                  🎹 Instrumental
+                  🎹 {t('summary.instrumental')}
                 </Badge>
               )}
             </CardTitle>
@@ -841,16 +853,16 @@ export default function Checkout() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-muted-foreground">Tipo</p>
-                <p className="font-medium">{order.music_type || 'Música Personalizada'}</p>
+                <p className="text-muted-foreground">{t('summary.type')}</p>
+                <p className="font-medium">{order.music_type || t('summary.personalizedMusic')}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Estilo</p>
-                <p className="font-medium">{order.music_style || 'A definir'}</p>
+                <p className="text-muted-foreground">{t('summary.style')}</p>
+                <p className="font-medium">{order.music_style || t('summary.toDefine')}</p>
               </div>
               {order.emotion && (
                 <div>
-                  <p className="text-muted-foreground">Emoção</p>
+                  <p className="text-muted-foreground">{t('summary.emotion')}</p>
                   <p className="font-medium">{order.emotion}</p>
                 </div>
               )}
@@ -859,7 +871,7 @@ export default function Checkout() {
             {order.story && (
               <div className="pt-4 border-t border-border/50">
                 <p className="text-muted-foreground text-sm mb-2">
-                  {order.has_custom_lyric ? 'Sua Letra' : 'História'}
+                  {order.has_custom_lyric ? t('summary.yourLyric') : t('summary.story')}
                 </p>
                 <p className="text-sm line-clamp-3">{order.story}</p>
               </div>
@@ -873,13 +885,13 @@ export default function Checkout() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Zap className="h-5 w-5 text-green-400" />
-                Usar Crédito Disponível
+                {t('credits.title')}
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30 ml-2">
-                  {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
+                  {t('credits.available', { count: totalAvailable })}
                 </Badge>
               </CardTitle>
               <CardDescription>
-                Você tem créditos! Use um para criar esta música sem pagar.
+                {t('credits.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -890,8 +902,8 @@ export default function Checkout() {
                     {activePackage && getPlanLabel(activePackage.plan_id)}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    {activePackage?.used_credits || 0}/{activePackage?.total_credits || 0} usados • 
-                    Restam {(activePackage?.total_credits || 0) - (activePackage?.used_credits || 0) - 1} após esta música
+                    {t('credits.used', { used: activePackage?.used_credits || 0, total: activePackage?.total_credits || 0 })} • 
+                    {t('credits.remaining', { remaining: (activePackage?.total_credits || 0) - (activePackage?.used_credits || 0) - 1 })}
                   </p>
                 </div>
               </div>
@@ -904,18 +916,18 @@ export default function Checkout() {
                 {processingCredit ? (
                   <>
                     <Music className="h-4 w-4 mr-2 animate-spin" />
-                    Processando...
+                    {t('credits.processing')}
                   </>
                 ) : (
                   <>
                     <Sparkles className="h-4 w-4 mr-2" />
-                    Usar 1 Crédito (Grátis!)
+                    {t('credits.useButton')}
                   </>
                 )}
               </Button>
               
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">ou pague normalmente abaixo</p>
+                <p className="text-xs text-muted-foreground">{t('credits.orPayBelow')}</p>
               </div>
             </CardContent>
           </Card>
@@ -928,30 +940,28 @@ export default function Checkout() {
               <div className="flex items-start gap-3">
                 <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="font-medium text-amber-600 dark:text-amber-400">Créditos não compatíveis</p>
+                  <p className="font-medium text-amber-600 dark:text-amber-400">{t('credits.incompatible.title')}</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Você tem{' '}
                     {totalInstrumental > 0 && (
                       <span className="inline-flex items-center gap-1">
                         <Piano className="w-3 h-3" />
-                        <strong>{totalInstrumental} instrumental{totalInstrumental !== 1 ? 'is' : ''}</strong>
+                        <strong>{totalInstrumental} {totalInstrumental !== 1 ? t('credits.incompatible.instrumentals') : t('credits.incompatible.instrumental')}</strong>
                       </span>
                     )}
-                    {totalVocal > 0 && totalInstrumental > 0 && ' e '}
+                    {totalVocal > 0 && totalInstrumental > 0 && ` ${t('common:and')} `}
                     {totalVocal > 0 && (
                       <span className="inline-flex items-center gap-1">
                         <Mic className="w-3 h-3" />
-                        <strong>{totalVocal} vocal{totalVocal !== 1 ? 'is' : ''}</strong>
+                        <strong>{totalVocal} {totalVocal !== 1 ? t('credits.incompatible.vocals') : t('credits.incompatible.vocal')}</strong>
                       </span>
                     )}
-                    , mas este pedido requer crédito{' '}
-                    <strong>{order?.is_instrumental ? 'instrumental' : 'vocal'}</strong>.
+                    {' '}{t('credits.incompatible.requiresType', { type: order?.is_instrumental ? t('credits.incompatible.instrumental') : t('credits.incompatible.vocal') })}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    💡 Seus créditos{' '}
-                    {totalInstrumental > 0 ? 'instrumentais' : 'vocais'}{' '}
-                    podem ser usados para criar músicas{' '}
-                    {totalInstrumental > 0 ? 'instrumentais' : 'cantadas ou com letra própria'}.
+                    💡 {t('credits.incompatible.tip', { 
+                      creditType: totalInstrumental > 0 ? t('credits.incompatible.instrumentals') : t('credits.incompatible.vocals'),
+                      musicType: totalInstrumental > 0 ? t('credits.incompatible.instrumentalMusic') : t('credits.incompatible.vocalMusic')
+                    })}
                   </p>
                 </div>
               </div>
@@ -965,10 +975,10 @@ export default function Checkout() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Gift className="h-5 w-5 text-accent" />
-                Tem um voucher?
+                {t('voucher.title')}
               </CardTitle>
               <CardDescription>
-                Insira seu código de desconto
+                {t('voucher.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -976,9 +986,9 @@ export default function Checkout() {
                 <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg border border-success/30">
                   <CheckCircle className="h-5 w-5 text-success" />
                   <div>
-                    <p className="font-medium text-success">Voucher aplicado!</p>
+                    <p className="font-medium text-success">{t('voucher.applied')}</p>
                     <p className="text-sm text-muted-foreground">
-                      Código: {order.voucher_code} • Desconto: {formatPrice(order.discount_applied)}
+                      {t('voucher.code')}: {order.voucher_code} • {t('voucher.discount')}: {formatPrice(order.discount_applied)}
                     </p>
                   </div>
                 </div>
@@ -986,7 +996,7 @@ export default function Checkout() {
                 <>
                   <div className="flex gap-2">
                     <Input
-                      placeholder="Digite o código do voucher"
+                      placeholder={t('voucher.placeholder')}
                       value={voucherCode}
                       onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                       className="uppercase"
@@ -1003,7 +1013,7 @@ export default function Checkout() {
                       ) : (
                         <>
                           <Tag className="h-4 w-4 mr-2" />
-                          <span>Usar voucher</span>
+                          <span>{t('voucher.apply')}</span>
                         </>
                       )}
                     </Button>
@@ -1019,19 +1029,19 @@ export default function Checkout() {
                         <div className="space-y-3">
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-5 w-5 text-success" />
-                            <span className="font-medium text-success">Voucher válido!</span>
+                            <span className="font-medium text-success">{t('voucher.valid')}</span>
                           </div>
                           <div className="text-sm space-y-1">
                             <p>
-                              <span className="text-muted-foreground">Desconto:</span>{' '}
+                              <span className="text-muted-foreground">{t('voucher.discount')}:</span>{' '}
                               {voucherResult.voucher?.discount_type === 'percent' 
                                 ? `${voucherResult.voucher?.discount_value}%`
                                 : formatPrice(voucherResult.discount_amount)}
                             </p>
                             <p>
-                              <span className="text-muted-foreground">Preço final:</span>{' '}
+                              <span className="text-muted-foreground">{t('voucher.finalPrice')}:</span>{' '}
                               <span className="font-bold text-lg">
-                                {voucherResult.is_free ? 'GRÁTIS!' : formatPrice(voucherResult.final_price)}
+                                {voucherResult.is_free ? t('voucher.free') : formatPrice(voucherResult.final_price)}
                               </span>
                             </p>
                           </div>
@@ -1045,7 +1055,7 @@ export default function Checkout() {
                             ) : (
                               <Sparkles className="h-4 w-4 mr-2" />
                             )}
-                            {voucherResult.is_free ? 'Gerar Música Grátis' : 'Aplicar Desconto'}
+                            {voucherResult.is_free ? t('voucher.generateFree') : t('voucher.applyDiscount')}
                           </Button>
                         </div>
                       ) : (
@@ -1066,7 +1076,7 @@ export default function Checkout() {
               <CardTitle className="flex items-center justify-between">
                 <span className="flex items-center gap-2">
                   <CreditCard className="h-5 w-5 text-primary" />
-                  Forma de Pagamento
+                  {t('payment.title')}
                 </span>
                 <div className="text-right">
                   {hasDiscount && (
@@ -1094,8 +1104,8 @@ export default function Checkout() {
                   <CreditCard className="h-5 w-5" />
                 )}
                 <div className="flex-1 text-left">
-                  <p className="font-medium">Cartão de Crédito</p>
-                  <p className="text-xs opacity-80">Pagamento seguro via Stripe</p>
+                  <p className="font-medium">{t('payment.card.title')}</p>
+                  <p className="text-xs opacity-80">{t('payment.card.description')}</p>
                 </div>
               </Button>
 
@@ -1107,24 +1117,24 @@ export default function Checkout() {
               >
                 <QrCode className="h-5 w-5 text-emerald-600" />
                 <div className="flex-1 text-left">
-                  <p className="font-medium">PIX</p>
-                  <p className="text-xs text-muted-foreground">Pagamento instantâneo</p>
+                  <p className="font-medium">{t('payment.pix.title')}</p>
+                  <p className="text-xs text-muted-foreground">{t('payment.pix.description')}</p>
                 </div>
               </Button>
 
               {/* PIX Flow Instructions */}
               <div className="mt-4 p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
-                <p className="text-xs text-emerald-400 font-medium mb-1">📋 Como funciona o pagamento via PIX:</p>
+                <p className="text-xs text-emerald-400 font-medium mb-1">📋 {t('payment.pix.howItWorks')}</p>
                 <ol className="text-[10px] sm:text-xs text-muted-foreground space-y-1">
-                  <li>1. Escaneie o QR Code ou copie a chave PIX</li>
-                  <li>2. Realize o pagamento no app do seu banco</li>
-                  <li>3. <strong>Envie o comprovante</strong> para confirmar</li>
-                  <li>4. Aguarde a verificação (em até 30 minutos)</li>
+                  <li>1. {t('payment.pix.step1')}</li>
+                  <li>2. {t('payment.pix.step2')}</li>
+                  <li>3. <strong>{t('payment.pix.step3')}</strong></li>
+                  <li>4. {t('payment.pix.step4')}</li>
                 </ol>
               </div>
 
               <p className="text-xs text-center text-muted-foreground mt-3">
-                Pagamento seguro • Dados protegidos
+                {t('payment.securePayment')}
               </p>
             </CardContent>
           </Card>
@@ -1136,7 +1146,7 @@ export default function Checkout() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <QrCode className="h-5 w-5 text-emerald-600" />
-                Pagamento via PIX
+                {t('payment.pix.title')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1150,7 +1160,7 @@ export default function Checkout() {
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Escaneie o QR Code ou copie a chave PIX abaixo
+                  {t('payment.pix.scanOrCopy')}
                 </p>
               </div>
 
@@ -1158,7 +1168,7 @@ export default function Checkout() {
               <Card className="p-4 bg-muted/50">
                 <div className="space-y-3">
                   <div>
-                    <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
+                    <Label className="text-xs text-muted-foreground">{t('payment.pix.amountToPay')}</Label>
                     <div className="flex items-center gap-2 flex-wrap">
                       {hasDiscount && (
                         <span className="text-sm text-muted-foreground line-through">{formatPrice(originalPrice)}</span>
@@ -1172,12 +1182,12 @@ export default function Checkout() {
                     </div>
                     {hasDiscount && order.voucher_code && (
                       <p className="text-xs text-success mt-1">
-                        Voucher {order.voucher_code} aplicado!
+                        {t('voucher.applied')} - {order.voucher_code}
                       </p>
                     )}
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
+                    <Label className="text-xs text-muted-foreground">{t('payment.pix.pixKey')}</Label>
                     <div className="flex items-center gap-2 mt-1">
                       <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{pixConfig?.pix_key || '14.389.841/0001-47'}</code>
                       <Button variant="outline" size="sm" onClick={copyPixKey}>
@@ -1186,7 +1196,7 @@ export default function Checkout() {
                     </div>
                   </div>
                   <div>
-                    <Label className="text-xs text-muted-foreground">Nome:</Label>
+                    <Label className="text-xs text-muted-foreground">{t('payment.pix.name')}</Label>
                     <p className="font-medium">{pixConfig?.pix_name || 'Criando Músicas'}</p>
                   </div>
                 </div>
@@ -1194,7 +1204,7 @@ export default function Checkout() {
 
               <Button className="w-full" onClick={confirmPixPayment}>
                 <CheckCircle className="w-4 h-4 mr-2" />
-                Já Fiz o Pagamento PIX
+                {t('payment.pix.alreadyPaid')}
               </Button>
 
               {/* Receipt Upload Modal - ÁREA TODA CLICÁVEL */}
@@ -1220,19 +1230,19 @@ export default function Checkout() {
                         <div className="flex flex-col items-center gap-3">
                           <img 
                             src={receiptPreview} 
-                            alt="Preview do comprovante" 
+                            alt={t('receipt.title')} 
                             className="max-w-[200px] max-h-[200px] rounded-lg border object-contain"
                           />
                           <p className="text-sm text-muted-foreground">
-                            Clique para alterar a imagem
+                            {t('receipt.clickToChange')}
                           </p>
                         </div>
                       ) : (
                         <div className="text-center">
                           <Upload className="w-10 h-10 mx-auto text-primary mb-3" />
-                          <h3 className="font-semibold mb-1">Envie o Comprovante</h3>
+                          <h3 className="font-semibold mb-1">{t('receipt.title')}</h3>
                           <p className="text-sm text-muted-foreground">
-                            Clique ou arraste uma foto/screenshot do comprovante PIX
+                            {t('receipt.description')}
                           </p>
                         </div>
                       )}
@@ -1247,12 +1257,12 @@ export default function Checkout() {
                       {uploadingReceipt ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Enviando...
+                          {t('receipt.uploading')}
                         </>
                       ) : (
                         <>
                           <CheckCircle className="w-4 h-4 mr-2" />
-                          Confirmar Pagamento
+                          {t('receipt.confirm')}
                         </>
                       )}
                     </Button>
@@ -1271,7 +1281,7 @@ export default function Checkout() {
                 }}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar às opções de pagamento
+                {t('payment.pix.backToOptions')}
               </Button>
             </CardContent>
           </Card>
@@ -1280,13 +1290,13 @@ export default function Checkout() {
         {/* Security badges */}
         <div className="flex justify-center gap-4">
           <Badge variant="secondary" className="text-xs">
-            🔒 Pagamento Seguro
+            🔒 {t('badges.secure')}
           </Badge>
           <Badge variant="secondary" className="text-xs">
-            ⚡ Música em Minutos
+            ⚡ {t('badges.fast')}
           </Badge>
           <Badge variant="secondary" className="text-xs">
-            ✨ IA Premium
+            ✨ {t('badges.premium')}
           </Badge>
         </div>
       </div>

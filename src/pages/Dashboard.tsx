@@ -45,7 +45,7 @@ const Dashboard = () => {
   const { user, profile, loading } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { toast } = useToast();
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation(['dashboard', 'common']);
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -561,7 +561,7 @@ const Dashboard = () => {
                   
                   {order.story && (
                     <div className="border-t pt-4">
-                      <h4 className="font-medium mb-2 text-sm">História:</h4>
+                      <h4 className="font-medium mb-2 text-sm">{t('dashboard:orderDetails.briefingFields.story')}:</h4>
                       <p className="text-sm text-muted-foreground break-words">
                         {order.story.slice(0, 150)}
                         {order.story.length > 150 ? '...' : ''}
