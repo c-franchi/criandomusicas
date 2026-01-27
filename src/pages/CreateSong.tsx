@@ -62,6 +62,7 @@ const CreateSong = () => {
   const [editedTitle, setEditedTitle] = useState<string>("");
   const [editInstructions, setEditInstructions] = useState<string>("");
   const [hasUsedModification, setHasUsedModification] = useState(false);
+  const [isModifiedSelected, setIsModifiedSelected] = useState(false); // Track which version is selected in editing-modified step
   const [loading, setLoading] = useState(false);
   
   // Pronunciation modal state
@@ -366,6 +367,7 @@ const CreateSong = () => {
   };
 
   const handleSelectModifiedOrOriginal = (useModified: boolean) => {
+    setIsModifiedSelected(useModified);
     if (useModified && modifiedLyric) {
       setEditedLyric(modifiedLyric.body);
       setEditedTitle(modifiedLyric.title);
@@ -377,7 +379,7 @@ const CreateSong = () => {
 
   const handleApproveLyric = async (customPronunciations?: Pronunciation[]) => {
     // Determine which lyric is being approved: modified, original, or custom
-    const isUsingModified = hasUsedModification && modifiedLyric && editedLyric === modifiedLyric.body;
+    const isUsingModified = hasUsedModification && modifiedLyric && isModifiedSelected;
     const effectiveLyric = isUsingModified ? modifiedLyric : selectedLyric;
     
     console.log("handleApproveLyric called", {
@@ -608,6 +610,7 @@ const CreateSong = () => {
       setEditedLyric(modifiedLyricData.body);
       setEditedTitle(modifiedLyricData.title);
       setHasUsedModification(true);
+      setIsModifiedSelected(true); // Auto-select the modified version
       setEditInstructions("");
       setStep("editing-modified");
       
@@ -889,7 +892,7 @@ const CreateSong = () => {
           <div className="grid md:grid-cols-2 gap-6 mb-6">
             {/* Original */}
             <Card 
-              className={`cursor-pointer transition-all ${editedLyric === originalSelectedLyric?.body ? 'ring-2 ring-primary border-primary' : 'hover:border-primary/50'}`}
+              className={`cursor-pointer transition-all ${!isModifiedSelected ? 'ring-2 ring-primary border-primary' : 'hover:border-primary/50'}`}
               onClick={() => handleSelectModifiedOrOriginal(false)}
             >
               <CardHeader>
@@ -908,7 +911,7 @@ const CreateSong = () => {
                     {originalSelectedLyric?.body}
                   </pre>
                 </div>
-                {editedLyric === originalSelectedLyric?.body && (
+                {!isModifiedSelected && (
                   <div className="mt-3 flex items-center gap-2 text-primary">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">Selecionada</span>
@@ -919,7 +922,7 @@ const CreateSong = () => {
 
             {/* Modified */}
             <Card 
-              className={`cursor-pointer transition-all ${editedLyric === modifiedLyric?.body ? 'ring-2 ring-primary border-primary' : 'hover:border-primary/50'}`}
+              className={`cursor-pointer transition-all ${isModifiedSelected ? 'ring-2 ring-primary border-primary' : 'hover:border-primary/50'}`}
               onClick={() => handleSelectModifiedOrOriginal(true)}
             >
               <CardHeader>
@@ -938,7 +941,7 @@ const CreateSong = () => {
                     {modifiedLyric?.body}
                   </pre>
                 </div>
-                {editedLyric === modifiedLyric?.body && (
+                {isModifiedSelected && (
                   <div className="mt-3 flex items-center gap-2 text-primary">
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">Selecionada</span>
