@@ -65,6 +65,11 @@
     "discount": "🎹 Instrumental songs 20% off!",
     "discountBadge": "-20%"
   },
+  "vocalFeatures": {
+    "single": ["1 complete song", "2 personalized lyrics to choose", "Lyrics + professional audio", "High quality", "Delivery within 48h"],
+    "package": ["3 complete songs", "2 personalized lyrics each", "16% savings", "Lyrics + professional audio", "High quality", "Delivery within 48h", "VIP support"],
+    "subscription": ["Up to 5 songs", "2 personalized lyrics each", "Lyrics + professional audio", "Premium quality", "Delivery within 48h", "Priority queue"]
+  },
   "instrumentalFeatures": {
     "single": ["1 complete instrumental track", "Custom arrangement", "Professional audio", "High quality", "Delivery within 48h"],
     "package": ["3 complete instrumental tracks", "Custom arrangements", "16% savings", "Professional audio", "VIP support"],
