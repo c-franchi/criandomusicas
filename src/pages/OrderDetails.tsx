@@ -43,6 +43,8 @@ interface OrderData {
   solo_moment: string | null;
   instrumentation_notes: string | null;
   cover_url: string | null;
+  song_title: string | null;
+  has_custom_lyric: boolean | null;
 }
 
 interface LyricData {
@@ -256,7 +258,12 @@ const OrderDetails = () => {
   };
 
   // Get the actual song title for sharing
+  // Priority: song_title (user-provided or AI-generated) > lyric title > fallback
   const getSongTitle = () => {
+    // song_title takes absolute priority (stored for both custom lyrics and AI-generated)
+    if (order?.song_title) {
+      return order.song_title;
+    }
     if (order?.is_instrumental) {
       return `Instrumental ${order?.music_type || 'Personalizado'}`;
     }
@@ -365,7 +372,7 @@ const OrderDetails = () => {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">
-                {isInstrumental ? `Instrumental ${order.music_type}` : (approvedLyric?.title || `Música ${order.music_type}`)}
+                {getSongTitle()}
               </h1>
               {isInstrumental && (
                 <Badge className="bg-purple-500/20 text-purple-600 border-purple-500/30">
