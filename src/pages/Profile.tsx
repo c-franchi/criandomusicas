@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ import CreatorSubscriptionManager from "@/components/CreatorSubscriptionManager"
 const Profile = () => {
   const { user, profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const [saving, setSaving] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -37,6 +38,11 @@ const Profile = () => {
     phone: "",
     whatsapp: ""
   });
+
+  // Get the tab from URL query params (default to 'profile')
+  const tabFromUrl = searchParams.get('tab') || 'profile';
+  const validTabs = ['profile', 'subscription', 'credits', 'transfer'];
+  const activeTab = validTabs.includes(tabFromUrl) ? tabFromUrl : 'profile';
 
   useEffect(() => {
     if (profile) {
@@ -239,7 +245,7 @@ const Profile = () => {
         </div>
 
         {/* Tabs for Profile, Credits, Subscription and Transfers */}
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs defaultValue={activeTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="profile" className="flex items-center gap-1 text-xs sm:text-sm">
               <User className="w-4 h-4" />

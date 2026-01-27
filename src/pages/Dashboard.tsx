@@ -492,7 +492,7 @@ const Dashboard = () => {
                 >
                   <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2">Nenhum pedido ainda</h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">Nenhum pedido ainda</h3>
                 <p className="text-muted-foreground mb-4">
                   Crie sua primeira música personalizada
                 </p>
@@ -514,7 +514,7 @@ const Dashboard = () => {
                   {/* Mobile-first layout */}
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg mb-1 break-words group-hover:text-primary transition-colors">
+                      <h3 className="font-semibold text-lg mb-1 break-words text-foreground group-hover:text-primary transition-colors">
                         {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
                       </h3>
                       <p className="text-sm text-muted-foreground mb-2">
@@ -543,7 +543,7 @@ const Dashboard = () => {
                     {/* Price and actions - stacks on mobile */}
                     <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
                       <div className="text-xl sm:text-2xl font-bold text-primary">
-                        R$ {(order.amount / 100).toFixed(2).replace('.', ',')}
+                        R$ {((order.amount || 0) / 100).toFixed(2).replace('.', ',')}
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="pointer-events-none">
