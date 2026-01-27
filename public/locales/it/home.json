@@ -54,6 +54,7 @@
   "testimonials": {
     "title": "Cosa Dicono I Nostri Clienti",
     "subtitle": "Storie vere di chi ha trasformato momenti in musica",
+    "subtitleReal": "Recensioni reali di clienti che hanno creato canzoni",
     "badge": "Testimonianze Reali",
     "stats": {
       "songs": "500+",
@@ -71,8 +72,30 @@
       "birthday": "Compleanno",
       "wedding": "Matrimonio",
       "mothers": "Festa della Mamma",
-      "fathers": "Festa del Papà"
-    }
+      "fathers": "Festa del Papà",
+      "corporate": "Aziendale",
+      "declaration": "Dichiarazione",
+      "custom": "Personalizzata"
+    },
+    "roles": {
+      "mother": "Madre orgogliosa",
+      "entrepreneur": "Imprenditore",
+      "bride": "Sposa",
+      "proudFather": "Padre orgoglioso",
+      "wife": "Moglie",
+      "grandfather": "Nonno"
+    },
+    "quotes": {
+      "birthday": "La canzone è stata fantastica! Mio figlio ha adorato il regalo di compleanno.",
+      "corporate": "Abbiamo usato la canzone all'evento aziendale. È stato un successo!",
+      "wedding": "La canzone del nostro matrimonio ha commosso tutti gli ospiti.",
+      "graduation": "L'omaggio per la laurea di mia figlia è stato perfetto.",
+      "anniversary": "Il regalo di anniversario più emozionante che abbia mai fatto a mio marito.",
+      "child": "Ho creato una canzone per mio nipote. Non smetteva di ascoltarla!"
+    },
+    "verifiedClient": "Cliente Verificato",
+    "ratingAria": "Valutazione",
+    "basedOn": "Basato su {{count}} recensioni verificate"
   },
   "instrumental": {
     "title": "Tracce",
@@ -158,6 +181,18 @@
     "limitedPromo": "Promozione a tempo limitato",
     "useCredit": "Usa il mio credito ora",
     "createNow": "Crea la mia canzone ora"
+  },
+  "customLyric": {
+    "features": {
+      "ownLyric": "Usa il tuo testo o poesia",
+      "quality": "Audio professionale di alta qualità",
+      "delivery": "Consegna entro 48h sulla piattaforma",
+      "style": "Scegli lo stile musicale"
+    },
+    "cardTitle": "Canzone con Il Tuo Testo",
+    "oneTimePayment": "pagamento unico",
+    "noExtraFee": "Nessun costo aggiuntivo",
+    "proQuality": "Qualità professionale"
   },
   "faq": {
     "title": "Domande",

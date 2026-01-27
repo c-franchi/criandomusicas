@@ -16,7 +16,8 @@ import {
   Loader2,
   Package,
   Gift,
-  Crown
+  Crown,
+  Globe
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -25,9 +26,10 @@ import { useTranslation } from "react-i18next";
 import CreditsManagement from "@/components/CreditsManagement";
 import CreditTransfer from "@/components/CreditTransfer";
 import CreatorSubscriptionManager from "@/components/CreatorSubscriptionManager";
+import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
 
 const Profile = () => {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const { t: tc } = useTranslation('common');
   const { user, profile, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -341,6 +343,28 @@ const Profile = () => {
                   <p className="text-xs text-muted-foreground">
                     {t('profile.fields.whatsappHint')}
                   </p>
+                </div>
+
+                {/* Language Selector */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    {t('profile.fields.language', { defaultValue: 'Idioma / Language' })}
+                  </Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {supportedLanguages.map((lang) => (
+                      <Button
+                        key={lang.code}
+                        type="button"
+                        variant={i18n.language === lang.code ? "default" : "outline"}
+                        className="justify-start gap-2"
+                        onClick={() => i18n.changeLanguage(lang.code)}
+                      >
+                        <span className="text-lg">{lang.flag}</span>
+                        <span>{lang.name}</span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Save Button */}

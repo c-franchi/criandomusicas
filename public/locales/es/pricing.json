@@ -65,6 +65,11 @@
     "discount": "🎹 ¡Canciones instrumentales con 20% de descuento!",
     "discountBadge": "-20%"
   },
+  "instrumentalFeatures": {
+    "single": ["1 pista instrumental completa", "Arreglo personalizado", "Audio profesional", "Alta calidad", "Entrega en hasta 48h"],
+    "package": ["3 pistas instrumentales completas", "Arreglos personalizados", "16% de ahorro", "Audio profesional", "Soporte VIP"],
+    "subscription": ["Hasta 5 pistas instrumentales", "Arreglos personalizados", "Calidad premium", "Prioridad en cola"]
+  },
   "features_list": {
     "song": "Canción personalizada",
     "lyrics": "Letra exclusiva",

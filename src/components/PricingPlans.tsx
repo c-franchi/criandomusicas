@@ -7,6 +7,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import PlanTypeToggle from "@/components/PlanTypeToggle";
 import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/lib/i18n-format";
+
 interface PricingPlan {
   id: string;
   name: string;
@@ -19,38 +21,52 @@ interface PricingPlan {
   sort_order: number;
 }
 
-// Instrumental prices come directly from DB (single_instrumental, etc.)
-// No calculation needed - they are stored separately
-
-const formatPrice = (cents: number) => {
-  return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
-};
-
-// Features for instrumental plans (without lyrics mentions)
-const getInstrumentalFeatures = (planId: string): string[] => {
-  switch (planId) {
-    case "single":
-      return ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega em até 48h"];
-    case "package":
-      return ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Alta qualidade", "Entrega em até 48h", "Suporte VIP"];
-    case "subscription":
-      return ["Até 5 músicas instrumentais", "Arranjos personalizados", "Áudio profissional", "Qualidade premium", "Entrega em até 48h", "Prioridade na fila"];
-    default:
-      return [];
-  }
-};
-
 const PricingPlans = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation('pricing');
+  const { t, i18n } = useTranslation('pricing');
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInstrumental, setIsInstrumental] = useState(false);
 
+  // Format price according to locale (always show in BRL since payments are in BRL)
+  const formatPrice = (cents: number) => {
+    return formatCurrency(cents, i18n.language, { convert: false });
+  };
+
+  // Features for instrumental plans
+  const getInstrumentalFeatures = (planId: string): string[] => {
+    switch (planId) {
+      case "single":
+        return [
+          t('instrumentalFeatures.single.0', { defaultValue: "1 instrumental track" }),
+          t('instrumentalFeatures.single.1', { defaultValue: "Custom arrangement" }),
+          t('instrumentalFeatures.single.2', { defaultValue: "Professional audio" }),
+          t('instrumentalFeatures.single.3', { defaultValue: "High quality" }),
+          t('instrumentalFeatures.single.4', { defaultValue: "Delivery within 48h" })
+        ];
+      case "package":
+        return [
+          t('instrumentalFeatures.package.0', { defaultValue: "3 instrumental tracks" }),
+          t('instrumentalFeatures.package.1', { defaultValue: "Custom arrangements" }),
+          t('instrumentalFeatures.package.2', { defaultValue: "16% savings" }),
+          t('instrumentalFeatures.package.3', { defaultValue: "Professional audio" }),
+          t('instrumentalFeatures.package.4', { defaultValue: "VIP support" })
+        ];
+      case "subscription":
+        return [
+          t('instrumentalFeatures.subscription.0', { defaultValue: "Up to 5 instrumental tracks" }),
+          t('instrumentalFeatures.subscription.1', { defaultValue: "Custom arrangements" }),
+          t('instrumentalFeatures.subscription.2', { defaultValue: "Premium quality" }),
+          t('instrumentalFeatures.subscription.3', { defaultValue: "Priority queue" })
+        ];
+      default:
+        return [];
+    }
+  };
+
   useEffect(() => {
     const fetchPlans = async () => {
-      // Fetch both vocal and instrumental plans
       const [vocalResult, instrumentalResult] = await Promise.all([
         supabase
           .from('pricing_config')
@@ -69,59 +85,24 @@ const PricingPlans = () => {
 
       if (vocalResult.error) {
         console.error('Error fetching plans:', vocalResult.error);
-        // Fallback to static plans - IMPORTANT: Keep in sync with DB pricing_config and Stripe!
-        // Single: R$ 9,90 | Package: R$ 24,90 | 5-Pack: R$ 39,90
+        // Fallback plans
         setPlans([
-          {
-            id: "single",
-            name: "Música Única",
-            price_display: "R$ 9,90",
-            price_cents: 990,
-            price_promo_cents: null,
-            features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h"] as string[],
-            is_popular: false,
-            is_active: true,
-            sort_order: 1
-          },
-          {
-            id: "package",
-            name: "Pacote 3 Músicas",
-            price_display: "R$ 24,90",
-            price_cents: 2490,
-            price_promo_cents: null,
-            features: ["3 músicas completas", "2 letras personalizadas cada", "Economia de 16%", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h", "Suporte VIP"] as string[],
-            is_popular: true,
-            is_active: true,
-            sort_order: 2
-          },
-          {
-            id: "subscription",
-            name: "Pacote 5 Músicas",
-            price_display: "R$ 39,90",
-            price_cents: 3990,
-            price_promo_cents: null,
-            features: ["Até 5 músicas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 48h", "Prioridade na fila"] as string[],
-            is_popular: false,
-            is_active: true,
-            sort_order: 3
-          }
+          { id: "single", name: "Música Única", price_display: "R$ 9,90", price_cents: 990, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 1 },
+          { id: "package", name: "Pacote 3 Músicas", price_display: "R$ 24,90", price_cents: 2490, price_promo_cents: null, features: [], is_popular: true, is_active: true, sort_order: 2 },
+          { id: "subscription", name: "Pacote 5 Músicas", price_display: "R$ 39,90", price_cents: 3990, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 3 }
         ]);
-        // Fallback instrumental plans - IMPORTANT: Keep in sync with DB pricing_config and Stripe!
-        // Single Inst: R$ 7,90 | Package Inst: R$ 19,90 | 5-Pack Inst: R$ 31,90
         setInstrumentalPlans([
           { id: "single_instrumental", name: "Instrumental Única", price_display: "R$ 7,90", price_cents: 790, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 1 },
           { id: "package_instrumental", name: "Pacote 3 Instrumentais", price_display: "R$ 19,90", price_cents: 1990, price_promo_cents: null, features: [], is_popular: true, is_active: true, sort_order: 2 },
           { id: "subscription_instrumental", name: "Pacote 5 Instrumentais", price_display: "R$ 31,90", price_cents: 3190, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 3 }
         ]);
       } else {
-        // Map data to ensure features is an array
         const mappedVocal = (vocalResult.data || []).map(item => ({
           ...item,
           features: Array.isArray(item.features) ? item.features as string[] : []
         }));
         setPlans(mappedVocal);
         
-        // Map instrumental plans
         const mappedInstrumental = (instrumentalResult.data || []).map(item => ({
           ...item,
           features: Array.isArray(item.features) ? item.features as string[] : []
@@ -155,7 +136,6 @@ const PricingPlans = () => {
     return t('cta');
   };
 
-  // Get matching instrumental plan for a vocal plan
   const getInstrumentalPlan = (vocalPlanId: string): PricingPlan | null => {
     const instrumentalId = `${vocalPlanId}_instrumental`;
     return instrumentalPlans.find(p => p.id === instrumentalId) || null;
@@ -163,7 +143,6 @@ const PricingPlans = () => {
 
   const getDisplayPrice = (plan: PricingPlan) => {
     if (isInstrumental) {
-      // Get the corresponding instrumental plan from DB
       const instPlan = getInstrumentalPlan(plan.id);
       if (instPlan) {
         return {
@@ -172,22 +151,16 @@ const PricingPlans = () => {
           hasPromo: !!instPlan.price_promo_cents
         };
       }
-      // Fallback if no instrumental plan found
-      return {
-        price: formatPrice(plan.price_cents),
-        originalPrice: null,
-        hasPromo: false
-      };
+      return { price: formatPrice(plan.price_cents), originalPrice: null, hasPromo: false };
     }
     return {
-      price: plan.price_promo_cents ? formatPrice(plan.price_promo_cents) : plan.price_display,
-      originalPrice: plan.price_promo_cents ? plan.price_display : null,
+      price: plan.price_promo_cents ? formatPrice(plan.price_promo_cents) : formatPrice(plan.price_cents),
+      originalPrice: plan.price_promo_cents ? formatPrice(plan.price_cents) : null,
       hasPromo: !!plan.price_promo_cents
     };
   };
 
   const handlePlanSelect = (planId: string) => {
-    // Get the correct plan ID based on type
     const finalPlanId = isInstrumental ? `${planId}_instrumental` : planId;
     const params = new URLSearchParams();
     params.set('planId', finalPlanId);
@@ -221,7 +194,6 @@ const PricingPlans = () => {
             {t('choosePlan')}
           </p>
           
-          {/* Toggle Vocal/Instrumental */}
           <PlanTypeToggle 
             isInstrumental={isInstrumental} 
             onToggle={setIsInstrumental}
@@ -240,9 +212,7 @@ const PricingPlans = () => {
             <Card 
               key={plan.id} 
               className={`relative transition-all duration-300 hover:shadow-xl h-full flex flex-col ${
-                plan.is_popular 
-                  ? "ring-2 ring-primary shadow-lg scale-105" 
-                  : "hover:shadow-lg"
+                plan.is_popular ? "ring-2 ring-primary shadow-lg scale-105" : "hover:shadow-lg"
               }`}
             >
               {plan.is_popular && (
@@ -287,7 +257,7 @@ const PricingPlans = () => {
                         <div className="text-lg text-muted-foreground line-through">
                           {priceInfo.originalPrice}
                         </div>
-                        <div className={`text-3xl font-bold ${isInstrumental ? 'text-accent' : 'text-green-500'}`}>
+                        <div className={`text-3xl font-bold ${isInstrumental ? 'text-accent' : 'text-primary'}`}>
                           {priceInfo.price}
                         </div>
                       </div>
@@ -295,7 +265,9 @@ const PricingPlans = () => {
                       <div className={`text-3xl font-bold ${isInstrumental ? 'text-accent' : 'text-primary'}`}>
                         {priceInfo.price}
                         {plan.id === "subscription" && (
-                          <span className="text-sm font-normal text-muted-foreground">/mês</span>
+                          <span className="text-sm font-normal text-muted-foreground">
+                            {t('comparison.subscription.perMonth')}
+                          </span>
                         )}
                       </div>
                     );
@@ -313,7 +285,7 @@ const PricingPlans = () => {
                 <ul className="space-y-3 flex-1 text-center">
                   {(isInstrumental ? getInstrumentalFeatures(plan.id) : (plan.features as string[])).map((feature, index) => (
                     <li key={index} className="flex items-start">
-                      <Check className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isInstrumental ? 'text-accent' : 'text-green-500'}`} />
+                      <Check className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isInstrumental ? 'text-accent' : 'text-primary'}`} />
                       <span className="text-muted-foreground">{feature}</span>
                     </li>
                   ))}

@@ -54,6 +54,7 @@
   "testimonials": {
     "title": "O Que Dizem Nossos Clientes",
     "subtitle": "Histórias reais de quem já transformou momentos em música",
+    "subtitleReal": "Avaliações reais de clientes que criaram músicas",
     "badge": "Depoimentos Reais",
     "stats": {
       "songs": "500+",
@@ -71,8 +72,30 @@
       "birthday": "Aniversário",
       "wedding": "Casamento",
       "mothers": "Dia das Mães",
-      "fathers": "Dia dos Pais"
-    }
+      "fathers": "Dia dos Pais",
+      "corporate": "Corporativo",
+      "declaration": "Declaração",
+      "custom": "Personalizada"
+    },
+    "roles": {
+      "mother": "Mãe orgulhosa",
+      "entrepreneur": "Empreendedor",
+      "bride": "Noiva",
+      "proudFather": "Pai orgulhoso",
+      "wife": "Esposa",
+      "grandfather": "Avô"
+    },
+    "quotes": {
+      "birthday": "A música ficou incrível! Meu filho amou o presente de aniversário.",
+      "corporate": "Usamos a música no evento da empresa. Foi um sucesso!",
+      "wedding": "A música do nosso casamento emocionou todos os convidados.",
+      "graduation": "A homenagem para a formatura da minha filha ficou perfeita.",
+      "anniversary": "Presente de bodas mais emocionante que já dei ao meu marido.",
+      "child": "Criei uma música para meu neto. Ele não parava de ouvir!"
+    },
+    "verifiedClient": "Cliente Verificado",
+    "ratingAria": "Avaliação",
+    "basedOn": "Baseado em {{count}} avaliações verificadas"
   },
   "instrumental": {
     "title": "Trilhas",
@@ -158,6 +181,18 @@
     "limitedPromo": "Promoção por tempo limitado",
     "useCredit": "Usar meu crédito agora",
     "createNow": "Criar minha música agora"
+  },
+  "customLyric": {
+    "features": {
+      "ownLyric": "Use sua própria letra ou poema",
+      "quality": "Áudio profissional de alta qualidade",
+      "delivery": "Entrega em até 48h na plataforma",
+      "style": "Escolha o estilo musical"
+    },
+    "cardTitle": "Música com Letra Própria",
+    "oneTimePayment": "pagamento único",
+    "noExtraFee": "Sem taxa adicional",
+    "proQuality": "Qualidade profissional"
   },
   "faq": {
     "title": "Perguntas",

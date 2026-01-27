@@ -65,6 +65,11 @@
     "discount": "🎹 Canzoni strumentali con 20% di sconto!",
     "discountBadge": "-20%"
   },
+  "instrumentalFeatures": {
+    "single": ["1 traccia strumentale completa", "Arrangiamento personalizzato", "Audio professionale", "Alta qualità", "Consegna entro 48h"],
+    "package": ["3 tracce strumentali complete", "Arrangiamenti personalizzati", "16% di risparmio", "Audio professionale", "Supporto VIP"],
+    "subscription": ["Fino a 5 tracce strumentali", "Arrangiamenti personalizzati", "Qualità premium", "Priorità in coda"]
+  },
   "features_list": {
     "song": "Canzone personalizzata",
     "lyrics": "Testo esclusivo",

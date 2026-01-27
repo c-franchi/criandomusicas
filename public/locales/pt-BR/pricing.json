@@ -65,6 +65,11 @@
     "discount": "🎹 Músicas instrumentais com 20% de desconto!",
     "discountBadge": "-20%"
   },
+  "instrumentalFeatures": {
+    "single": ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega em até 48h"],
+    "package": ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Suporte VIP"],
+    "subscription": ["Até 5 músicas instrumentais", "Arranjos personalizados", "Qualidade premium", "Prioridade na fila"]
+  },
   "features_list": {
     "song": "Música personalizada",
     "lyrics": "Letra exclusiva",
