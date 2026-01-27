@@ -298,7 +298,7 @@ const CreateSong = () => {
 
       if (orderError) {
         console.error("Erro ao criar order:", orderError);
-        throw new Error("Erro ao criar pedido. Tente novamente.");
+        throw new Error(t('createSong.createOrderError'));
       }
 
       setOrderId(orderData.id);
@@ -329,7 +329,7 @@ const CreateSong = () => {
       if (error) throw error;
 
       if (!data?.ok) {
-        throw new Error(data?.error || "Erro ao gerar letras");
+        throw new Error(data?.error || t('createSong.lyricsGenerationError'));
       }
 
       // Processar letras recebidas
@@ -402,19 +402,19 @@ const CreateSong = () => {
     
     if (!isCustomLyric && !effectiveLyric) {
       console.error("Missing effectiveLyric for non-custom lyric");
-      toast.error("Dados incompletos", { description: "Selecione uma letra antes de aprovar" });
+      toast.error(t('createSong.incompleteData'), { description: t('createSong.selectLyricFirst') });
       return;
     }
     
     if (!orderId || !briefingData) {
       console.error("Missing required data:", { orderId: !!orderId, briefingData: !!briefingData });
-      toast.error("Dados incompletos", { description: "Dados do pedido não encontrados" });
+      toast.error(t('createSong.incompleteData'), { description: t('createSong.orderDataNotFound') });
       return;
     }
     
     if (!editedLyric || editedLyric.trim().length === 0) {
       console.error("editedLyric is empty!");
-      toast.error("Letra vazia", { description: "A letra da música não foi carregada corretamente. Tente selecionar novamente." });
+      toast.error(t('createSong.emptyLyric'), { description: t('createSong.lyricNotLoaded') });
       return;
     }
 
@@ -477,8 +477,8 @@ const CreateSong = () => {
           setShowPronunciationModal(true);
           setStep(hasUsedModification ? "editing-modified" : "editing");
           setLoading(false);
-          toast.warning("Pronúncia necessária", {
-            description: `Defina como pronunciar: ${errorData.missingPronunciations.join(', ')}`
+          toast.warning(t('createSong.pronunciationNeeded'), {
+            description: t('createSong.definePronunciation', { terms: errorData.missingPronunciations.join(', ') })
           });
           return;
         }
@@ -498,23 +498,23 @@ const CreateSong = () => {
           setShowPronunciationModal(true);
           setStep(hasUsedModification ? "editing-modified" : "editing");
           setLoading(false);
-          toast.warning("Pronúncia necessária", {
-            description: `Defina como pronunciar: ${data.missingPronunciations.join(', ')}`
+          toast.warning(t('createSong.pronunciationNeeded'), {
+            description: t('createSong.definePronunciation', { terms: data.missingPronunciations.join(', ') })
           });
           return;
         }
-        throw new Error(data?.error || "Erro ao gerar prompt de estilo");
+        throw new Error(data?.error || t('createSong.stylePromptError'));
       }
 
       setStep("complete");
 
-      toast.success("🎵 Letra aprovada!", {
-        description: "Sua música está pronta para produção!"
+      toast.success(t('createSong.lyricApproved'), {
+        description: t('createSong.readyForProduction')
       });
 
     } catch (error) {
       console.error("Erro:", error);
-      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      const errorMessage = error instanceof Error ? error.message : t('createSong.unknownError');
       
       // Check for pronunciation error in the message
       if (errorMessage.includes("sem pronúncia definida")) {
@@ -525,8 +525,8 @@ const CreateSong = () => {
           setShowPronunciationModal(true);
           setStep(hasUsedModification ? "editing-modified" : "editing");
           setLoading(false);
-          toast.warning("Pronúncia necessária", {
-            description: `Defina como pronunciar: ${terms.join(', ')}`
+          toast.warning(t('createSong.pronunciationNeeded'), {
+            description: t('createSong.definePronunciation', { terms: terms.join(', ') })
           });
           return;
         }
@@ -535,12 +535,12 @@ const CreateSong = () => {
       // Better error messages for users
       let userFriendlyMessage = errorMessage;
       if (errorMessage.includes("Limite de requisições")) {
-        userFriendlyMessage = "Sistema ocupado. Tente novamente em 1 minuto.";
+        userFriendlyMessage = t('createSong.rateLimitError');
       } else if (errorMessage.includes("Créditos insuficientes")) {
-        userFriendlyMessage = "Erro interno. Entre em contato com o suporte.";
+        userFriendlyMessage = t('createSong.internalError');
       }
       
-      toast.error("Erro ao aprovar letra", { 
+      toast.error(t('createSong.approvalError'), { 
         description: userFriendlyMessage,
         duration: 5000 
       });
@@ -598,7 +598,7 @@ const CreateSong = () => {
       if (error) throw error;
 
       if (!data?.ok) {
-        throw new Error(data?.error || "Erro ao regenerar letra");
+        throw new Error(data?.error || t('createSong.regenerateLyricError'));
       }
 
       // Pegar primeira versão modificada
@@ -656,11 +656,9 @@ const CreateSong = () => {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <Badge className="mb-4">Etapa 1 de 2</Badge>
-            <h1 className="text-3xl font-bold mb-2">Escolha Sua Letra</h1>
-            <p className="text-muted-foreground">
-              Geramos <strong>2 versões</strong> especiais da sua história. Qual você prefere?
-            </p>
+            <Badge className="mb-4">{t('createSong.step1of2')}</Badge>
+            <h1 className="text-3xl font-bold mb-2">{t('createSong.chooseYourLyrics')}</h1>
+            <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.generatedVersions') }} />
           </div>
 
           {/* Info Box - Importance of briefing */}
@@ -669,10 +667,9 @@ const CreateSong = () => {
               <div className="flex items-start gap-3">
                 <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-semibold text-blue-500 mb-1">💡 Dica Importante!</p>
+                  <p className="font-semibold text-blue-500 mb-1">{t('createSong.tipImportant')}</p>
                   <p className="text-muted-foreground">
-                    Quanto mais detalhes você fornecer no briefing, melhor será a letra gerada! 
-                    Nomes, datas, lugares e momentos especiais fazem toda a diferença.
+                    {t('createSong.tipDescription')}
                   </p>
                 </div>
               </div>
@@ -690,9 +687,9 @@ const CreateSong = () => {
                 <CardHeader>
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-xl">{lyric.title}</CardTitle>
-                    <Badge variant="secondary">Versão {lyric.version}</Badge>
+                    <Badge variant="secondary">{t('createSong.version', { version: lyric.version })}</Badge>
                   </div>
-                  <CardDescription>Clique para selecionar e revisar</CardDescription>
+                  <CardDescription>{t('createSong.clickToSelect')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="bg-muted/50 p-4 rounded-lg max-h-80 overflow-y-auto">
@@ -709,7 +706,7 @@ const CreateSong = () => {
           <div className="text-center">
             <Button variant="outline" onClick={() => navigate('/briefing')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Briefing
+              {t('createSong.backToBriefing')}
             </Button>
           </div>
         </div>
@@ -724,11 +721,9 @@ const CreateSong = () => {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <Badge className="mb-4">Etapa 1 de 2 - Revisão</Badge>
-            <h1 className="text-3xl font-bold mb-2">Revise Sua Letra</h1>
-            <p className="text-muted-foreground">
-              Aprove a letra ou solicite <strong>uma única modificação</strong> antes de produzir
-            </p>
+            <Badge className="mb-4">{t('createSong.step1of2Review')}</Badge>
+            <h1 className="text-3xl font-bold mb-2">{t('createSong.reviewYourLyrics')}</h1>
+            <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.approveOrModify') }} />
           </div>
 
           {/* Song Title */}
@@ -736,14 +731,14 @@ const CreateSong = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Music className="w-5 h-5" />
-                Nome da Música
+                {t('createSong.songName')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Input
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                placeholder="Digite o nome da sua música..."
+                placeholder={t('createSong.songNamePlaceholder')}
                 className="text-lg font-semibold"
               />
             </CardContent>
@@ -753,8 +748,8 @@ const CreateSong = () => {
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Letra</CardTitle>
-                <Badge>Versão {selectedLyric?.version}</Badge>
+                <CardTitle>{t('createSong.lyrics')}</CardTitle>
+                <Badge>{t('createSong.version', { version: selectedLyric?.version })}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -770,22 +765,18 @@ const CreateSong = () => {
                   <div className="flex items-start gap-2">
                     <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
                     <div className="text-sm">
-                      <p className="font-semibold text-yellow-500 mb-1">⚠️ Atenção: Você pode modificar apenas UMA vez!</p>
-                      <p className="text-muted-foreground">
-                        Esta etapa é <strong>opcional</strong>. Se a letra já está do seu agrado, 
-                        pode aprovar diretamente. Caso solicite modificação, você poderá escolher 
-                        entre a versão original e a modificada.
-                      </p>
+                      <p className="font-semibold text-yellow-500 mb-1">{t('createSong.warningOneModification')}</p>
+                      <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.modificationOptional') }} />
                     </div>
                   </div>
                 </div>
                 
                 <h4 className="font-semibold mb-2 flex items-center gap-2">
                   <Edit3 className="w-4 h-4" />
-                  Solicitar Modificação (opcional - apenas 1 vez)
+                  {t('createSong.requestModification')}
                 </h4>
                 <Textarea
-                  placeholder="Descreva as alterações que deseja... Ex: 'Trocar a palavra X por Y', 'Deixar o refrão mais alegre', 'Adicionar o nome Maria no verso 2'..."
+                  placeholder={t('createSong.modificationPlaceholder')}
                   value={editInstructions}
                   onChange={(e) => setEditInstructions(e.target.value)}
                   rows={3}
@@ -801,10 +792,9 @@ const CreateSong = () => {
               <div className="flex items-start gap-3">
                 <Shield className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-semibold text-red-500 mb-1">Após aprovar a letra, não há devoluções</p>
+                  <p className="font-semibold text-red-500 mb-1">{t('createSong.noRefunds')}</p>
                   <p className="text-muted-foreground">
-                    Revise com atenção antes de confirmar. Depois de aprovada, a letra segue para produção 
-                    e não poderá ser alterada ou reembolsada.
+                    {t('createSong.reviewCarefully')}
                   </p>
                 </div>
               </div>
@@ -820,7 +810,7 @@ const CreateSong = () => {
                 onClick={() => setStep("select")}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Escolher Outra Versão
+                {t('createSong.chooseOtherVersion')}
               </Button>
             )}
 
@@ -835,7 +825,7 @@ const CreateSong = () => {
                 ) : (
                   <RefreshCw className="w-4 h-4 mr-2" />
                 )}
-                Modificar Letra (1x)
+                {t('createSong.modifyLyric')}
               </Button>
             )}
 
@@ -849,7 +839,7 @@ const CreateSong = () => {
               ) : (
                 <CheckCircle className="w-4 h-4 mr-2" />
               )}
-              Aprovar e Produzir Música
+              {t('createSong.approveAndProduce')}
             </Button>
           </div>
         </div>
@@ -865,12 +855,10 @@ const CreateSong = () => {
           {/* Header */}
           <div className="text-center mb-8">
             <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
-              Modificação usada ✓
+              {t('createSong.modificationUsed')}
             </Badge>
-            <h1 className="text-3xl font-bold mb-2">Escolha a Versão Final</h1>
-            <p className="text-muted-foreground">
-              Compare a versão <strong>original</strong> com a <strong>modificada</strong> e escolha qual aprovar
-            </p>
+            <h1 className="text-3xl font-bold mb-2">{t('createSong.chooseFinalVersion')}</h1>
+            <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.compareVersions') }} />
           </div>
 
           {/* Song Title */}
@@ -878,14 +866,14 @@ const CreateSong = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Music className="w-5 h-5" />
-                Nome da Música
+                {t('createSong.songName')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <Input
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                placeholder="Digite o nome da sua música..."
+                placeholder={t('createSong.songNamePlaceholder')}
                 className="text-lg font-semibold"
               />
             </CardContent>
@@ -902,11 +890,11 @@ const CreateSong = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Undo2 className="w-4 h-4" />
-                    Versão Original
+                    {t('createSong.originalVersion')}
                   </CardTitle>
-                  <Badge variant="outline">Versão {originalSelectedLyric?.version}</Badge>
+                  <Badge variant="outline">{t('createSong.version', { version: originalSelectedLyric?.version })}</Badge>
                 </div>
-                <CardDescription>Sua escolha inicial</CardDescription>
+                <CardDescription>{t('createSong.yourInitialChoice')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
@@ -917,7 +905,7 @@ const CreateSong = () => {
                 {!isModifiedSelected && (
                   <div className="mt-3 flex items-center gap-2 text-primary">
                     <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">Selecionada</span>
+                    <span className="text-sm font-medium">{t('createSong.selected')}</span>
                   </div>
                 )}
               </CardContent>
@@ -932,11 +920,11 @@ const CreateSong = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Sparkles className="w-4 h-4" />
-                    Versão Modificada
+                    {t('createSong.modifiedVersion')}
                   </CardTitle>
-                  <Badge>Nova</Badge>
+                  <Badge>{t('createSong.new')}</Badge>
                 </div>
-                <CardDescription>Com suas alterações solicitadas</CardDescription>
+                <CardDescription>{t('createSong.withYourChanges')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
@@ -947,7 +935,7 @@ const CreateSong = () => {
                 {isModifiedSelected && (
                   <div className="mt-3 flex items-center gap-2 text-primary">
                     <CheckCircle className="w-4 h-4" />
-                    <span className="text-sm font-medium">Selecionada</span>
+                    <span className="text-sm font-medium">{t('createSong.selected')}</span>
                   </div>
                 )}
               </CardContent>
@@ -960,10 +948,9 @@ const CreateSong = () => {
               <div className="flex items-start gap-3">
                 <Shield className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 <div className="text-sm">
-                  <p className="font-semibold text-red-500 mb-1">Após aprovar a letra, não há devoluções</p>
+                  <p className="font-semibold text-red-500 mb-1">{t('createSong.noRefunds')}</p>
                   <p className="text-muted-foreground">
-                    Esta é sua última chance de escolher. Depois de aprovada, a letra segue para produção 
-                    e não poderá ser alterada ou reembolsada.
+                    {t('createSong.lastChance')}
                   </p>
                 </div>
               </div>
@@ -983,7 +970,7 @@ const CreateSong = () => {
               ) : (
                 <CheckCircle className="w-4 h-4 mr-2" />
               )}
-              Aprovar Versão Selecionada e Produzir
+              {t('createSong.approveSelectedVersion')}
             </Button>
           </div>
         </div>
@@ -998,8 +985,8 @@ const CreateSong = () => {
         <Card className="max-w-md w-full text-center p-8">
           <MusicLoadingSpinner 
             size="lg" 
-            message="Finalizando..."
-            description="Preparando sua música para produção."
+            message={t('createSong.finalizing')}
+            description={t('createSong.preparingForProduction')}
           />
         </Card>
       </div>
@@ -1017,11 +1004,11 @@ const CreateSong = () => {
               <CheckCircle className="w-10 h-10 text-green-600" />
             </div>
             <Badge className="mb-4 bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
-              ✓ Etapa 1 Concluída
+              {t('createSong.step1Complete')}
             </Badge>
-            <h1 className="text-3xl font-bold mb-2">Letra Aprovada!</h1>
+            <h1 className="text-3xl font-bold mb-2">{t('createSong.lyricApprovedTitle')}</h1>
             <p className="text-muted-foreground">
-              Sua música está pronta para a Etapa 2: Produção Musical
+              {t('createSong.readyForStep2')}
             </p>
           </div>
 
@@ -1032,7 +1019,7 @@ const CreateSong = () => {
                 <Music className="w-5 h-5" />
                 {editedTitle}
               </CardTitle>
-              <CardDescription>Letra aprovada</CardDescription>
+              <CardDescription>{t('createSong.approvedLyric')}</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="bg-muted/50 p-4 rounded-lg">
@@ -1048,21 +1035,21 @@ const CreateSong = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-primary" />
-                Próximos Passos
+                {t('createSong.nextSteps')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center gap-3 text-muted-foreground">
                 <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</div>
-                <span>Letra personalizada aprovada</span>
+                <span>{t('createSong.personalizedLyricApproved')}</span>
               </div>
               <div className="flex items-center gap-3 text-muted-foreground">
                 <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm">✓</div>
-                <span>Estilo musical configurado</span>
+                <span>{t('createSong.musicalStyleConfigured')}</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-sm">2</div>
-                <span className="font-medium">Produção da música (em breve)</span>
+                <span className="font-medium">{t('createSong.musicProductionSoon')}</span>
               </div>
             </CardContent>
           </Card>
@@ -1071,11 +1058,11 @@ const CreateSong = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Ir para Dashboard
+              {t('createSong.goToDashboard')}
             </Button>
             <Button disabled className="bg-gradient-to-r from-primary to-purple-600">
               <Music className="w-4 h-4 mr-2" />
-              Produzir Música (Em Breve)
+              {t('createSong.produceMusicSoon')}
             </Button>
           </div>
         </div>
