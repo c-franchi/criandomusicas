@@ -1,5 +1,6 @@
 import { Music, Mic2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface PlanTypeToggleProps {
   isInstrumental: boolean;
@@ -8,6 +9,8 @@ interface PlanTypeToggleProps {
 }
 
 const PlanTypeToggle = ({ isInstrumental, onToggle, className }: PlanTypeToggleProps) => {
+  const { t } = useTranslation('pricing');
+  
   return (
     <div className={cn("flex items-center justify-center", className)}>
       <div className="relative flex items-center p-1 rounded-full bg-secondary/50 border border-border/50 backdrop-blur-sm">
@@ -31,7 +34,7 @@ const PlanTypeToggle = ({ isInstrumental, onToggle, className }: PlanTypeToggleP
           )}
         >
           <Mic2 className="w-4 h-4" />
-          <span>Com Vocal</span>
+          <span>{t('toggle.vocal')}</span>
         </button>
         
         {/* Instrumental option */}
@@ -46,7 +49,7 @@ const PlanTypeToggle = ({ isInstrumental, onToggle, className }: PlanTypeToggleP
           )}
         >
           <Music className="w-4 h-4" />
-          <span>Instrumental</span>
+          <span>{t('toggle.instrumental')}</span>
         </button>
       </div>
     </div>

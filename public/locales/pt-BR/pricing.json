@@ -49,12 +49,24 @@
       "name": "Música Única",
       "description": "Para momentos especiais"
     },
+    "single_instrumental": {
+      "name": "Instrumental Único",
+      "description": "Para momentos especiais"
+    },
     "package": {
       "name": "Pacote 3 Músicas",
       "description": "Ideal para criativos"
     },
+    "package_instrumental": {
+      "name": "Pacote 3 Instrumentais",
+      "description": "Ideal para criativos"
+    },
     "subscription": {
       "name": "Pacote 5 Músicas",
+      "description": "Para quem cria muito"
+    },
+    "subscription_instrumental": {
+      "name": "Pacote 5 Instrumentais",
       "description": "Para quem cria muito"
     }
   },
@@ -112,6 +124,7 @@
     "titleHighlight": "Conteúdo",
     "description": "Esqueça prompts complexos e edição manual. Você descreve, nós criamos. Músicas prontas para YouTube, TikTok, Reels e podcasts.",
     "subdescription": "Diferente de outras plataformas de IA, aqui você não precisa dominar prompts nem editar áudio. Receba música pronta, com letra curada e qualidade profissional.",
+    "subscribe": "Assinar {{plan}}",
     "features": {
       "curatedLyrics": "Letras Curadas",
       "curatedLyricsDesc": "Identidade musical consistente para seu canal. Cada letra é única e personalizada.",
@@ -120,12 +133,25 @@
       "shortFormats": "Formatos Curtos",
       "shortFormatsDesc": "Otimizado para 30s, 60s e formatos de Reels/Shorts. Perfeito para viralizar.",
       "humanSupport": "Suporte Humano",
-      "humanSupportDesc": "Aprovação de letra e ajustes com nossa equipe. Você tem controle total."
+      "humanSupportDesc": "Aprovação de letra e ajustes com nossa equipe. Você tem controle total.",
+      "readyToPost": "Pronto para Publicar",
+      "readyToPostDesc": "Músicas, capas e tudo mais prontos para ir ao ar nos seus canais.",
+      "commercialUse": "Uso Comercial",
+      "commercialUseDesc": "100% original e monetizável. Use em qualquer plataforma sem problemas."
     },
     "whyDifferent": {
       "title": "Por que somos diferentes?",
       "youDescribe": "Você descreve o que quer.",
       "weTakeCare": "Nós cuidamos de tudo: composição, produção, mixagem e entrega. Sem curva de aprendizado, sem ferramentas complexas. Música profissional em até 48h."
+    },
+    "whyUs": {
+      "title": "Por que criadores escolhem a gente?",
+      "noPrompts": "Sem Prompts Complexos",
+      "noPromptsDesc": "Você descreve em linguagem natural, nós fazemos a mágica acontecer.",
+      "lyricsAndMusic": "Letra + Música",
+      "lyricsAndMusicDesc": "Receba letra curada e música produzida. Tudo pronto, sem trabalho extra.",
+      "fastDelivery": "Entrega Rápida",
+      "fastDeliveryDesc": "Músicas profissionais em até 48h. Sem atrasos na sua produção de conteúdo."
     },
     "badges": {
       "original": "100% Original",

@@ -9,7 +9,6 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCredits } from "@/hooks/useCredits";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import ThemeToggle from "@/components/ThemeToggle";
-import LanguageSelector from "@/components/LanguageSelector";
 import RegionSelector from "@/components/RegionSelector";
 
 interface AppHeaderProps {
@@ -65,11 +64,8 @@ const AppHeader = ({
           </Button>
         )}
 
-        {/* Region Selector */}
+        {/* Region Selector (includes language & currency) */}
         <RegionSelector variant="compact" />
-
-        {/* Language Selector */}
-        <LanguageSelector />
         
         {/* Theme Toggle */}
         <ThemeToggle />
