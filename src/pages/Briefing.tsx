@@ -33,6 +33,8 @@ interface BriefingFormData {
   isInstrumental: boolean;
   hasCustomLyric: boolean;
   customLyricText: string;
+  hasCustomStylePrompt: boolean;
+  customStylePrompt: string;
   isConfidential: boolean;
   musicType: string;
   emotion: string;
@@ -148,6 +150,8 @@ const Briefing = () => {
     isInstrumental: false,
     hasCustomLyric: false,
     customLyricText: "",
+    hasCustomStylePrompt: false,
+    customStylePrompt: "",
     isConfidential: false,
     musicType: "",
     emotion: "",
@@ -271,15 +275,25 @@ const Briefing = () => {
 
   // Encontrar o step onde o usuário parou
   const getSavedStep = (data: BriefingFormData): number => {
-    // Fluxo "Já tenho a letra" (índices 22-28)
+    // Fluxo "Já tenho a letra" (índices 22-29)
     if (data.hasCustomLyric) {
       if (!data.customLyricText) return 22;
-      if (!data.musicType) return 23;
-      if (!data.voiceType) return 24;
-      if (!data.style) return 25;
-      if (!data.rhythm) return 26;
-      if (!data.atmosphere) return 27;
-      if (!data.songName) return 28;  // Novo passo para nome da música
+      // Índice 23: pergunta se tem style pronto
+      if (data.hasCustomStylePrompt === undefined) return 23;
+      // Se tem style pronto mas não digitou, vai para 24
+      if (data.hasCustomStylePrompt && !data.customStylePrompt) return 24;
+      // Se não tem style pronto, segue fluxo normal
+      if (!data.hasCustomStylePrompt) {
+        if (!data.musicType) return 25;
+        if (!data.voiceType) return 26;
+        if (!data.style) return 27;
+        if (!data.rhythm) return 28;
+        if (!data.atmosphere) return 29;
+        if (!data.songName) return 30;
+      } else {
+        // Tem style pronto, pula direto para nome
+        if (!data.songName) return 30;
+      }
       return 100;
     }
     
@@ -311,6 +325,13 @@ const Briefing = () => {
   // 0: isInstrumental
   // 1: musicType
   // INSTRUMENTAL (2-9):
+  // 2: style, 3: instruments, 4: wantSolo, 5: soloInstrument, 6: soloMoment, 7: rhythm, 8: atmosphere, 9: story
+  // CANTADA (10-19):
+  // 10: emotion, 11: emotionIntensity, 12: story, 13: mandatoryWords, 14: voiceType, 15: style, 16: rhythm, 17: atmosphere, 18: autoGenerateName, 19: songName
+  // INSTRUMENTAL NAME (20-21):
+  // 20: autoGenerateName (instrumental), 21: songName (instrumental)
+  // JÁ TENHO A LETRA (22-30):
+  // 22: customLyricText, 23: hasCustomStylePrompt, 24: customStylePrompt, 25: musicType, 26: voiceType, 27: style, 28: rhythm, 29: atmosphere, 30: songName
   // 2: style, 3: instruments, 4: wantSolo, 5: soloMoment, 6: rhythm, 7: atmosphere, 8: story, 9: instrumentationNotes
   // CANTADA (10-19):
   // 10: emotion, 11: emotionIntensity, 12: story, 13: mandatoryWords, 14: voiceType, 15: style, 16: rhythm, 17: atmosphere, 18: autoGenerateName, 19: songName
@@ -573,7 +594,7 @@ const Briefing = () => {
       inputType: 'text',
       field: 'songName'
     },
-    // FLUXO "JÁ TENHO A LETRA" (índices 22-28 do array)
+    // FLUXO "JÁ TENHO A LETRA" (índices 22-30 do array)
     // Índice 22: Cole sua letra
     {
       type: 'bot',
@@ -581,7 +602,25 @@ const Briefing = () => {
       inputType: 'textarea',
       field: 'customLyricText'
     },
-    // Índice 23: Tipo de música (custom lyric)
+    // Índice 23: Tem style pronto? (NOVA PERGUNTA)
+    {
+      type: 'bot',
+      content: "Você já tem um **style/prompt técnico** pronto para sua música? 🎛️\n\nIsso é uma descrição técnica do estilo musical (ex: \"male vocal, sertanejo romântico, acoustic guitar, 90bpm, emotional ballad\").",
+      inputType: 'options',
+      field: 'hasCustomStylePrompt',
+      options: [
+        { id: "yes", label: "✅ Sim, já tenho", description: "Quero usar meu próprio style" },
+        { id: "no", label: "🤖 Não, gerar automaticamente", description: "A IA vai criar baseado nas próximas perguntas" }
+      ]
+    },
+    // Índice 24: Cole o style (se tiver)
+    {
+      type: 'bot',
+      content: "Cole seu style/prompt técnico abaixo: 🎵\n\nExemplo: \"female vocal, pop ballad, piano, strings, 80bpm, emotional, intimate atmosphere\"",
+      inputType: 'textarea',
+      field: 'customStylePrompt'
+    },
+    // Índice 25: Tipo de música (custom lyric - se não tiver style pronto)
     {
       type: 'bot',
       content: "Qual tipo de música você imagina para essa letra?",
@@ -595,7 +634,7 @@ const Briefing = () => {
         { id: "corporativa", label: "🏢 Corporativa", description: "Para empresas" }
       ]
     },
-    // Índice 24: Tipo de voz (custom lyric)
+    // Índice 26: Tipo de voz (custom lyric)
     {
       type: 'bot',
       content: "Qual tipo de voz você prefere para sua música? 🎤",
@@ -608,7 +647,7 @@ const Briefing = () => {
         { id: "coral", label: "🎶 Coral/Grupo" }
       ]
     },
-    // Índice 25: Estilo (custom lyric)
+    // Índice 27: Estilo (custom lyric)
     {
       type: 'bot',
       content: "Qual estilo musical combina com sua letra?",
@@ -624,7 +663,7 @@ const Briefing = () => {
         { id: "outros", label: "✨ Outros" }
       ]
     },
-    // Índice 26: Ritmo (custom lyric)
+    // Índice 28: Ritmo (custom lyric)
     {
       type: 'bot',
       content: "Qual ritmo combina mais com sua música?",
@@ -636,7 +675,7 @@ const Briefing = () => {
         { id: "animado", label: "🏃 Animado", description: "Rápido, dançante" }
       ]
     },
-    // Índice 27: Atmosfera (custom lyric)
+    // Índice 29: Atmosfera (custom lyric)
     {
       type: 'bot',
       content: "E qual atmosfera?",
@@ -650,7 +689,7 @@ const Briefing = () => {
         { id: "leve", label: "☁️ Leve" }
       ]
     },
-    // Índice 28: Nome da música (custom lyric) - NOVO PASSO
+    // Índice 30: Nome da música (custom lyric)
     {
       type: 'bot',
       content: "Qual nome você quer dar para sua música? ✨",
@@ -791,15 +830,20 @@ const Briefing = () => {
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
     }
     
-    // FLUXO "JÁ TENHO A LETRA" (índices 22-28 do chatFlow)
+    // FLUXO "JÁ TENHO A LETRA" (índices 22-30 do chatFlow)
     if (data.hasCustomLyric) {
-      if (current === 22) return 23; // customLyricText -> musicType
-      if (current === 23) return 24; // musicType -> voiceType
-      if (current === 24) return 25; // voiceType -> style
-      if (current === 25) return 26; // style -> rhythm
-      if (current === 26) return 27; // rhythm -> atmosphere
-      if (current === 27) return 28; // atmosphere -> songName (NOVO!)
-      if (current === 28) return 100; // songName -> confirmação
+      if (current === 22) return 23; // customLyricText -> hasCustomStylePrompt
+      if (current === 23) {
+        // Se tem style pronto, vai para inserir style. Se não, pula para musicType
+        return data.hasCustomStylePrompt ? 24 : 25;
+      }
+      if (current === 24) return 30; // customStylePrompt -> songName (pula perguntas de estilo)
+      if (current === 25) return 26; // musicType -> voiceType
+      if (current === 26) return 27; // voiceType -> style
+      if (current === 27) return 28; // style -> rhythm
+      if (current === 28) return 29; // rhythm -> atmosphere
+      if (current === 29) return 30; // atmosphere -> songName
+      if (current === 30) return 100; // songName -> confirmação
     }
     
     // FLUXO INSTRUMENTAL (2-9, 20-21)
@@ -918,6 +962,30 @@ const Briefing = () => {
     // Handle style "outros" option
     if (field === 'style' && option.id === 'outros') {
       setShowCustomStyleInput(true);
+      return;
+    }
+
+    // Handle hasCustomStylePrompt
+    if (field === 'hasCustomStylePrompt') {
+      const hasStylePrompt = option.id === 'yes';
+      setFormData(prev => ({ ...prev, hasCustomStylePrompt: hasStylePrompt }));
+      addUserMessage(displayValue);
+      setStepHistory(prev => [...prev, currentStep]);
+      
+      const updatedFormData = { ...formData, hasCustomStylePrompt: hasStylePrompt };
+      
+      if (isEditingSingleField) {
+        setIsEditingSingleField(false);
+        setEditingFieldStep(null);
+        setTimeout(() => {
+          showConfirmationScreen(updatedFormData);
+        }, 500);
+        return;
+      }
+      
+      const nextStep = getNextStep(currentStep, updatedFormData);
+      setCurrentStep(nextStep);
+      setTimeout(() => addBotMessage(chatFlow[nextStep]), 500);
       return;
     }
 
@@ -1333,6 +1401,8 @@ const Briefing = () => {
       isInstrumental: data.isInstrumental,
       hasCustomLyric: data.hasCustomLyric,
       customLyricText: data.customLyricText,
+      hasCustomStylePrompt: data.hasCustomStylePrompt,
+      customStylePrompt: data.customStylePrompt,
       isConfidential: data.isConfidential,
       musicType: data.musicType,
       emotion: data.emotion,
@@ -1390,6 +1460,8 @@ const Briefing = () => {
           instrumentation_notes: briefingData.instrumentationNotes || null,
           // Título da música (para instrumental, vocal e letra própria)
           song_title: briefingData.hasCustomLyric ? (briefingData.songName || null) : (briefingData.autoGenerateName ? null : briefingData.songName || null),
+          // Style prompt customizado (se usuário fornecer)
+          style_prompt: briefingData.hasCustomStylePrompt && briefingData.customStylePrompt ? briefingData.customStylePrompt : null,
         })
         .select()
         .single();
@@ -1520,12 +1592,22 @@ const Briefing = () => {
           clearSavedBriefing();
           navigate('/dashboard');
         } else if (orderData.has_custom_lyric) {
-          // Letra própria: redirecionar para aprovação, prompt será gerado lá
-          console.log('Custom lyric order - redirecting to approval...');
-          toast({
-            title: '📝 Letra pronta para revisão!',
-            description: 'Revise e aprove sua letra para continuar.',
-          });
+          // Letra própria: verificar se já tem style_prompt customizado
+          if (orderData.style_prompt) {
+            // Tem style pronto, redirecionar direto para aprovação
+            console.log('Custom lyric order with style prompt - redirecting to approval...');
+            toast({
+              title: '📝 Letra pronta para revisão!',
+              description: 'Revise e aprove sua letra para continuar.',
+            });
+          } else {
+            // Não tem style pronto, precisa gerar
+            console.log('Custom lyric order without style prompt - redirecting to approval...');
+            toast({
+              title: '📝 Letra pronta para revisão!',
+              description: 'Revise e aprove sua letra para continuar.',
+            });
+          }
           clearSavedBriefing();
           navigate(`/criar-musica?orderId=${pendingOrderId}`);
         } else {
@@ -1931,33 +2013,45 @@ const Briefing = () => {
                     <ConfirmationItem 
                       label="Nome da música" 
                       value={formData.songName || "(não definido)"} 
-                      onEdit={() => handleEditField(28)} 
+                      onEdit={() => handleEditField(30)} 
                     />
                     <ConfirmationItem 
                       label="Letra" 
                       value={formData.customLyricText.length > 100 ? formData.customLyricText.substring(0, 100) + "..." : formData.customLyricText} 
                       onEdit={() => handleEditField(22)} 
                     />
-                    <ConfirmationItem 
-                      label="Tipo de voz" 
-                      value={getFieldLabel('voiceType', formData.voiceType)} 
-                      onEdit={() => handleEditField(24)} 
-                    />
-                    <ConfirmationItem 
-                      label="Estilo" 
-                      value={getFieldLabel('style', formData.style)} 
-                      onEdit={() => handleEditField(25)} 
-                    />
-                    <ConfirmationItem 
-                      label="Ritmo" 
-                      value={getFieldLabel('rhythm', formData.rhythm)} 
-                      onEdit={() => handleEditField(26)} 
-                    />
-                    <ConfirmationItem 
-                      label="Atmosfera" 
-                      value={getFieldLabel('atmosphere', formData.atmosphere)} 
-                      onEdit={() => handleEditField(27)} 
-                    />
+                    {formData.hasCustomStylePrompt ? (
+                      // Mostrar style prompt customizado
+                      <ConfirmationItem 
+                        label="Style/Prompt técnico" 
+                        value={formData.customStylePrompt.length > 100 ? formData.customStylePrompt.substring(0, 100) + "..." : formData.customStylePrompt} 
+                        onEdit={() => handleEditField(24)} 
+                      />
+                    ) : (
+                      // Mostrar opções de estilo geradas pela IA
+                      <>
+                        <ConfirmationItem 
+                          label="Tipo de voz" 
+                          value={getFieldLabel('voiceType', formData.voiceType)} 
+                          onEdit={() => handleEditField(26)} 
+                        />
+                        <ConfirmationItem 
+                          label="Estilo" 
+                          value={getFieldLabel('style', formData.style)} 
+                          onEdit={() => handleEditField(27)} 
+                        />
+                        <ConfirmationItem 
+                          label="Ritmo" 
+                          value={getFieldLabel('rhythm', formData.rhythm)} 
+                          onEdit={() => handleEditField(28)} 
+                        />
+                        <ConfirmationItem 
+                          label="Atmosfera" 
+                          value={getFieldLabel('atmosphere', formData.atmosphere)} 
+                          onEdit={() => handleEditField(29)} 
+                        />
+                      </>
+                    )}
                   </>
                 ) : formData.isInstrumental ? (
                   // Campos instrumentais
