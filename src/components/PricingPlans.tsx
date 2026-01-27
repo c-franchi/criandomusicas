@@ -68,14 +68,14 @@ const PricingPlans = () => {
 
       if (vocalResult.error) {
         console.error('Error fetching plans:', vocalResult.error);
-        // Fallback to static plans
+        // Fallback to static plans - IMPORTANT: Keep in sync with DB pricing_config
         setPlans([
           {
             id: "single",
             name: "Música Única",
-            price_display: "R$ 47,90",
-            price_cents: 4790,
-            price_promo_cents: 1990,
+            price_display: "R$ 19,90",
+            price_cents: 1990,
+            price_promo_cents: 990,
             features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h"] as string[],
             is_popular: false,
             is_active: true,
@@ -84,8 +84,8 @@ const PricingPlans = () => {
           {
             id: "package",
             name: "Pacote 3 Músicas",
-            price_display: "R$ 99,90",
-            price_cents: 9990,
+            price_display: "R$ 49,90",
+            price_cents: 4990,
             price_promo_cents: null,
             features: ["3 músicas completas", "2 letras personalizadas cada", "Economia de 16%", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h", "Suporte VIP"] as string[],
             is_popular: true,
@@ -95,8 +95,8 @@ const PricingPlans = () => {
           {
             id: "subscription",
             name: "Pacote 5 Músicas",
-            price_display: "R$ 109,90",
-            price_cents: 10990,
+            price_display: "R$ 89,90",
+            price_cents: 8990,
             price_promo_cents: null,
             features: ["Até 5 músicas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 48h", "Prioridade na fila"] as string[],
             is_popular: false,
@@ -104,11 +104,11 @@ const PricingPlans = () => {
             sort_order: 3
           }
         ]);
-        // Fallback instrumental plans
+        // Fallback instrumental plans - IMPORTANT: Keep in sync with DB pricing_config
         setInstrumentalPlans([
-          { id: "single_instrumental", name: "Instrumental Única", price_display: "R$ 15,90", price_cents: 1590, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 1 },
-          { id: "package_instrumental", name: "Pacote 3 Instrumentais", price_display: "R$ 79,90", price_cents: 7990, price_promo_cents: null, features: [], is_popular: true, is_active: true, sort_order: 2 },
-          { id: "subscription_instrumental", name: "Pacote 5 Instrumentais", price_display: "R$ 87,90", price_cents: 8790, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 3 }
+          { id: "single_instrumental", name: "Instrumental Única", price_display: "R$ 14,90", price_cents: 1490, price_promo_cents: 790, features: [], is_popular: false, is_active: true, sort_order: 1 },
+          { id: "package_instrumental", name: "Pacote 3 Instrumentais", price_display: "R$ 39,90", price_cents: 3990, price_promo_cents: null, features: [], is_popular: true, is_active: true, sort_order: 2 },
+          { id: "subscription_instrumental", name: "Pacote 5 Instrumentais", price_display: "R$ 79,90", price_cents: 7990, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 3 }
         ]);
       } else {
         // Map data to ensure features is an array
