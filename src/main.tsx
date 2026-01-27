@@ -11,7 +11,7 @@ if (!rootElement) throw new Error("Failed to find root element");
 createRoot(rootElement).render(
   <React.StrictMode>
     <HelmetProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="criandomusicas-theme">
         <App />
       </ThemeProvider>
     </HelmetProvider>
