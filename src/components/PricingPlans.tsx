@@ -29,9 +29,10 @@ const PricingPlans = () => {
   const [loading, setLoading] = useState(true);
   const [isInstrumental, setIsInstrumental] = useState(false);
 
-  // Format price according to locale (always show in BRL since payments are in BRL)
+  // Format price according to locale with real currency conversion
+  // USD for English, EUR for Spanish/Italian, BRL for Portuguese
   const formatPrice = (cents: number) => {
-    return formatCurrency(cents, i18n.language, { convert: false });
+    return formatCurrency(cents, i18n.language, { convert: true });
   };
 
   // Features for instrumental plans

@@ -1,5 +1,6 @@
 import { Music, Sparkles, ChevronRight, Crown, Mic, Piano } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ interface CreditsBannerProps {
 }
 
 export function CreditsBanner({ className = '', showBuyButton = true, compact = false }: CreditsBannerProps) {
+  const { t } = useTranslation('common');
   const { loading, hasCredits, totalAvailable, totalVocal, totalInstrumental, activePackage, subscriptionInfo } = useCredits();
 
   if (loading) {
@@ -40,13 +42,13 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
               <Sparkles className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <p className="font-medium text-sm">Sem créditos disponíveis</p>
-              <p className="text-xs text-muted-foreground">Compre um pacote e economize!</p>
+              <p className="font-medium text-sm">{t('credits.noCredits', 'Sem créditos disponíveis')}</p>
+              <p className="text-xs text-muted-foreground">{t('credits.buyPackage', 'Compre um pacote e economize!')}</p>
             </div>
           </div>
           <Button asChild size="sm" variant="default">
             <Link to="/planos">
-              Ver Pacotes
+              {t('credits.viewPackages', 'Ver Pacotes')}
               <ChevronRight className="w-4 h-4 ml-1" />
             </Link>
           </Button>
@@ -166,7 +168,7 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
         </div>
         <Button asChild size="sm" variant="default">
           <Link to="/briefing">
-            Criar Música
+            {t('credits.createMusic', 'Criar Música')}
             <ChevronRight className="w-4 h-4 ml-1" />
           </Link>
         </Button>

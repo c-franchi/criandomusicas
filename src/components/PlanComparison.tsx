@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, Gift, Repeat, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import { formatCurrency } from "@/lib/i18n-format";
 
 const PlanComparison = () => {
-  const { t } = useTranslation('pricing');
+  const { t, i18n } = useTranslation('pricing');
   
   const packagesFeatures = t('comparison.packages.features', { returnObjects: true }) as string[];
   const subscriptionFeatures = t('comparison.subscription.features', { returnObjects: true }) as string[];
+
+  // Format price with currency conversion
+  const formatPrice = (cents: number) => formatCurrency(cents, i18n.language, { convert: true });
 
   return (
     <section className="py-16 px-4 sm:px-6" id="comparacao">
@@ -55,9 +59,9 @@ const PlanComparison = () => {
 
               <div className="pt-4">
                 <p className="text-sm text-muted-foreground mb-3">{t('comparison.packages.startingAt')}</p>
-                {/* IMPORTANT: Keep in sync with DB pricing_config - Single: R$ 9,90 */}
+                {/* Price with currency conversion - base: R$ 9,90 = 990 cents */}
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold text-primary">R$ 9,90</span>
+                  <span className="text-3xl font-bold text-primary">{formatPrice(990)}</span>
                   <span className="text-muted-foreground">{t('comparison.packages.perSong')}</span>
                 </div>
                 <Button className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white" asChild>
@@ -109,8 +113,9 @@ const PlanComparison = () => {
 
               <div className="pt-4">
                 <p className="text-sm text-muted-foreground mb-3">{t('comparison.subscription.startingAt')}</p>
+                {/* Price with currency conversion - base: R$ 49,90 = 4990 cents */}
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold text-primary">R$ 49,90</span>
+                  <span className="text-3xl font-bold text-primary">{formatPrice(4990)}</span>
                   <span className="text-muted-foreground">{t('comparison.subscription.perMonth')}</span>
                 </div>
                 <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" asChild>
