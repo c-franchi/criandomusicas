@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface PublicReview {
   id: string;
@@ -28,61 +29,62 @@ const placeholderAvatars = [
   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
 ];
 
-// Default testimonials as fallback - expanded for better social proof
-const defaultTestimonials = [
-  {
-    name: "Maria Silva",
-    role: "Mãe de família",
-    content: "Fiz uma música para o aniversário de 15 anos da minha filha. Ela chorou de emoção! O resultado superou todas as expectativas.",
-    rating: 5,
-    musicType: "aniversario",
-    avatarUrl: placeholderAvatars[0]
-  },
-  {
-    name: "João Santos",
-    role: "Empresário",
-    content: "Encomendei uma música para minha empresa. A equipe ficou emocionada com a letra personalizada. Processo simples e resultado incrível!",
-    rating: 5,
-    musicType: "corporativo",
-    avatarUrl: placeholderAvatars[1]
-  },
-  {
-    name: "Ana Costa",
-    role: "Noiva",
-    content: "Nossa música de casamento ficou perfeita! Contava nossa história desde o primeiro encontro. Todos os convidados se emocionaram.",
-    rating: 5,
-    musicType: "casamento",
-    avatarUrl: placeholderAvatars[2]
-  },
-  {
-    name: "Pedro Oliveira",
-    role: "Pai orgulhoso",
-    content: "Presente de formatura para meu filho. A letra menciona cada conquista dele. Melhor investimento que fiz! Ele guarda para sempre.",
-    rating: 5,
-    musicType: "homenagem",
-    avatarUrl: placeholderAvatars[3]
-  },
-  {
-    name: "Carla Mendes",
-    role: "Esposa há 25 anos",
-    content: "Bodas de prata com uma música que conta nossa história. Meu marido chorou, os filhos emocionados. Momento inesquecível!",
-    rating: 5,
-    musicType: "declaracao",
-    avatarUrl: placeholderAvatars[4]
-  },
-  {
-    name: "Ricardo Lima",
-    role: "Avô",
-    content: "Música para minha neta de 5 anos com o nome dela e as brincadeiras favoritas. Ela pede para ouvir todos os dias!",
-    rating: 5,
-    musicType: "aniversario",
-    avatarUrl: placeholderAvatars[5]
-  }
-];
-
 const Testimonials = () => {
+  const { t } = useTranslation('home');
   const [reviews, setReviews] = useState<PublicReview[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Default testimonials as fallback - expanded for better social proof
+  const defaultTestimonials = [
+    {
+      name: "Maria Silva",
+      role: t('testimonials.roles.mother'),
+      content: t('testimonials.quotes.birthday'),
+      rating: 5,
+      musicType: "aniversario",
+      avatarUrl: placeholderAvatars[0]
+    },
+    {
+      name: "João Santos",
+      role: t('testimonials.roles.entrepreneur'),
+      content: t('testimonials.quotes.corporate'),
+      rating: 5,
+      musicType: "corporativo",
+      avatarUrl: placeholderAvatars[1]
+    },
+    {
+      name: "Ana Costa",
+      role: t('testimonials.roles.bride'),
+      content: t('testimonials.quotes.wedding'),
+      rating: 5,
+      musicType: "casamento",
+      avatarUrl: placeholderAvatars[2]
+    },
+    {
+      name: "Pedro Oliveira",
+      role: t('testimonials.roles.proudFather'),
+      content: t('testimonials.quotes.graduation'),
+      rating: 5,
+      musicType: "homenagem",
+      avatarUrl: placeholderAvatars[3]
+    },
+    {
+      name: "Carla Mendes",
+      role: t('testimonials.roles.wife'),
+      content: t('testimonials.quotes.anniversary'),
+      rating: 5,
+      musicType: "declaracao",
+      avatarUrl: placeholderAvatars[4]
+    },
+    {
+      name: "Ricardo Lima",
+      role: t('testimonials.roles.grandfather'),
+      content: t('testimonials.quotes.child'),
+      rating: 5,
+      musicType: "aniversario",
+      avatarUrl: placeholderAvatars[5]
+    }
+  ];
 
   useEffect(() => {
     const fetchPublicReviews = async () => {
@@ -150,13 +152,13 @@ const Testimonials = () => {
 
   const getMusicTypeLabel = (type: string | null | undefined) => {
     const labels: Record<string, string> = {
-      'homenagem': 'Homenagem',
-      'casamento': 'Casamento',
-      'aniversario': 'Aniversário',
-      'corporativo': 'Corporativo',
-      'declaracao': 'Declaração'
+      'homenagem': t('testimonials.musicTypes.tribute'),
+      'casamento': t('testimonials.musicTypes.wedding'),
+      'aniversario': t('testimonials.musicTypes.birthday'),
+      'corporativo': t('testimonials.musicTypes.corporate'),
+      'declaracao': t('testimonials.musicTypes.declaration')
     };
-    return labels[type || ''] || 'Música Personalizada';
+    return labels[type || ''] || t('testimonials.musicTypes.custom');
   };
 
   const getInitials = (name: string | null | undefined) => {
@@ -173,32 +175,31 @@ const Testimonials = () => {
         {/* Stats bar for social proof */}
         <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-12">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">500+</div>
-            <div className="text-sm text-muted-foreground">Músicas Criadas</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.songsCreated')}</div>
+            <div className="text-sm text-muted-foreground">{t('testimonials.stats.songsCreatedLabel')}</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">5.0★</div>
-            <div className="text-sm text-muted-foreground">Avaliação Média</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.rating')}</div>
+            <div className="text-sm text-muted-foreground">{t('testimonials.stats.ratingLabel')}</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">100%</div>
-            <div className="text-sm text-muted-foreground">Clientes Satisfeitos</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.satisfaction')}</div>
+            <div className="text-sm text-muted-foreground">{t('testimonials.stats.satisfactionLabel')}</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">48h</div>
-            <div className="text-sm text-muted-foreground">Entrega Média</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.delivery')}</div>
+            <div className="text-sm text-muted-foreground">{t('testimonials.stats.deliveryLabel')}</div>
           </div>
         </div>
 
         <div className="text-center mb-16">
           <h2 id="testimonials-heading" className="text-4xl font-bold mb-4">
-            Veja o que nossos{" "}
-            <span className="gradient-text">clientes dizem</span> 💜
+            {t('testimonials.title')} 💜
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             {hasRealReviews 
-              ? "Avaliações reais de quem já criou sua música personalizada"
-              : "Depoimentos de pessoas que transformaram momentos especiais em música"
+              ? t('testimonials.subtitleReal')
+              : t('testimonials.subtitle')
             }
           </p>
         </div>
@@ -227,7 +228,7 @@ const Testimonials = () => {
                     {review.profiles?.avatar_url ? (
                       <AvatarImage 
                         src={review.profiles.avatar_url} 
-                        alt={review.profiles?.name || 'Cliente Verificado'}
+                        alt={review.profiles?.name || t('testimonials.verifiedClient')}
                       />
                     ) : null}
                     <AvatarFallback className="bg-primary/20 text-primary">
@@ -236,7 +237,7 @@ const Testimonials = () => {
                   </Avatar>
                   <div>
                     <div className="font-semibold text-foreground">
-                      {review.profiles?.name || 'Cliente Verificado'}
+                      {review.profiles?.name || t('testimonials.verifiedClient')}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {getMusicTypeLabel(review.orders?.music_type)}
@@ -250,7 +251,7 @@ const Testimonials = () => {
               <Card key={index} className="p-6 glass-card border-border/50 hover:border-primary/50 transition-all duration-300 relative">
                 <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/20" aria-hidden="true" />
                 
-                <div className="flex items-center gap-1 mb-4" role="img" aria-label={`Avaliação: ${testimonial.rating} de 5 estrelas`}>
+                <div className="flex items-center gap-1 mb-4" role="img" aria-label={`${t('testimonials.ratingAria')}: ${testimonial.rating}`}>
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="w-5 h-5 fill-accent text-accent" aria-hidden="true" />
                   ))}
@@ -290,7 +291,7 @@ const Testimonials = () => {
                 ))}
               </div>
               <span className="text-muted-foreground">
-                Baseado em {reviews.length} avaliações reais
+                {t('testimonials.basedOn', { count: reviews.length })}
               </span>
             </div>
           </div>

@@ -51,10 +51,27 @@
     }
   },
   "cookies": {
-    "title": "Aviso de Cookies",
-    "message": "Usamos cookies para mejorar tu experiencia. Al continuar navegando, aceptas nuestra",
-    "link": "Política de Privacidad",
-    "accept": "Aceptar",
-    "decline": "Rechazar"
+    "title": "Tu Privacidad es Importante",
+    "description": "Utilizamos cookies para mejorar tu experiencia en nuestro sitio. De acuerdo con las normativas de protección de datos, necesitamos tu consentimiento.",
+    "essential": {
+      "title": "Cookies Esenciales (Obligatorias)",
+      "description": "Necesarias para el funcionamiento del sitio, autenticación y seguridad."
+    },
+    "analytics": {
+      "title": "Cookies de Análisis",
+      "description": "Nos ayudan a entender cómo usas el sitio para mejorar la experiencia."
+    },
+    "marketing": {
+      "title": "Cookies de Marketing",
+      "description": "Permiten mostrar anuncios relevantes en otros sitios."
+    },
+    "privacyLink": "Política de Privacidad",
+    "termsLink": "Términos de Uso",
+    "back": "Volver",
+    "savePreferences": "Guardar Preferencias",
+    "essentialOnly": "Solo Esenciales",
+    "customize": "Personalizar",
+    "acceptAll": "Aceptar Todas",
+    "lgpdNotice": "Al continuar navegando, aceptas nuestra política de privacidad conforme a las leyes de protección de datos aplicables."
   }
 }

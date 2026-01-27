@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Pause, Volume2, ChevronLeft, ChevronRight, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 import { 
   Carousel, 
   CarouselContent, 
@@ -25,6 +26,7 @@ interface AudioSample {
 }
 
 const AudioSamples = () => {
+  const { t } = useTranslation('home');
   const [samples, setSamples] = useState<AudioSample[]>([]);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
@@ -37,28 +39,28 @@ const AudioSamples = () => {
   const fallbackSamples: AudioSample[] = [
     {
       id: "1",
-      title: "Amor de Pai",
-      description: "Uma homenagem emocionante de pai para filha nos seus 15 anos",
-      style: "Sertanejo",
-      occasion: "Aniversário",
+      title: t('audioSamples.fallback.sample1.title'),
+      description: t('audioSamples.fallback.sample1.description'),
+      style: t('audioSamples.fallback.sample1.style'),
+      occasion: t('audioSamples.fallback.sample1.occasion'),
       audio_url: "",
       cover_url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop"
     },
     {
       id: "2",
-      title: "Nossa Jornada",
-      description: "A história de amor do casal desde o primeiro encontro",
-      style: "Pop Romântico",
-      occasion: "Casamento",
+      title: t('audioSamples.fallback.sample2.title'),
+      description: t('audioSamples.fallback.sample2.description'),
+      style: t('audioSamples.fallback.sample2.style'),
+      occasion: t('audioSamples.fallback.sample2.occasion'),
       audio_url: "",
       cover_url: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300&h=300&fit=crop"
     },
     {
       id: "3",
-      title: "Força da Fé",
-      description: "Louvor personalizado para a igreja celebrar vitórias",
-      style: "Worship",
-      occasion: "Igreja",
+      title: t('audioSamples.fallback.sample3.title'),
+      description: t('audioSamples.fallback.sample3.description'),
+      style: t('audioSamples.fallback.sample3.style'),
+      occasion: t('audioSamples.fallback.sample3.occasion'),
       audio_url: "",
       cover_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop"
     }
@@ -168,14 +170,13 @@ const AudioSamples = () => {
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4">
             <Volume2 className="w-3 h-3 mr-1" />
-            Exemplos Reais
+            {t('audioSamples.badge')}
           </Badge>
           <h2 className="text-4xl font-bold mb-4">
-            Algumas histórias que já{" "}
-            <span className="gradient-text">viraram música</span> 🎵
+            {t('audioSamples.title')} 🎵
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Ouça músicas reais criadas para nossos clientes. Cada uma conta uma história única.
+            {t('audioSamples.subtitle')}
           </p>
         </div>
         
@@ -204,7 +205,7 @@ const AudioSamples = () => {
                     <div className="relative h-48">
                       <img 
                         src={sample.cover_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop"}
-                        alt={`Música personalizada: ${sample.title}`}
+                        alt={`${t('audioSamples.altText')}: ${sample.title}`}
                         className={`w-full h-full object-cover transition-transform duration-500 ${
                           isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
                         }`}
@@ -236,7 +237,7 @@ const AudioSamples = () => {
                               : 'bg-primary hover:bg-primary/90 text-white'
                           }`}
                           onClick={() => togglePlay(sample)}
-                          aria-label={isPlaying ? `Pausar ${sample.title}` : `Reproduzir ${sample.title}`}
+                          aria-label={isPlaying ? t('audioSamples.pause', { title: sample.title }) : t('audioSamples.play', { title: sample.title })}
                         >
                           {isPlaying ? (
                             <Pause className="w-6 h-6" />
@@ -295,7 +296,7 @@ const AudioSamples = () => {
         <div className="flex justify-center gap-2 mt-6 md:hidden">
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <ChevronLeft className="w-4 h-4" />
-            Deslize para ver mais
+            {t('audioSamples.swipeHint')}
             <ChevronRight className="w-4 h-4" />
           </p>
         </div>

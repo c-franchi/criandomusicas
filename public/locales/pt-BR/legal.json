@@ -51,10 +51,27 @@
     }
   },
   "cookies": {
-    "title": "Aviso de Cookies",
-    "message": "Usamos cookies para melhorar sua experiência. Ao continuar navegando, você concorda com nossa",
-    "link": "Política de Privacidade",
-    "accept": "Aceitar",
-    "decline": "Recusar"
+    "title": "Sua Privacidade é Importante",
+    "description": "Utilizamos cookies para melhorar sua experiência em nosso site. De acordo com a LGPD (Lei Geral de Proteção de Dados), precisamos do seu consentimento.",
+    "essential": {
+      "title": "Cookies Essenciais (Obrigatórios)",
+      "description": "Necessários para o funcionamento do site, autenticação e segurança."
+    },
+    "analytics": {
+      "title": "Cookies de Análise",
+      "description": "Nos ajudam a entender como você usa o site para melhorar a experiência."
+    },
+    "marketing": {
+      "title": "Cookies de Marketing",
+      "description": "Permitem mostrar anúncios relevantes em outros sites."
+    },
+    "privacyLink": "Política de Privacidade",
+    "termsLink": "Termos de Uso",
+    "back": "Voltar",
+    "savePreferences": "Salvar Preferências",
+    "essentialOnly": "Apenas Essenciais",
+    "customize": "Personalizar",
+    "acceptAll": "Aceitar Todos",
+    "lgpdNotice": "Ao continuar navegando, você concorda com nossa política de privacidade conforme a Lei 13.709/2018 (LGPD)."
   }
 }

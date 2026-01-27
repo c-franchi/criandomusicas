@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
+import { formatLocalizedDate } from "@/lib/i18n-format";
 
 interface OrderData {
   id: string;
@@ -31,37 +33,39 @@ interface OrderData {
   is_instrumental?: boolean;
 }
 
-// Steps for vocal music (with lyrics)
-const VOCAL_ORDER_STEPS = [
-  { status: 'DRAFT', label: 'Briefing', icon: FileText, progress: 10 },
-  { status: 'AWAITING_PAYMENT', label: 'Pagamento', icon: CreditCard, progress: 20 },
-  { status: 'PAID', label: 'Pago', icon: CheckCircle, progress: 30 },
-  { status: 'LYRICS_PENDING', label: 'Gerando Letras', icon: Clock, progress: 40 },
-  { status: 'LYRICS_GENERATED', label: 'Letras Prontas', icon: FileText, progress: 50 },
-  { status: 'LYRICS_APPROVED', label: 'Letras Aprovadas', icon: CheckCircle, progress: 60 },
-  { status: 'MUSIC_GENERATING', label: 'Produzindo Música', icon: PlayCircle, progress: 80 },
-  { status: 'MUSIC_READY', label: 'Música Pronta', icon: Headphones, progress: 95 },
-  { status: 'COMPLETED', label: 'Entregue', icon: CheckCircle, progress: 100 },
-];
-
-// Steps for instrumental music (no lyrics steps)
-const INSTRUMENTAL_ORDER_STEPS = [
-  { status: 'DRAFT', label: 'Briefing', icon: FileText, progress: 10 },
-  { status: 'AWAITING_PAYMENT', label: 'Pagamento', icon: CreditCard, progress: 20 },
-  { status: 'PAID', label: 'Pago', icon: CheckCircle, progress: 30 },
-  { status: 'LYRICS_PENDING', label: 'Preparando Produção', icon: Clock, progress: 50 },
-  { status: 'LYRICS_APPROVED', label: 'Pronto para Produção', icon: CheckCircle, progress: 60 },
-  { status: 'MUSIC_GENERATING', label: 'Produzindo Música', icon: PlayCircle, progress: 80 },
-  { status: 'MUSIC_READY', label: 'Música Pronta', icon: Headphones, progress: 95 },
-  { status: 'COMPLETED', label: 'Entregue', icon: CheckCircle, progress: 100 },
-];
-
 const OrderTracking = () => {
+  const { t, i18n } = useTranslation('dashboard');
+  const { t: tc } = useTranslation('common');
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+
+  // Steps for vocal music (with lyrics)
+  const VOCAL_ORDER_STEPS = [
+    { status: 'DRAFT', label: t('orderTracking.timeline.briefing'), icon: FileText, progress: 10 },
+    { status: 'AWAITING_PAYMENT', label: t('orderTracking.timeline.payment'), icon: CreditCard, progress: 20 },
+    { status: 'PAID', label: t('orderTracking.timeline.paid'), icon: CheckCircle, progress: 30 },
+    { status: 'LYRICS_PENDING', label: t('orderTracking.timeline.lyricsGenerating'), icon: Clock, progress: 40 },
+    { status: 'LYRICS_GENERATED', label: t('orderTracking.timeline.lyricsReady'), icon: FileText, progress: 50 },
+    { status: 'LYRICS_APPROVED', label: t('orderTracking.timeline.lyricsApproved'), icon: CheckCircle, progress: 60 },
+    { status: 'MUSIC_GENERATING', label: t('orderTracking.timeline.musicGenerating'), icon: PlayCircle, progress: 80 },
+    { status: 'MUSIC_READY', label: t('orderTracking.timeline.musicReady'), icon: Headphones, progress: 95 },
+    { status: 'COMPLETED', label: t('orderTracking.timeline.delivered'), icon: CheckCircle, progress: 100 },
+  ];
+
+  // Steps for instrumental music (no lyrics steps)
+  const INSTRUMENTAL_ORDER_STEPS = [
+    { status: 'DRAFT', label: t('orderTracking.timeline.briefing'), icon: FileText, progress: 10 },
+    { status: 'AWAITING_PAYMENT', label: t('orderTracking.timeline.payment'), icon: CreditCard, progress: 20 },
+    { status: 'PAID', label: t('orderTracking.timeline.paid'), icon: CheckCircle, progress: 30 },
+    { status: 'LYRICS_PENDING', label: t('orderTracking.timeline.preparingProduction'), icon: Clock, progress: 50 },
+    { status: 'LYRICS_APPROVED', label: t('orderTracking.timeline.readyForProduction'), icon: CheckCircle, progress: 60 },
+    { status: 'MUSIC_GENERATING', label: t('orderTracking.timeline.musicGenerating'), icon: PlayCircle, progress: 80 },
+    { status: 'MUSIC_READY', label: t('orderTracking.timeline.musicReady'), icon: Headphones, progress: 95 },
+    { status: 'COMPLETED', label: t('orderTracking.timeline.delivered'), icon: CheckCircle, progress: 100 },
+  ];
 
   // Fetch initial order data
   useEffect(() => {
@@ -152,7 +156,7 @@ const OrderTracking = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando...</p>
+          <p className="text-muted-foreground">{tc('loading')}</p>
         </div>
       </div>
     );
@@ -176,14 +180,6 @@ const OrderTracking = () => {
   const currentStep = getCurrentStep();
   const CurrentIcon = currentStep.icon;
 
-  const getStatusColor = (status: string) => {
-    if (status === order.status) return 'bg-primary text-primary-foreground';
-    const currentIndex = ORDER_STEPS.findIndex(s => s.status === order.status);
-    const stepIndex = ORDER_STEPS.findIndex(s => s.status === status);
-    if (stepIndex < currentIndex) return 'bg-green-500 text-white';
-    return 'bg-muted text-muted-foreground';
-  };
-
   const isStepCompleted = (status: string) => {
     const currentIndex = ORDER_STEPS.findIndex(s => s.status === order.status);
     const stepIndex = ORDER_STEPS.findIndex(s => s.status === status);
@@ -193,20 +189,20 @@ const OrderTracking = () => {
   const getStatusDescription = () => {
     if (order.is_instrumental) {
       const descriptions: Record<string, string> = {
-        'MUSIC_GENERATING': 'Sua trilha instrumental está sendo produzida...',
-        'LYRICS_PENDING': 'Preparando os parâmetros técnicos da produção...',
-        'LYRICS_APPROVED': 'Aguardando início da produção instrumental.',
-        'COMPLETED': 'Sua trilha instrumental está pronta! 🎉',
-        'MUSIC_READY': 'Trilha finalizada e pronta para download!',
+        'MUSIC_GENERATING': t('orderTracking.descriptions.instrumentalGenerating'),
+        'LYRICS_PENDING': t('orderTracking.descriptions.instrumentalPreparing'),
+        'LYRICS_APPROVED': t('orderTracking.descriptions.instrumentalReady'),
+        'COMPLETED': t('orderTracking.descriptions.instrumentalCompleted'),
+        'MUSIC_READY': t('orderTracking.descriptions.instrumentalFinished'),
       };
       return descriptions[order.status] || '';
     }
     const descriptions: Record<string, string> = {
-      'MUSIC_GENERATING': 'Sua música está sendo produzida. Isso pode levar alguns minutos...',
-      'LYRICS_APPROVED': 'Letras aprovadas! Aguardando produção da música.',
-      'LYRICS_GENERATED': 'Suas letras estão prontas para aprovação.',
-      'COMPLETED': 'Sua música está pronta! 🎉',
-      'MUSIC_READY': 'Música finalizada e pronta para download!',
+      'MUSIC_GENERATING': t('orderTracking.descriptions.musicGenerating'),
+      'LYRICS_APPROVED': t('orderTracking.descriptions.lyricsApproved'),
+      'LYRICS_GENERATED': t('orderTracking.descriptions.lyricsGenerated'),
+      'COMPLETED': t('orderTracking.descriptions.completed'),
+      'MUSIC_READY': t('orderTracking.descriptions.musicReady'),
     };
     return descriptions[order.status] || '';
   };
@@ -219,22 +215,22 @@ const OrderTracking = () => {
           <Button variant="ghost" asChild className="mb-4">
             <Link to="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
+              {tc('back')}
             </Link>
           </Button>
           
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold mb-1">
-                {order.lyric_title || `Música ${order.music_type}`}
+                {order.lyric_title || `${t('orderTracking.music')} ${order.music_type}`}
               </h1>
               <p className="text-muted-foreground">
-                {order.music_style} • Pedido #{order.id.slice(0, 8)}
+                {order.music_style} • {t('orderTracking.order')} #{order.id.slice(0, 8)}
               </p>
             </div>
             <div className="text-right text-sm text-muted-foreground flex items-center gap-2">
               <RefreshCw className="w-3 h-3" />
-              Atualizado {lastUpdate.toLocaleTimeString('pt-BR')}
+              {t('orderTracking.updated')} {lastUpdate.toLocaleTimeString(i18n.language === 'pt-BR' ? 'pt-BR' : 'en-US')}
             </div>
           </div>
         </div>
@@ -260,7 +256,7 @@ const OrderTracking = () => {
 
         {/* Timeline */}
         <Card className="p-6 mb-6">
-          <h3 className="font-semibold mb-6">Progresso do Pedido</h3>
+          <h3 className="font-semibold mb-6">{t('orderTracking.orderProgress')}</h3>
           <div className="space-y-4">
             {ORDER_STEPS.map((step, index) => {
               const StepIcon = step.icon;
@@ -287,12 +283,12 @@ const OrderTracking = () => {
                   </div>
                   {isCurrent && (
                     <Badge variant="default" className="animate-pulse">
-                      Em andamento
+                      {t('orderTracking.inProgress')}
                     </Badge>
                   )}
                   {isCompleted && (
                     <Badge variant="secondary" className="bg-green-500/20 text-green-600">
-                      Concluído
+                      {t('orderTracking.completed')}
                     </Badge>
                   )}
                 </div>
@@ -303,13 +299,13 @@ const OrderTracking = () => {
 
         {/* Actions based on status */}
         <Card className="p-6">
-          <h3 className="font-semibold mb-4">Ações</h3>
+          <h3 className="font-semibold mb-4">{t('orderTracking.actions')}</h3>
           <div className="space-y-3">
             {order.status === 'LYRICS_GENERATED' && (
               <Button asChild className="w-full" size="lg">
                 <Link to={`/pedido/${order.id}/letras`}>
                   <FileText className="w-4 h-4 mr-2" />
-                  Ver e Aprovar Letras
+                  {t('orderTracking.viewAndApproveLyrics')}
                 </Link>
               </Button>
             )}
@@ -317,13 +313,13 @@ const OrderTracking = () => {
             {(order.status === 'MUSIC_READY' || order.status === 'COMPLETED') && (
               <Button className="w-full" size="lg">
                 <Headphones className="w-4 h-4 mr-2" />
-                Ouvir Minha Música
+                {t('orderTracking.listenToMusic')}
               </Button>
             )}
             
             <Button asChild variant="outline" className="w-full">
               <Link to={`/pedido/${order.id}`}>
-                Ver Detalhes do Pedido
+                {t('orderTracking.viewOrderDetails')}
               </Link>
             </Button>
           </div>
