@@ -2,32 +2,215 @@
   "privacy": {
     "title": "Privacy Policy",
     "lastUpdated": "Last updated",
+    "seoDescription": "Learn how Criando Músicas collects, uses, and protects your personal data in compliance with data protection laws. Transparency and security for you.",
+    "seoKeywords": "privacy policy, data protection, privacy, user data",
     "sections": {
-      "intro": "Introduction",
-      "dataCollection": "Data Collection",
-      "dataUse": "Data Use",
-      "dataSecurity": "Data Security",
-      "cookies": "Cookies",
-      "rights": "Your Rights",
-      "contact": "Contact"
+      "intro": {
+        "title": "1. Introduction",
+        "content": "Criando Músicas is committed to protecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your personal information in compliance with applicable data protection laws."
+      },
+      "dataCollection": {
+        "title": "2. Data We Collect",
+        "items": [
+          "Registration data: Name, email, phone, and WhatsApp",
+          "Briefing data: Stories, names, musical preferences, and information provided for song creation",
+          "Payment data: Processed securely by third parties (payment gateways)",
+          "Usage data: Information about how you use our platform"
+        ]
+      },
+      "dataUse": {
+        "title": "3. Purpose of Processing",
+        "intro": "We use your data to:",
+        "items": [
+          "Create personalized songs according to your specifications",
+          "Contact you about the progress of your order",
+          "Send the finished song via WhatsApp or email",
+          "Process payments securely",
+          "Improve our services and user experience",
+          "Comply with legal and regulatory obligations"
+        ]
+      },
+      "legalBasis": {
+        "title": "4. Legal Basis",
+        "intro": "We process your data based on the following legal grounds:",
+        "items": [
+          "Contract execution: To provide the contracted services",
+          "Consent: For marketing communications and use of sensitive data",
+          "Legitimate interest: To improve our services",
+          "Legal obligation: To meet legal requirements"
+        ]
+      },
+      "dataSharing": {
+        "title": "5. Data Sharing",
+        "intro": "We do not sell your personal data. We may share information with:",
+        "items": [
+          "Payment processors to complete transactions",
+          "Technology service providers that assist us",
+          "Public authorities when required by law"
+        ]
+      },
+      "rights": {
+        "title": "6. Your Rights",
+        "intro": "You have the following rights regarding your data:",
+        "items": [
+          "Confirm the existence of data processing",
+          "Access your personal data",
+          "Correct incomplete or outdated data",
+          "Request anonymization, blocking, or deletion of data",
+          "Request data portability",
+          "Revoke consent at any time",
+          "Obtain information about data sharing"
+        ]
+      },
+      "dataSecurity": {
+        "title": "7. Data Security",
+        "content": "We implement technical and organizational measures to protect your data, including encryption, access control, and security monitoring. We store your data on secure servers and follow market best practices."
+      },
+      "retention": {
+        "title": "8. Data Retention",
+        "content": "We keep your data for the time necessary to provide services and comply with legal obligations. After this period, data is securely deleted or anonymized."
+      },
+      "cookies": {
+        "title": "9. Cookies",
+        "content": "We use cookies to improve your experience. You can manage cookie preferences through your browser settings."
+      },
+      "dpo": {
+        "title": "10. Data Protection Contact",
+        "intro": "To exercise your rights or clarify questions about this policy, contact us:",
+        "email": "Email",
+        "whatsapp": "WhatsApp"
+      },
+      "changes": {
+        "title": "11. Changes",
+        "content": "This policy may be updated periodically. We will notify you of significant changes via email or through a notice on our platform."
+      }
     }
   },
   "terms": {
     "title": "Terms of Use",
     "lastUpdated": "Last updated",
+    "seoDescription": "Terms and conditions of use for Criando Músicas service. Learn about guarantees, refund policy, intellectual property, and creation process.",
+    "seoKeywords": "terms of use, terms of service, personalized music guarantee, refund, copyright",
     "sections": {
-      "acceptance": "Acceptance of Terms",
-      "services": "Description of Services",
-      "account": "User Account",
-      "payment": "Payment",
-      "content": "Content and Intellectual Property",
-      "restrictions": "Use Restrictions",
-      "termination": "Termination",
-      "liability": "Limitation of Liability",
-      "changes": "Changes to Terms",
-      "contact": "Contact"
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "content": "By using Criando Músicas services, you agree to these Terms of Use. If you do not agree with any part of these terms, do not use our services."
+      },
+      "services": {
+        "title": "2. Service Description",
+        "content": "Criando Músicas offers personalized song creation services using artificial intelligence, based on information and preferences provided by the customer."
+      },
+      "account": {
+        "title": "3. Registration and Account",
+        "items": [
+          "You must provide true and up-to-date information",
+          "You are responsible for maintaining the confidentiality of your account",
+          "You must be at least 18 years old or have legal guardian authorization",
+          "Each person should have only one account"
+        ]
+      },
+      "process": {
+        "title": "4. Creation Process",
+        "intro": "The music creation process follows these steps:",
+        "items": [
+          "Complete the briefing with information about the desired song",
+          "Payment for the chosen service",
+          "Lyrics generation by artificial intelligence",
+          "Customer approval of the lyrics",
+          "Complete music production",
+          "Delivery of the finished song"
+        ]
+      },
+      "intellectualProperty": {
+        "title": "5. Intellectual Property",
+        "items": [
+          "The created song is the customer's property after full payment",
+          "The customer has the right to personal and non-commercial use of the song",
+          "For commercial use, a specific license must be acquired",
+          "Criando Músicas reserves the right to use anonymous samples for demonstration"
+        ]
+      },
+      "guarantee": {
+        "title": "6. Guarantee and Revision Policy",
+        "satisfactionTitle": "🎵 Our Satisfaction Guarantee",
+        "satisfactionIntro": "We want you to love your song! That's why we offer:",
+        "satisfactionItems": [
+          "2 lyric versions: We generate two options for you to choose the best match",
+          "1 optional modification: You can request adjustments to the chosen lyrics (only once)",
+          "Original backup: If you don't like the modified version, you can return to the original before approving"
+        ],
+        "noRefundTitle": "⚠️ No Refund Policy",
+        "noRefundItems": [
+          "After lyrics approval, there are no returns or refunds",
+          "Review carefully before approving the final lyrics",
+          "The more details you provide in the briefing, the better the result",
+          "The guarantee does not cover subjective preferences after approval"
+        ]
+      },
+      "payment": {
+        "title": "7. Payments",
+        "items": [
+          "Payments are processed securely by third parties",
+          "We accept Pix and credit cards",
+          "Production only starts after payment confirmation",
+          "Discount coupons follow specific rules for each promotion"
+        ]
+      },
+      "refund": {
+        "title": "8. Cancellation and Refund Policy",
+        "items": [
+          "Before lyrics generation: Full refund",
+          "After lyrics generation: 50% refund",
+          "After music production: No refund, but we guarantee revisions according to our guarantee policy"
+        ]
+      },
+      "prohibited": {
+        "title": "9. Prohibited Content",
+        "intro": "We do not create songs containing:",
+        "items": [
+          "Hate speech or discrimination",
+          "Apology for crimes or violence",
+          "Defamatory content about third parties",
+          "Pornography or sexually explicit content",
+          "Copyright infringement of third parties",
+          "Any illegal content"
+        ]
+      },
+      "delivery": {
+        "title": "10. Delivery Times",
+        "items": [
+          "Lyrics generation: Up to 24 hours after payment",
+          "Music production: 3 to 7 business days after lyrics approval",
+          "Deadlines may vary during high demand periods"
+        ]
+      },
+      "liability": {
+        "title": "11. Limitation of Liability",
+        "intro": "Criando Músicas is not responsible for:",
+        "items": [
+          "Misuse of songs by the customer",
+          "Incorrect information provided in the briefing",
+          "Subjective expectations not expressed in the briefing",
+          "Indirect or consequential damages"
+        ]
+      },
+      "changes": {
+        "title": "12. Changes to Terms",
+        "content": "We may update these terms periodically. Significant changes will be communicated via email. Continued use of services implies acceptance of new terms."
+      },
+      "jurisdiction": {
+        "title": "13. Jurisdiction and Applicable Law",
+        "content": "These terms are governed by Brazilian law. Any disputes will be resolved in the court of Ribeirão Preto - SP, Brazil."
+      },
+      "contact": {
+        "title": "14. Contact",
+        "intro": "For questions about these terms:",
+        "email": "Email",
+        "whatsapp": "WhatsApp"
+      }
     }
   },
+  "back": "Back",
   "rules": {
     "title": "Music Creation Guidelines",
     "subtitle": "Guidelines for your song content",
