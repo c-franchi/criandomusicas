@@ -44,6 +44,7 @@
     },
     "footer": "💳 Aceitamos Pix, cartão de crédito e débito • Cancele quando quiser"
   },
+  "backToHome": "Voltar",
   "plans": {
     "single": {
       "name": "Música Única",
@@ -68,6 +69,30 @@
     "subscription_instrumental": {
       "name": "Pacote 5 Instrumentais",
       "description": "Para quem cria muito"
+    },
+    "creator_start": {
+      "name": "Creator Start",
+      "description": "50 músicas/mês para criadores iniciantes"
+    },
+    "creator_pro": {
+      "name": "Creator Pro",
+      "description": "150 músicas/mês para criadores ativos"
+    },
+    "creator_studio": {
+      "name": "Creator Studio",
+      "description": "300 músicas/mês para estúdios profissionais"
+    },
+    "creator_start_instrumental": {
+      "name": "Creator Start Instrumental",
+      "description": "50 instrumentais/mês para criadores iniciantes"
+    },
+    "creator_pro_instrumental": {
+      "name": "Creator Pro Instrumental",
+      "description": "150 instrumentais/mês para criadores ativos"
+    },
+    "creator_studio_instrumental": {
+      "name": "Creator Studio Instrumental",
+      "description": "300 instrumentais/mês para estúdios profissionais"
     }
   },
   "instrumental": {

@@ -44,6 +44,7 @@
     },
     "footer": "💳 We accept Pix, credit and debit card • Cancel anytime"
   },
+  "backToHome": "Back",
   "plans": {
     "single": {
       "name": "Single Song",
@@ -68,6 +69,30 @@
     "subscription_instrumental": {
       "name": "5 Instrumentals Package",
       "description": "For power creators"
+    },
+    "creator_start": {
+      "name": "Creator Start",
+      "description": "50 songs/month for beginner creators"
+    },
+    "creator_pro": {
+      "name": "Creator Pro",
+      "description": "150 songs/month for active creators"
+    },
+    "creator_studio": {
+      "name": "Creator Studio",
+      "description": "300 songs/month for professional studios"
+    },
+    "creator_start_instrumental": {
+      "name": "Creator Start Instrumental",
+      "description": "50 instrumentals/month for beginner creators"
+    },
+    "creator_pro_instrumental": {
+      "name": "Creator Pro Instrumental",
+      "description": "150 instrumentals/month for active creators"
+    },
+    "creator_studio_instrumental": {
+      "name": "Creator Studio Instrumental",
+      "description": "300 instrumentals/month for professional studios"
     }
   },
   "instrumental": {

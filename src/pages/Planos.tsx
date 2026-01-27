@@ -14,6 +14,7 @@ import CreditsBanner from "@/components/CreditsBanner";
 import { useTranslation } from "react-i18next";
 import RegionSelector from "@/components/RegionSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { formatCurrency, getLocalizedPrice } from "@/lib/i18n-format";
 import {
   Accordion,
   AccordionContent,
@@ -31,11 +32,6 @@ interface PricingPlan {
   is_popular: boolean;
   is_active: boolean;
 }
-
-// Helper to format cents to BRL
-const formatPrice = (cents: number): string => {
-  return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
-};
 
 // Get credits for a plan
 const getCreditsForPlan = (planId: string): number => {
@@ -60,7 +56,7 @@ const Planos = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation('pricing');
+  const { t, i18n } = useTranslation('pricing');
   const [isInstrumental, setIsInstrumental] = useState(false);
   const [vocalPlans, setVocalPlans] = useState<PricingPlan[]>([]);
   const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
@@ -70,6 +66,11 @@ const Planos = () => {
   const [loading, setLoading] = useState(true);
   const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
+  
+  // Helper to format prices with currency conversion based on current language
+  const formatPrice = (cents: number): string => {
+    return formatCurrency(cents, i18n.language, { convert: true });
+  };
 
   // Check for subscription success
   useEffect(() => {
@@ -486,8 +487,13 @@ const Planos = () => {
                         {getPlanName(plan.id, plan.name)}
                       </CardTitle>
                       
+                      {/* Plan Description */}
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {t(`plans.${plan.id}.description`, { defaultValue: '' })}
+                      </p>
+                      
                       <CardDescription className="text-4xl font-bold text-purple-400">
-                        {plan.price_display}
+                        {formatPrice(plan.price_promo_cents || plan.price_cents)}
                       </CardDescription>
 
                       {/* Price per music */}

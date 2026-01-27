@@ -122,5 +122,6 @@
     "hoursAgo": "hace {{count}} horas",
     "minutesAgo": "hace {{count}} minutos",
     "justNow": "ahora mismo"
-  }
+  },
+  "loading": "Cargando..."
 }

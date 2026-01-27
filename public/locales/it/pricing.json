@@ -44,6 +44,7 @@
     },
     "footer": "💳 Accettiamo Pix, carta di credito e debito • Annulla quando vuoi"
   },
+  "backToHome": "Indietro",
   "plans": {
     "single": {
       "name": "Canzone Singola",
@@ -68,6 +69,30 @@
     "subscription_instrumental": {
       "name": "Pacchetto 5 Strumentali",
       "description": "Per chi crea molto"
+    },
+    "creator_start": {
+      "name": "Creator Start",
+      "description": "50 canzoni/mese per creatori principianti"
+    },
+    "creator_pro": {
+      "name": "Creator Pro",
+      "description": "150 canzoni/mese per creatori attivi"
+    },
+    "creator_studio": {
+      "name": "Creator Studio",
+      "description": "300 canzoni/mese per studi professionali"
+    },
+    "creator_start_instrumental": {
+      "name": "Creator Start Instrumental",
+      "description": "50 strumentali/mese per creatori principianti"
+    },
+    "creator_pro_instrumental": {
+      "name": "Creator Pro Instrumental",
+      "description": "150 strumentali/mese per creatori attivi"
+    },
+    "creator_studio_instrumental": {
+      "name": "Creator Studio Instrumental",
+      "description": "300 strumentali/mese per studi professionali"
     }
   },
   "instrumental": {
