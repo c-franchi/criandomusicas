@@ -48,16 +48,18 @@ serve(async (req) => {
     );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
     
-    if (authError || !userData?.user) {
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.log('[TRANSFER-CREDITS] Authentication failed:', claimsError?.message);
       return new Response(
-        JSON.stringify({ success: false, error: 'Não autorizado' }),
+        JSON.stringify({ success: false, error: 'Sessão expirada. Por favor, faça login novamente.' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const fromUserId = userData.user.id;
+    const fromUserId = claimsData.claims.sub as string;
+    const fromUserEmail = claimsData.claims.email as string | undefined;
     const { toEmail, amount, creditType, message }: TransferRequest = await req.json();
 
     console.log('[TRANSFER-CREDITS] Request:', { fromUserId, toEmail, amount, creditType });
@@ -81,7 +83,7 @@ serve(async (req) => {
       }
 
       // Can't transfer to yourself
-      if (toEmail.toLowerCase() === userData.user.email?.toLowerCase()) {
+      if (toEmail.toLowerCase() === fromUserEmail?.toLowerCase()) {
         return new Response(
           JSON.stringify({ success: false, error: 'Você não pode transferir créditos para si mesmo' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

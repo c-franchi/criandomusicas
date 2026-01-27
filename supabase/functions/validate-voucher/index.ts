@@ -34,10 +34,12 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     let userId: string | null = null;
     
-    if (authHeader) {
+    if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "");
-      const { data } = await supabaseClient.auth.getUser(token);
-      userId = data.user?.id || null;
+      const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+      if (!claimsError && claimsData?.claims?.sub) {
+        userId = claimsData.claims.sub as string;
+      }
     }
     logStep("User auth", { userId: userId ? "authenticated" : "anonymous" });
 

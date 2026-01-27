@@ -44,12 +44,29 @@ serve(async (req) => {
     logStep("Plan selected", { planId, ...planConfig, voucherCode: voucherCode || 'none' });
 
     // Retrieve authenticated user
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      logStep("No authorization header provided");
+      return new Response(JSON.stringify({ error: "Não autorizado" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { email: user.email });
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims?.sub || !claimsData?.claims?.email) {
+      logStep("Authentication failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({ error: "Sessão expirada. Por favor, faça login novamente." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    logStep("User authenticated", { email: userEmail });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -57,7 +74,7 @@ serve(async (req) => {
     });
 
     // Check if a Stripe customer record exists for this user
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
     let customerId: string | undefined;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -149,7 +166,7 @@ serve(async (req) => {
     // Create a subscription session with Stripe price ID
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : userEmail,
       line_items: [{
         price: planConfig.priceId,
         quantity: 1,
@@ -158,14 +175,14 @@ serve(async (req) => {
       success_url: `${origin}/dashboard?subscription=success&plan=${planId}`,
       cancel_url: `${origin}/creator-checkout/${planId}`,
       metadata: {
-        user_id: user.id,
+        user_id: userId,
         plan_id: planId,
         plan_type: 'creator',
         credits: String(planConfig.credits),
       },
       subscription_data: {
         metadata: {
-          user_id: user.id,
+          user_id: userId,
           plan_id: planId,
           plan_type: 'creator',
           credits: String(planConfig.credits),
