@@ -175,8 +175,8 @@ const Testimonials = () => {
         {/* Stats bar for social proof */}
         <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-12">
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.songsCreated')}</div>
-            <div className="text-sm text-muted-foreground">{t('testimonials.stats.songsCreatedLabel')}</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.songs')}</div>
+            <div className="text-sm text-muted-foreground">{t('testimonials.stats.songsLabel')}</div>
           </div>
           <div className="text-center">
             <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.rating')}</div>
