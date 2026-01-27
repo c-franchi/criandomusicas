@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +17,8 @@ interface PricingConfig {
 }
 
 const CTA = () => {
+  const { t } = useTranslation('home');
+  const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasCredits, totalAvailable } = useCredits();
@@ -37,12 +40,8 @@ const CTA = () => {
     fetchPricing();
   }, []);
 
-  const benefits = [
-    "Processo simples e rápido", 
-    "Entrega em até 48 horas", 
-    "Música exclusiva e personalizada", 
-    "Opção de vídeo para compartilhar"
-  ];
+  // Get benefits from translations
+  const benefits = t('cta.benefits', { returnObjects: true }) as string[];
 
   // Calculate display values
   const promoPrice = pricing?.price_promo_cents 
@@ -61,21 +60,21 @@ const CTA = () => {
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <Badge className="mb-6 bg-accent text-accent-foreground">
           <Zap className="w-4 h-4 mr-2" />
-          Comece Agora
+          {t('cta.badge')}
         </Badge>
         
         <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          Transforme sua história em uma{" "}
-          <span className="gradient-text">música única</span>
+          {t('cta.title')}{" "}
+          <span className="gradient-text">{t('cta.titleHighlight')}</span>
         </h2>
         
         <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Comece agora e crie algo que vai emocionar para sempre.
+          {t('cta.subtitle')}
         </p>
         
         {/* Benefits */}
         <div className="grid sm:grid-cols-2 gap-4 mb-12 max-w-2xl mx-auto">
-          {benefits.map((benefit, index) => (
+          {Array.isArray(benefits) && benefits.map((benefit, index) => (
             <div key={index} className="flex items-center gap-3 text-left">
               <CheckCircle className="w-5 h-5 text-accent flex-shrink-0" />
               <span className="text-muted-foreground">{benefit}</span>
@@ -92,19 +91,19 @@ const CTA = () => {
                 <span className="text-4xl font-bold text-green-400">{totalAvailable}</span>
               </div>
               <div className="text-green-400 font-medium mb-2">
-                Crédito{totalAvailable !== 1 ? 's' : ''} disponível{totalAvailable !== 1 ? 'is' : ''}
+                {totalAvailable !== 1 ? t('cta.creditsAvailablePlural') : t('cta.creditsAvailable')}
               </div>
               <div className="text-sm text-muted-foreground">
-                Crie sua próxima música sem pagar!
+                {t('cta.freeNextSong')}
               </div>
             </>
           ) : (
             <>
               <div className="text-4xl font-bold gradient-text mb-2">{displayPrice}</div>
-              <div className="text-muted-foreground mb-4">Música completa personalizada</div>
+              <div className="text-muted-foreground mb-4">{t('cta.completeSong')}</div>
               {promoPrice && (
                 <div className="text-sm text-muted-foreground">
-                  <span className="line-through">{originalPrice}</span> • Promoção por tempo limitado
+                  <span className="line-through">{originalPrice}</span> • {t('cta.limitedPromo')}
                 </div>
               )}
             </>
@@ -121,11 +120,11 @@ const CTA = () => {
           {user && hasCredits ? (
             <>
               <Zap className="w-5 h-5 mr-2" />
-              Usar meu crédito agora
+              {t('cta.useCredit')}
             </>
           ) : (
             <>
-              Criar minha música agora
+              {t('cta.createNow')}
               <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
             </>
           )}

@@ -18,19 +18,29 @@
     }
   },
   "process": {
-    "title": "Como Funciona",
-    "subtitle": "Criar sua música personalizada é simples e rápido",
+    "title": "Como",
+    "titleHighlight": "funciona",
+    "subtitle": "É simples, rápido e você não precisa saber nada de música",
     "step1": {
       "title": "Conte sua história",
-      "description": "Preencha o briefing com os detalhes da sua homenagem"
+      "description": "Você escreve os detalhes, sentimentos ou a ideia da música."
     },
     "step2": {
-      "title": "Escolha o estilo",
-      "description": "Selecione o gênero musical e o tom da sua música"
+      "title": "Nós criamos a música",
+      "description": "Transformamos sua história em uma música única, no estilo que você escolher."
     },
     "step3": {
-      "title": "Receba sua música",
-      "description": "Em até 48h, sua música estará pronta para emocionar"
+      "title": "Receba e compartilhe",
+      "description": "Baixe sua música e, se quiser, receba também o vídeo pronto para emocionar."
+    },
+    "packages": {
+      "title": "Economize com Pacotes de Músicas",
+      "description": "Compre um pacote e crie múltiplas músicas pagando menos! Seus créditos ficam salvos e você usa quando quiser — sem precisar pagar a cada nova música.",
+      "songs3": "3 músicas",
+      "songs5": "5 músicas",
+      "savings16": "Economia de 16%",
+      "bestSavings": "Maior economia",
+      "viewPackages": "Ver Pacotes"
     }
   },
   "samples": {
@@ -42,32 +52,142 @@
     "subtitle": "Histórias reais de quem já transformou momentos em música"
   },
   "whyUs": {
-    "title": "Por Que Escolher a Gente?",
-    "subtitle": "Motivos para criar sua música conosco",
+    "title": "Por que escolher Criando Músicas?",
+    "subtitle": "Um jeito simples, confiável e emocionante de criar músicas personalizadas para presentear, homenagear ou eternizar momentos especiais.",
+    "targetTitle": "Esse serviço é perfeito",
+    "targetHighlight": "para quem:",
+    "target": [
+      "Quer dar um presente diferente e inesquecível",
+      "Quer homenagear alguém especial",
+      "Quer transformar sentimentos em música",
+      "Quer uma música própria, mesmo sem saber compor",
+      "Quer compartilhar algo único nas redes sociais"
+    ],
     "feature1": {
-      "title": "Qualidade Profissional",
-      "description": "Músicas produzidas com IA avançada e curadoria humana"
+      "title": "Processo simples e rápido",
+      "description": "Você conta a história, escolhe o estilo e recebe sua música. Sem complicação."
     },
     "feature2": {
-      "title": "Entrega Rápida",
-      "description": "Receba sua música em até 48 horas"
+      "title": "Músicas personalizadas de verdade",
+      "description": "Cada música é única, criada do zero a partir da sua história e emoções."
     },
     "feature3": {
-      "title": "100% Personalizado",
-      "description": "Cada música é única, criada especialmente para você"
+      "title": "Opção de vídeo pronto",
+      "description": "Além da música, você pode receber um vídeo editado para compartilhar."
     },
     "feature4": {
-      "title": "Satisfação Garantida",
-      "description": "Ajustes gratuitos até você ficar satisfeito"
+      "title": "Atendimento humano",
+      "description": "Suporte real e transparente. Nada de robôs ou respostas automáticas."
+    },
+    "feature5": {
+      "title": "Sem promessas falsas",
+      "description": "Você aprova a letra antes. Sem surpresas, sem pegadinhas."
+    },
+    "feature6": {
+      "title": "+500 músicas criadas",
+      "description": "Centenas de clientes satisfeitos já eternizaram seus momentos especiais."
+    },
+    "howItWorks": {
+      "title": "Como funciona criar uma música personalizada?",
+      "p1": "Criar uma música personalizada com a Criando Músicas é simples e emocionante. Primeiro, você nos conta sua história - pode ser uma declaração de amor, uma homenagem a alguém especial, uma lembrança de infância ou qualquer momento que você queira eternizar em forma de música.",
+      "p2": "Nossa tecnologia de inteligência artificial, combinada com produção musical profissional, transforma suas palavras em uma composição única. Você escolhe o estilo musical que mais combina - do sertanejo romântico ao pop animado, do gospel inspirador ao rock energético.",
+      "p3": "Em até 48 horas, você recebe sua música exclusiva diretamente no WhatsApp, pronta para emocionar, presentear e criar memórias inesquecíveis. É o presente perfeito para aniversários, casamentos, Dia das Mães, Dia dos Pais, formaturas e qualquer ocasião especial."
     }
   },
   "cta": {
-    "title": "Pronto para Criar Sua Música?",
-    "subtitle": "Transforme sua história em uma canção inesquecível",
-    "button": "Começar Agora"
+    "title": "Transforme sua história em uma",
+    "titleHighlight": "música única",
+    "subtitle": "Comece agora e crie algo que vai emocionar para sempre.",
+    "badge": "Comece Agora",
+    "benefits": [
+      "Processo simples e rápido",
+      "Entrega em até 48 horas",
+      "Música exclusiva e personalizada",
+      "Opção de vídeo para compartilhar"
+    ],
+    "creditsAvailable": "Crédito disponível",
+    "creditsAvailablePlural": "Créditos disponíveis",
+    "freeNextSong": "Crie sua próxima música sem pagar!",
+    "completeSong": "Música completa personalizada",
+    "limitedPromo": "Promoção por tempo limitado",
+    "useCredit": "Usar meu crédito agora",
+    "createNow": "Criar minha música agora"
   },
   "faq": {
-    "title": "Perguntas Frequentes",
-    "subtitle": "Tire suas dúvidas sobre nosso serviço"
+    "title": "Perguntas",
+    "titleHighlight": "Frequentes",
+    "subtitle": "Tudo o que você precisa saber antes de criar sua música",
+    "badge": "Dúvidas Frequentes",
+    "stillQuestions": "Ainda tem dúvidas? Entre em contato conosco!",
+    "whatsapp": "Falar no WhatsApp",
+    "emailSupport": "Ou enviar email para suporte",
+    "questions": [
+      {
+        "q": "Preciso saber algo de música para criar?",
+        "a": "Não precisa saber nada de música. Você só conta a história, o resto é com a gente. É simples: você escreve o que quer contar, escolhe o estilo e a gente transforma em música."
+      },
+      {
+        "q": "Quanto tempo leva para receber minha música?",
+        "a": "O tempo médio de entrega é de até 48 horas após você aprovar a letra. Você acompanha tudo pela plataforma e recebe notificações quando sua música estiver pronta."
+      },
+      {
+        "q": "Posso pedir alterações na letra?",
+        "a": "Sim! Você recebe duas versões de letra para escolher e pode pedir ajustes antes de aprovar. Depois que você aprova, a música começa a ser produzida."
+      },
+      {
+        "q": "A música é realmente minha e exclusiva?",
+        "a": "Sim! Cada música é criada do zero, só para você. Ela nunca será vendida ou usada por outra pessoa. A música é sua para sempre."
+      },
+      {
+        "q": "Quais estilos musicais vocês fazem?",
+        "a": "Fazemos vários estilos: Pop, Sertanejo, Rock, MPB, Gospel, Funk, Forró, Pagode, Bossa Nova e muito mais. Você escolhe o que combina com a sua história."
+      },
+      {
+        "q": "Posso fazer uma música sem letra (instrumental)?",
+        "a": "Pode sim! Músicas instrumentais são perfeitas para vídeos, podcasts ou momentos especiais. Você escolhe os instrumentos e o clima que deseja."
+      },
+      {
+        "q": "Vocês fazem vídeo também?",
+        "a": "Sim! A partir de R$50, você pode receber um vídeo personalizado com fotos ou clipes, sincronizado com sua música. Perfeito para compartilhar nas redes sociais."
+      },
+      {
+        "q": "Como funciona o pagamento?",
+        "a": "Aceitamos PIX, cartão de crédito e débito. O pagamento é 100% seguro e você só paga depois de preencher o briefing. Também aceitamos cupons de desconto."
+      },
+      {
+        "q": "E se eu não gostar do resultado?",
+        "a": "Nossa taxa de satisfação é de 98%! Quanto mais detalhes você colocar no briefing, melhor fica a música. Você aprova a letra antes, então não tem surpresas."
+      },
+      {
+        "q": "Posso usar as músicas em vídeos monetizados?",
+        "a": "Sim! As músicas criadas são 100% originais e você tem todos os direitos para uso comercial, incluindo monetização no YouTube, TikTok, Instagram e outras plataformas."
+      },
+      {
+        "q": "Como funciona a assinatura Creator?",
+        "a": "Na assinatura, você recebe créditos todo mês para criar músicas. É ideal para criadores de conteúdo que precisam de várias músicas regularmente."
+      },
+      {
+        "q": "Os créditos da assinatura expiram?",
+        "a": "Sim, os créditos da assinatura Creator renovam mensalmente. Créditos não utilizados não acumulam para o mês seguinte."
+      },
+      {
+        "q": "Posso cancelar minha assinatura?",
+        "a": "Sim, você pode cancelar sua assinatura a qualquer momento pelo painel do usuário. Você continua com acesso até o fim do período pago."
+      }
+    ]
+  },
+  "footer": {
+    "description": "Transformamos suas histórias mais especiais em músicas únicas e emocionantes. Sua trilha sonora personalizada está a um clique de distância.",
+    "product": "Produto",
+    "howItWorks": "Como funciona",
+    "examples": "Exemplos",
+    "pricing": "Preços",
+    "legal": "Legal",
+    "terms": "Termos de Uso",
+    "privacy": "Política de Privacidade",
+    "rules": "Regras de Criação",
+    "contact": "Contato",
+    "copyright": "© 2025 Criando Músicas. Todos os direitos reservados.",
+    "developedBy": "Desenvolvido por"
   }
 }
