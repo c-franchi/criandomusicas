@@ -76,7 +76,7 @@ const ProcessSteps = () => {
                 <Sparkles className="w-5 h-5 text-accent" />
                 Economize com Pacotes de Músicas
               </h3>
-              <p className="text-muted-foreground mb-4">
+              <p className="text-foreground/80 mb-4">
                 Compre um pacote e crie múltiplas músicas pagando menos! 
                 Seus créditos ficam salvos e você usa quando quiser — 
                 sem precisar pagar a cada nova música.
