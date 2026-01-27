@@ -30,17 +30,61 @@ serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader?.startsWith("Bearer ")) {
+      logStep("No authorization header provided");
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        plan_id: null,
+        credits_remaining: 0,
+        credits_total: 0,
+        subscription_end: null,
+        current_period_start: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
-    const user = userData.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { userId: user.id, email: user.email });
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims?.sub) {
+      logStep("Authentication failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        plan_id: null,
+        credits_remaining: 0,
+        credits_total: 0,
+        subscription_end: null,
+        current_period_start: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    
+    if (!userEmail) {
+      logStep("User email not available in claims");
+      return new Response(JSON.stringify({ 
+        subscribed: false,
+        plan_id: null,
+        credits_remaining: 0,
+        credits_total: 0,
+        subscription_end: null,
+        current_period_start: null,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+    
+    logStep("User authenticated", { userId, email: userEmail });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
 
     if (customers.data.length === 0) {
       logStep("No customer found");
@@ -133,7 +177,7 @@ serve(async (req) => {
     const { count: usedCredits, error: countError } = await supabaseClient
       .from('orders')
       .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .gte('created_at', currentPeriodStart)
       .in('payment_status', ['PAID'])
       .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
