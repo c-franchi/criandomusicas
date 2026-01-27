@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBanner } from "@/components/PushNotificationPrompt";
 import CreditsBanner from "@/components/CreditsBanner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -454,6 +455,7 @@ const Dashboard = () => {
                 <User className="w-4 h-4" />
               </Link>
             </Button>
+            <ThemeToggle />
             {isAdmin && (
               <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
                 <Link to="/admin" title="Painel Admin">
