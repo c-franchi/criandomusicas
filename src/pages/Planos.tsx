@@ -2,16 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Mic, Users, Clock, Star, Shield } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import PlanTypeToggle from "@/components/PlanTypeToggle";
-import { Loader2 } from "lucide-react";
 import SEO from "@/components/SEO";
 import CreditsBanner from "@/components/CreditsBanner";
+import { useTranslation } from "react-i18next";
 import {
   Accordion,
   AccordionContent,
@@ -58,6 +58,7 @@ const Planos = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('pricing');
   const [isInstrumental, setIsInstrumental] = useState(false);
   const [vocalPlans, setVocalPlans] = useState<PricingPlan[]>([]);
   const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
@@ -75,11 +76,11 @@ const Planos = () => {
     
     if (subscriptionStatus === 'success' && planFromUrl) {
       toast({
-        title: "🎉 Assinatura ativada!",
-        description: `Seu plano ${planFromUrl.replace(/_/g, ' ').replace('creator ', 'Creator ')} está ativo. Comece a criar!`,
+        title: t('toasts.subscriptionSuccess'),
+        description: t('toasts.subscriptionDescription', { plan: planFromUrl.replace(/_/g, ' ').replace('creator ', 'Creator ') }),
       });
     }
-  }, [searchParams, toast]);
+  }, [searchParams, toast, t]);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -128,15 +129,15 @@ const Planos = () => {
 
   const getButtonText = (planId: string) => {
     const credits = getCreditsForPlan(planId);
-    if (credits === 1) return 'Quero esse plano';
-    return `Quero ${credits} créditos`;
+    if (credits === 1) return t('cta');
+    return t('ctaCredits', { credits });
   };
 
   const handleSelectPlan = async (planId: string) => {
     if (!user || !profile) {
       toast({
-        title: "Erro",
-        description: "Você precisa estar logado para escolher um plano.",
+        title: t('errors.loginRequired'),
+        description: t('errors.loginRequired'),
         variant: "destructive",
       });
       return;
@@ -152,8 +153,8 @@ const Planos = () => {
       if (error) throw error;
 
       toast({
-        title: "Plano selecionado!",
-        description: `Você escolheu o plano.`,
+        title: t('toasts.planSelected'),
+        description: t('toasts.planSelected'),
       });
 
       // Navigate to briefing with plan info
@@ -166,8 +167,8 @@ const Planos = () => {
       navigate(`/briefing?${params.toString()}`);
     } catch (error) {
       toast({
-        title: "Erro",
-        description: "Não foi possível salvar sua escolha. Tente novamente.",
+        title: t('errors.saveFailed'),
+        description: t('errors.saveFailed'),
         variant: "destructive",
       });
     }
@@ -181,8 +182,8 @@ const Planos = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background py-12 px-6">
       <SEO 
         canonical="/planos"
-        title="Planos e Preços"
-        description="Escolha o plano ideal para criar sua música personalizada. Opções a partir de R$ 47,90 com entrega em até 48h. Pacotes para músicas vocais e instrumentais."
+        title={t('seo.title')}
+        description={t('seo.description')}
         keywords="planos música personalizada, preços música IA, pacote músicas, assinatura música, quanto custa música personalizada"
       />
       <div className="max-w-6xl mx-auto">
@@ -196,16 +197,16 @@ const Planos = () => {
         {/* Section: Para Presentes e Homenagens */}
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-primary/20 text-primary border-primary/30 px-4 py-2">
-            🎁 Para Presentes e Momentos Especiais
+            {t('section.giftsTitle')}
           </Badge>
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="p-3 rounded-xl bg-gradient-to-r from-primary to-accent music-glow">
               <Crown className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold gradient-text">Planos Avulsos</h1>
+            <h1 className="text-4xl font-bold gradient-text">{t('section.giftsSubtitle')}</h1>
           </div>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
-            Ideal para presentes únicos: aniversários, casamentos, homenagens. Créditos que nunca expiram!
+            {t('section.giftsDescription')}
           </p>
           
           {/* Toggle Vocal/Instrumental */}
@@ -217,7 +218,7 @@ const Planos = () => {
           
           {isInstrumental && (
             <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse mb-4">
-              🎹 Músicas instrumentais com 20% de desconto!
+              {t('instrumental.discount')}
             </Badge>
           )}
         </div>
@@ -253,7 +254,7 @@ const Planos = () => {
                 >
                   {plan.is_popular && (
                     <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold px-4 py-1">
-                      Mais Popular
+                      {t('popular')}
                     </Badge>
                   )}
 
@@ -261,7 +262,7 @@ const Planos = () => {
                   {credits > 1 && (
                     <Badge className="absolute -top-3 right-4 bg-green-500 text-white px-3 py-1 font-bold">
                       <Music className="w-3 h-3 mr-1" />
-                      {credits} músicas
+                      {t('badges.musics', { count: credits })}
                     </Badge>
                   )}
 
@@ -302,11 +303,11 @@ const Planos = () => {
                     {credits > 1 && (
                       <div className="mt-3 space-y-1">
                         <p className="text-sm text-muted-foreground">
-                          = {formatPrice(pricePerCredit)} por música
+                          {t('pricePerMusic', { price: formatPrice(pricePerCredit) })}
                         </p>
                         {savings > 0 && (
                           <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                            Economia de {savingsPercent}% ({formatPrice(savings)})
+                            {t('badges.savings', { percent: savingsPercent, amount: formatPrice(savings) })}
                           </Badge>
                         )}
                       </div>
@@ -329,7 +330,7 @@ const Planos = () => {
                             <Sparkles className="w-3 h-3 text-green-400 flex-shrink-0" />
                           </div>
                           <span className="text-green-400 leading-relaxed font-medium">
-                            Use quando quiser, sem prazo!
+                            {t('badges.noExpiry')}
                           </span>
                         </li>
                       )}
@@ -358,14 +359,13 @@ const Planos = () => {
         <div id="creator" className="mb-16 pt-16 border-t border-border/30">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 border-purple-500/30 px-4 py-2">
-              🎬 Para Criadores de Conteúdo
+              {t('section.creatorTitle')}
             </Badge>
             <h2 className="text-4xl font-bold gradient-text mb-4">
-              Planos de Assinatura Mensal
+              {t('section.creatorSubtitle')}
             </h2>
             <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed mb-6">
-              Músicas originais em volume para YouTube, TikTok, Reels e Podcasts. 
-              Sem prompts complexos, sem edição - você descreve, nós criamos.
+              {t('section.creatorDescription')}
             </p>
             
             {/* Toggle Vocal/Instrumental para Creator */}
@@ -377,7 +377,7 @@ const Planos = () => {
             
             {isInstrumental && (
               <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse mb-4">
-                🎹 Trilhas instrumentais com 20% de desconto!
+                {t('section.instrumentalCreatorDiscount')}
               </Badge>
             )}
           </div>
@@ -386,23 +386,23 @@ const Planos = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
               <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">Letras Curadas</h4>
-              <p className="text-sm text-muted-foreground">Identidade musical consistente</p>
+              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.curatedLyrics')}</h4>
+              <p className="text-sm text-muted-foreground">{t('creator.features.curatedLyricsDesc')}</p>
             </div>
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
               <Video className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">Pronto para Postar</h4>
-              <p className="text-sm text-muted-foreground">Formatos 30s, 60s, completo</p>
+              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.readyToPost')}</h4>
+              <p className="text-sm text-muted-foreground">{t('creator.features.readyToPostDesc')}</p>
             </div>
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
               <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">Uso Comercial</h4>
-              <p className="text-sm text-muted-foreground">Monetize sem preocupações</p>
+              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.commercialUse')}</h4>
+              <p className="text-sm text-muted-foreground">{t('creator.features.commercialUseDesc')}</p>
             </div>
             <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
               <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">Suporte Humano</h4>
-              <p className="text-sm text-muted-foreground">Aprovação e ajustes</p>
+              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.humanSupport')}</h4>
+              <p className="text-sm text-muted-foreground">{t('creator.features.humanSupportDesc')}</p>
             </div>
           </div>
 
@@ -433,14 +433,14 @@ const Planos = () => {
                   >
                     {isPopular && (
                       <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-4 py-1">
-                        ⭐ Mais Popular
+                        ⭐ {t('popular')}
                       </Badge>
                     )}
 
                     {/* Credits Badge */}
                     <Badge className="absolute -top-3 right-4 bg-purple-500 text-white px-3 py-1 font-bold">
                       <Music className="w-3 h-3 mr-1" />
-                      {credits} músicas/mês
+                      {t('badges.musicsPerMonth', { count: credits })}
                     </Badge>
 
                     <CardHeader className="text-center pb-4 pt-8">
@@ -460,10 +460,10 @@ const Planos = () => {
                       {/* Price per music */}
                       <div className="mt-3 space-y-1">
                         <p className="text-sm text-muted-foreground">
-                          = {formatPrice(pricePerMusic)} por música
+                          {t('pricePerMusic', { price: formatPrice(pricePerMusic) })}
                         </p>
                         <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          Créditos renovam mensalmente
+                          {t('badges.renewsMonthly')}
                         </Badge>
                       </div>
                     </CardHeader>
@@ -485,8 +485,8 @@ const Planos = () => {
                           onClick={() => {
                             if (!user) {
                               toast({
-                                title: "Login necessário",
-                                description: "Faça login para assinar um plano Creator.",
+                                title: t('toasts.loginNeeded'),
+                                description: t('toasts.loginNeededDescription'),
                                 variant: "destructive",
                               });
                               navigate(`/auth?redirect=/creator-checkout/${plan.id}`);
@@ -502,7 +502,7 @@ const Planos = () => {
                               : "bg-purple-600 hover:bg-purple-500 text-white"
                           }`}
                         >
-                          {`Assinar ${plan.name.replace(' Instrumental', '')}`}
+                          {t('creator.subscribe', { plan: plan.name.replace(' Instrumental', '') })}
                         </Button>
                       </div>
                     </CardContent>
@@ -516,25 +516,25 @@ const Planos = () => {
           <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5">
             <CardHeader className="text-center">
               <CardTitle className="text-xl text-purple-400">
-                Por que usar Criando Músicas em vez de ferramentas genéricas?
+                {t('creator.whyUs.title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6 text-center">
                 <div>
                   <div className="text-3xl mb-2">🎯</div>
-                  <h4 className="font-semibold text-foreground mb-1">Sem Prompts Técnicos</h4>
-                  <p className="text-sm text-muted-foreground">Você descreve o que quer, nós criamos</p>
+                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.noPrompts')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.noPromptsDesc')}</p>
                 </div>
                 <div>
                   <div className="text-3xl mb-2">✨</div>
-                  <h4 className="font-semibold text-foreground mb-1">Letra + Música Prontas</h4>
-                  <p className="text-sm text-muted-foreground">Não é geração bruta - é conteúdo curado</p>
+                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.lyricsAndMusic')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.lyricsAndMusicDesc')}</p>
                 </div>
                 <div>
                   <div className="text-3xl mb-2">📱</div>
-                  <h4 className="font-semibold text-foreground mb-1">Pronto para Publicar</h4>
-                  <p className="text-sm text-muted-foreground">Direto do seu painel para as redes</p>
+                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.readyToPublish')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.readyToPublishDesc')}</p>
                 </div>
               </div>
             </CardContent>
@@ -546,58 +546,21 @@ const Planos = () => {
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
               <HelpCircle className="w-6 h-6 text-primary" />
-              Perguntas Frequentes
+              {t('faq.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Accordion type="single" collapsible className="w-full max-w-2xl mx-auto">
-              <AccordionItem value="item-1">
-                <AccordionTrigger className="text-left">
-                  O que são créditos de música?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Cada crédito permite criar 1 música completa. Nos pacotes avulsos, 
-                  os créditos nunca expiram. Nas assinaturas Creator, renovam mensalmente.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-2">
-                <AccordionTrigger className="text-left">
-                  Posso usar as músicas em vídeos monetizados?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Sim! As músicas criadas são 100% originais e você tem todos os direitos 
-                  para uso comercial, incluindo monetização no YouTube, TikTok e Instagram.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-3">
-                <AccordionTrigger className="text-left">
-                  Os créditos da assinatura acumulam?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Não. Os créditos das assinaturas Creator renovam mensalmente e não acumulam. 
-                  Se você prefere créditos que nunca expiram, escolha os pacotes avulsos.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-4">
-                <AccordionTrigger className="text-left">
-                  Posso cancelar minha assinatura?
-                </AccordionTrigger>
-                <AccordionContent>
-                  Sim, você pode cancelar a qualquer momento. Você continua com acesso 
-                  até o fim do período pago e pode usar seus créditos restantes.
-                </AccordionContent>
-              </AccordionItem>
-              <AccordionItem value="item-5">
-                <AccordionTrigger className="text-left">
-                  Qual a diferença entre Avulso e Assinatura?
-                </AccordionTrigger>
-                <AccordionContent>
-                  <strong>Avulso:</strong> Ideal para presentes únicos. Créditos nunca expiram. 
-                  <br /><br />
-                  <strong>Assinatura Creator:</strong> Ideal para criadores de conteúdo que precisam 
-                  de músicas em volume todo mês, com preço unitário muito mais baixo.
-                </AccordionContent>
-              </AccordionItem>
+              {(t('faq.questions', { returnObjects: true }) as Array<{ q: string; a: string }>).map((item, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger className="text-left">
+                    {item.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="whitespace-pre-line">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
             </Accordion>
           </CardContent>
         </Card>
@@ -608,11 +571,11 @@ const Planos = () => {
             <div className="text-center mb-8">
               <Badge className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30 mb-4 px-4 py-2">
                 <Sparkles className="w-4 h-4 mr-2 inline" />
-                Novidade!
+                {t('customLyric.badge')}
               </Badge>
-              <h2 className="text-3xl font-bold gradient-text mb-4">Já Tem Sua Letra Pronta?</h2>
+              <h2 className="text-3xl font-bold gradient-text mb-4">{t('customLyric.title')}</h2>
               <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                Traga sua própria composição e nós transformamos em música profissional por um preço especial!
+                {t('customLyric.description')}
               </p>
             </div>
             
@@ -620,7 +583,7 @@ const Planos = () => {
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold px-6 py-1.5 shadow-lg">
                   <FileText className="w-4 h-4 mr-2" />
-                  Preço Especial
+                  {t('customLyric.specialPrice')}
                 </Badge>
               </div>
               
@@ -644,7 +607,7 @@ const Planos = () => {
                   </CardDescription>
                   {customLyricPlan.price_promo_cents && (
                     <Badge className="bg-red-500/20 text-red-400 border-red-500/30 animate-pulse mt-2">
-                      {Math.round((1 - customLyricPlan.price_promo_cents / customLyricPlan.price_cents) * 100)}% de desconto!
+                      {t('customLyric.discount', { percent: Math.round((1 - customLyricPlan.price_promo_cents / customLyricPlan.price_cents) * 100) })}
                     </Badge>
                   )}
                 </div>
@@ -667,7 +630,7 @@ const Planos = () => {
                   className="w-full py-4 font-semibold text-lg bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-lg shadow-green-500/30 transition-all duration-300"
                 >
                   <FileText className="w-5 h-5 mr-2" />
-                  Usar Minha Letra
+                  {t('customLyric.cta')}
                 </Button>
               </CardContent>
             </Card>
@@ -678,16 +641,16 @@ const Planos = () => {
         <div className="text-center space-y-6">
           <div className="p-6 rounded-2xl glass-card border border-border/50">
             <p className="text-foreground font-medium mb-2">
-              🎵 Garantia de satisfação de 100%
+              {t('footer.guarantee')}
             </p>
             <p className="text-muted-foreground">
-              Todos os planos incluem entrega em até 48h diretamente na plataforma e suporte técnico especializado
+              {t('footer.delivery')}
             </p>
           </div>
           
           <div className="flex gap-4 justify-center">
             <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
-              ← Voltar ao início
+              {t('footer.back')}
             </Button>
           </div>
         </div>
