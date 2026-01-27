@@ -12,13 +12,13 @@ export interface PlanInfo {
 }
 
 // Static fallback plans (used when DB is not available)
-// IMPORTANT: These values should match the database pricing_config table
+// IMPORTANT: These values MUST match the database pricing_config table and Stripe prices!
+// Single: R$ 9,90 | Package: R$ 24,90 | 5-Pack: R$ 39,90
 export const PLANS: PlanInfo[] = [
   {
     id: "single",
     title: "Música Única",
-    price: "R$ 19,90",
-    pricePromo: "R$ 9,90",
+    price: "R$ 9,90",
     limitSec: 180,
     features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h"],
     cta: "Criar Música"
@@ -26,7 +26,7 @@ export const PLANS: PlanInfo[] = [
   {
     id: "package",
     title: "Pacote 3 Músicas",
-    price: "R$ 49,90",
+    price: "R$ 24,90",
     limitSec: 180,
     features: ["Até 3 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h", "Suporte VIP"],
     cta: "Pacote Popular"
@@ -34,7 +34,7 @@ export const PLANS: PlanInfo[] = [
   {
     id: "subscription",
     title: "Pacote 5 Músicas",
-    price: "R$ 89,90",
+    price: "R$ 39,90",
     limitSec: 300,
     features: ["Até 5 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 48h", "Prioridade na fila"],
     cta: "Melhor Valor"
