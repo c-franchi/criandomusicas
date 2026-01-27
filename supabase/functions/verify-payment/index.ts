@@ -32,12 +32,35 @@ serve(async (req) => {
     logStep("Received params", { sessionId, orderId });
 
     // Retrieve authenticated user
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      logStep("No authorization header provided");
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Não autorizado" 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user) throw new Error("User not authenticated");
-    logStep("User authenticated", { userId: user.id });
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims?.sub) {
+      logStep("Authentication failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: "Sessão expirada. Por favor, faça login novamente." 
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    logStep("User authenticated", { userId });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -63,7 +86,7 @@ serve(async (req) => {
       const { data: profileData } = await supabaseClient
         .from('profiles')
         .select('name')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .single();
 
       // Get plan ID from session metadata
@@ -98,7 +121,7 @@ serve(async (req) => {
         const { error: creditsError } = await supabaseClient
           .from('user_credits')
           .insert({
-            user_id: user.id,
+            user_id: userId,
             plan_id: planId,
             total_credits: creditsToAdd,
             used_credits: 1, // First song is being created now
@@ -122,7 +145,7 @@ serve(async (req) => {
           payment_status: 'PAID'
         })
         .eq('id', orderId)
-        .eq('user_id', user.id);
+        .eq('user_id', userId);
 
       if (updateError) {
         throw new Error(`Failed to update order: ${updateError.message}`);
@@ -137,7 +160,7 @@ serve(async (req) => {
         
         await supabaseClient.functions.invoke('send-purchase-email', {
           body: {
-            email: user.email,
+            email: userEmail,
             userName: profileData?.name || 'Cliente',
             purchaseType,
             planName,
@@ -159,7 +182,7 @@ serve(async (req) => {
         await supabaseClient.functions.invoke('notify-admin-order', {
           body: {
             orderId,
-            userId: user.id,
+            userId: userId,
             orderType: orderData?.is_instrumental ? 'instrumental' : 'vocal',
             userName: profileData?.name || 'Cliente',
             musicType: orderData?.music_type || 'personalizada'

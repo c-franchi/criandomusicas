@@ -45,12 +45,29 @@ serve(async (req) => {
     }
 
     // Retrieve authenticated user
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      logStep("No authorization header provided");
+      return new Response(JSON.stringify({ error: "Não autorizado" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
     const token = authHeader.replace("Bearer ", "");
-    const { data } = await supabaseClient.auth.getUser(token);
-    const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated or email not available");
-    logStep("User authenticated", { email: user.email });
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims?.sub || !claimsData?.claims?.email) {
+      logStep("Authentication failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({ error: "Sessão expirada. Por favor, faça login novamente." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string;
+    logStep("User authenticated", { email: userEmail });
 
     // Handle video order payment
     if (isVideoOrder) {
@@ -58,14 +75,14 @@ serve(async (req) => {
         apiVersion: "2025-08-27.basil",
       });
 
-      const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+      const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
       const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
       const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
-        customer_email: customerId ? undefined : user.email,
+        customer_email: customerId ? undefined : userEmail,
         line_items: [{
           price_data: {
             currency: 'brl',
@@ -82,7 +99,7 @@ serve(async (req) => {
         cancel_url: customCancelUrl || `${origin}/video-checkout/${videoOrderId}`,
         metadata: {
           video_order_id: videoOrderId,
-          user_id: user.id,
+          user_id: userId,
           is_video_order: "true"
         }
       });
@@ -170,7 +187,7 @@ serve(async (req) => {
     });
 
     // Check if a Stripe customer record exists for this user
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
@@ -211,14 +228,14 @@ serve(async (req) => {
     // Create a one-time payment session
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      customer_email: customerId ? undefined : user.email,
+      customer_email: customerId ? undefined : userEmail,
       line_items: lineItems,
       mode: "payment",
       success_url: `${origin}/pagamento-sucesso?order_id=${orderId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pedido/${orderId}`,
       metadata: {
         order_id: orderId,
-        user_id: user.id,
+        user_id: userId,
         plan_id: effectivePlanId,
         is_instrumental: String(isInstrumental),
         has_custom_lyric: String(hasCustomLyric)

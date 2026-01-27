@@ -35,17 +35,18 @@ serve(async (req) => {
     );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: userData, error: authError } = await supabase.auth.getUser(token);
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
     
-    if (authError || !userData?.user) {
+    if (claimsError || !claimsData?.claims?.sub) {
+      console.log('[ACCEPT-CREDIT-TRANSFER] Authentication failed:', claimsError?.message);
       return new Response(
-        JSON.stringify({ success: false, error: 'Não autorizado' }),
+        JSON.stringify({ success: false, error: 'Sessão expirada. Por favor, faça login novamente.' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const userId = userData.user.id;
-    const userEmail = userData.user.email?.toLowerCase();
+    const userId = claimsData.claims.sub as string;
+    const userEmail = (claimsData.claims.email as string | undefined)?.toLowerCase();
     const { transferId, transferCode, action }: ActionRequest = await req.json();
 
     console.log('[ACCEPT-CREDIT-TRANSFER] Request:', { userId, transferId, transferCode, action });

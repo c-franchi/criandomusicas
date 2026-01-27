@@ -31,20 +31,33 @@ serve(async (req) => {
     logStep("Applying voucher", { code, orderId, planId });
 
     // Get authenticated user
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      logStep("No authorization header provided");
+      return new Response(JSON.stringify({ success: false, error: "Não autorizado" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+    
     const token = authHeader.replace("Bearer ", "");
     
     const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
-    const { data: authData } = await supabaseAuth.auth.getUser(token);
-    const user = authData.user;
+    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
     
-    if (!user) {
-      throw new Error("User not authenticated");
+    if (claimsError || !claimsData?.claims?.sub) {
+      logStep("Authentication failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({ success: false, error: "Sessão expirada. Por favor, faça login novamente." }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
-    logStep("User authenticated", { userId: user.id });
+    
+    const userId = claimsData.claims.sub as string;
+    logStep("User authenticated", { userId });
 
     // Verify order belongs to user
     const { data: order, error: orderError } = await supabaseClient
@@ -57,7 +70,7 @@ serve(async (req) => {
       throw new Error("Pedido não encontrado");
     }
 
-    if (order.user_id !== user.id) {
+    if (order.user_id !== userId) {
       throw new Error("Este pedido não pertence a você");
     }
 
@@ -99,7 +112,7 @@ serve(async (req) => {
       .from('voucher_redemptions')
       .select('id')
       .eq('voucher_id', voucher.id)
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (existingRedemption) {
@@ -132,7 +145,7 @@ serve(async (req) => {
       .from('voucher_redemptions')
       .insert({
         voucher_id: voucher.id,
-        user_id: user.id,
+        user_id: userId,
         order_id: orderId,
         discount_applied: discountAmount,
       });
