@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles, CreditCard, Zap } from "lucide-react";
+import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles, CreditCard, Zap, Piano } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
@@ -1778,6 +1778,11 @@ const Briefing = () => {
   // Get plan info for display
   const currentPlanInfo = selectedPlanId ? PLAN_LABELS[selectedPlanId] : null;
 
+  // Get credit info for plan selection badges
+  const { totalVocal, totalInstrumental, hasCredits } = useCredits();
+  const hasVocalCredits = totalVocal > 0;
+  const hasInstrumentalCredits = totalInstrumental > 0;
+
   // Handler para selecionar plano
   const handlePlanSelection = (planId: string) => {
     setSelectedPlanId(planId);
@@ -1841,7 +1846,9 @@ const Briefing = () => {
               <div className="grid gap-3">
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary ${
+                    hasVocalCredits ? 'border-green-500/50 bg-green-500/5' : ''
+                  }`}
                   onClick={() => handlePlanSelection('single')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1850,13 +1857,22 @@ const Briefing = () => {
                       <p className="font-semibold">Música Cantada</p>
                       <p className="text-sm text-muted-foreground">Com letra e vocal profissional</p>
                     </div>
-                    <Badge variant="secondary">1 música</Badge>
+                    {hasVocalCredits ? (
+                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Usar crédito
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">1 música</Badge>
+                    )}
                   </div>
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary ${
+                    hasInstrumentalCredits ? 'border-purple-500/50 bg-purple-500/5' : ''
+                  }`}
                   onClick={() => handlePlanSelection('single_instrumental')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1865,13 +1881,22 @@ const Briefing = () => {
                       <p className="font-semibold">Música Instrumental</p>
                       <p className="text-sm text-muted-foreground">Apenas música, sem vocal</p>
                     </div>
-                    <Badge variant="secondary">1 música</Badge>
+                    {hasInstrumentalCredits ? (
+                      <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Usar crédito
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">1 música</Badge>
+                    )}
                   </div>
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary ${
+                    hasVocalCredits ? 'border-green-500/50 bg-green-500/5' : ''
+                  }`}
                   onClick={() => handlePlanSelection('single_custom_lyric')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1880,7 +1905,14 @@ const Briefing = () => {
                       <p className="font-semibold">Já Tenho a Letra</p>
                       <p className="text-sm text-muted-foreground">Traga sua própria composição</p>
                     </div>
-                    <Badge variant="secondary">1 música</Badge>
+                    {hasVocalCredits ? (
+                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Usar crédito
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">1 música</Badge>
+                    )}
                   </div>
                 </Button>
               </div>
@@ -1896,7 +1928,9 @@ const Briefing = () => {
               <div className="grid gap-3">
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-accent border-accent/30 bg-accent/5"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-accent border-accent/30 bg-accent/5 ${
+                    hasVocalCredits ? 'border-green-500/50' : ''
+                  }`}
                   onClick={() => handlePlanSelection('package')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1905,13 +1939,22 @@ const Briefing = () => {
                       <p className="font-semibold">Pacote 3 Músicas Cantadas</p>
                       <p className="text-sm text-muted-foreground">Economize comprando em pacote</p>
                     </div>
-                    <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                    {hasVocalCredits ? (
+                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Tem créditos
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                    )}
                   </div>
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-accent border-accent/30 bg-accent/5"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-accent border-accent/30 bg-accent/5 ${
+                    hasInstrumentalCredits ? 'border-purple-500/50' : ''
+                  }`}
                   onClick={() => handlePlanSelection('package_instrumental')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1920,13 +1963,22 @@ const Briefing = () => {
                       <p className="font-semibold">Pacote 3 Instrumentais</p>
                       <p className="text-sm text-muted-foreground">Trilhas personalizadas</p>
                     </div>
-                    <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                    {hasInstrumentalCredits ? (
+                      <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Tem créditos
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                    )}
                   </div>
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary border-primary/30 bg-primary/5"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary border-primary/30 bg-primary/5 ${
+                    hasVocalCredits ? 'border-green-500/50' : ''
+                  }`}
                   onClick={() => handlePlanSelection('subscription')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1935,13 +1987,22 @@ const Briefing = () => {
                       <p className="font-semibold">Pacote 5 Músicas Cantadas</p>
                       <p className="text-sm text-muted-foreground">Melhor custo-benefício!</p>
                     </div>
-                    <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                    {hasVocalCredits ? (
+                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Tem créditos
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                    )}
                   </div>
                 </Button>
 
                 <Button
                   variant="outline"
-                  className="h-auto py-4 px-4 justify-start text-left hover:border-primary border-primary/30 bg-primary/5"
+                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary border-primary/30 bg-primary/5 ${
+                    hasInstrumentalCredits ? 'border-purple-500/50' : ''
+                  }`}
                   onClick={() => handlePlanSelection('subscription_instrumental')}
                 >
                   <div className="flex items-center gap-3 w-full">
@@ -1950,7 +2011,14 @@ const Briefing = () => {
                       <p className="font-semibold">Pacote 5 Instrumentais</p>
                       <p className="text-sm text-muted-foreground">Trilhas em quantidade</p>
                     </div>
-                    <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                    {hasInstrumentalCredits ? (
+                      <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                        <Check className="w-3 h-3 mr-1" />
+                        Tem créditos
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                    )}
                   </div>
                 </Button>
               </div>
@@ -2630,31 +2698,48 @@ const Briefing = () => {
               Você tem créditos disponíveis!
             </DialogTitle>
             <DialogDescription className="pt-2">
-              Você possui <span className="font-bold text-primary">{availableCredits} música{availableCredits !== 1 ? 's' : ''}</span> disponível{availableCredits !== 1 ? 'is' : ''} no seu pacote.
+              {/* Show credit type info */}
+              {formData.isInstrumental ? (
+                <span>
+                  Você possui <span className="font-bold text-purple-500 inline-flex items-center gap-1">
+                    <Piano className="w-4 h-4" />{availableCredits} instrumental{availableCredits !== 1 ? 'is' : ''}
+                  </span> disponível{availableCredits !== 1 ? 'is' : ''} no seu pacote.
+                </span>
+              ) : (
+                <span>
+                  Você possui <span className="font-bold text-primary inline-flex items-center gap-1">
+                    <Mic className="w-4 h-4" />{availableCredits} vocal{availableCredits !== 1 ? 'is' : ''}
+                  </span> disponível{availableCredits !== 1 ? 'is' : ''} no seu pacote.
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              Deseja usar um crédito para criar esta música ou prefere comprar um novo pacote?
+              Deseja usar um crédito {formData.isInstrumental ? 'instrumental' : 'vocal'} para criar esta música ou prefere comprar um novo pacote?
             </p>
             
             <div className="grid gap-3">
               <Button 
                 onClick={handleUseCredit} 
                 disabled={isUsingCredit}
-                className="w-full h-auto py-4 flex flex-col items-start gap-1"
+                className={`w-full h-auto py-4 flex flex-col items-start gap-1 ${
+                  formData.isInstrumental ? 'bg-purple-600 hover:bg-purple-500' : ''
+                }`}
               >
                 <div className="flex items-center gap-2 w-full">
                   {isUsingCredit ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : formData.isInstrumental ? (
+                    <Piano className="w-5 h-5" />
                   ) : (
-                    <Zap className="w-5 h-5" />
+                    <Mic className="w-5 h-5" />
                   )}
-                  <span className="font-semibold">Usar 1 crédito</span>
+                  <span className="font-semibold">Usar 1 crédito {formData.isInstrumental ? 'instrumental' : 'vocal'}</span>
                 </div>
                 <span className="text-xs opacity-80 ml-7">
-                  Restará {availableCredits - 1} música{availableCredits - 1 !== 1 ? 's' : ''} no pacote
+                  Restará {availableCredits - 1} {formData.isInstrumental ? 'instrumental' : 'vocal'}{availableCredits - 1 !== 1 ? 'is' : ''} no pacote
                 </span>
               </Button>
               

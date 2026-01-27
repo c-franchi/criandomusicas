@@ -1,4 +1,4 @@
-import { Music, Sparkles, ChevronRight, Crown } from 'lucide-react';
+import { Music, Sparkles, ChevronRight, Crown, Mic, Piano } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,7 +13,7 @@ interface CreditsBannerProps {
 }
 
 export function CreditsBanner({ className = '', showBuyButton = true, compact = false }: CreditsBannerProps) {
-  const { loading, hasCredits, totalAvailable, activePackage, subscriptionInfo } = useCredits();
+  const { loading, hasCredits, totalAvailable, totalVocal, totalInstrumental, activePackage, subscriptionInfo } = useCredits();
 
   if (loading) {
     return (
@@ -63,13 +63,32 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
       ? getPlanLabel(activePackage.plan_id)
       : null;
 
+  // Check credit type from subscription
+  const subscriptionIsInstrumental = subscriptionInfo?.is_instrumental || false;
+
   if (compact) {
-    return (
-      <Badge className={`gap-1.5 ${isFromSubscription ? 'bg-amber-500 text-white border-amber-600' : 'bg-primary text-white border-primary'}`}>
-        {isFromSubscription ? <Crown className="w-3 h-3" /> : <Music className="w-3 h-3" />}
-        {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
-      </Badge>
-    );
+    // Show separate badges for each credit type
+    const badges = [];
+    
+    if (totalVocal > 0) {
+      badges.push(
+        <Badge key="vocal" className="gap-1.5 bg-primary text-white border-primary">
+          <Mic className="w-3 h-3" />
+          {totalVocal} vocal{totalVocal !== 1 ? 'is' : ''}
+        </Badge>
+      );
+    }
+    
+    if (totalInstrumental > 0) {
+      badges.push(
+        <Badge key="instrumental" className="gap-1.5 bg-purple-600 text-white border-purple-600">
+          <Piano className="w-3 h-3" />
+          {totalInstrumental} instrumental{totalInstrumental !== 1 ? 'is' : ''}
+        </Badge>
+      );
+    }
+    
+    return <div className="flex gap-2 flex-wrap">{badges}</div>;
   }
 
   return (
@@ -84,22 +103,64 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
             )}
           </div>
           <div>
-            <p className="font-medium text-foreground">
-              {totalAvailable} música{totalAvailable !== 1 ? 's' : ''} disponível{totalAvailable !== 1 ? 'is' : ''}
-            </p>
-            {sourceLabel && (
-              <p className="text-xs text-muted-foreground">
-                {isFromSubscription ? (
-                  <>
-                    <Crown className="w-3 h-3 inline mr-1" />
-                    {sourceLabel} • {subscriptionInfo?.credits_used || 0}/{subscriptionInfo?.credits_total || 0} usados
-                  </>
-                ) : (
-                  <>
-                    {sourceLabel} • {activePackage?.used_credits || 0}/{activePackage?.total_credits || 0} usados
-                  </>
+            {/* Show credits by type if both exist */}
+            {totalVocal > 0 && totalInstrumental > 0 ? (
+              <div className="space-y-1">
+                <p className="font-medium text-foreground flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1">
+                    <Mic className="w-4 h-4 text-primary" />
+                    {totalVocal} vocal{totalVocal !== 1 ? 'is' : ''}
+                  </span>
+                  <span className="text-muted-foreground">+</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Piano className="w-4 h-4 text-purple-500" />
+                    {totalInstrumental} instrumental{totalInstrumental !== 1 ? 'is' : ''}
+                  </span>
+                </p>
+                {sourceLabel && (
+                  <p className="text-xs text-muted-foreground">
+                    {isFromSubscription ? (
+                      <>
+                        <Crown className="w-3 h-3 inline mr-1" />
+                        {sourceLabel}
+                      </>
+                    ) : (
+                      sourceLabel
+                    )}
+                  </p>
                 )}
-              </p>
+              </div>
+            ) : (
+              // Single type of credit
+              <div>
+                <p className="font-medium text-foreground flex items-center gap-2">
+                  {totalInstrumental > 0 ? (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Piano className="w-4 h-4 text-purple-500" />
+                      {totalInstrumental} música{totalInstrumental !== 1 ? 's' : ''} instrumental{totalInstrumental !== 1 ? 'is' : ''}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5">
+                      <Mic className="w-4 h-4 text-primary" />
+                      {totalVocal} música{totalVocal !== 1 ? 's' : ''} vocal{totalVocal !== 1 ? 'is' : ''}
+                    </span>
+                  )}
+                </p>
+                {sourceLabel && (
+                  <p className="text-xs text-muted-foreground">
+                    {isFromSubscription ? (
+                      <>
+                        <Crown className="w-3 h-3 inline mr-1" />
+                        {sourceLabel} • {subscriptionInfo?.credits_used || 0}/{subscriptionInfo?.credits_total || 0} usados
+                      </>
+                    ) : (
+                      <>
+                        {sourceLabel} • {activePackage?.used_credits || 0}/{activePackage?.total_credits || 0} usados
+                      </>
+                    )}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </div>
