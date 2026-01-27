@@ -13,6 +13,7 @@ import { NotificationBanner } from "@/components/PushNotificationPrompt";
 import CreditsBanner from "@/components/CreditsBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "react-i18next";
+import RegionSelector from "@/components/RegionSelector";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -431,6 +432,7 @@ const Dashboard = () => {
                 <User className="w-4 h-4" />
               </Link>
             </Button>
+            <RegionSelector variant="compact" />
             <ThemeToggle />
             {isAdmin && (
               <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">

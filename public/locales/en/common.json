@@ -7,6 +7,11 @@
     "admin": "Admin",
     "settings": "Settings"
   },
+  "navigation": {
+    "home": "Home",
+    "install": "Install App",
+    "admin": "Admin Panel"
+  },
   "auth": {
     "login": "Login",
     "logout": "Logout",

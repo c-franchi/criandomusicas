@@ -1,28 +1,18 @@
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Music, Sparkles, Headphones, User, ArrowRight, LayoutDashboard, Zap, Crown } from "lucide-react";
+import { Music, Sparkles, Headphones, ArrowRight, LayoutDashboard, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCredits } from "@/hooks/useCredits";
-import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import heroImage from "@/assets/hero-music.jpg";
-import ThemeToggle from "@/components/ThemeToggle";
-import LanguageSelector from "@/components/LanguageSelector";
+import AppHeader from "@/components/AppHeader";
 
 const Hero = () => {
   const { t } = useTranslation('home');
-  const { t: tCommon } = useTranslation('common');
-  const { user, profile, signOut } = useAuth();
+  const { user } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
-  const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
-  const { hasActiveSubscription, planDetails, loading: subscriptionLoading } = useCreatorSubscription();
-
-  // Get display name - prefer profile name, fallback to email
-  const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
-  const initials = displayName.slice(0, 2).toUpperCase();
+  const { hasCredits } = useCredits();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -37,60 +27,8 @@ const Hero = () => {
       {/* Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-background/80 to-accent/30" />
       
-      {/* Auth Section */}
-      <div className="absolute top-6 right-6 z-20">
-        <div className="flex items-center gap-3">
-          {/* Language Selector */}
-          <LanguageSelector />
-          
-          {/* Theme Toggle */}
-          <ThemeToggle />
-          
-          {user ? (
-            <>
-              {/* Creator Subscription Badge */}
-              {!subscriptionLoading && hasActiveSubscription && planDetails && (
-                <Link to="/perfil?tab=subscription">
-                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 gap-1.5 cursor-pointer hover:from-amber-400 hover:to-orange-400 transition-colors">
-                    <Crown className="w-3 h-3" />
-                    {planDetails.name.replace('Creator ', '')}
-                  </Badge>
-                </Link>
-              )}
-              {/* Credits Badge - Show if user has credits */}
-              {!creditsLoading && hasCredits && (
-                <Link to="/perfil?tab=credits">
-                  <Badge className="bg-green-500 text-white border-0 gap-1.5 cursor-pointer hover:bg-green-400 transition-colors">
-                    <Zap className="w-3 h-3" />
-                  {totalAvailable} {totalAvailable !== 1 ? tCommon('credits.credits') : tCommon('credits.credit')}
-                </Badge>
-                </Link>
-              )}
-              <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
-                <Avatar className="w-8 h-8 border-2 border-primary/50">
-                  <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-                  <AvatarFallback className="bg-primary/20 text-primary text-xs font-medium">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm font-medium text-foreground max-w-[150px] truncate">
-                  {displayName}
-                </span>
-              </Link>
-              <Button variant="outline" size="sm" onClick={() => signOut()}>
-                {tCommon('auth.logout')}
-              </Button>
-            </>
-          ) : (
-            <Link to="/auth">
-              <Button variant="outline" size="sm">
-                <User className="w-4 h-4 mr-2" />
-                {tCommon('auth.login')}
-              </Button>
-            </Link>
-          )}
-        </div>
-      </div>
+      {/* App Header */}
+      <AppHeader variant="floating" />
       
       {/* Floating Elements - decorative, hidden from screen readers */}
       <div className="absolute top-20 left-10 animate-float" aria-hidden="true">
