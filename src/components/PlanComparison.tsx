@@ -63,7 +63,7 @@ const PlanComparison = () => {
               <div className="pt-4">
                 <p className="text-sm text-muted-foreground mb-3">A partir de:</p>
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold text-primary">R$ 19,90</span>
+                  <span className="text-3xl font-bold text-primary">R$ 9,90</span>
                   <span className="text-muted-foreground">por música</span>
                 </div>
                 <Button variant="outline" className="w-full" asChild>
