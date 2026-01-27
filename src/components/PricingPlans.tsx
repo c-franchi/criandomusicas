@@ -35,6 +35,41 @@ const PricingPlans = () => {
     return formatCurrency(cents, i18n.language, { convert: true });
   };
 
+  // Get translated features for vocal plans
+  const getVocalFeatures = (planId: string): string[] => {
+    switch (planId) {
+      case "single":
+        return [
+          t('vocalFeatures.single.0', { defaultValue: "1 complete song" }),
+          t('vocalFeatures.single.1', { defaultValue: "2 personalized lyrics to choose" }),
+          t('vocalFeatures.single.2', { defaultValue: "Lyrics + professional audio" }),
+          t('vocalFeatures.single.3', { defaultValue: "High quality" }),
+          t('vocalFeatures.single.4', { defaultValue: "Delivery within 48h" })
+        ];
+      case "package":
+        return [
+          t('vocalFeatures.package.0', { defaultValue: "3 complete songs" }),
+          t('vocalFeatures.package.1', { defaultValue: "2 personalized lyrics each" }),
+          t('vocalFeatures.package.2', { defaultValue: "16% savings" }),
+          t('vocalFeatures.package.3', { defaultValue: "Lyrics + professional audio" }),
+          t('vocalFeatures.package.4', { defaultValue: "High quality" }),
+          t('vocalFeatures.package.5', { defaultValue: "Delivery within 48h" }),
+          t('vocalFeatures.package.6', { defaultValue: "VIP support" })
+        ];
+      case "subscription":
+        return [
+          t('vocalFeatures.subscription.0', { defaultValue: "Up to 5 songs" }),
+          t('vocalFeatures.subscription.1', { defaultValue: "2 personalized lyrics each" }),
+          t('vocalFeatures.subscription.2', { defaultValue: "Lyrics + professional audio" }),
+          t('vocalFeatures.subscription.3', { defaultValue: "Premium quality" }),
+          t('vocalFeatures.subscription.4', { defaultValue: "Delivery within 48h" }),
+          t('vocalFeatures.subscription.5', { defaultValue: "Priority queue" })
+        ];
+      default:
+        return [];
+    }
+  };
+
   // Features for instrumental plans
   const getInstrumentalFeatures = (planId: string): string[] => {
     switch (planId) {
@@ -284,7 +319,7 @@ const PricingPlans = () => {
 
               <CardContent className="space-y-4 mt-auto">
                 <ul className="space-y-3 flex-1 text-center">
-                  {(isInstrumental ? getInstrumentalFeatures(plan.id) : (plan.features as string[])).map((feature, index) => (
+                  {(isInstrumental ? getInstrumentalFeatures(plan.id) : getVocalFeatures(plan.id)).map((feature, index) => (
                     <li key={index} className="flex items-start">
                       <Check className={`w-5 h-5 mr-3 mt-0.5 flex-shrink-0 ${isInstrumental ? 'text-accent' : 'text-primary'}`} />
                       <span className="text-muted-foreground">{feature}</span>

@@ -3,10 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { formatCurrency } from "@/lib/i18n-format";
 
 const WHATSAPP_NUMBER = "5516997310587";
 
 const VideoServiceSection = () => {
+  const { t, i18n } = useTranslation('home');
+
+  // Format price with currency conversion (5000 cents = R$ 50)
+  const formatPrice = (cents: number) => formatCurrency(cents, i18n.language, { convert: true });
+
   return (
     <section className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-b from-background to-primary/5">
       <div className="max-w-5xl mx-auto">
@@ -14,14 +21,13 @@ const VideoServiceSection = () => {
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
             <Video className="w-3 h-3 mr-1" />
-            Serviço Adicional
+            {t('videoService.badge')}
           </Badge>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Transforme sua música em <span className="text-primary">vídeo</span> 🎬
+            {t('videoService.title')} <span className="text-primary">{t('videoService.titleHighlight')}</span> 🎬
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Além da música, você pode receber um vídeo personalizado, 
-            pronto para compartilhar e emocionar ainda mais.
+            {t('videoService.subtitle')}
           </p>
         </div>
 
@@ -32,13 +38,13 @@ const VideoServiceSection = () => {
               <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Video className="w-10 h-10 text-primary" />
               </div>
-              <h3 className="text-2xl font-bold mb-2">Vídeo Personalizado</h3>
+              <h3 className="text-2xl font-bold mb-2">{t('videoService.cardTitle')}</h3>
               <div className="bg-primary/10 rounded-lg py-4 px-6 inline-block mb-4">
-                <span className="text-sm text-muted-foreground">a partir de</span>
-                <span className="text-4xl font-bold text-primary ml-2">R$ 50</span>
+                <span className="text-sm text-muted-foreground">{t('videoService.startingAt')}</span>
+                <span className="text-4xl font-bold text-primary ml-2">{formatPrice(5000)}</span>
               </div>
               <p className="text-muted-foreground max-w-md mx-auto">
-                Escolha uma das opções abaixo para criar seu vídeo com edição profissional
+                {t('videoService.cardDescription')}
               </p>
             </div>
 
@@ -48,9 +54,9 @@ const VideoServiceSection = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Image className="w-6 h-6 text-primary" />
                 </div>
-                <h4 className="font-semibold mb-1">5 Imagens</h4>
+                <h4 className="font-semibold mb-1">{t('videoService.options.5images.title')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Slideshow com transições suaves
+                  {t('videoService.options.5images.description')}
                 </p>
               </div>
 
@@ -58,9 +64,9 @@ const VideoServiceSection = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Image className="w-6 h-6 text-primary" />
                 </div>
-                <h4 className="font-semibold mb-1">10 Imagens</h4>
+                <h4 className="font-semibold mb-1">{t('videoService.options.10images.title')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Mais fotos, mais memórias
+                  {t('videoService.options.10images.description')}
                 </p>
               </div>
 
@@ -68,9 +74,9 @@ const VideoServiceSection = () => {
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
                   <Play className="w-6 h-6 text-primary" />
                 </div>
-                <h4 className="font-semibold mb-1">1 Vídeo de 2 min</h4>
+                <h4 className="font-semibold mb-1">{t('videoService.options.video.title')}</h4>
                 <p className="text-sm text-muted-foreground">
-                  Edição completa do seu vídeo
+                  {t('videoService.options.video.description')}
                 </p>
               </div>
             </div>
@@ -79,19 +85,19 @@ const VideoServiceSection = () => {
             <div className="grid sm:grid-cols-2 gap-3 mb-6">
               <div className="flex items-center gap-2 text-sm">
                 <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Edição profissional com efeitos</span>
+                <span>{t('videoService.features.professional')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Transições cinematográficas</span>
+                <span>{t('videoService.features.transitions')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Sincronização com a música</span>
+                <span>{t('videoService.features.sync')}</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Sparkles className="w-4 h-4 text-primary flex-shrink-0" />
-                <span>Entrega em até 48h</span>
+                <span>{t('videoService.features.delivery')}</span>
               </div>
             </div>
 
@@ -99,9 +105,9 @@ const VideoServiceSection = () => {
             <div className="bg-accent/10 border border-accent/30 rounded-lg p-4 flex items-start gap-3">
               <RefreshCw className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-medium text-accent">Músicas mais longas?</p>
+                <p className="text-sm font-medium text-accent">{t('videoService.loopNotice.title')}</p>
                 <p className="text-sm text-muted-foreground">
-                  Caso sua música seja maior que o conteúdo enviado, as imagens ficarão em <strong>loop</strong> até o final da música, criando uma experiência visual contínua.
+                  {t('videoService.loopNotice.description')}
                 </p>
               </div>
             </div>
@@ -111,27 +117,27 @@ const VideoServiceSection = () => {
         {/* CTA */}
         <div className="text-center space-y-4">
           <p className="text-muted-foreground">
-            Disponível para qualquer pessoa — com ou sem música criada na plataforma
+            {t('videoService.availability')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="group">
               <Link to="/auth">
-                Quero minha música em vídeo
+                {t('videoService.cta')}
                 <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
             <a 
-              href={`https://wa.me/${WHATSAPP_NUMBER}?text=Olá! Gostaria de saber sobre outros planos de vídeo personalizados.`}
+              href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(t('videoService.whatsappMessage'))}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
-              Outros planos de vídeo
+              {t('videoService.otherPlans')}
             </a>
           </div>
           <p className="text-xs text-muted-foreground">
-            Projetos especiais? Fale conosco pelo WhatsApp para orçamentos personalizados
+            {t('videoService.specialProjects')}
           </p>
         </div>
       </div>
