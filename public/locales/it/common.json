@@ -122,5 +122,6 @@
     "hoursAgo": "{{count}} ore fa",
     "minutesAgo": "{{count}} minuti fa",
     "justNow": "proprio ora"
-  }
+  },
+  "loading": "Caricamento..."
 }

@@ -122,5 +122,6 @@
     "hoursAgo": "{{count}} hours ago",
     "minutesAgo": "{{count}} minutes ago",
     "justNow": "just now"
-  }
+  },
+  "loading": "Loading..."
 }

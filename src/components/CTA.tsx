@@ -7,6 +7,7 @@ import { CheckCircle, ArrowRight, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCredits } from "@/hooks/useCredits";
+import { formatCurrency } from "@/lib/i18n-format";
 
 interface PricingConfig {
   id: string;
@@ -17,12 +18,15 @@ interface PricingConfig {
 }
 
 const CTA = () => {
-  const { t } = useTranslation('home');
+  const { t, i18n } = useTranslation('home');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
   const { user } = useAuth();
   const { hasCredits, totalAvailable } = useCredits();
   const [pricing, setPricing] = useState<PricingConfig | null>(null);
+  
+  // Format price with currency conversion based on current language
+  const formatPrice = (cents: number) => formatCurrency(cents, i18n.language, { convert: true });
   
   useEffect(() => {
     const fetchPricing = async () => {
@@ -43,13 +47,13 @@ const CTA = () => {
   // Get benefits from translations
   const benefits = t('cta.benefits', { returnObjects: true }) as string[];
 
-  // Calculate display values
+  // Calculate display values with currency conversion
   const promoPrice = pricing?.price_promo_cents 
-    ? `R$ ${(pricing.price_promo_cents / 100).toFixed(2).replace('.', ',')}`
+    ? formatPrice(pricing.price_promo_cents)
     : null;
   const originalPrice = pricing 
-    ? `R$ ${(pricing.price_cents / 100).toFixed(2).replace('.', ',')}`
-    : 'R$ 29,90';
+    ? formatPrice(pricing.price_cents)
+    : formatPrice(2990); // Fallback: R$ 29,90
   const displayPrice = promoPrice || originalPrice;
 
   return (
