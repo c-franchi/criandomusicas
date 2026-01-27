@@ -1,234 +1,181 @@
 
-# Integrar Créditos da Assinatura Creator ao Sistema Principal
+# Corrigir Fluxo de Créditos: Gerar Letras Automaticamente Após Uso de Crédito
 
 ## Problema Identificado
 
-O sistema possui dois mecanismos de créditos independentes:
+Quando o usuário usa créditos (seja de pacote ou de assinatura Creator):
 
-| Sistema | Tabela/Fonte | Hook | Componentes |
-|---------|--------------|------|-------------|
-| Pacotes Avulsos | `user_credits` | `useCredits` | CreditsBanner, CreditsManagement, CreditTransfer, Briefing |
-| Assinatura Creator | Stripe API | `useCreatorSubscription` | CreatorSubscriptionManager, Hero (badge) |
+1. O usuário clica "Confirmar e Criar" no briefing
+2. O sistema mostra o modal de créditos
+3. O usuário clica "Usar 1 crédito"
+4. O crédito é consumido e o pedido é marcado como PAGO
+5. O usuário é redirecionado para `/criar-musica?orderId=...`
+6. **BUG**: A tela fica carregando indefinidamente porque as letras nunca foram geradas!
 
-A usuária tem uma assinatura "Creator Start" com 50 créditos, mas:
-- Na aba "Créditos" mostra "0 músicas disponíveis"
-- No Dashboard mostra "Sem créditos disponíveis"
-- Na aba "Transferir" mostra "Você não tem créditos"
-- Ao criar música, não oferece a opção de usar crédito
+O `handleUseCredit()` no `Briefing.tsx` não chama a edge function `generate-lyrics` (para músicas cantadas) nem `generate-style-prompt` (para instrumentais) após usar o crédito.
 
-## Solucao
+No fluxo normal de pagamento via Checkout, essas funções são chamadas automaticamente após o pagamento ser confirmado.
 
-Modificar o hook `useCredits` e a edge function `check-credits` para considerar AMBOS os sistemas de créditos, dando prioridade aos créditos da assinatura Creator.
+## Solução
 
----
+Modificar o `handleUseCredit()` em `Briefing.tsx` para:
+
+1. Usar o crédito (já faz isso)
+2. **NOVO**: Buscar os dados do pedido do banco
+3. **NOVO**: Chamar `generate-lyrics` para músicas cantadas/letra própria
+4. **NOVO**: Chamar `generate-style-prompt` para músicas instrumentais
+5. Redirecionar para a página de criação
 
 ## Arquivos a Modificar
 
-### 1. Edge Function `check-credits` 
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/pages/Briefing.tsx` | Modificar `handleUseCredit()` para gerar letras/prompts após usar crédito |
 
-Adicionar lógica para verificar se o usuário tem assinatura Creator ativa e incluir esses créditos no total.
-
-**Lógica:**
-1. Buscar créditos da tabela `user_credits` (comportamento atual)
-2. **NOVO:** Chamar Stripe para verificar assinatura Creator ativa
-3. Se tiver assinatura:
-   - Calcular créditos restantes baseado em `credits_total` - pedidos do ciclo atual
-   - Retornar informação sobre a fonte ("subscription" vs "package")
-4. Somar totais de ambas as fontes
-
-### 2. Hook `useCredits`
-
-Atualizar interface para incluir informações de créditos de assinatura:
-- `subscriptionCredits` - créditos da assinatura Creator
-- `packageCredits` - créditos de pacotes avulsos
-- `totalAvailable` - soma de ambos
-
-### 3. Edge Function `use-credit`
-
-Modificar para aceitar créditos de assinatura:
-- Se o usuário tem assinatura, permitir uso mesmo sem registros em `user_credits`
-- Marcar o pedido com `plan_id` do plano Creator para contabilização correta
-
-### 4. Componentes UI (ajustes menores)
-
-- `CreditsBanner`: Mostrar créditos de assinatura quando disponíveis
-- `CreditsManagement`: Diferenciar créditos de assinatura vs pacotes
-- `CreditTransfer`: Créditos de assinatura **nao podem** ser transferidos (sao mensais e resetam)
-
----
-
-## Fluxo Atualizado
+## Fluxo Corrigido
 
 ```text
-+-------------------------+
-|    Usuario Logado       |
-+------------+------------+
-             |
-             v
-+-------------------------+
-|    check-credits        |
-+------------+------------+
-             |
-     +-------+--------+
-     |                |
-     v                v
-+----------+    +-----------+
-| user_    |    | Stripe    |
-| credits  |    | API       |
-| (table)  |    | (Creator) |
-+----+-----+    +-----+-----+
-     |                |
-     v                v
-+-------------------------+
-| Soma total:             |
-| - package_credits: 0    |
-| - subscription_credits: |
-|   50 (Creator Start)    |
-| - total: 50             |
-+-------------------------+
-             |
-             v
-+-------------------------+
-| Frontend atualizado     |
-| mostrando 50 creditos   |
-+-------------------------+
+Usuario clica "Usar 1 credito"
+        |
+        v
+   handleUseCredit()
+        |
+        v
++-------------------+
+| use-credit        | -> Marca pedido como PAGO
++-------------------+
+        |
+        v
++-------------------+
+| Busca dados da    |
+| order do banco    |
++-------------------+
+        |
+    +---+---+
+    |       |
+    v       v
++--------+ +---------+
+| Vocal  | | Instru- |
+| ?      | | mental? |
++--------+ +---------+
+    |           |
+    v           v
+generate-    generate-
+lyrics       style-prompt
+    |           |
+    +-----+-----+
+          |
+          v
+   Redireciona para
+   /criar-musica
 ```
-
----
 
 ## Secao Tecnica
 
-### Modificacoes em `check-credits/index.ts`
+### Modificacao em `handleUseCredit()` (Briefing.tsx)
+
+A funcao atual termina assim:
 
 ```typescript
-// Adicionar no inicio: importar Stripe
-import Stripe from "https://esm.sh/stripe@18.5.0";
+// Crédito usado com sucesso!
+toast({
+  title: '✨ Crédito utilizado!',
+  description: `Você usou 1 crédito...`,
+});
 
-// Na funcao principal, apos buscar user_credits:
+clearSavedBriefing();
+navigate(`/criar-musica?orderId=${pendingOrderId}`);
+```
 
-// Check for Creator subscription credits
-let subscriptionCredits = 0;
-let subscriptionInfo = null;
+Sera modificada para:
 
-try {
-  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-  if (stripeKey && user.email) {
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    
-    // Find customer
-    const customers = await stripe.customers.list({ 
-      email: user.email, 
-      limit: 1 
-    });
-    
-    if (customers.data.length > 0) {
-      // Find active creator subscription
-      const subscriptions = await stripe.subscriptions.list({
-        customer: customers.data[0].id,
-        status: "active",
-        limit: 10,
+```typescript
+// Crédito usado com sucesso!
+toast({
+  title: '✨ Crédito utilizado!',
+  description: `Gerando sua música...`,
+});
+
+// Buscar dados do pedido para gerar conteúdo
+const { data: orderData } = await supabase
+  .from('orders')
+  .select('*')
+  .eq('id', pendingOrderId)
+  .single();
+
+if (orderData) {
+  const briefing = {
+    musicType: orderData.music_type || 'homenagem',
+    emotion: orderData.emotion || 'alegria',
+    emotionIntensity: orderData.emotion_intensity || 3,
+    style: orderData.music_style || 'pop',
+    rhythm: orderData.rhythm || 'moderado',
+    atmosphere: orderData.atmosphere || 'festivo',
+    structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+    hasMonologue: orderData.has_monologue || false,
+    monologuePosition: orderData.monologue_position || 'bridge',
+    mandatoryWords: orderData.mandatory_words || '',
+    restrictedWords: orderData.restricted_words || '',
+    voiceType: orderData.voice_type || 'feminina',
+    songName: orderData.song_title || '',
+    autoGenerateName: !orderData.song_title
+  };
+
+  try {
+    if (orderData.is_instrumental) {
+      // Instrumental: gerar style prompt diretamente
+      await supabase.functions.invoke('generate-style-prompt', {
+        body: {
+          orderId: pendingOrderId,
+          isInstrumental: true,
+          briefing: {
+            ...briefing,
+            instruments: orderData.instruments || [],
+            soloInstrument: orderData.solo_instrument || null,
+            soloMoment: orderData.solo_moment || null,
+            instrumentationNotes: orderData.instrumentation_notes || ''
+          }
+        }
       });
-      
-      const creatorSub = subscriptions.data.find(
-        sub => sub.metadata?.plan_type === 'creator'
-      );
-      
-      if (creatorSub) {
-        const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
-        // Get period from items
-        const firstItem = creatorSub.items?.data?.[0];
-        const periodStart = new Date(firstItem.current_period_start * 1000).toISOString();
-        
-        // Count orders in current period
-        const { count } = await supabaseClient
-          .from('orders')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id)
-          .gte('created_at', periodStart)
-          .eq('payment_status', 'PAID')
-          .not('plan_id', 'is', null);
-        
-        subscriptionCredits = Math.max(0, creditsTotal - (count || 0));
-        subscriptionInfo = {
-          plan_id: creatorSub.metadata?.plan_id,
-          credits_total: creditsTotal,
-          credits_used: count || 0,
-          credits_remaining: subscriptionCredits,
-          is_instrumental: creatorSub.metadata?.plan_id?.includes('instrumental')
-        };
-      }
+      toast.success('Sua música instrumental está em produção!');
+      navigate('/dashboard');
+    } else {
+      // Vocal ou letra própria: gerar letras
+      await supabase.functions.invoke('generate-lyrics', {
+        body: {
+          orderId: pendingOrderId,
+          story: orderData.story,
+          briefing
+        }
+      });
+      clearSavedBriefing();
+      navigate(`/criar-musica?orderId=${pendingOrderId}`);
     }
-  }
-} catch (stripeError) {
-  logStep("Stripe check failed", { error: stripeError.message });
-  // Continue without subscription credits
-}
-
-// Update totals
-totalAvailable += subscriptionCredits;
-if (subscriptionInfo?.is_instrumental) {
-  totalInstrumental += subscriptionCredits;
-} else {
-  totalVocal += subscriptionCredits;
-}
-```
-
-### Modificacoes em `use-credit/index.ts`
-
-Adicionar fallback para creditos de assinatura quando nao houver pacotes:
-
-```typescript
-// Apos verificar user_credits e nao encontrar:
-if (!creditToUse) {
-  // Check for subscription credits
-  const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-  if (stripeKey && user.email) {
-    // Similar logic to check-credits
-    // If subscription has credits, mark order as paid with plan_id
+  } catch (genError) {
+    console.error('Generation error:', genError);
+    // Ainda redireciona, CreateSong vai fazer polling
+    clearSavedBriefing();
+    navigate(`/criar-musica?orderId=${pendingOrderId}`);
   }
 }
 ```
 
-### Modificacoes em `CreditsBanner.tsx` e `CreditsManagement.tsx`
+### Tratamento para Letra Propria
 
-Atualizar para mostrar fonte dos creditos:
+Para pedidos com `has_custom_lyric = true`, o fluxo eh diferente:
+- Nao precisa gerar letras (o usuario ja forneceu)
+- Vai direto para a tela de edicao/aprovacao
 
-```typescript
-// Adicionar badge visual indicando:
-// "50 creditos (Assinatura Creator Start)"
-// vs
-// "3 creditos (Pacote de Musicas)"
-```
-
----
-
-## Restricoes de Transferencia
-
-Creditos de assinatura Creator **NAO** podem ser transferidos porque:
-1. Sao creditos mensais que resetam automaticamente
-2. Estao vinculados ao ciclo de faturamento do Stripe
-3. Nao existem na tabela `user_credits`
-
-O componente `CreditTransfer` deve mostrar apenas creditos de pacotes avulsos.
-
----
+O codigo acima cobre isso porque `generate-lyrics` para letra propria apenas prepara os dados, e o `CreateSong.tsx` ja tem logica para detectar `has_custom_lyric` e pular para o step de edicao.
 
 ## Resultado Esperado
 
-Apos as modificacoes:
-
-1. **Dashboard** mostra: "50 creditos disponiveis (Creator Start)"
-2. **Aba Creditos** mostra: Secao separada para creditos da assinatura
-3. **Aba Transferir** mostra: "Creditos de assinatura nao podem ser transferidos" + creditos avulsos (se houver)
-4. **Briefing** permite usar creditos da assinatura para criar musica
-5. **Hero badge** continua mostrando "Start" como hoje
-
----
-
-## Prioridade de Uso
-
-Quando o usuario tem AMBOS (pacote avulso + assinatura):
-1. Usar primeiro os creditos de **pacotes avulsos** (expiram)
-2. Depois usar creditos de **assinatura** (renovam mensalmente)
-
-Isso evita que pacotes comprados expirem sem uso.
+1. Usuario com creditos (pacote ou Creator) clica "Confirmar e Criar"
+2. Modal de creditos aparece
+3. Usuario clica "Usar 1 credito"
+4. **NOVO**: Sistema mostra toast "Gerando sua música..."
+5. **NOVO**: Sistema chama generate-lyrics (vocal) ou generate-style-prompt (instrumental)
+6. Usuario eh redirecionado:
+   - Vocal/Letra propria: para `/criar-musica` onde vera as letras geradas
+   - Instrumental: para `/dashboard` onde vera o pedido em producao
+7. A tela nao trava mais esperando infinitamente por letras que nunca serao geradas
