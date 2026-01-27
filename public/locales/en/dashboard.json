@@ -1,0 +1,48 @@
+{
+  "title": "My Orders",
+  "subtitle": "Track your personalized songs",
+  "empty": {
+    "title": "No orders yet",
+    "subtitle": "Create your first personalized song!",
+    "cta": "Create Song"
+  },
+  "order": {
+    "status": "Status",
+    "date": "Order date",
+    "plan": "Plan",
+    "view": "View details",
+    "track": "Track",
+    "listen": "Listen to song"
+  },
+  "statuses": {
+    "DRAFT": "Draft",
+    "AWAITING_PAYMENT": "Awaiting payment",
+    "PAID": "Paid",
+    "BRIEFING_COMPLETE": "Briefing complete",
+    "LYRICS_PENDING": "Lyrics pending",
+    "LYRICS_GENERATED": "Lyrics generated",
+    "LYRICS_APPROVED": "Lyrics approved",
+    "MUSIC_GENERATING": "Generating music",
+    "MUSIC_READY": "Music ready",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled"
+  },
+  "filters": {
+    "all": "All",
+    "pending": "Pending",
+    "completed": "Completed"
+  },
+  "profile": {
+    "title": "My Profile",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "whatsapp": "WhatsApp",
+    "save": "Save changes",
+    "tabs": {
+      "profile": "Profile",
+      "credits": "Credits",
+      "subscription": "Subscription"
+    }
+  }
+}

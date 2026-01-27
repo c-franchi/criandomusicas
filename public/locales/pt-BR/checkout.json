@@ -1,0 +1,45 @@
+{
+  "title": "Finalizar Pedido",
+  "subtitle": "Complete o pagamento para iniciar sua música",
+  "summary": {
+    "title": "Resumo do pedido",
+    "plan": "Plano",
+    "subtotal": "Subtotal",
+    "discount": "Desconto",
+    "total": "Total"
+  },
+  "payment": {
+    "title": "Forma de pagamento",
+    "card": "Cartão de crédito",
+    "pix": "PIX",
+    "credit": "Usar crédito"
+  },
+  "pix": {
+    "title": "Pague com PIX",
+    "instructions": "Escaneie o QR Code ou copie o código",
+    "copy": "Copiar código",
+    "copied": "Código copiado!",
+    "waiting": "Aguardando confirmação do pagamento...",
+    "upload": "Enviar comprovante"
+  },
+  "voucher": {
+    "title": "Cupom de desconto",
+    "placeholder": "Digite o código",
+    "apply": "Aplicar",
+    "applied": "Cupom aplicado!",
+    "invalid": "Cupom inválido",
+    "remove": "Remover cupom"
+  },
+  "success": {
+    "title": "Pagamento confirmado!",
+    "subtitle": "Seu pedido foi recebido com sucesso",
+    "orderNumber": "Número do pedido",
+    "next": "Próximos passos",
+    "cta": "Ver meu pedido"
+  },
+  "errors": {
+    "paymentFailed": "Falha no pagamento. Tente novamente.",
+    "cardDeclined": "Cartão recusado",
+    "insufficientFunds": "Saldo insuficiente"
+  }
+}

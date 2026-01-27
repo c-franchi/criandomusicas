@@ -1,0 +1,57 @@
+{
+  "dashboard": {
+    "title": "Pannello Amministrativo",
+    "stats": {
+      "totalOrders": "Ordini Totali",
+      "pendingOrders": "Ordini In Attesa",
+      "completedOrders": "Ordini Completati",
+      "revenue": "Ricavi Totali"
+    }
+  },
+  "orders": {
+    "title": "Gestisci Ordini",
+    "search": "Cerca ordine...",
+    "filters": {
+      "all": "Tutti",
+      "pending": "In attesa",
+      "completed": "Completati"
+    },
+    "actions": {
+      "view": "Visualizza",
+      "edit": "Modifica",
+      "approve": "Approva",
+      "reject": "Rifiuta"
+    }
+  },
+  "samples": {
+    "title": "Campioni Audio",
+    "add": "Aggiungi campione",
+    "edit": "Modifica campione",
+    "delete": "Elimina campione"
+  },
+  "reviews": {
+    "title": "Recensioni",
+    "approve": "Approva",
+    "hide": "Nascondi",
+    "featured": "In evidenza"
+  },
+  "videos": {
+    "title": "Ordini Video",
+    "pending": "In attesa",
+    "delivered": "Consegnati"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "pix": {
+      "title": "Configurazione PIX",
+      "key": "Chiave PIX",
+      "name": "Nome destinatario",
+      "qrCode": "Codice QR"
+    },
+    "notifications": {
+      "title": "Notifiche",
+      "email": "Notifiche email",
+      "push": "Notifiche push"
+    }
+  }
+}

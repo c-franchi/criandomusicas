@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { HelmetProvider } from 'react-helmet-async'
 import { ThemeProvider } from 'next-themes'
 import App from './App.tsx'
+import './lib/i18n'
 import './index.css'
 
 const rootElement = document.getElementById("root");

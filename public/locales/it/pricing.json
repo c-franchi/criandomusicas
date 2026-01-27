@@ -1,0 +1,44 @@
+{
+  "title": "Scegli Il Tuo Piano",
+  "subtitle": "Piani per tutti i momenti speciali",
+  "popular": "Più Popolare",
+  "features": {
+    "included": "Incluso",
+    "notIncluded": "Non incluso"
+  },
+  "cta": "Scegli Piano",
+  "comparison": {
+    "title": "Confronta I Piani",
+    "subtitle": "Scopri cosa offre ogni piano"
+  },
+  "plans": {
+    "basic": {
+      "name": "Base",
+      "description": "Perfetto per iniziare"
+    },
+    "standard": {
+      "name": "Standard",
+      "description": "Il più scelto"
+    },
+    "premium": {
+      "name": "Premium",
+      "description": "Esperienza completa"
+    }
+  },
+  "features_list": {
+    "song": "Canzone personalizzata",
+    "lyrics": "Testo esclusivo",
+    "revisions": "Revisioni incluse",
+    "cover": "Copertina album",
+    "video": "Video con testo",
+    "priority": "Consegna prioritaria",
+    "instrumental": "Versione strumentale"
+  },
+  "creator": {
+    "title": "Piani Creator",
+    "subtitle": "Per chi vuole creare canzoni regolarmente",
+    "monthly": "Mensile",
+    "yearly": "Annuale",
+    "savePercent": "Risparmia il {{percent}}%"
+  }
+}

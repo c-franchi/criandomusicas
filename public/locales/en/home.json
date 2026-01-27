@@ -1,0 +1,73 @@
+{
+  "hero": {
+    "title1": "Tell your",
+    "titleHighlight1": "story.",
+    "title2": "We turn it into",
+    "titleHighlight2": "music.",
+    "subtitle": "Create personalized songs to honor, gift, or eternalize moments — with ready-to-share video option.",
+    "cta": "Create My Song",
+    "ctaExamples": "Listen to samples 🎧",
+    "ctaDashboard": "My Orders",
+    "ctaNewSong": "New Song",
+    "ctaUseCredit": "Use Credit",
+    "socialProof": "Over 500 songs created • Fast delivery • Real reviews",
+    "stats": {
+      "songs": "Songs Created",
+      "time": "Average Time",
+      "rating": "Rating"
+    }
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Creating your personalized song is simple and fast",
+    "step1": {
+      "title": "Tell your story",
+      "description": "Fill out the briefing with details about your tribute"
+    },
+    "step2": {
+      "title": "Choose the style",
+      "description": "Select the musical genre and tone for your song"
+    },
+    "step3": {
+      "title": "Receive your song",
+      "description": "Within 48 hours, your song will be ready to move hearts"
+    }
+  },
+  "samples": {
+    "title": "Listen to Samples",
+    "subtitle": "Check out some of the songs we've created"
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Real stories from those who turned moments into music"
+  },
+  "whyUs": {
+    "title": "Why Choose Us?",
+    "subtitle": "Reasons to create your song with us",
+    "feature1": {
+      "title": "Professional Quality",
+      "description": "Songs produced with advanced AI and human curation"
+    },
+    "feature2": {
+      "title": "Fast Delivery",
+      "description": "Receive your song within 48 hours"
+    },
+    "feature3": {
+      "title": "100% Personalized",
+      "description": "Each song is unique, created especially for you"
+    },
+    "feature4": {
+      "title": "Satisfaction Guaranteed",
+      "description": "Free adjustments until you're satisfied"
+    }
+  },
+  "cta": {
+    "title": "Ready to Create Your Song?",
+    "subtitle": "Turn your story into an unforgettable melody",
+    "button": "Start Now"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Get answers about our service"
+  }
+}

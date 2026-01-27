@@ -1,0 +1,60 @@
+{
+  "privacy": {
+    "title": "Política de Privacidad",
+    "lastUpdated": "Última actualización",
+    "sections": {
+      "intro": "Introducción",
+      "dataCollection": "Recopilación de Datos",
+      "dataUse": "Uso de los Datos",
+      "dataSecurity": "Seguridad de los Datos",
+      "cookies": "Cookies",
+      "rights": "Tus Derechos",
+      "contact": "Contacto"
+    }
+  },
+  "terms": {
+    "title": "Términos de Uso",
+    "lastUpdated": "Última actualización",
+    "sections": {
+      "acceptance": "Aceptación de los Términos",
+      "services": "Descripción de los Servicios",
+      "account": "Cuenta del Usuario",
+      "payment": "Pago",
+      "content": "Contenido y Propiedad Intelectual",
+      "restrictions": "Restricciones de Uso",
+      "termination": "Terminación",
+      "liability": "Limitación de Responsabilidad",
+      "changes": "Cambios en los Términos",
+      "contact": "Contacto"
+    }
+  },
+  "rules": {
+    "title": "Reglas para Creación de Canciones",
+    "subtitle": "Directrices para el contenido de tus canciones",
+    "allowed": {
+      "title": "Permitido",
+      "items": [
+        "Homenajes y declaraciones de amor",
+        "Canciones para eventos y celebraciones",
+        "Historias personales y recuerdos",
+        "Regalos personalizados"
+      ]
+    },
+    "prohibited": {
+      "title": "Prohibido",
+      "items": [
+        "Contenido ofensivo o discriminatorio",
+        "Incitación a la violencia",
+        "Contenido sexualmente explícito",
+        "Violación de derechos de autor"
+      ]
+    }
+  },
+  "cookies": {
+    "title": "Aviso de Cookies",
+    "message": "Usamos cookies para mejorar tu experiencia. Al continuar navegando, aceptas nuestra",
+    "link": "Política de Privacidad",
+    "accept": "Aceptar",
+    "decline": "Rechazar"
+  }
+}

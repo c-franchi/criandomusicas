@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -9,8 +10,11 @@ import { useCredits } from "@/hooks/useCredits";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import heroImage from "@/assets/hero-music.jpg";
 import ThemeToggle from "@/components/ThemeToggle";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const Hero = () => {
+  const { t } = useTranslation('home');
+  const { t: tCommon } = useTranslation('common');
   const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
@@ -36,6 +40,9 @@ const Hero = () => {
       {/* Auth Section */}
       <div className="absolute top-6 right-6 z-20">
         <div className="flex items-center gap-3">
+          {/* Language Selector */}
+          <LanguageSelector />
+          
           {/* Theme Toggle */}
           <ThemeToggle />
           
@@ -55,8 +62,8 @@ const Hero = () => {
                 <Link to="/perfil?tab=credits">
                   <Badge className="bg-green-500 text-white border-0 gap-1.5 cursor-pointer hover:bg-green-400 transition-colors">
                     <Zap className="w-3 h-3" />
-                    {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
-                  </Badge>
+                  {totalAvailable} {totalAvailable !== 1 ? tCommon('credits.credits') : tCommon('credits.credit')}
+                </Badge>
                 </Link>
               )}
               <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
@@ -71,14 +78,14 @@ const Hero = () => {
                 </span>
               </Link>
               <Button variant="outline" size="sm" onClick={() => signOut()}>
-                Sair
+                {tCommon('auth.logout')}
               </Button>
             </>
           ) : (
             <Link to="/auth">
               <Button variant="outline" size="sm">
                 <User className="w-4 h-4 mr-2" />
-                Entrar
+                {tCommon('auth.login')}
               </Button>
             </Link>
           )}
@@ -99,16 +106,15 @@ const Hero = () => {
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight px-0 my-[67px]">
-          Conte sua{" "}
-          <span className="gradient-text">história.</span>
+          {t('hero.title1')}{" "}
+          <span className="gradient-text">{t('hero.titleHighlight1')}</span>
           <br />
-          A gente transforma em{" "}
-          <span className="gradient-text">música.</span>
+          {t('hero.title2')}{" "}
+          <span className="gradient-text">{t('hero.titleHighlight2')}</span>
         </h1>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-12 max-w-2xl mx-auto">
-          Crie músicas personalizadas para homenagear, presentear ou eternizar momentos 
-          — com opção de vídeo pronto para compartilhar.
+          {t('hero.subtitle')}
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -125,7 +131,7 @@ const Hero = () => {
               )}
               <Link to="/dashboard">
                 <Button variant={isAdmin ? "outline" : "hero"} size="lg" className="text-lg px-8 py-6 group">
-                  Meus Pedidos
+                  {t('hero.ctaDashboard')}
                   {!isAdmin && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </Link>
@@ -138,10 +144,10 @@ const Hero = () => {
                   {hasCredits ? (
                     <>
                       <Zap className="w-5 h-5 mr-2" />
-                      Usar Crédito
+                      {t('hero.ctaUseCredit')}
                     </>
                   ) : (
-                    'Nova Música'
+                    t('hero.ctaNewSong')
                   )}
                 </Button>
               </Link>
@@ -150,7 +156,7 @@ const Hero = () => {
             <>
               <Link to="/briefing">
                 <Button variant="hero" size="lg" className="text-lg px-8 py-6 group">
-                  Criar Minha Música
+                  {t('hero.cta')}
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -160,7 +166,7 @@ const Hero = () => {
                 className="text-lg px-8 py-6"
                 onClick={() => document.getElementById('exemplos')?.scrollIntoView({ behavior: 'smooth' })}
               >
-                Ver exemplos 🎧
+                {t('hero.ctaExamples')}
               </Button>
             </>
           )}
@@ -169,22 +175,22 @@ const Hero = () => {
         {/* Micro Social Proof */}
         <div className="mt-6 text-muted-foreground text-sm md:text-base">
           <span className="text-accent">⭐⭐⭐⭐⭐</span>{" "}
-          Mais de 500 músicas criadas • Entrega rápida • Avaliações reais
+          {t('hero.socialProof')}
         </div>
         
         {/* Stats */}
         <div className="grid grid-cols-3 gap-8 mt-12 max-w-2xl mx-auto">
           <div className="text-center">
             <div className="text-3xl font-bold gradient-text">500+</div>
-            <div className="text-muted-foreground">Músicas Criadas</div>
+            <div className="text-muted-foreground">{t('hero.stats.songs')}</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold gradient-text">48h</div>
-            <div className="text-muted-foreground">Tempo Médio</div>
+            <div className="text-muted-foreground">{t('hero.stats.time')}</div>
           </div>
           <div className="text-center">
             <div className="text-3xl font-bold gradient-text">5.0★</div>
-            <div className="text-muted-foreground">Avaliação</div>
+            <div className="text-muted-foreground">{t('hero.stats.rating')}</div>
           </div>
         </div>
       </div>

@@ -1,0 +1,45 @@
+{
+  "title": "Completa Ordine",
+  "subtitle": "Completa il pagamento per iniziare la tua canzone",
+  "summary": {
+    "title": "Riepilogo ordine",
+    "plan": "Piano",
+    "subtotal": "Subtotale",
+    "discount": "Sconto",
+    "total": "Totale"
+  },
+  "payment": {
+    "title": "Metodo di pagamento",
+    "card": "Carta di credito",
+    "pix": "PIX",
+    "credit": "Usa credito"
+  },
+  "pix": {
+    "title": "Paga con PIX",
+    "instructions": "Scansiona il codice QR o copia il codice",
+    "copy": "Copia codice",
+    "copied": "Codice copiato!",
+    "waiting": "In attesa di conferma del pagamento...",
+    "upload": "Carica ricevuta"
+  },
+  "voucher": {
+    "title": "Coupon sconto",
+    "placeholder": "Inserisci il codice",
+    "apply": "Applica",
+    "applied": "Coupon applicato!",
+    "invalid": "Coupon non valido",
+    "remove": "Rimuovi coupon"
+  },
+  "success": {
+    "title": "Pagamento confermato!",
+    "subtitle": "Il tuo ordine è stato ricevuto con successo",
+    "orderNumber": "Numero ordine",
+    "next": "Prossimi passi",
+    "cta": "Vedi il mio ordine"
+  },
+  "errors": {
+    "paymentFailed": "Pagamento fallito. Riprova.",
+    "cardDeclined": "Carta rifiutata",
+    "insufficientFunds": "Fondi insufficienti"
+  }
+}

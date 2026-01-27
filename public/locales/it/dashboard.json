@@ -1,0 +1,48 @@
+{
+  "title": "I Miei Ordini",
+  "subtitle": "Segui le tue canzoni personalizzate",
+  "empty": {
+    "title": "Nessun ordine ancora",
+    "subtitle": "Crea la tua prima canzone personalizzata!",
+    "cta": "Crea Canzone"
+  },
+  "order": {
+    "status": "Stato",
+    "date": "Data dell'ordine",
+    "plan": "Piano",
+    "view": "Vedi dettagli",
+    "track": "Traccia",
+    "listen": "Ascolta canzone"
+  },
+  "statuses": {
+    "DRAFT": "Bozza",
+    "AWAITING_PAYMENT": "In attesa di pagamento",
+    "PAID": "Pagato",
+    "BRIEFING_COMPLETE": "Briefing completo",
+    "LYRICS_PENDING": "Testo in attesa",
+    "LYRICS_GENERATED": "Testo generato",
+    "LYRICS_APPROVED": "Testo approvato",
+    "MUSIC_GENERATING": "Generazione musica",
+    "MUSIC_READY": "Musica pronta",
+    "COMPLETED": "Completato",
+    "CANCELLED": "Annullato"
+  },
+  "filters": {
+    "all": "Tutti",
+    "pending": "In attesa",
+    "completed": "Completati"
+  },
+  "profile": {
+    "title": "Il Mio Profilo",
+    "name": "Nome",
+    "email": "Email",
+    "phone": "Telefono",
+    "whatsapp": "WhatsApp",
+    "save": "Salva modifiche",
+    "tabs": {
+      "profile": "Profilo",
+      "credits": "Crediti",
+      "subscription": "Abbonamento"
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "home": "Home",
+    "plans": "Plans",
+    "dashboard": "My Orders",
+    "profile": "Profile",
+    "admin": "Admin",
+    "settings": "Settings"
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "signup": "Sign Up"
+  },
+  "buttons": {
+    "create": "Create",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "loading": "Loading..."
+  },
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "paid": "Paid",
+    "failed": "Failed"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "required": "Required field"
+  },
+  "success": {
+    "saved": "Successfully saved!",
+    "deleted": "Successfully deleted!",
+    "updated": "Successfully updated!"
+  },
+  "credits": {
+    "credit": "credit",
+    "credits": "credits",
+    "use": "Use Credit"
+  },
+  "subscription": {
+    "active": "Active",
+    "inactive": "Inactive"
+  }
+}

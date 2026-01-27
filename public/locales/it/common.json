@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "home": "Home",
+    "plans": "Piani",
+    "dashboard": "I Miei Ordini",
+    "profile": "Profilo",
+    "admin": "Admin",
+    "settings": "Impostazioni"
+  },
+  "auth": {
+    "login": "Accedi",
+    "logout": "Esci",
+    "signup": "Registrati"
+  },
+  "buttons": {
+    "create": "Crea",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "back": "Indietro",
+    "next": "Avanti",
+    "submit": "Invia",
+    "loading": "Caricamento..."
+  },
+  "status": {
+    "pending": "In attesa",
+    "processing": "In elaborazione",
+    "completed": "Completato",
+    "cancelled": "Annullato",
+    "paid": "Pagato",
+    "failed": "Fallito"
+  },
+  "errors": {
+    "generic": "Qualcosa è andato storto. Riprova.",
+    "notFound": "Pagina non trovata",
+    "unauthorized": "Accesso non autorizzato",
+    "required": "Campo obbligatorio"
+  },
+  "success": {
+    "saved": "Salvato con successo!",
+    "deleted": "Eliminato con successo!",
+    "updated": "Aggiornato con successo!"
+  },
+  "credits": {
+    "credit": "credito",
+    "credits": "crediti",
+    "use": "Usa Credito"
+  },
+  "subscription": {
+    "active": "Attivo",
+    "inactive": "Inattivo"
+  }
+}
