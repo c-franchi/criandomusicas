@@ -712,7 +712,7 @@ const AdminSettings = () => {
                           <SelectTrigger>
                             <SelectValue placeholder="Todos os planos" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-60 overflow-y-auto">
                             <SelectItem value="all">Todos os planos</SelectItem>
                             <SelectItem value="single">Música Única</SelectItem>
                             <SelectItem value="package">Pacote 3 Músicas</SelectItem>
@@ -721,6 +721,9 @@ const AdminSettings = () => {
                             <SelectItem value="creator_start">Creator Start</SelectItem>
                             <SelectItem value="creator_pro">Creator Pro</SelectItem>
                             <SelectItem value="creator_studio">Creator Studio</SelectItem>
+                            <SelectItem value="creator_start_instrumental">Creator Start (Instrumental)</SelectItem>
+                            <SelectItem value="creator_pro_instrumental">Creator Pro (Instrumental)</SelectItem>
+                            <SelectItem value="creator_studio_instrumental">Creator Studio (Instrumental)</SelectItem>
                           </SelectContent>
                         </Select>
                         <p className="text-xs text-muted-foreground mt-1">
