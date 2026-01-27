@@ -1,4 +1,4 @@
-import { Music, Sparkles, ChevronRight } from 'lucide-react';
+import { Music, Sparkles, ChevronRight, Crown } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,7 +13,7 @@ interface CreditsBannerProps {
 }
 
 export function CreditsBanner({ className = '', showBuyButton = true, compact = false }: CreditsBannerProps) {
-  const { loading, hasCredits, totalAvailable, activePackage } = useCredits();
+  const { loading, hasCredits, totalAvailable, activePackage, subscriptionInfo } = useCredits();
 
   if (loading) {
     return (
@@ -55,29 +55,50 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
     );
   }
 
+  // Determine the source and label
+  const isFromSubscription = subscriptionInfo && subscriptionInfo.credits_remaining > 0;
+  const sourceLabel = isFromSubscription 
+    ? subscriptionInfo.plan_name || 'Assinatura Creator'
+    : activePackage 
+      ? getPlanLabel(activePackage.plan_id)
+      : null;
+
   if (compact) {
     return (
-      <Badge className="bg-primary/20 text-primary border-primary/30 gap-1.5">
-        <Music className="w-3 h-3" />
+      <Badge className={`gap-1.5 ${isFromSubscription ? 'bg-amber-500/20 text-amber-600 border-amber-500/30' : 'bg-primary/20 text-primary border-primary/30'}`}>
+        {isFromSubscription ? <Crown className="w-3 h-3" /> : <Music className="w-3 h-3" />}
         {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
       </Badge>
     );
   }
 
   return (
-    <Card className={`p-4 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30 ${className}`}>
+    <Card className={`p-4 ${isFromSubscription ? 'bg-gradient-to-r from-amber-500/10 to-orange-500/10 border-amber-500/30' : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/30'} ${className}`}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-full bg-primary/20">
-            <Music className="w-5 h-5 text-primary" />
+          <div className={`p-2 rounded-full ${isFromSubscription ? 'bg-amber-500/20' : 'bg-primary/20'}`}>
+            {isFromSubscription ? (
+              <Crown className="w-5 h-5 text-amber-600" />
+            ) : (
+              <Music className="w-5 h-5 text-primary" />
+            )}
           </div>
           <div>
             <p className="font-medium text-foreground">
               {totalAvailable} música{totalAvailable !== 1 ? 's' : ''} disponível{totalAvailable !== 1 ? 'is' : ''}
             </p>
-            {activePackage && (
+            {sourceLabel && (
               <p className="text-xs text-muted-foreground">
-                {getPlanLabel(activePackage.plan_id)} • {activePackage.used_credits}/{activePackage.total_credits} usados
+                {isFromSubscription ? (
+                  <>
+                    <Crown className="w-3 h-3 inline mr-1" />
+                    {sourceLabel} • {subscriptionInfo?.credits_used || 0}/{subscriptionInfo?.credits_total || 0} usados
+                  </>
+                ) : (
+                  <>
+                    {sourceLabel} • {activePackage?.used_credits || 0}/{activePackage?.total_credits || 0} usados
+                  </>
+                )}
               </p>
             )}
           </div>

@@ -10,6 +10,7 @@ interface CreditPackage {
   available_credits: number;
   purchased_at: string;
   is_active: boolean;
+  source?: 'package' | 'subscription';
 }
 
 interface ActivePackage {
@@ -20,6 +21,18 @@ interface ActivePackage {
   available_credits: number;
   purchased_at: string;
   expires_at: string | null;
+  source?: 'package' | 'subscription';
+}
+
+interface SubscriptionInfo {
+  plan_id: string | null;
+  plan_name: string | null;
+  credits_total: number;
+  credits_used: number;
+  credits_remaining: number;
+  is_instrumental: boolean;
+  subscription_end: string | null;
+  current_period_start: string | null;
 }
 
 interface CreditsState {
@@ -30,6 +43,7 @@ interface CreditsState {
   totalInstrumental: number;
   activePackage: ActivePackage | null;
   allPackages: CreditPackage[];
+  subscriptionInfo: SubscriptionInfo | null;
   error: string | null;
 }
 
@@ -43,6 +57,7 @@ export function useCredits() {
     totalInstrumental: 0,
     activePackage: null,
     allPackages: [],
+    subscriptionInfo: null,
     error: null,
   });
 
@@ -56,6 +71,7 @@ export function useCredits() {
         totalInstrumental: 0,
         activePackage: null,
         allPackages: [],
+        subscriptionInfo: null,
         error: null,
       });
       return;
@@ -84,6 +100,7 @@ export function useCredits() {
         totalInstrumental: data.total_instrumental || 0,
         activePackage: data.active_package || null,
         allPackages: data.all_packages || [],
+        subscriptionInfo: data.subscription_info || null,
         error: null,
       });
     } catch (err) {
@@ -146,6 +163,13 @@ export const PLAN_LABELS: Record<string, string> = {
   'package_instrumental': 'Pacote 3 Instrumentais',
   'subscription': 'Pacote 5 Músicas',
   'subscription_instrumental': 'Pacote 5 Instrumentais',
+  // Creator subscription plans
+  'creator_start': 'Creator Start',
+  'creator_pro': 'Creator Pro',
+  'creator_studio': 'Creator Studio',
+  'creator_start_instrumental': 'Creator Start Instrumental',
+  'creator_pro_instrumental': 'Creator Pro Instrumental',
+  'creator_studio_instrumental': 'Creator Studio Instrumental',
 };
 
 export const getPlanLabel = (planId: string): string => {
@@ -162,4 +186,9 @@ export const getCreditsForPlan = (planId: string): number => {
   if (planId.includes('subscription')) return 5;
   if (planId.includes('package')) return 3;
   return 1;
+};
+
+// Check if plan is a subscription type
+export const isSubscriptionPlan = (planId: string): boolean => {
+  return planId.startsWith('creator_');
 };

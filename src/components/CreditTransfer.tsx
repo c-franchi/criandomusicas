@@ -361,11 +361,15 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
           </TabsList>
 
           <TabsContent value="send" className="space-y-4">
+            {/* Note: Only package credits can be transferred, not subscription credits */}
             {totalAvailable === 0 ? (
               <div className="text-center py-8">
                 <Gift className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
                 <p className="text-muted-foreground">
-                  Você não tem créditos disponíveis para transferir.
+                  Você não tem créditos de pacotes disponíveis para transferir.
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Nota: Créditos de assinatura Creator não podem ser transferidos.
                 </p>
               </div>
             ) : generatedCode ? (

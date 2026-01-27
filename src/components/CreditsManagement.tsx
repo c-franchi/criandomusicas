@@ -1,4 +1,4 @@
-import { Music, Package, Calendar, CheckCircle, Clock } from 'lucide-react';
+import { Music, Package, Calendar, CheckCircle, Clock, Crown, Sparkles } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ interface CreditsManagementProps {
 }
 
 export function CreditsManagement({ className = '' }: CreditsManagementProps) {
-  const { loading, hasCredits, totalAvailable, allPackages, activePackage } = useCredits();
+  const { loading, hasCredits, totalAvailable, allPackages, activePackage, subscriptionInfo } = useCredits();
 
   if (loading) {
     return (
@@ -25,6 +25,9 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
       </Card>
     );
   }
+
+  const hasSubscriptionCredits = subscriptionInfo && subscriptionInfo.credits_remaining > 0;
+  const hasPackageCredits = allPackages.some(p => p.available_credits > 0);
 
   return (
     <Card className={`p-6 ${className}`}>
@@ -52,31 +55,67 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
           <span className="text-4xl font-bold text-primary">{totalAvailable}</span>
           <span className="text-muted-foreground">música{totalAvailable !== 1 ? 's' : ''}</span>
         </div>
-        
-        {activePackage && (
-          <div className="mt-3">
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-muted-foreground">
-                {getPlanLabel(activePackage.plan_id)}
-              </span>
-              <span className="text-muted-foreground">
-                {activePackage.used_credits}/{activePackage.total_credits} usados
-              </span>
-            </div>
-            <Progress 
-              value={(activePackage.used_credits / activePackage.total_credits) * 100} 
-              className="h-2"
-            />
-          </div>
-        )}
       </div>
 
-      {/* Package History */}
+      {/* Subscription Credits Section */}
+      {hasSubscriptionCredits && subscriptionInfo && (
+        <div className="mb-6">
+          <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2 mb-3">
+            <Crown className="w-4 h-4 text-amber-500" />
+            Assinatura Creator
+          </h4>
+          
+          <div className="p-4 rounded-lg border-2 border-amber-500/30 bg-gradient-to-r from-amber-500/10 to-orange-500/10">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-500" />
+                <span className="font-semibold">{subscriptionInfo.plan_name}</span>
+              </div>
+              <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+                Ativo
+              </Badge>
+            </div>
+            
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-3xl font-bold text-amber-600">
+                {subscriptionInfo.credits_remaining}
+              </span>
+              <span className="text-muted-foreground">
+                de {subscriptionInfo.credits_total} créditos restantes
+              </span>
+            </div>
+            
+            <Progress 
+              value={(subscriptionInfo.credits_used / subscriptionInfo.credits_total) * 100} 
+              className="h-2 mb-3"
+            />
+            
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                Renova em: {subscriptionInfo.subscription_end 
+                  ? format(new Date(subscriptionInfo.subscription_end), "dd 'de' MMM", { locale: ptBR })
+                  : '-'}
+              </span>
+              <span>
+                {subscriptionInfo.credits_used} músicas criadas este mês
+              </span>
+            </div>
+            
+            <p className="text-xs text-amber-600/80 mt-2 flex items-center gap-1">
+              <Sparkles className="w-3 h-3" />
+              Créditos renovam automaticamente todo mês
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Package Credits History */}
       {allPackages.length > 0 ? (
         <div className="space-y-3">
           <h4 className="font-medium text-sm text-muted-foreground flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            Histórico de Pacotes
+            Pacotes Avulsos
           </h4>
           
           <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -136,7 +175,7 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
             })}
           </div>
         </div>
-      ) : (
+      ) : !hasSubscriptionCredits ? (
         <div className="text-center py-6">
           <Package className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
           <p className="text-muted-foreground mb-4">
@@ -148,10 +187,10 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
             </Link>
           </Button>
         </div>
-      )}
+      ) : null}
 
       {/* Buy More CTA */}
-      {allPackages.length > 0 && (
+      {(allPackages.length > 0 || hasSubscriptionCredits) && (
         <div className="mt-6 pt-4 border-t">
           <Button asChild className="w-full" variant={hasCredits ? "outline" : "default"}>
             <Link to="/planos">

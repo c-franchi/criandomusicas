@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -76,7 +77,7 @@ serve(async (req) => {
     if (!user) throw new Error("User not authenticated");
     logStep("User authenticated", { userId: user.id, orderType });
 
-    // Fetch active credits for this user
+    // Fetch active credits for this user from user_credits table
     const { data: credits, error: creditsError } = await supabaseClient
       .from('user_credits')
       .select('*')
@@ -89,9 +90,9 @@ serve(async (req) => {
       throw new Error(`Error fetching credits: ${creditsError.message}`);
     }
 
-    logStep("Credits fetched", { count: credits?.length || 0 });
+    logStep("Package credits fetched", { count: credits?.length || 0 });
 
-    // Calculate available credits, optionally filtering by compatibility
+    // Calculate available credits from packages
     let totalAvailable = 0;
     let totalVocal = 0;
     let totalInstrumental = 0;
@@ -124,6 +125,7 @@ serve(async (req) => {
                 purchased_at: credit.purchased_at,
                 expires_at: credit.expires_at,
                 credit_type: creditType,
+                source: 'package',
               };
             }
           }
@@ -131,11 +133,167 @@ serve(async (req) => {
       }
     }
 
+    // Check for Creator subscription credits from Stripe
+    let subscriptionCredits = 0;
+    let subscriptionInfo: {
+      plan_id: string | null;
+      plan_name: string | null;
+      credits_total: number;
+      credits_used: number;
+      credits_remaining: number;
+      is_instrumental: boolean;
+      subscription_end: string | null;
+      current_period_start: string | null;
+    } | null = null;
+
+    try {
+      const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+      if (stripeKey && user.email) {
+        const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+        
+        // Find customer
+        const customers = await stripe.customers.list({ 
+          email: user.email, 
+          limit: 1 
+        });
+        
+        if (customers.data.length > 0) {
+          const customerId = customers.data[0].id;
+          logStep("Found Stripe customer", { customerId });
+          
+          // Find active creator subscription
+          const subscriptions = await stripe.subscriptions.list({
+            customer: customerId,
+            status: "active",
+            limit: 10,
+          });
+          
+          const creatorSub = subscriptions.data.find(
+            (sub: any) => sub.metadata?.plan_type === 'creator'
+          );
+          
+          if (creatorSub) {
+            const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
+            const planId = creatorSub.metadata?.plan_id || null;
+            
+            // Get period data with fallbacks
+            let currentPeriodEndTs = creatorSub.current_period_end;
+            let currentPeriodStartTs = creatorSub.current_period_start;
+
+            if (!currentPeriodEndTs || !currentPeriodStartTs) {
+              logStep("Period data not in root, checking items.data[0]");
+              const firstItem = creatorSub.items?.data?.[0];
+              if (firstItem) {
+                currentPeriodEndTs = (firstItem as any).current_period_end;
+                currentPeriodStartTs = (firstItem as any).current_period_start;
+                logStep("Found period data in items", { currentPeriodEndTs, currentPeriodStartTs });
+              }
+            }
+
+            if (!currentPeriodEndTs || !currentPeriodStartTs) {
+              logStep("Fetching full subscription details");
+              const fullSub = await stripe.subscriptions.retrieve(creatorSub.id);
+              currentPeriodEndTs = fullSub.current_period_end;
+              currentPeriodStartTs = fullSub.current_period_start;
+            }
+
+            if (currentPeriodStartTs && currentPeriodEndTs) {
+              const periodStart = new Date(currentPeriodStartTs * 1000).toISOString();
+              const periodEnd = new Date(currentPeriodEndTs * 1000).toISOString();
+              
+              // Count orders created in current period that use subscription credits
+              // Orders with plan_id starting with 'creator_' are subscription-based
+              const { count: usedCount, error: countError } = await supabaseClient
+                .from('orders')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id)
+                .gte('created_at', periodStart)
+                .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
+                .like('plan_id', 'creator_%');
+
+              if (countError) {
+                logStep("Error counting subscription usage", { error: countError.message });
+              }
+
+              const creditsUsed = usedCount || 0;
+              subscriptionCredits = Math.max(0, creditsTotal - creditsUsed);
+              
+              const isInstrumental = planId?.includes('instrumental') || false;
+              
+              // Plan name mapping
+              const planNames: Record<string, string> = {
+                'creator_start': 'Creator Start',
+                'creator_pro': 'Creator Pro',
+                'creator_studio': 'Creator Studio',
+                'creator_start_instrumental': 'Creator Start Instrumental',
+                'creator_pro_instrumental': 'Creator Pro Instrumental',
+                'creator_studio_instrumental': 'Creator Studio Instrumental',
+              };
+              
+              subscriptionInfo = {
+                plan_id: planId,
+                plan_name: planNames[planId || ''] || planId,
+                credits_total: creditsTotal,
+                credits_used: creditsUsed,
+                credits_remaining: subscriptionCredits,
+                is_instrumental: isInstrumental,
+                subscription_end: periodEnd,
+                current_period_start: periodStart,
+              };
+
+              // Add subscription credits to totals
+              if (isInstrumental) {
+                totalInstrumental += subscriptionCredits;
+              } else {
+                totalVocal += subscriptionCredits;
+              }
+              
+              // Check compatibility with order type
+              const subIsCompatible = orderType 
+                ? (isInstrumental ? orderType === 'instrumental' : orderType !== 'instrumental')
+                : true;
+              
+              if (subIsCompatible) {
+                totalAvailable += subscriptionCredits;
+                
+                // If no active package, subscription becomes the active source
+                if (!activePackage && subscriptionCredits > 0) {
+                  activePackage = {
+                    id: creatorSub.id,
+                    plan_id: planId,
+                    total_credits: creditsTotal,
+                    used_credits: creditsUsed,
+                    available_credits: subscriptionCredits,
+                    purchased_at: periodStart,
+                    expires_at: periodEnd,
+                    credit_type: isInstrumental ? 'instrumental' : 'vocal',
+                    source: 'subscription',
+                  };
+                }
+              }
+
+              logStep("Creator subscription credits calculated", { 
+                planId, 
+                creditsTotal, 
+                creditsUsed, 
+                subscriptionCredits,
+                isInstrumental 
+              });
+            }
+          }
+        }
+      }
+    } catch (stripeError: any) {
+      logStep("Stripe check failed (non-fatal)", { error: stripeError.message });
+      // Continue without subscription credits
+    }
+
     logStep("Credits calculated", { 
       totalAvailable, 
       totalVocal, 
       totalInstrumental, 
       hasActivePackage: !!activePackage,
+      hasSubscription: !!subscriptionInfo,
       orderType 
     });
 
@@ -146,6 +304,7 @@ serve(async (req) => {
       total_vocal: totalVocal,
       total_instrumental: totalInstrumental,
       active_package: activePackage,
+      subscription_info: subscriptionInfo,
       all_packages: credits?.map(c => ({
         id: c.id,
         plan_id: c.plan_id,
@@ -155,6 +314,7 @@ serve(async (req) => {
         purchased_at: c.purchased_at,
         is_active: c.is_active,
         credit_type: getCreditType(c.plan_id),
+        source: 'package',
       })) || [],
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
