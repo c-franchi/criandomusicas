@@ -78,7 +78,7 @@ const generateVoucherShareText = (voucher: Voucher): string => {
     `${plansText}` +
     `${expiry}\n\n` +
     `🎶 Crie sua música personalizada em:\n` +
-    `https://criandomusicas.com.br/planos`;
+    `https://criandomusicas.com.br`;
 };
 
 export function VoucherShareMenu({ voucher }: VoucherShareMenuProps) {
@@ -90,7 +90,7 @@ export function VoucherShareMenu({ voucher }: VoucherShareMenuProps) {
   };
 
   const shareVoucherFacebook = () => {
-    const url = `https://criandomusicas.com.br/planos?voucher=${encodeURIComponent(voucher.code)}`;
+    const url = `https://criandomusicas.com.br?voucher=${encodeURIComponent(voucher.code)}`;
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
   };
 
@@ -99,7 +99,7 @@ export function VoucherShareMenu({ voucher }: VoucherShareMenuProps) {
       ? ` para ${formatPlanNames(voucher.plan_ids)}` 
       : '';
     const text = `🎵 Use o cupom ${voucher.code} e ganhe desconto${plansInfo} na sua música personalizada! 🎶`;
-    const url = `https://criandomusicas.com.br/planos`;
+    const url = `https://criandomusicas.com.br`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
   };
 
