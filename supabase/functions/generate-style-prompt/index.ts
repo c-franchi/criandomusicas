@@ -195,6 +195,45 @@ serve(async (req) => {
       );
     }
 
+    // Verificar se o pedido já tem um style_prompt customizado (fornecido pelo usuário)
+    const supabaseUrlCheck = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKeyCheck = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseCheck = createClient(supabaseUrlCheck, supabaseKeyCheck);
+
+    const { data: existingOrder, error: orderError } = await supabaseCheck
+      .from('orders')
+      .select('style_prompt, song_title, has_custom_lyric')
+      .eq('id', orderId)
+      .single();
+
+    if (!orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
+      // Já tem style_prompt customizado, apenas atualizar status e final_prompt se necessário
+      console.log("Order already has custom style_prompt, skipping generation");
+      
+      const finalPrompt = approvedLyrics || '';
+      
+      await supabaseCheck
+        .from('orders')
+        .update({
+          status: 'LYRICS_APPROVED',
+          final_prompt: finalPrompt,
+          song_title: songTitle || existingOrder.song_title,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', orderId);
+
+      return new Response(
+        JSON.stringify({ 
+          ok: true, 
+          message: "Style prompt customizado já existe, aprovação concluída",
+          style_prompt: existingOrder.style_prompt,
+          final_prompt: finalPrompt,
+          skipped_generation: true
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Para músicas cantadas, letras são obrigatórias
     if (!isInstrumental && !approvedLyrics) {
       console.error("Missing approvedLyrics for vocal track - orderId:", orderId);
