@@ -67,21 +67,46 @@ serve(async (req) => {
 
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("No authorization header provided");
+    if (!authHeader?.startsWith("Bearer ")) {
+      logStep("No authorization header provided");
+      return new Response(JSON.stringify({
+        success: false,
+        has_credits: false,
+        total_available: 0,
+        total_vocal: 0,
+        total_instrumental: 0,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
     
     const token = authHeader.replace("Bearer ", "");
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-    if (userError) throw new Error(`Authentication error: ${userError.message}`);
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
     
-    const user = userData.user;
-    if (!user) throw new Error("User not authenticated");
-    logStep("User authenticated", { userId: user.id, orderType });
+    if (claimsError || !claimsData?.claims?.sub) {
+      logStep("Authentication failed", { error: claimsError?.message });
+      return new Response(JSON.stringify({
+        success: false,
+        has_credits: false,
+        total_available: 0,
+        total_vocal: 0,
+        total_instrumental: 0,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+    
+    const userId = claimsData.claims.sub as string;
+    const userEmail = claimsData.claims.email as string | undefined;
+    logStep("User authenticated", { userId, orderType });
 
     // Fetch active credits for this user from user_credits table
     const { data: credits, error: creditsError } = await supabaseClient
       .from('user_credits')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', userId)
       .eq('is_active', true)
       .order('purchased_at', { ascending: true }); // FIFO - oldest first
 
@@ -148,12 +173,12 @@ serve(async (req) => {
 
     try {
       const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-      if (stripeKey && user.email) {
+      if (stripeKey && userEmail) {
         const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
         
         // Find customer
         const customers = await stripe.customers.list({ 
-          email: user.email, 
+          email: userEmail, 
           limit: 1 
         });
         
@@ -206,7 +231,7 @@ serve(async (req) => {
               const { count: usedCount, error: countError } = await supabaseClient
                 .from('orders')
                 .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id)
+                .eq('user_id', userId)
                 .gte('created_at', periodStart)
                 .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
                 .like('plan_id', 'creator_%');
