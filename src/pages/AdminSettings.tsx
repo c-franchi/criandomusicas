@@ -59,17 +59,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AudioSampleManager, type AudioSample, type PricingConfig, type Voucher, type PixConfig } from "@/components/admin";
+import { AudioSampleManager, ShareAnalytics, type AudioSample, type PricingConfig, type Voucher, type PixConfig } from "@/components/admin";
 import VideoOrdersManager from "@/components/admin/VideoOrdersManager";
 import ReactionVideosManager from "@/components/admin/ReactionVideosManager";
 import ReviewsManager from "@/components/admin/ReviewsManager";
+import { BarChart3 } from "lucide-react";
 
 const AdminSettings = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
   const { toast } = useToast();
   
-  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions' | 'reviews'>('pricing');
+  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions' | 'reviews' | 'analytics'>('pricing');
   
   // Pricing
   const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
@@ -508,6 +509,10 @@ const AdminSettings = () => {
             <TabsTrigger value="reviews" className="flex-1 min-w-[100px] text-xs sm:text-sm py-2">
               <MessageCircle className="w-4 h-4 mr-1.5" />
               Avaliações
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex-1 min-w-[100px] text-xs sm:text-sm py-2">
+              <BarChart3 className="w-4 h-4 mr-1.5" />
+              Analytics
             </TabsTrigger>
           </TabsList>
           
@@ -948,6 +953,17 @@ const AdminSettings = () => {
           <TabsContent value="reviews" className="space-y-4">
             <Card className="p-4 sm:p-6 border-primary/30">
               <ReviewsManager />
+            </Card>
+          </TabsContent>
+
+          {/* ANALYTICS TAB */}
+          <TabsContent value="analytics" className="space-y-4">
+            <Card className="p-4 sm:p-6 border-primary/30">
+              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-primary" />
+                Analytics de Compartilhamento
+              </h2>
+              <ShareAnalytics />
             </Card>
           </TabsContent>
         </Tabs>

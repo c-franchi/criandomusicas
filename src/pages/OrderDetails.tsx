@@ -272,7 +272,23 @@ const OrderDetails = () => {
 
   const getShareUrl = () => `https://criandomusicas.com.br/m/${orderId}`;
 
+  // Track share analytics
+  const trackShare = async (platform: string) => {
+    if (!orderId) return;
+    try {
+      await supabase.from('share_analytics').insert({
+        order_id: orderId,
+        user_id: user?.id,
+        event_type: 'share',
+        platform,
+      });
+    } catch (e) {
+      console.error('Track share error:', e);
+    }
+  };
+
   const shareOnWhatsApp = () => {
+    trackShare('whatsapp');
     const title = getSongTitle();
     const shareUrl = getShareUrl();
     const text = `🎵 Ouça minha música personalizada: ${title}\n\n🎧 Escute aqui:\n${shareUrl}`;
@@ -280,11 +296,13 @@ const OrderDetails = () => {
   };
 
   const shareOnFacebook = () => {
+    trackShare('facebook');
     const shareUrl = getShareUrl();
     window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank');
   };
 
   const shareOnInstagram = () => {
+    trackShare('instagram');
     // Instagram doesn't have a direct share URL, copy link and open Instagram
     navigator.clipboard.writeText(getShareUrl());
     toast({ title: 'Link copiado!', description: 'Cole no seu Instagram para compartilhar.' });
@@ -299,6 +317,7 @@ const OrderDetails = () => {
     // Try native share API first
     if (navigator.share) {
       try {
+        trackShare('native');
         await navigator.share({
           title: `🎵 ${title}`,
           text: `Ouça minha música personalizada: ${title}`,
@@ -311,6 +330,7 @@ const OrderDetails = () => {
     }
     
     // Fallback: copy to clipboard
+    trackShare('copy');
     navigator.clipboard.writeText(text);
     toast({ title: 'Link copiado!', description: 'Compartilhe em suas redes sociais!' });
   };
