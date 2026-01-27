@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,6 +53,7 @@ const fallbackSamples: InstrumentalSample[] = [
 ];
 
 const InstrumentalShowcase = () => {
+  const { t } = useTranslation('home');
   const [samples, setSamples] = useState<InstrumentalSample[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
@@ -179,14 +181,14 @@ const InstrumentalShowcase = () => {
         <div className="text-center mb-12">
           <Badge variant="outline" className="mb-4 border-accent/50 text-accent">
             <Piano className="w-3 h-3 mr-1" />
-            100% Instrumental
+            {t('instrumental.badge')}
           </Badge>
           <h2 className="text-4xl font-bold mb-4">
-            Músicas{" "}
-            <span className="gradient-text">sem vocal</span>
+            {t('instrumental.title')}{" "}
+            <span className="gradient-text">{t('instrumental.titleHighlight')}</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Trilhas instrumentais personalizadas para vídeos, apresentações, meditação e momentos especiais
+            {t('instrumental.subtitle')}
           </p>
         </div>
         
@@ -308,7 +310,7 @@ const InstrumentalShowcase = () => {
         <div className="flex justify-center gap-2 mt-6 md:hidden">
           <p className="text-sm text-muted-foreground flex items-center gap-2">
             <ChevronLeft className="w-4 h-4" />
-            Deslize para ver mais
+            {t('samples.swipeHint')}
             <ChevronRight className="w-4 h-4" />
           </p>
         </div>
@@ -316,7 +318,7 @@ const InstrumentalShowcase = () => {
         {/* CTA */}
         <div className="text-center mt-12">
           <p className="text-muted-foreground mb-4">
-            💰 Músicas instrumentais com <span className="text-accent font-semibold">20% de desconto</span>
+            💰 {t('instrumental.discount').replace('20%', '')} <span className="text-accent font-semibold">{t('instrumental.discountBadge')}</span>
           </p>
           <Button 
             variant="outline" 
@@ -324,7 +326,7 @@ const InstrumentalShowcase = () => {
             onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
           >
             <Music className="w-4 h-4 mr-2" />
-            Ver Planos Instrumentais
+            {t('instrumental.cta')}
           </Button>
         </div>
       </div>
