@@ -17,12 +17,46 @@ interface Voucher {
   discount_type: string;
   discount_value: number;
   valid_until: string | null;
+  plan_ids: string[] | null;
   is_active: boolean;
 }
 
 interface VoucherShareMenuProps {
   voucher: Voucher;
 }
+
+const PLAN_LABELS: Record<string, string> = {
+  single: 'Música Única',
+  package: 'Pacote 3 Músicas',
+  subscription: 'Pacote 5 Músicas',
+  single_instrumental: 'Música Única (Instrumental)',
+  creator_start: 'Creator Start',
+  creator_pro: 'Creator Pro',
+  creator_studio: 'Creator Studio',
+  creator_start_instrumental: 'Creator Start (Instrumental)',
+  creator_pro_instrumental: 'Creator Pro (Instrumental)',
+  creator_studio_instrumental: 'Creator Studio (Instrumental)',
+};
+
+const formatPlanNames = (planIds: string[] | null): string => {
+  if (!planIds || planIds.length === 0) {
+    return 'Todos os planos';
+  }
+  
+  const planNames = planIds.map(id => PLAN_LABELS[id] || id);
+  
+  if (planNames.length === 1) {
+    return planNames[0];
+  }
+  
+  if (planNames.length === 2) {
+    return planNames.join(' e ');
+  }
+  
+  // 3+ plans: "Plan1, Plan2 e Plan3"
+  const lastPlan = planNames.pop();
+  return `${planNames.join(', ')} e ${lastPlan}`;
+};
 
 const generateVoucherShareText = (voucher: Voucher): string => {
   const discount = voucher.discount_type === 'percent'
@@ -33,9 +67,12 @@ const generateVoucherShareText = (voucher: Voucher): string => {
     ? `\nVálido até: ${format(new Date(voucher.valid_until), "dd/MM/yyyy", { locale: ptBR })}`
     : '';
 
+  const plansText = `\nVálido para: ${formatPlanNames(voucher.plan_ids)}`;
+
   return `🎵 CUPOM DE DESCONTO 🎵\n\n` +
     `Use o código: *${voucher.code}*\n` +
     `Desconto: ${discount}` +
+    `${plansText}` +
     `${expiry}\n\n` +
     `🎶 Crie sua música personalizada em:\n` +
     `https://criandomusicas.com.br/planos`;
@@ -55,7 +92,10 @@ export function VoucherShareMenu({ voucher }: VoucherShareMenuProps) {
   };
 
   const shareVoucherTwitter = () => {
-    const text = `🎵 Use o cupom ${voucher.code} e ganhe desconto na sua música personalizada! 🎶`;
+    const plansInfo = voucher.plan_ids && voucher.plan_ids.length > 0 
+      ? ` para ${formatPlanNames(voucher.plan_ids)}` 
+      : '';
+    const text = `🎵 Use o cupom ${voucher.code} e ganhe desconto${plansInfo} na sua música personalizada! 🎶`;
     const url = `https://criandomusicas.com.br/planos`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
   };
