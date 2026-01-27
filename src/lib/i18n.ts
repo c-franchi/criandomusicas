@@ -20,7 +20,7 @@ i18n
     fallbackLng: 'pt-BR',
     supportedLngs: ['pt-BR', 'en', 'es', 'it'],
     defaultNS: 'common',
-    ns: ['common', 'home', 'auth', 'dashboard', 'pricing', 'checkout', 'admin', 'legal'],
+    ns: ['common', 'home', 'auth', 'dashboard', 'pricing', 'checkout', 'admin', 'legal', 'briefing'],
     interpolation: { 
       escapeValue: false 
     },
