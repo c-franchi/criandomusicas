@@ -1457,17 +1457,91 @@ const Briefing = () => {
         return;
       }
 
-      // Crédito usado com sucesso!
+      // Crédito usado com sucesso! Agora gerar conteúdo
       toast({
         title: '✨ Crédito utilizado!',
-        description: `Você usou 1 crédito. Restam ${useCreditResult.remaining_credits} músicas no seu pacote.`,
+        description: 'Gerando sua música...',
       });
 
-      // Limpar briefing salvo
-      clearSavedBriefing();
-      
-      // Redirecionar direto para criação da música
-      navigate(`/criar-musica?orderId=${pendingOrderId}`);
+      // Buscar dados do pedido para gerar conteúdo
+      const { data: orderData, error: orderError } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', pendingOrderId)
+        .single();
+
+      if (orderError || !orderData) {
+        console.error('Error fetching order:', orderError);
+        // Ainda redireciona, CreateSong vai fazer polling
+        clearSavedBriefing();
+        navigate(`/criar-musica?orderId=${pendingOrderId}`);
+        return;
+      }
+
+      // Construir briefing a partir dos dados do pedido
+      const briefingData = {
+        musicType: orderData.music_type || 'homenagem',
+        emotion: orderData.emotion || 'alegria',
+        emotionIntensity: orderData.emotion_intensity || 3,
+        style: orderData.music_style || 'pop',
+        rhythm: orderData.rhythm || 'moderado',
+        atmosphere: orderData.atmosphere || 'festivo',
+        structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+        hasMonologue: orderData.has_monologue || false,
+        monologuePosition: orderData.monologue_position || 'bridge',
+        mandatoryWords: orderData.mandatory_words || '',
+        restrictedWords: orderData.restricted_words || '',
+        voiceType: orderData.voice_type || 'feminina',
+        songName: orderData.song_title || '',
+        autoGenerateName: !orderData.song_title
+      };
+
+      try {
+        if (orderData.is_instrumental) {
+          // Instrumental: gerar style prompt diretamente
+          console.log('Generating style prompt for instrumental order...');
+          await supabase.functions.invoke('generate-style-prompt', {
+            body: {
+              orderId: pendingOrderId,
+              isInstrumental: true,
+              briefing: {
+                ...briefingData,
+                instruments: orderData.instruments || [],
+                soloInstrument: orderData.solo_instrument || null,
+                soloMoment: orderData.solo_moment || null,
+                instrumentationNotes: orderData.instrumentation_notes || ''
+              }
+            }
+          });
+          toast({
+            title: '🎹 Música instrumental em produção!',
+            description: 'Você pode acompanhar o progresso no dashboard.',
+          });
+          clearSavedBriefing();
+          navigate('/dashboard');
+        } else {
+          // Vocal ou letra própria: gerar letras
+          console.log('Generating lyrics for vocal order...');
+          await supabase.functions.invoke('generate-lyrics', {
+            body: {
+              orderId: pendingOrderId,
+              story: orderData.story,
+              briefing: briefingData
+            }
+          });
+          clearSavedBriefing();
+          navigate(`/criar-musica?orderId=${pendingOrderId}`);
+        }
+      } catch (genError) {
+        console.error('Generation error:', genError);
+        // Ainda redireciona, CreateSong vai fazer polling
+        clearSavedBriefing();
+        if (orderData.is_instrumental) {
+          navigate('/dashboard');
+        } else {
+          navigate(`/criar-musica?orderId=${pendingOrderId}`);
+        }
+      }
     } catch (error) {
       console.error('Error using credit:', error);
       toast({
