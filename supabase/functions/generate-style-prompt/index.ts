@@ -210,7 +210,22 @@ serve(async (req) => {
       // Já tem style_prompt customizado, apenas atualizar status e final_prompt se necessário
       console.log("Order already has custom style_prompt, skipping generation");
       
-      const finalPrompt = approvedLyrics || '';
+      // Se approvedLyrics não foi passado, buscar a letra do story (para custom lyrics)
+      let lyricsContent = approvedLyrics;
+      if (!lyricsContent && existingOrder.has_custom_lyric) {
+        console.log("Custom lyrics order detected, fetching lyrics from story field");
+        const { data: orderWithStory } = await supabaseCheck
+          .from('orders')
+          .select('story')
+          .eq('id', orderId)
+          .single();
+        lyricsContent = orderWithStory?.story || '';
+        console.log("Fetched lyrics from story, length:", lyricsContent?.length || 0);
+      }
+      
+      // Formatar com tag [Lyrics] para o Admin Dashboard exibir corretamente
+      const finalPrompt = lyricsContent ? `[Lyrics]\n${lyricsContent}` : '';
+      console.log("Saving final_prompt with [Lyrics] tag, length:", finalPrompt.length);
       
       await supabaseCheck
         .from('orders')
