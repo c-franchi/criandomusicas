@@ -1,56 +1,80 @@
 
-# Plano de Correção: Sistema de Créditos Incompatíveis ✅ IMPLEMENTADO
+# Plano de Correção: Letra + Style Próprio não Exibidos Corretamente no Admin
 
 ## Problema Identificado
 
-O usuário possui **4 créditos instrumentais** mas tentou criar uma música de **Letra Própria** (que requer créditos vocais). O sistema funcionou tecnicamente correto (não permitiu usar créditos incompatíveis), porém a comunicação visual foi confusa:
+Quando o usuário fornece **letra própria + style próprio**, o painel admin exibe apenas o STYLE, não mostrando a LETRA. Isso acontece porque:
 
-- O banner mostra "4 músicas disponíveis" sem indicar que são **instrumentais**
-- O usuário não entendeu por que teve que pagar tendo créditos disponíveis
-- Não há nenhum aviso explicando a incompatibilidade
-
----
-
-## Alterações Implementadas ✅
-
-### 1. ✅ CreditsBanner atualizado para mostrar tipo de crédito
-
-**Arquivo:** `src/components/CreditsBanner.tsx`
-
-- Mostra separadamente créditos vocais (🎤) e instrumentais (🎹)
-- Badges coloridos por tipo (verde para vocal, roxo para instrumental)
-- Ícones distintos com Mic e Piano do lucide-react
-
-### 2. ✅ Aviso no Checkout para créditos incompatíveis
-
-**Arquivo:** `src/pages/Checkout.tsx`
-
-- Card de aviso com AlertTriangle quando usuário tem créditos mas são de tipo incompatível
-- Explica claramente qual tipo de crédito ele tem vs qual precisa
-- Dica de como usar seus créditos existentes
-
-### 3. ✅ Briefing atualizado com badges de compatibilidade
-
-**Arquivo:** `src/pages/Briefing.tsx`
-
-- Na tela de seleção de plano, indica quais opções são compatíveis com créditos existentes
-- Badge "✓ Usar crédito" nas opções compatíveis (verde para vocal, roxo para instrumental)
-- Destaque visual nos botões compatíveis
-
-### 4. ✅ Modal de confirmação de crédito atualizado
-
-**Arquivo:** `src/pages/Briefing.tsx`
-
-- Mostra claramente o tipo de crédito que será usado
-- Ícone e cor correspondente ao tipo (Mic/Piano)
-- Texto explicativo sobre o tipo de crédito
+1. A função `generate-style-prompt` detecta que já existe `style_prompt` customizado (linha 209-234)
+2. Ao salvar o `final_prompt`, não adiciona a tag `[Lyrics]` necessária para o Admin Dashboard identificar e exibir a letra
+3. O `final_prompt` é salvo como string vazia ou texto sem formatação, causando a não-exibição
 
 ---
 
-## Resultado
+## Correções Necessárias
+
+### 1. Corrigir a função generate-style-prompt (Edge Function)
+
+**Arquivo:** `supabase/functions/generate-style-prompt/index.ts`
+
+**Problema na linha 213:**
+```typescript
+const finalPrompt = approvedLyrics || '';
+```
+
+**Correção:**
+```typescript
+// Formatar final_prompt com tag [Lyrics] para consistência com o padrão do sistema
+const finalPrompt = approvedLyrics ? `[Lyrics]\n${approvedLyrics}` : '';
+```
+
+**Mudança completa no bloco (linhas 209-234):**
+- Adicionar a tag `[Lyrics]` ao salvar o `final_prompt`
+- Se `approvedLyrics` vier vazio mas existir letra no `story` do pedido, buscar do banco
+- Garantir que tanto `final_prompt` quanto `style_prompt` sejam salvos corretamente
+
+### 2. Verificar se há letra no story quando approvedLyrics está vazio
+
+Quando o usuário fornece letra própria, a letra fica salva no campo `story` do pedido. O código precisa buscar essa letra caso `approvedLyrics` não seja passada na chamada.
+
+**Adicionar no bloco de detecção de style_prompt existente:**
+```typescript
+if (!orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
+  console.log("Order already has custom style_prompt, skipping generation");
+  
+  // Se approvedLyrics não foi passado, buscar a letra do story (para custom lyrics)
+  let lyricsContent = approvedLyrics;
+  if (!lyricsContent && existingOrder.has_custom_lyric) {
+    // Buscar story do pedido que contém a letra customizada
+    const { data: orderWithStory } = await supabaseCheck
+      .from('orders')
+      .select('story')
+      .eq('id', orderId)
+      .single();
+    lyricsContent = orderWithStory?.story || '';
+  }
+  
+  // Formatar com tag [Lyrics] para o Admin Dashboard
+  const finalPrompt = lyricsContent ? `[Lyrics]\n${lyricsContent}` : '';
+  
+  // ... resto do código de update
+}
+```
+
+---
+
+## Resumo das Alterações
+
+| Arquivo | Mudança |
+|---------|---------|
+| `supabase/functions/generate-style-prompt/index.ts` | Adicionar tag `[Lyrics]` ao `final_prompt` quando há style customizado |
+| `supabase/functions/generate-style-prompt/index.ts` | Buscar letra do `story` se `approvedLyrics` não foi passado |
+
+---
+
+## Resultado Esperado
 
 Após a correção:
-1. ✅ O usuário verá "🎹 4 instrumentais" em vez de "4 músicas disponíveis"
-2. ✅ Na seleção de plano, verá badges indicando onde pode usar seus créditos
-3. ✅ No Checkout, verá explicação clara de por que não pode usar seus créditos
-4. ✅ Modal de créditos mostra o tipo específico do crédito
+1. O Admin Dashboard exibirá corretamente a seção LETRA para pedidos com letra própria + style próprio
+2. O `final_prompt` terá o formato padrão: `[Lyrics]\n<conteúdo da letra>`
+3. Ambos os campos (STYLE e LETRA) serão visíveis e copiáveis no painel admin
