@@ -17,7 +17,8 @@ import {
   Package,
   Gift,
   Crown,
-  Globe
+  Globe,
+  MapPin
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -26,7 +27,7 @@ import { useTranslation } from "react-i18next";
 import CreditsManagement from "@/components/CreditsManagement";
 import CreditTransfer from "@/components/CreditTransfer";
 import CreatorSubscriptionManager from "@/components/CreatorSubscriptionManager";
-import { supportedLanguages, type SupportedLanguage } from "@/lib/i18n";
+import RegionSelector from "@/components/RegionSelector";
 
 const Profile = () => {
   const { t, i18n } = useTranslation('dashboard');
@@ -345,26 +346,19 @@ const Profile = () => {
                   </p>
                 </div>
 
-                {/* Language Selector */}
+                {/* Region Selector */}
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    {t('profile.fields.language', { defaultValue: 'Idioma / Language' })}
+                    <MapPin className="w-4 h-4" />
+                    {t('profile.fields.region', { defaultValue: 'País/Região' })}
                   </Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {supportedLanguages.map((lang) => (
-                      <Button
-                        key={lang.code}
-                        type="button"
-                        variant={i18n.language === lang.code ? "default" : "outline"}
-                        className="justify-start gap-2"
-                        onClick={() => i18n.changeLanguage(lang.code)}
-                      >
-                        <span className="text-lg">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </Button>
-                    ))}
-                  </div>
+                  <RegionSelector 
+                    variant="full" 
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('profile.fields.regionHint', { defaultValue: 'Selecione seu país para ajustar idioma e moeda automaticamente' })}
+                  </p>
                 </div>
 
                 {/* Save Button */}
