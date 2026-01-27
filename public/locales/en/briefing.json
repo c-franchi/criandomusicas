@@ -60,6 +60,7 @@
     },
     "musicType": {
       "question": "What type of music do you want to create?",
+      "questionCustomLyric": "What type of music do you imagine for these lyrics?",
       "homenagem": "🎁 Tribute",
       "homenagemDesc": "To celebrate special people",
       "romantica": "❤️ Romantic",
@@ -79,6 +80,7 @@
     },
     "style": {
       "question": "Which music style do you prefer?",
+      "questionCustomLyric": "Which musical style matches your lyrics?",
       "classico": "🎻 Classical",
       "jazz": "🎷 Jazz",
       "pop": "🎵 Pop",
@@ -131,6 +133,7 @@
     },
     "rhythm": {
       "question": "Which rhythm fits best?",
+      "questionCustomLyric": "Which rhythm fits best with your music?",
       "lento": "🐢 Slow",
       "lentoDesc": "Calm, contemplative",
       "moderado": "🚶 Moderate",
@@ -200,12 +203,14 @@
     },
     "songName": {
       "autoQuestion": "Almost there! 🎵\n\nDo you want to name your song or let the AI suggest a creative title?",
+      "autoQuestionInstrumental": "Almost there! 🎵\n\nDo you want to name your instrumental music or let the AI suggest?",
       "auto": "🤖 Let the AI create",
       "autoDesc": "Automatic title",
       "manual": "✍️ I want to choose",
       "manualDesc": "Type name",
       "inputQuestion": "What name do you want to give your song?",
-      "inputQuestionInstrumental": "What name do you want to give your instrumental music?"
+      "inputQuestionInstrumental": "What name do you want to give your instrumental music?",
+      "inputQuestionCustomLyric": "What name do you want to give your song? ✨"
     },
     "customLyric": {
       "pasteQuestion": "Great! 📝 Paste your complete lyrics below.\n\nTip: include the structure (verse, chorus, etc.) if you want the AI to respect that format.",
