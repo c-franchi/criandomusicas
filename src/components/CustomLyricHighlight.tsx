@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Sparkles, ArrowRight, Check, Music } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { formatCurrency } from "@/lib/i18n-format";
 
 interface PricingData {
   price_cents: number;
@@ -11,6 +13,8 @@ interface PricingData {
 }
 
 const CustomLyricHighlight = () => {
+  const { t, i18n } = useTranslation('pricing');
+  const { t: th } = useTranslation('home');
   const navigate = useNavigate();
   const [pricing, setPricing] = useState<PricingData | null>(null);
 
@@ -31,14 +35,14 @@ const CustomLyricHighlight = () => {
   }, []);
 
   const features = [
-    "Use sua própria letra ou poema",
-    "Áudio profissional de alta qualidade",
-    "Entrega em até 48h na plataforma",
-    "Escolha o estilo musical"
+    th('customLyric.features.ownLyric', { defaultValue: "Use sua própria letra ou poema" }),
+    th('customLyric.features.quality', { defaultValue: "Áudio profissional de alta qualidade" }),
+    th('customLyric.features.delivery', { defaultValue: "Entrega em até 48h na plataforma" }),
+    th('customLyric.features.style', { defaultValue: "Escolha o estilo musical" })
   ];
 
   const formatPrice = (cents: number) => {
-    return `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
+    return formatCurrency(cents, i18n.language, { convert: false });
   };
 
   const originalPrice = pricing?.price_cents || 4790;
@@ -69,7 +73,7 @@ const CustomLyricHighlight = () => {
               <div className="flex items-center gap-3">
                 <Badge className="bg-emerald-500 text-white px-4 py-2 text-sm font-semibold">
                   <Sparkles className="w-4 h-4 mr-2" />
-                  NOVIDADE
+                  {t('customLyric.badge')}
                 </Badge>
                 <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 px-3 py-1">
                   {discountPercent}% OFF
@@ -77,15 +81,14 @@ const CustomLyricHighlight = () => {
               </div>
 
               <h2 className="text-3xl md:text-4xl font-bold">
-                Já Tem Sua{" "}
+                {t('customLyric.title').split(' ').slice(0, 3).join(' ')}{" "}
                 <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                  Letra Pronta?
+                  {t('customLyric.title').split(' ').slice(3).join(' ')}
                 </span>
               </h2>
 
               <p className="text-lg text-muted-foreground">
-                Transforme sua letra, poema ou texto em uma música profissional. 
-                Você escreve, nós produzimos a melodia perfeita!
+                {t('customLyric.description')}
               </p>
 
               <ul className="space-y-3">
@@ -105,7 +108,7 @@ const CustomLyricHighlight = () => {
                 onClick={() => navigate("/briefing?custom_lyric=true")}
               >
                 <FileText className="w-5 h-5 mr-2" />
-                Usar Minha Letra
+                {t('customLyric.cta')}
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
@@ -117,7 +120,7 @@ const CustomLyricHighlight = () => {
                   <FileText className="w-10 h-10 text-white" />
                 </div>
 
-                <h3 className="text-2xl font-bold mb-2">Música com Letra Própria</h3>
+                <h3 className="text-2xl font-bold mb-2">{th('customLyric.cardTitle', { defaultValue: "Música com Letra Própria" })}</h3>
                 
                 <div className="my-6">
                   {hasPromo && (
@@ -129,18 +132,18 @@ const CustomLyricHighlight = () => {
                     {formatPrice(promoPrice)}
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
-                    pagamento único
+                    {th('customLyric.oneTimePayment', { defaultValue: "pagamento único" })}
                   </p>
                 </div>
 
                 <div className="space-y-2 text-sm text-muted-foreground">
                   <p className="flex items-center justify-center gap-2">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    Sem taxa adicional
+                    {th('customLyric.noExtraFee', { defaultValue: "Sem taxa adicional" })}
                   </p>
                   <p className="flex items-center justify-center gap-2">
                     <Check className="w-4 h-4 text-emerald-400" />
-                    Qualidade profissional
+                    {th('customLyric.proQuality', { defaultValue: "Qualidade profissional" })}
                   </p>
                 </div>
               </div>

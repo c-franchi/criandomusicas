@@ -54,6 +54,7 @@
   "testimonials": {
     "title": "Lo Que Dicen Nuestros Clientes",
     "subtitle": "Historias reales de quienes convirtieron momentos en música",
+    "subtitleReal": "Opiniones reales de clientes que crearon canciones",
     "badge": "Testimonios Reales",
     "stats": {
       "songs": "500+",
@@ -71,8 +72,30 @@
       "birthday": "Cumpleaños",
       "wedding": "Boda",
       "mothers": "Día de las Madres",
-      "fathers": "Día de los Padres"
-    }
+      "fathers": "Día de los Padres",
+      "corporate": "Corporativo",
+      "declaration": "Declaración",
+      "custom": "Personalizada"
+    },
+    "roles": {
+      "mother": "Madre orgullosa",
+      "entrepreneur": "Emprendedor",
+      "bride": "Novia",
+      "proudFather": "Padre orgulloso",
+      "wife": "Esposa",
+      "grandfather": "Abuelo"
+    },
+    "quotes": {
+      "birthday": "¡La canción quedó increíble! A mi hijo le encantó el regalo de cumpleaños.",
+      "corporate": "Usamos la canción en el evento de la empresa. ¡Fue un éxito!",
+      "wedding": "La canción de nuestra boda emocionó a todos los invitados.",
+      "graduation": "El homenaje para la graduación de mi hija quedó perfecto.",
+      "anniversary": "El regalo de aniversario más emocionante que le he dado a mi esposo.",
+      "child": "Creé una canción para mi nieto. ¡No paraba de escucharla!"
+    },
+    "verifiedClient": "Cliente Verificado",
+    "ratingAria": "Calificación",
+    "basedOn": "Basado en {{count}} opiniones verificadas"
   },
   "instrumental": {
     "title": "Pistas",
@@ -158,6 +181,18 @@
     "limitedPromo": "Promoción por tiempo limitado",
     "useCredit": "Usar mi crédito ahora",
     "createNow": "Crear mi canción ahora"
+  },
+  "customLyric": {
+    "features": {
+      "ownLyric": "Usa tu propia letra o poema",
+      "quality": "Audio profesional de alta calidad",
+      "delivery": "Entrega en hasta 48h en la plataforma",
+      "style": "Elige el estilo musical"
+    },
+    "cardTitle": "Canción con Tu Propia Letra",
+    "oneTimePayment": "pago único",
+    "noExtraFee": "Sin tarifa adicional",
+    "proQuality": "Calidad profesional"
   },
   "faq": {
     "title": "Preguntas",

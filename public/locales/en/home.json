@@ -54,6 +54,7 @@
   "testimonials": {
     "title": "What Our Clients Say",
     "subtitle": "Real stories from those who turned moments into music",
+    "subtitleReal": "Real reviews from customers who created songs",
     "badge": "Real Testimonials",
     "stats": {
       "songs": "500+",
@@ -71,8 +72,30 @@
       "birthday": "Birthday",
       "wedding": "Wedding",
       "mothers": "Mother's Day",
-      "fathers": "Father's Day"
-    }
+      "fathers": "Father's Day",
+      "corporate": "Corporate",
+      "declaration": "Declaration",
+      "custom": "Custom"
+    },
+    "roles": {
+      "mother": "Proud mother",
+      "entrepreneur": "Entrepreneur",
+      "bride": "Bride",
+      "proudFather": "Proud father",
+      "wife": "Wife",
+      "grandfather": "Grandfather"
+    },
+    "quotes": {
+      "birthday": "The song was amazing! My son loved the birthday gift.",
+      "corporate": "We used the song at our company event. It was a hit!",
+      "wedding": "Our wedding song moved all the guests to tears.",
+      "graduation": "The tribute for my daughter's graduation was perfect.",
+      "anniversary": "The most touching anniversary gift I've ever given my husband.",
+      "child": "I created a song for my grandson. He couldn't stop listening!"
+    },
+    "verifiedClient": "Verified Customer",
+    "ratingAria": "Rating",
+    "basedOn": "Based on {{count}} verified reviews"
   },
   "instrumental": {
     "title": "Instrumental",
@@ -158,6 +181,18 @@
     "limitedPromo": "Limited time offer",
     "useCredit": "Use my credit now",
     "createNow": "Create my song now"
+  },
+  "customLyric": {
+    "features": {
+      "ownLyric": "Use your own lyrics or poem",
+      "quality": "High quality professional audio",
+      "delivery": "Delivery within 48h on the platform",
+      "style": "Choose the musical style"
+    },
+    "cardTitle": "Song with Your Own Lyrics",
+    "oneTimePayment": "one-time payment",
+    "noExtraFee": "No extra fee",
+    "proQuality": "Professional quality"
   },
   "faq": {
     "title": "Frequently Asked",
