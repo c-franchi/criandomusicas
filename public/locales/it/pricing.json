@@ -6,24 +6,32 @@
     "included": "Incluso",
     "notIncluded": "Non incluso"
   },
-  "cta": "Scegli Piano",
+  "cta": "Voglio questo piano",
+  "ctaCredits": "Voglio {{credits}} crediti",
   "comparison": {
     "title": "Confronta I Piani",
     "subtitle": "Scopri cosa offre ogni piano"
   },
   "plans": {
-    "basic": {
-      "name": "Base",
-      "description": "Perfetto per iniziare"
+    "single": {
+      "name": "Canzone Singola",
+      "description": "Per momenti speciali"
     },
-    "standard": {
-      "name": "Standard",
-      "description": "Il più scelto"
+    "package": {
+      "name": "Pacchetto 3 Canzoni",
+      "description": "Ideale per creativi"
     },
-    "premium": {
-      "name": "Premium",
-      "description": "Esperienza completa"
+    "subscription": {
+      "name": "Pacchetto 5 Canzoni",
+      "description": "Per chi crea molto"
     }
+  },
+  "instrumental": {
+    "single": "Traccia strumentale singola",
+    "package": "Tracce per progetti",
+    "subscription": "Tracce illimitate",
+    "discount": "🎹 Canzoni strumentali con 20% di sconto!",
+    "discountBadge": "-20%"
   },
   "features_list": {
     "song": "Canzone personalizzata",
@@ -32,13 +40,112 @@
     "cover": "Copertina album",
     "video": "Video con testo",
     "priority": "Consegna prioritaria",
-    "instrumental": "Versione strumentale"
+    "instrumentalVersion": "Versione strumentale"
   },
+  "toggle": {
+    "vocal": "Con Voce",
+    "instrumental": "Strumentale"
+  },
+  "section": {
+    "giftsTitle": "🎁 Per Regali e Momenti Speciali",
+    "giftsSubtitle": "Pacchetti Una Tantum",
+    "giftsDescription": "Ideale per regali unici: compleanni, matrimoni, omaggi. I crediti non scadono mai!",
+    "creatorTitle": "🎬 Per Creatori di Contenuti",
+    "creatorSubtitle": "Piani di Abbonamento Mensile",
+    "creatorDescription": "Musica originale in volume per YouTube, TikTok, Reels e Podcast. Senza prompt complessi, senza editing - tu descrivi, noi creiamo.",
+    "instrumentalCreatorDiscount": "🎹 Tracce strumentali con 20% di sconto!"
+  },
+  "badges": {
+    "musics": "{{count}} canzoni",
+    "musicsPerMonth": "{{count}} canzoni/mese",
+    "promo": "🔥 PROMO",
+    "noExpiry": "Usa quando vuoi, senza scadenza!",
+    "renewsMonthly": "I crediti si rinnovano mensilmente",
+    "savings": "Risparmia {{percent}}% ({{amount}})"
+  },
+  "pricePerMusic": "= {{price}} per canzone",
   "creator": {
     "title": "Piani Creator",
     "subtitle": "Per chi vuole creare canzoni regolarmente",
     "monthly": "Mensile",
     "yearly": "Annuale",
-    "savePercent": "Risparmia il {{percent}}%"
-  }
+    "savePercent": "Risparmia il {{percent}}%",
+    "subscribe": "Abbonati {{plan}}",
+    "features": {
+      "curatedLyrics": "Testi Curati",
+      "curatedLyricsDesc": "Identità musicale coerente",
+      "readyToPost": "Pronto da Pubblicare",
+      "readyToPostDesc": "Formati 30s, 60s, completo",
+      "commercialUse": "Uso Commerciale",
+      "commercialUseDesc": "Monetizza senza preoccupazioni",
+      "humanSupport": "Supporto Umano",
+      "humanSupportDesc": "Approvazione e modifiche"
+    },
+    "whyUs": {
+      "title": "Perché usare Criando Músicas invece di strumenti generici?",
+      "noPrompts": "Senza Prompt Tecnici",
+      "noPromptsDesc": "Tu descrivi cosa vuoi, noi creiamo",
+      "lyricsAndMusic": "Testi + Musica Pronti",
+      "lyricsAndMusicDesc": "Non è generazione grezza - è contenuto curato",
+      "readyToPublish": "Pronto per Pubblicare",
+      "readyToPublishDesc": "Direttamente dalla tua dashboard ai social"
+    }
+  },
+  "faq": {
+    "title": "Domande Frequenti",
+    "questions": [
+      {
+        "q": "Cosa sono i crediti musicali?",
+        "a": "Ogni credito ti permette di creare 1 canzone completa. Nei pacchetti una tantum, i crediti non scadono mai. Negli abbonamenti Creator, si rinnovano mensilmente."
+      },
+      {
+        "q": "Posso usare le canzoni in video monetizzati?",
+        "a": "Sì! Le canzoni create sono 100% originali e hai tutti i diritti per uso commerciale, inclusa la monetizzazione su YouTube, TikTok e Instagram."
+      },
+      {
+        "q": "I crediti dell'abbonamento si accumulano?",
+        "a": "No. I crediti degli abbonamenti Creator si rinnovano mensilmente e non si accumulano. Se preferisci crediti che non scadono mai, scegli i pacchetti una tantum."
+      },
+      {
+        "q": "Posso annullare il mio abbonamento?",
+        "a": "Sì, puoi annullare in qualsiasi momento. Continui ad avere accesso fino alla fine del periodo pagato e puoi usare i tuoi crediti rimanenti."
+      },
+      {
+        "q": "Qual è la differenza tra Una Tantum e Abbonamento?",
+        "a": "Una Tantum: Ideale per regali unici. I crediti non scadono mai.\n\nAbbonamento Creator: Ideale per creatori di contenuti che hanno bisogno di canzoni in volume ogni mese, con prezzo unitario molto più basso."
+      }
+    ]
+  },
+  "customLyric": {
+    "badge": "Novità!",
+    "title": "Hai Già Il Tuo Testo Pronto?",
+    "description": "Porta la tua composizione e la trasformiamo in musica professionale a un prezzo speciale!",
+    "specialPrice": "Prezzo Speciale",
+    "cta": "Usa Il Mio Testo",
+    "discount": "{{percent}}% di sconto!"
+  },
+  "footer": {
+    "guarantee": "🎵 Garanzia di soddisfazione al 100%",
+    "delivery": "Tutti i piani includono consegna entro 48h direttamente sulla piattaforma e supporto tecnico specializzato",
+    "back": "← Torna alla home",
+    "payment": "💳 Accettiamo Pix, carta di credito e debito",
+    "satisfaction": "Garanzia di soddisfazione."
+  },
+  "errors": {
+    "loginRequired": "Devi essere connesso per scegliere un piano.",
+    "saveFailed": "Impossibile salvare la tua scelta. Riprova."
+  },
+  "toasts": {
+    "planSelected": "Piano selezionato!",
+    "subscriptionSuccess": "🎉 Abbonamento attivato!",
+    "subscriptionDescription": "Il tuo piano {{plan}} è attivo. Inizia a creare!",
+    "loginNeeded": "Accesso richiesto",
+    "loginNeededDescription": "Accedi per abbonarti a un piano Creator."
+  },
+  "seo": {
+    "title": "Piani e Prezzi",
+    "description": "Scegli il piano ideale per creare la tua musica personalizzata. Opzioni da R$ 47,90 con consegna entro 48h. Pacchetti per canzoni vocali e strumentali."
+  },
+  "noContract": "Senza contratto • Annulla quando vuoi",
+  "choosePlan": "Scegli il piano ideale per te e inizia a creare la tua musica personalizzata ora."
 }

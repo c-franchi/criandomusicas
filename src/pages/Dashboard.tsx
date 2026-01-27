@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { NotificationBanner } from "@/components/PushNotificationPrompt";
 import CreditsBanner from "@/components/CreditsBanner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ const Dashboard = () => {
   const { user, profile, loading } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { toast } = useToast();
+  const { t } = useTranslation('dashboard');
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -86,8 +88,8 @@ const Dashboard = () => {
       const planName = planId ? planNames[planId] || 'Creator' : 'Creator';
 
       toast({
-        title: '🎉 Assinatura Ativada!',
-        description: `Sua assinatura ${planName} foi confirmada. Seus créditos já estão disponíveis!`,
+        title: t('toasts.subscriptionSuccess'),
+        description: t('toasts.subscriptionDesc', { plan: planName }),
       });
 
       // Send purchase confirmation email for subscription
@@ -138,15 +140,15 @@ const Dashboard = () => {
       if (error) throw error;
 
       toast({
-        title: 'Pedido excluído',
-        description: 'O pedido foi removido com sucesso.',
+        title: t('toasts.deleteSuccess'),
+        description: t('toasts.deleteSuccessDesc'),
       });
 
       setOrders(prev => prev.filter(o => o.id !== deleteOrderId));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
-        title: 'Erro ao excluir pedido',
+        title: t('toasts.deleteError'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -187,7 +189,7 @@ const Dashboard = () => {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
-        title: 'Erro ao carregar pedidos',
+        title: t('toasts.loadError'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -251,8 +253,8 @@ const Dashboard = () => {
               return [{ ...newOrder, lyric_title: null }, ...prev];
             });
             toast({
-              title: '🎵 Novo pedido criado!',
-              description: 'Seu pedido foi adicionado à lista.',
+              title: t('toasts.newOrder'),
+              description: t('toasts.newOrderDesc'),
             });
           } else if (payload.eventType === 'UPDATE') {
             const updatedOrder = payload.new as Order;
@@ -273,18 +275,18 @@ const Dashboard = () => {
             // Show toast for important status changes
             if (updatedOrder.status === 'LYRICS_GENERATED') {
               toast({
-                title: '✨ Letras prontas!',
-                description: 'As letras da sua música foram geradas.',
+                title: t('toasts.lyricsReady'),
+                description: t('toasts.lyricsReadyDesc'),
               });
             } else if (updatedOrder.status === 'MUSIC_READY') {
               toast({
-                title: '🎵 Música pronta!',
-                description: 'Sua música está disponível para download!',
+                title: t('toasts.musicReady'),
+                description: t('toasts.musicReadyDesc'),
               });
             } else if (updatedOrder.payment_status === 'PAID') {
               toast({
-                title: '✅ Pagamento confirmado!',
-                description: 'Estamos gerando as letras da sua música.',
+                title: t('toasts.paymentConfirmed'),
+                description: t('toasts.paymentConfirmedDesc'),
               });
             }
           } else if (payload.eventType === 'DELETE') {
@@ -308,37 +310,11 @@ const Dashboard = () => {
   const getStatusText = (status: string, isInstrumental?: boolean) => {
     // For instrumental orders, use different labels for certain statuses
     if (isInstrumental) {
-      const instrumentalStatusMap: Record<string, string> = {
-        'DRAFT': 'Rascunho',
-        'AWAITING_PAYMENT': 'Aguardando Pagamento',
-        'PAID': 'Pago',
-        'BRIEFING_COMPLETE': 'Briefing Completo',
-        'LYRICS_PENDING': 'Preparando Produção',
-        'LYRICS_GENERATED': 'Preparando Produção',
-        'LYRICS_APPROVED': 'Pronto para Produção',
-        'MUSIC_GENERATING': 'Em Produção',
-        'MUSIC_READY': 'Música Pronta',
-        'COMPLETED': 'Entregue',
-        'CANCELLED': 'Cancelado'
-      };
-      return instrumentalStatusMap[status] || status;
+      const instrumentalKey = `statusesInstrumental.${status}`;
+      const instrumentalTranslation = t(instrumentalKey, { defaultValue: '' });
+      if (instrumentalTranslation) return instrumentalTranslation;
     }
-
-    // For vocal orders, use standard labels
-    const statusMap: Record<string, string> = {
-      'DRAFT': 'Rascunho',
-      'AWAITING_PAYMENT': 'Aguardando Pagamento',
-      'PAID': 'Pago',
-      'BRIEFING_COMPLETE': 'Briefing Completo',
-      'LYRICS_PENDING': 'Gerando Letras',
-      'LYRICS_GENERATED': 'Letras Geradas',
-      'LYRICS_APPROVED': 'Letras Aprovadas',
-      'MUSIC_GENERATING': 'Em Produção',
-      'MUSIC_READY': 'Música Pronta',
-      'COMPLETED': 'Entregue',
-      'CANCELLED': 'Cancelado'
-    };
-    return statusMap[status] || status;
+    return t(`statuses.${status}`, { defaultValue: status });
   };
 
   const getStatusColor = (status: string) => {
@@ -400,7 +376,7 @@ const Dashboard = () => {
           transition={{ duration: 0.3 }}
         >
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando seus pedidos...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </motion.div>
       </div>
     );
@@ -433,32 +409,32 @@ const Dashboard = () => {
               >
                 <Music className="w-8 h-8 text-primary" />
               </motion.div>
-              <h1 className="text-3xl font-bold gradient-text">Meus Pedidos</h1>
+              <h1 className="text-3xl font-bold gradient-text">{t('title')}</h1>
             </div>
             <p className="text-muted-foreground">
-              Acompanhe suas músicas personalizadas
+              {t('subtitle')}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" asChild title="Voltar para Home" className="hover:scale-105 transition-transform">
+            <Button variant="outline" size="icon" asChild title={t('buttons.home')} className="hover:scale-105 transition-transform">
               <Link to="/">
                 <Home className="w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild title="Instalar App" className="hover:scale-105 transition-transform">
+            <Button variant="outline" size="icon" asChild title={t('buttons.install')} className="hover:scale-105 transition-transform">
               <Link to="/install">
                 <Download className="w-4 h-4" />
               </Link>
             </Button>
             <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
-              <Link to="/perfil" title="Meu Perfil">
+              <Link to="/perfil" title={t('buttons.profile')}>
                 <User className="w-4 h-4" />
               </Link>
             </Button>
             <ThemeToggle />
             {isAdmin && (
               <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
-                <Link to="/admin" title="Painel Admin">
+                <Link to="/admin" title={t('buttons.admin')}>
                   <Settings className="w-4 h-4" />
                 </Link>
               </Button>
@@ -485,7 +461,7 @@ const Dashboard = () => {
           <Button asChild size="lg" className="hover:scale-105 transition-transform shadow-lg hover:shadow-primary/25">
             <Link to="/briefing">
               <Music className="w-4 h-4 mr-2" />
-              Criar Nova Música
+              {t('buttons.newSong')}
             </Link>
           </Button>
         </motion.div>
@@ -505,12 +481,12 @@ const Dashboard = () => {
                 >
                   <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 </motion.div>
-                <h3 className="text-xl font-semibold mb-2 text-foreground">Nenhum pedido ainda</h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">{t('empty.title')}</h3>
                 <p className="text-muted-foreground mb-4">
-                  Crie sua primeira música personalizada
+                  {t('empty.subtitle')}
                 </p>
                 <Button asChild className="hover:scale-105 transition-transform">
-                  <Link to="/briefing">Começar Agora</Link>
+                  <Link to="/briefing">{t('empty.cta')}</Link>
                 </Button>
               </Card>
             </motion.div>
@@ -540,16 +516,16 @@ const Dashboard = () => {
                         </Badge>
                         {order.has_custom_lyric && (
                           <Badge variant="outline" className="text-xs border-amber-600 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-transparent">
-                            📝 Letra Própria
+                            {t('badges.customLyric')}
                           </Badge>
                         )}
                         {order.is_instrumental && !order.has_custom_lyric && (
                           <Badge variant="outline" className="text-xs border-purple-600 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-transparent">
-                            🎹 Instrumental
+                            {t('badges.instrumental')}
                           </Badge>
                         )}
                         <span className="text-xs sm:text-sm text-muted-foreground">
-                          Criado em {order.created_at ? new Date(order.created_at).toLocaleDateString('pt-BR') : 'Data não disponível'}
+                          {t('order.createdAt', { date: order.created_at ? new Date(order.created_at).toLocaleDateString() : '' })}
                         </span>
                       </div>
                     </div>
@@ -561,7 +537,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" className="pointer-events-none">
-                          <span className="hidden xs:inline">Ver </span>Detalhes
+                          <span className="hidden xs:inline">{t('order.view').split(' ')[0]} </span>{t('order.view').split(' ').slice(1).join(' ') || t('order.view')}
                           <ExternalLink className="w-4 h-4 ml-1 sm:ml-2" />
                         </Button>
                         <Button 
@@ -573,7 +549,7 @@ const Dashboard = () => {
                             setDeleteOrderId(order.id);
                           }}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          title="Excluir pedido"
+                          title={t('order.delete')}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -601,15 +577,15 @@ const Dashboard = () => {
         <AlertDialog open={!!deleteOrderId} onOpenChange={() => setDeleteOrderId(null)}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Excluir pedido?</AlertDialogTitle>
+              <AlertDialogTitle>{t('deleteDialog.title')}</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta ação não pode ser desfeita. O pedido será removido permanentemente.
+                {t('deleteDialog.description')}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+              <AlertDialogCancel>{t('deleteDialog.cancel')}</AlertDialogCancel>
               <AlertDialogAction onClick={confirmDeleteOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Excluir
+                {t('deleteDialog.confirm')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
