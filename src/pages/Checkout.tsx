@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2, Zap } from 'lucide-react';
+import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2, Zap, AlertTriangle, Mic, Piano } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { useCredits, getPlanLabel } from '@/hooks/useCredits';
@@ -61,7 +61,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isVIP, loading: vipLoading } = useVIPAccess(user?.id, user?.email || undefined);
-  const { hasCredits, totalAvailable, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
+  const { hasCredits, totalAvailable, totalVocal, totalInstrumental, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
 
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -913,6 +913,44 @@ export default function Checkout() {
               
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">ou pague normalmente abaixo</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Incompatible Credits Warning */}
+        {!showPixSection && hasCredits && !isCreditsCompatible() && !creditsLoading && (
+          <Card className="border-amber-500/50 bg-amber-500/10">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="font-medium text-amber-600 dark:text-amber-400">Créditos não compatíveis</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Você tem{' '}
+                    {totalInstrumental > 0 && (
+                      <span className="inline-flex items-center gap-1">
+                        <Piano className="w-3 h-3" />
+                        <strong>{totalInstrumental} instrumental{totalInstrumental !== 1 ? 'is' : ''}</strong>
+                      </span>
+                    )}
+                    {totalVocal > 0 && totalInstrumental > 0 && ' e '}
+                    {totalVocal > 0 && (
+                      <span className="inline-flex items-center gap-1">
+                        <Mic className="w-3 h-3" />
+                        <strong>{totalVocal} vocal{totalVocal !== 1 ? 'is' : ''}</strong>
+                      </span>
+                    )}
+                    , mas este pedido requer crédito{' '}
+                    <strong>{order?.is_instrumental ? 'instrumental' : 'vocal'}</strong>.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    💡 Seus créditos{' '}
+                    {totalInstrumental > 0 ? 'instrumentais' : 'vocais'}{' '}
+                    podem ser usados para criar músicas{' '}
+                    {totalInstrumental > 0 ? 'instrumentais' : 'cantadas ou com letra própria'}.
+                  </p>
+                </div>
               </div>
             </CardContent>
           </Card>
