@@ -41,8 +41,9 @@ const CustomLyricHighlight = () => {
     th('customLyric.features.style', { defaultValue: "Escolha o estilo musical" })
   ];
 
+  // Format price with currency conversion
   const formatPrice = (cents: number) => {
-    return formatCurrency(cents, i18n.language, { convert: false });
+    return formatCurrency(cents, i18n.language, { convert: true });
   };
 
   const originalPrice = pricing?.price_cents || 4790;

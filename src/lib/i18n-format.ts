@@ -18,10 +18,46 @@ const currencyMap: Record<string, { currency: string; locale: string }> = {
 };
 
 // Exchange rates (approximate - would be updated from an API in production)
+// Updated 2026-01: 1 BRL ≈ 0.17 USD ≈ 0.16 EUR
 const exchangeRates: Record<string, number> = {
   'BRL': 1,      // Base currency
-  'USD': 0.20,   // 1 BRL ≈ 0.20 USD
-  'EUR': 0.18,   // 1 BRL ≈ 0.18 EUR
+  'USD': 0.17,   // 1 BRL ≈ 0.17 USD
+  'EUR': 0.16,   // 1 BRL ≈ 0.16 EUR
+};
+
+/**
+ * Get formatted price with currency conversion
+ * Returns both the converted value and formatted string
+ */
+export const getLocalizedPrice = (
+  brlCents: number,
+  lang: string = 'pt-BR'
+): { value: number; formatted: string; currency: string } => {
+  const currencyInfo = currencyMap[lang] || currencyMap['pt-BR'];
+  
+  let value: number;
+  let currency: string;
+  
+  if (lang !== 'pt-BR') {
+    value = convertPrice(brlCents, currencyInfo.currency);
+    currency = currencyInfo.currency;
+  } else {
+    value = brlCents / 100;
+    currency = 'BRL';
+  }
+  
+  const formatter = new Intl.NumberFormat(currencyInfo.locale, {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  
+  return {
+    value,
+    formatted: formatter.format(value),
+    currency
+  };
 };
 
 /**

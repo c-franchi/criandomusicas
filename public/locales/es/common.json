@@ -56,7 +56,15 @@
     "credits": "créditos",
     "use": "Usar Crédito",
     "available": "disponible",
-    "availablePlural": "disponibles"
+    "availablePlural": "disponibles",
+    "noCredits": "Sin créditos disponibles",
+    "buyPackage": "¡Compra un paquete y ahorra!",
+    "viewPackages": "Ver Paquetes",
+    "createMusic": "Crear Música",
+    "vocal": "vocal",
+    "vocals": "vocales",
+    "instrumental": "instrumental",
+    "instrumentals": "instrumentales"
   },
   "subscription": {
     "active": "Activo",
