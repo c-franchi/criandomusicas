@@ -1,0 +1,45 @@
+{
+  "title": "Complete Order",
+  "subtitle": "Complete payment to start your song",
+  "summary": {
+    "title": "Order summary",
+    "plan": "Plan",
+    "subtotal": "Subtotal",
+    "discount": "Discount",
+    "total": "Total"
+  },
+  "payment": {
+    "title": "Payment method",
+    "card": "Credit card",
+    "pix": "PIX",
+    "credit": "Use credit"
+  },
+  "pix": {
+    "title": "Pay with PIX",
+    "instructions": "Scan the QR Code or copy the code",
+    "copy": "Copy code",
+    "copied": "Code copied!",
+    "waiting": "Waiting for payment confirmation...",
+    "upload": "Upload receipt"
+  },
+  "voucher": {
+    "title": "Discount coupon",
+    "placeholder": "Enter code",
+    "apply": "Apply",
+    "applied": "Coupon applied!",
+    "invalid": "Invalid coupon",
+    "remove": "Remove coupon"
+  },
+  "success": {
+    "title": "Payment confirmed!",
+    "subtitle": "Your order was successfully received",
+    "orderNumber": "Order number",
+    "next": "Next steps",
+    "cta": "View my order"
+  },
+  "errors": {
+    "paymentFailed": "Payment failed. Please try again.",
+    "cardDeclined": "Card declined",
+    "insufficientFunds": "Insufficient funds"
+  }
+}

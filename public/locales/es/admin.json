@@ -1,0 +1,57 @@
+{
+  "dashboard": {
+    "title": "Panel Administrativo",
+    "stats": {
+      "totalOrders": "Total de Pedidos",
+      "pendingOrders": "Pedidos Pendientes",
+      "completedOrders": "Pedidos Completados",
+      "revenue": "Ingresos Totales"
+    }
+  },
+  "orders": {
+    "title": "Gestionar Pedidos",
+    "search": "Buscar pedido...",
+    "filters": {
+      "all": "Todos",
+      "pending": "Pendientes",
+      "completed": "Completados"
+    },
+    "actions": {
+      "view": "Ver",
+      "edit": "Editar",
+      "approve": "Aprobar",
+      "reject": "Rechazar"
+    }
+  },
+  "samples": {
+    "title": "Muestras de Audio",
+    "add": "Agregar muestra",
+    "edit": "Editar muestra",
+    "delete": "Eliminar muestra"
+  },
+  "reviews": {
+    "title": "Reseñas",
+    "approve": "Aprobar",
+    "hide": "Ocultar",
+    "featured": "Destacar"
+  },
+  "videos": {
+    "title": "Pedidos de Video",
+    "pending": "Pendientes",
+    "delivered": "Entregados"
+  },
+  "settings": {
+    "title": "Configuración",
+    "pix": {
+      "title": "Configuración PIX",
+      "key": "Clave PIX",
+      "name": "Nombre del destinatario",
+      "qrCode": "Código QR"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "email": "Notificaciones por correo",
+      "push": "Notificaciones push"
+    }
+  }
+}

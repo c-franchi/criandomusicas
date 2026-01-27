@@ -1,0 +1,57 @@
+{
+  "dashboard": {
+    "title": "Admin Dashboard",
+    "stats": {
+      "totalOrders": "Total Orders",
+      "pendingOrders": "Pending Orders",
+      "completedOrders": "Completed Orders",
+      "revenue": "Total Revenue"
+    }
+  },
+  "orders": {
+    "title": "Manage Orders",
+    "search": "Search order...",
+    "filters": {
+      "all": "All",
+      "pending": "Pending",
+      "completed": "Completed"
+    },
+    "actions": {
+      "view": "View",
+      "edit": "Edit",
+      "approve": "Approve",
+      "reject": "Reject"
+    }
+  },
+  "samples": {
+    "title": "Audio Samples",
+    "add": "Add sample",
+    "edit": "Edit sample",
+    "delete": "Delete sample"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "approve": "Approve",
+    "hide": "Hide",
+    "featured": "Feature"
+  },
+  "videos": {
+    "title": "Video Orders",
+    "pending": "Pending",
+    "delivered": "Delivered"
+  },
+  "settings": {
+    "title": "Settings",
+    "pix": {
+      "title": "PIX Configuration",
+      "key": "PIX Key",
+      "name": "Recipient name",
+      "qrCode": "QR Code"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "email": "Email notifications",
+      "push": "Push notifications"
+    }
+  }
+}

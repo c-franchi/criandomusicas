@@ -1,0 +1,44 @@
+{
+  "title": "Elige Tu Plan",
+  "subtitle": "Planes para todos los momentos especiales",
+  "popular": "Más Popular",
+  "features": {
+    "included": "Incluido",
+    "notIncluded": "No incluido"
+  },
+  "cta": "Elegir Plan",
+  "comparison": {
+    "title": "Compara los Planes",
+    "subtitle": "Mira lo que ofrece cada plan"
+  },
+  "plans": {
+    "basic": {
+      "name": "Básico",
+      "description": "Perfecto para empezar"
+    },
+    "standard": {
+      "name": "Estándar",
+      "description": "El más elegido"
+    },
+    "premium": {
+      "name": "Premium",
+      "description": "Experiencia completa"
+    }
+  },
+  "features_list": {
+    "song": "Canción personalizada",
+    "lyrics": "Letra exclusiva",
+    "revisions": "Revisiones incluidas",
+    "cover": "Portada del álbum",
+    "video": "Video con letra",
+    "priority": "Entrega prioritaria",
+    "instrumental": "Versión instrumental"
+  },
+  "creator": {
+    "title": "Planes Creator",
+    "subtitle": "Para quienes quieren crear canciones regularmente",
+    "monthly": "Mensual",
+    "yearly": "Anual",
+    "savePercent": "Ahorra {{percent}}%"
+  }
+}

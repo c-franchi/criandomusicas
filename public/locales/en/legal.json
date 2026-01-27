@@ -1,0 +1,60 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated",
+    "sections": {
+      "intro": "Introduction",
+      "dataCollection": "Data Collection",
+      "dataUse": "Data Use",
+      "dataSecurity": "Data Security",
+      "cookies": "Cookies",
+      "rights": "Your Rights",
+      "contact": "Contact"
+    }
+  },
+  "terms": {
+    "title": "Terms of Use",
+    "lastUpdated": "Last updated",
+    "sections": {
+      "acceptance": "Acceptance of Terms",
+      "services": "Description of Services",
+      "account": "User Account",
+      "payment": "Payment",
+      "content": "Content and Intellectual Property",
+      "restrictions": "Use Restrictions",
+      "termination": "Termination",
+      "liability": "Limitation of Liability",
+      "changes": "Changes to Terms",
+      "contact": "Contact"
+    }
+  },
+  "rules": {
+    "title": "Music Creation Guidelines",
+    "subtitle": "Guidelines for your song content",
+    "allowed": {
+      "title": "Allowed",
+      "items": [
+        "Tributes and love declarations",
+        "Songs for events and celebrations",
+        "Personal stories and memories",
+        "Personalized gifts"
+      ]
+    },
+    "prohibited": {
+      "title": "Prohibited",
+      "items": [
+        "Offensive or discriminatory content",
+        "Incitement to violence",
+        "Sexually explicit content",
+        "Copyright infringement"
+      ]
+    }
+  },
+  "cookies": {
+    "title": "Cookie Notice",
+    "message": "We use cookies to improve your experience. By continuing to browse, you agree to our",
+    "link": "Privacy Policy",
+    "accept": "Accept",
+    "decline": "Decline"
+  }
+}

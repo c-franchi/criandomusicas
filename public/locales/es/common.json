@@ -1,0 +1,55 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "plans": "Planes",
+    "dashboard": "Mis Pedidos",
+    "profile": "Perfil",
+    "admin": "Admin",
+    "settings": "Configuración"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Salir",
+    "signup": "Registrarse"
+  },
+  "buttons": {
+    "create": "Crear",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "loading": "Cargando..."
+  },
+  "status": {
+    "pending": "Pendiente",
+    "processing": "Procesando",
+    "completed": "Completado",
+    "cancelled": "Cancelado",
+    "paid": "Pagado",
+    "failed": "Fallido"
+  },
+  "errors": {
+    "generic": "Algo salió mal. Por favor, inténtalo de nuevo.",
+    "notFound": "Página no encontrada",
+    "unauthorized": "Acceso no autorizado",
+    "required": "Campo obligatorio"
+  },
+  "success": {
+    "saved": "¡Guardado con éxito!",
+    "deleted": "¡Eliminado con éxito!",
+    "updated": "¡Actualizado con éxito!"
+  },
+  "credits": {
+    "credit": "crédito",
+    "credits": "créditos",
+    "use": "Usar Crédito"
+  },
+  "subscription": {
+    "active": "Activo",
+    "inactive": "Inactivo"
+  }
+}

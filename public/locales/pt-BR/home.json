@@ -1,0 +1,73 @@
+{
+  "hero": {
+    "title1": "Conte sua",
+    "titleHighlight1": "história.",
+    "title2": "A gente transforma em",
+    "titleHighlight2": "música.",
+    "subtitle": "Crie músicas personalizadas para homenagear, presentear ou eternizar momentos — com opção de vídeo pronto para compartilhar.",
+    "cta": "Criar Minha Música",
+    "ctaExamples": "Ver exemplos 🎧",
+    "ctaDashboard": "Meus Pedidos",
+    "ctaNewSong": "Nova Música",
+    "ctaUseCredit": "Usar Crédito",
+    "socialProof": "Mais de 500 músicas criadas • Entrega rápida • Avaliações reais",
+    "stats": {
+      "songs": "Músicas Criadas",
+      "time": "Tempo Médio",
+      "rating": "Avaliação"
+    }
+  },
+  "process": {
+    "title": "Como Funciona",
+    "subtitle": "Criar sua música personalizada é simples e rápido",
+    "step1": {
+      "title": "Conte sua história",
+      "description": "Preencha o briefing com os detalhes da sua homenagem"
+    },
+    "step2": {
+      "title": "Escolha o estilo",
+      "description": "Selecione o gênero musical e o tom da sua música"
+    },
+    "step3": {
+      "title": "Receba sua música",
+      "description": "Em até 48h, sua música estará pronta para emocionar"
+    }
+  },
+  "samples": {
+    "title": "Ouça Exemplos",
+    "subtitle": "Confira algumas das músicas que já criamos"
+  },
+  "testimonials": {
+    "title": "O Que Dizem Nossos Clientes",
+    "subtitle": "Histórias reais de quem já transformou momentos em música"
+  },
+  "whyUs": {
+    "title": "Por Que Escolher a Gente?",
+    "subtitle": "Motivos para criar sua música conosco",
+    "feature1": {
+      "title": "Qualidade Profissional",
+      "description": "Músicas produzidas com IA avançada e curadoria humana"
+    },
+    "feature2": {
+      "title": "Entrega Rápida",
+      "description": "Receba sua música em até 48 horas"
+    },
+    "feature3": {
+      "title": "100% Personalizado",
+      "description": "Cada música é única, criada especialmente para você"
+    },
+    "feature4": {
+      "title": "Satisfação Garantida",
+      "description": "Ajustes gratuitos até você ficar satisfeito"
+    }
+  },
+  "cta": {
+    "title": "Pronto para Criar Sua Música?",
+    "subtitle": "Transforme sua história em uma canção inesquecível",
+    "button": "Começar Agora"
+  },
+  "faq": {
+    "title": "Perguntas Frequentes",
+    "subtitle": "Tire suas dúvidas sobre nosso serviço"
+  }
+}

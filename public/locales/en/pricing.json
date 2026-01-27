@@ -1,0 +1,44 @@
+{
+  "title": "Choose Your Plan",
+  "subtitle": "Plans for all special moments",
+  "popular": "Most Popular",
+  "features": {
+    "included": "Included",
+    "notIncluded": "Not included"
+  },
+  "cta": "Choose Plan",
+  "comparison": {
+    "title": "Compare Plans",
+    "subtitle": "See what each plan offers"
+  },
+  "plans": {
+    "basic": {
+      "name": "Basic",
+      "description": "Perfect to start"
+    },
+    "standard": {
+      "name": "Standard",
+      "description": "Most chosen"
+    },
+    "premium": {
+      "name": "Premium",
+      "description": "Complete experience"
+    }
+  },
+  "features_list": {
+    "song": "Personalized song",
+    "lyrics": "Exclusive lyrics",
+    "revisions": "Revisions included",
+    "cover": "Album cover",
+    "video": "Lyric video",
+    "priority": "Priority delivery",
+    "instrumental": "Instrumental version"
+  },
+  "creator": {
+    "title": "Creator Plans",
+    "subtitle": "For those who want to create songs regularly",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "savePercent": "Save {{percent}}%"
+  }
+}

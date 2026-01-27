@@ -1,0 +1,73 @@
+{
+  "hero": {
+    "title1": "Racconta la tua",
+    "titleHighlight1": "storia.",
+    "title2": "Noi la trasformiamo in",
+    "titleHighlight2": "musica.",
+    "subtitle": "Crea canzoni personalizzate per omaggiare, regalare o immortalare momenti — con opzione video pronto da condividere.",
+    "cta": "Crea La Mia Canzone",
+    "ctaExamples": "Ascolta esempi 🎧",
+    "ctaDashboard": "I Miei Ordini",
+    "ctaNewSong": "Nuova Canzone",
+    "ctaUseCredit": "Usa Credito",
+    "socialProof": "Oltre 500 canzoni create • Consegna veloce • Recensioni reali",
+    "stats": {
+      "songs": "Canzoni Create",
+      "time": "Tempo Medio",
+      "rating": "Valutazione"
+    }
+  },
+  "process": {
+    "title": "Come Funziona",
+    "subtitle": "Creare la tua canzone personalizzata è semplice e veloce",
+    "step1": {
+      "title": "Racconta la tua storia",
+      "description": "Compila il briefing con i dettagli del tuo omaggio"
+    },
+    "step2": {
+      "title": "Scegli lo stile",
+      "description": "Seleziona il genere musicale e il tono della tua canzone"
+    },
+    "step3": {
+      "title": "Ricevi la tua canzone",
+      "description": "Entro 48 ore, la tua canzone sarà pronta per emozionare"
+    }
+  },
+  "samples": {
+    "title": "Ascolta Esempi",
+    "subtitle": "Scopri alcune delle canzoni che abbiamo creato"
+  },
+  "testimonials": {
+    "title": "Cosa Dicono I Nostri Clienti",
+    "subtitle": "Storie vere di chi ha trasformato momenti in musica"
+  },
+  "whyUs": {
+    "title": "Perché Sceglierci?",
+    "subtitle": "Motivi per creare la tua canzone con noi",
+    "feature1": {
+      "title": "Qualità Professionale",
+      "description": "Canzoni prodotte con IA avanzata e curatela umana"
+    },
+    "feature2": {
+      "title": "Consegna Veloce",
+      "description": "Ricevi la tua canzone entro 48 ore"
+    },
+    "feature3": {
+      "title": "100% Personalizzato",
+      "description": "Ogni canzone è unica, creata appositamente per te"
+    },
+    "feature4": {
+      "title": "Soddisfazione Garantita",
+      "description": "Modifiche gratuite fino a quando sarai soddisfatto"
+    }
+  },
+  "cta": {
+    "title": "Pronto a Creare La Tua Canzone?",
+    "subtitle": "Trasforma la tua storia in una melodia indimenticabile",
+    "button": "Inizia Ora"
+  },
+  "faq": {
+    "title": "Domande Frequenti",
+    "subtitle": "Rispondi ai tuoi dubbi sul nostro servizio"
+  }
+}

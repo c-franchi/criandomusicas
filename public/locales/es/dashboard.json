@@ -1,0 +1,48 @@
+{
+  "title": "Mis Pedidos",
+  "subtitle": "Sigue tus canciones personalizadas",
+  "empty": {
+    "title": "Aún no hay pedidos",
+    "subtitle": "¡Crea tu primera canción personalizada!",
+    "cta": "Crear Canción"
+  },
+  "order": {
+    "status": "Estado",
+    "date": "Fecha del pedido",
+    "plan": "Plan",
+    "view": "Ver detalles",
+    "track": "Seguir",
+    "listen": "Escuchar canción"
+  },
+  "statuses": {
+    "DRAFT": "Borrador",
+    "AWAITING_PAYMENT": "Esperando pago",
+    "PAID": "Pagado",
+    "BRIEFING_COMPLETE": "Briefing completo",
+    "LYRICS_PENDING": "Letra pendiente",
+    "LYRICS_GENERATED": "Letra generada",
+    "LYRICS_APPROVED": "Letra aprobada",
+    "MUSIC_GENERATING": "Generando música",
+    "MUSIC_READY": "Música lista",
+    "COMPLETED": "Completado",
+    "CANCELLED": "Cancelado"
+  },
+  "filters": {
+    "all": "Todos",
+    "pending": "Pendientes",
+    "completed": "Completados"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "name": "Nombre",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "whatsapp": "WhatsApp",
+    "save": "Guardar cambios",
+    "tabs": {
+      "profile": "Perfil",
+      "credits": "Créditos",
+      "subscription": "Suscripción"
+    }
+  }
+}
