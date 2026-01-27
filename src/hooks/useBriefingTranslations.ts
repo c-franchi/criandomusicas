@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { formatCurrency, getCurrencySymbol } from '@/lib/i18n-format';
 
-// Opções de instrumentos disponíveis
+// Opções de instrumentos disponíveis (IDs para DB)
 export const INSTRUMENT_OPTIONS = [
   { id: "piano", label: "piano" },
   { id: "violao", label: "violao" },
@@ -63,6 +63,14 @@ export const useBriefingTranslations = () => {
     { id: "coral", label: t('steps.voiceType.coral'), description: t('steps.voiceType.coralDesc') }
   ];
 
+  // Voice type options simplified (for custom lyric flow)
+  const voiceTypeOptionsSimple = [
+    { id: "masculina", label: t('steps.voiceType.masculina') },
+    { id: "feminina", label: t('steps.voiceType.feminina') },
+    { id: "dueto", label: t('steps.voiceType.dueto') },
+    { id: "coral", label: t('steps.voiceType.coral') }
+  ];
+
   // Music type options
   const musicTypeOptions = [
     { id: "homenagem", label: t('steps.musicType.homenagem'), description: t('steps.musicType.homenagemDesc') },
@@ -75,7 +83,16 @@ export const useBriefingTranslations = () => {
     { id: "trilha", label: t('steps.musicType.trilha'), description: t('steps.musicType.trilhaDesc') }
   ];
 
-  // Style options
+  // Music type options for custom lyric
+  const musicTypeOptionsCustomLyric = [
+    { id: "homenagem", label: t('steps.musicType.homenagem'), description: t('steps.musicType.homenagemDesc') },
+    { id: "romantica", label: t('steps.musicType.romantica'), description: t('steps.musicType.romanticaDesc') },
+    { id: "motivacional", label: t('steps.musicType.motivacional'), description: t('steps.musicType.motivacionalDesc') },
+    { id: "religiosa", label: t('steps.musicType.religiosa'), description: t('steps.musicType.religiosaDesc') },
+    { id: "corporativa", label: t('steps.musicType.corporativa'), description: t('steps.musicType.corporativaDesc') }
+  ];
+
+  // Style options (vocal)
   const styleOptions = [
     { id: "sertanejo", label: t('steps.style.sertanejo') },
     { id: "pop", label: t('steps.style.pop') },
@@ -89,6 +106,18 @@ export const useBriefingTranslations = () => {
     { id: "outros", label: t('steps.style.outros') }
   ];
 
+  // Style options for custom lyric
+  const styleOptionsCustomLyric = [
+    { id: "sertanejo", label: t('steps.style.sertanejo') },
+    { id: "pop", label: t('steps.style.pop') },
+    { id: "rock", label: t('steps.style.rock') },
+    { id: "mpb", label: t('steps.style.mpb') },
+    { id: "gospel", label: t('steps.style.gospel') },
+    { id: "bossa", label: t('steps.style.bossa') },
+    { id: "outros", label: t('steps.style.outros') }
+  ];
+
+  // Style options (instrumental)
   const instrumentalStyleOptions = [
     { id: "classico", label: t('steps.style.classico') },
     { id: "jazz", label: t('steps.style.jazz') },
@@ -118,6 +147,15 @@ export const useBriefingTranslations = () => {
     { id: "epico", label: t('steps.atmosphere.epico'), description: t('steps.atmosphere.epicoDesc') },
     { id: "leve", label: t('steps.atmosphere.leve'), description: t('steps.atmosphere.leveDesc') },
     { id: "misterioso", label: t('steps.atmosphere.misterioso'), description: t('steps.atmosphere.misteriosoDesc') }
+  ];
+
+  // Atmosphere options simplified
+  const atmosphereOptionsSimple = [
+    { id: "intimo", label: t('steps.atmosphere.intimo') },
+    { id: "festivo", label: t('steps.atmosphere.festivo') },
+    { id: "melancolico", label: t('steps.atmosphere.melancolico') },
+    { id: "epico", label: t('steps.atmosphere.epico') },
+    { id: "leve", label: t('steps.atmosphere.leve') }
   ];
 
   // Solo options
@@ -173,16 +211,19 @@ export const useBriefingTranslations = () => {
     t('confirmation.intensityLabels.5', 'Muito intensa')
   ];
 
-  // Chat messages
+  // Chat messages - all translated
   const getChatMessages = () => ({
     isInstrumental: t('steps.isInstrumental.question'),
     musicType: t('steps.musicType.question'),
+    musicTypeCustomLyric: t('steps.musicType.questionCustomLyric', 'What type of music do you imagine for these lyrics?'),
     style: t('steps.style.question'),
+    styleCustomLyric: t('steps.style.questionCustomLyric', 'Which musical style matches your lyrics?'),
     instruments: t('steps.instruments.question'),
     wantSolo: t('steps.solo.wantSolo'),
     whichInstrument: t('steps.solo.whichInstrument'),
     soloMoment: t('steps.solo.when'),
     rhythm: t('steps.rhythm.question'),
+    rhythmCustomLyric: t('steps.rhythm.questionCustomLyric', 'Which rhythm fits best with your music?'),
     atmosphere: t('steps.atmosphere.question'),
     storyInstrumental: t('steps.story.questionInstrumental'),
     storyVocal: t('steps.story.questionVocal'),
@@ -192,8 +233,10 @@ export const useBriefingTranslations = () => {
     mandatoryWords: t('steps.mandatoryWords.question'),
     voiceType: t('steps.voiceType.question'),
     songNameAuto: t('steps.songName.autoQuestion'),
+    songNameAutoInstrumental: t('steps.songName.autoQuestionInstrumental', 'Almost there! 🎵\n\nDo you want to name your instrumental music or let the AI suggest?'),
     songNameInput: t('steps.songName.inputQuestion'),
     songNameInputInstrumental: t('steps.songName.inputQuestionInstrumental'),
+    songNameCustomLyric: t('steps.songName.inputQuestionCustomLyric', 'What name do you want to give your song? ✨'),
     customLyricPaste: t('steps.customLyric.pasteQuestion'),
     hasStylePrompt: t('steps.customLyric.hasStyleQuestion'),
     pasteStyle: t('steps.customLyric.pasteStyle'),
@@ -213,6 +256,7 @@ export const useBriefingTranslations = () => {
   const getConfirmationLabels = () => ({
     title: t('confirmation.title'),
     subtitle: t('confirmation.subtitle'),
+    summary: t('confirmation.summary'),
     musicType: t('confirmation.musicType'),
     emotion: t('confirmation.emotion'),
     style: t('confirmation.style'),
@@ -221,13 +265,32 @@ export const useBriefingTranslations = () => {
     voiceType: t('confirmation.voiceType'),
     songName: t('confirmation.songName'),
     story: t('confirmation.story'),
+    context: t('confirmation.context'),
     customLyric: t('confirmation.customLyric'),
     instruments: t('confirmation.instruments'),
     solo: t('confirmation.solo'),
+    soloMoment: t('confirmation.soloMoment'),
     autoName: t('confirmation.autoName'),
+    aiGenerated: t('confirmation.aiGenerated'),
+    noSolo: t('confirmation.noSolo'),
+    none: t('confirmation.none'),
     confirm: t('confirmation.confirm'),
     back: t('confirmation.back'),
+    restart: t('confirmation.restart'),
     editField: t('confirmation.editField'),
+    format: t('confirmation.format'),
+    type: t('confirmation.type'),
+    notes: t('confirmation.notes'),
+    intensity: t('confirmation.intensity'),
+    mandatoryWords: t('confirmation.mandatoryWords'),
+    stylePrompt: t('confirmation.stylePrompt'),
+    customLyricBadge: t('confirmation.customLyricBadge'),
+    instrumentalBadge: t('confirmation.instrumentalBadge'),
+    vocalBadge: t('confirmation.vocalBadge'),
+    confidentiality: {
+      label: t('confirmation.confidentiality.label'),
+      description: t('confirmation.confidentiality.description')
+    }
   });
 
   // Credit modal
@@ -250,8 +313,20 @@ export const useBriefingTranslations = () => {
     loginRequired: t('toast.loginRequired'),
   });
 
+  // Chat flow buttons
+  const getChatButtons = () => ({
+    typeMessage: t('chat.typeMessage'),
+    send: t('chat.send'),
+    skip: t('chat.skip'),
+    next: t('chat.next'),
+    back: t('chat.back'),
+    confirm: t('chat.confirm'),
+    edit: t('chat.edit'),
+    optional: t('chat.optional')
+  });
+
   // Format currency helper
-  const formatPrice = (cents: number) => formatCurrency(cents, i18n.language);
+  const formatPrice = (cents: number, convert = true) => formatCurrency(cents, i18n.language, { convert });
   const currencySymbol = getCurrencySymbol(i18n.language);
 
   return {
@@ -261,11 +336,15 @@ export const useBriefingTranslations = () => {
     getInstrumentOptions,
     getEmotionOptions,
     voiceTypeOptions,
+    voiceTypeOptionsSimple,
     musicTypeOptions,
+    musicTypeOptionsCustomLyric,
     styleOptions,
+    styleOptionsCustomLyric,
     instrumentalStyleOptions,
     rhythmOptions,
     atmosphereOptions,
+    atmosphereOptionsSimple,
     soloOptions,
     nameOptions,
     customStylePromptOptions,
@@ -274,6 +353,7 @@ export const useBriefingTranslations = () => {
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
+    getChatButtons,
     getRestoreSessionMessages,
     getConfirmationLabels,
     getCreditModalLabels,

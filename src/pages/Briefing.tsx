@@ -121,11 +121,15 @@ const Briefing = () => {
     getInstrumentOptions,
     getEmotionOptions: getTranslatedEmotionOptions,
     voiceTypeOptions,
+    voiceTypeOptionsSimple,
     musicTypeOptions,
+    musicTypeOptionsCustomLyric,
     styleOptions,
+    styleOptionsCustomLyric,
     instrumentalStyleOptions,
     rhythmOptions,
     atmosphereOptions,
+    atmosphereOptionsSimple,
     soloOptions,
     nameOptions,
     customStylePromptOptions,
@@ -133,6 +137,7 @@ const Briefing = () => {
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
+    getChatButtons,
     getRestoreSessionMessages,
     getConfirmationLabels,
     getCreditModalLabels,
@@ -142,6 +147,7 @@ const Briefing = () => {
   // Get translated labels
   const PLAN_LABELS = getPlanLabels();
   const chatMessages = getChatMessages();
+  const chatButtons = getChatButtons();
   const restoreMessages = getRestoreSessionMessages();
   const confirmationLabels = getConfirmationLabels();
   const creditModalLabels = getCreditModalLabels();
@@ -371,253 +377,173 @@ const Briefing = () => {
     // Step 0: Escolha cantada ou instrumental
     {
       type: 'bot',
-      content: "Olá! 👋 Eu sou a IA que vai criar sua música personalizada.\n\nPrimeiro, me conta: você quer uma música cantada ou apenas instrumental?",
+      content: chatMessages.isInstrumental,
       inputType: 'options',
       field: 'isInstrumental',
-      options: [
-        { id: "cantada", label: "🎤 Música Cantada", description: "Com letra e vocal" },
-        { id: "custom_lyric", label: "📝 Já Tenho a Letra", description: "Usar minha própria letra" },
-        { id: "instrumental", label: "🎹 Instrumental", description: "Apenas música, sem vocal" }
-      ]
+      options: isInstrumentalOptions
     },
     // Step 1: Tipo de música
     {
       type: 'bot',
-      content: "Qual tipo de música você quer criar?",
+      content: chatMessages.musicType,
       inputType: 'options',
       field: 'musicType',
-      options: [
-        { id: "homenagem", label: "🎁 Homenagem", description: "Para celebrar pessoas especiais" },
-        { id: "romantica", label: "❤️ Romântica", description: "Declaração de amor" },
-        { id: "motivacional", label: "💪 Motivacional", description: "Inspirar e motivar" },
-        { id: "infantil", label: "🎈 Infantil", description: "Para crianças" },
-        { id: "religiosa", label: "✝️ Religiosa", description: "Louvor e fé" },
-        { id: "parodia", label: "🎭 Paródia/Humor", description: "Zueira e diversão" },
-        { id: "corporativa", label: "🏢 Corporativa", description: "Para empresas" },
-        { id: "trilha", label: "🎬 Trilha Sonora", description: "Para vídeos/projetos" }
-      ]
+      options: musicTypeOptions
     },
     // FLUXO INSTRUMENTAL (Steps 2-9)
     // Step 2: Estilo (instrumental)
     {
       type: 'bot',
-      content: "Qual estilo musical você prefere para sua música instrumental?",
+      content: chatMessages.style,
       inputType: 'options-with-other',
       field: 'style',
-      options: [
-        { id: "classico", label: "🎻 Clássico" },
-        { id: "jazz", label: "🎷 Jazz" },
-        { id: "pop", label: "🎵 Pop" },
-        { id: "rock", label: "🎸 Rock" },
-        { id: "mpb", label: "🇧🇷 MPB" },
-        { id: "lofi", label: "🎧 Lo-fi" },
-        { id: "eletronico", label: "🎹 Eletrônico" },
-        { id: "bossa", label: "🌴 Bossa Nova" },
-        { id: "ambiente", label: "🌙 Ambiente/Relaxante" },
-        { id: "cinematico", label: "🎬 Cinematográfico" },
-        { id: "outros", label: "✨ Outros" }
-      ]
+      options: instrumentalStyleOptions
     },
     // Step 3: Instrumentos (multi-select)
     {
       type: 'bot',
-      content: "Quais instrumentos você gostaria de ouvir na sua música? 🎵\n\nSelecione quantos quiser:",
+      content: chatMessages.instruments,
       inputType: 'multi-select',
       field: 'instruments',
-      options: INSTRUMENT_OPTIONS
+      options: instrumentOptions
     },
-    // Step 4: Quer solo? (usa soloInstrument temporariamente como "want_solo")
+    // Step 4: Quer solo?
     {
       type: 'bot',
-      content: "Você gostaria que algum instrumento tivesse um solo especial na música? ✨",
+      content: chatMessages.wantSolo,
       inputType: 'options',
       field: 'soloInstrument',
-      options: [
-        { id: "want_solo", label: "✨ Sim, quero um solo" },
-        { id: "none", label: "❌ Não, sem solo" }
-      ]
+      options: soloOptions.wantSolo
     },
-    // Step 5: Qual instrumento terá o solo (dinâmico baseado nos instrumentos)
+    // Step 5: Qual instrumento terá o solo (dinâmico)
     {
       type: 'bot',
-      content: "Qual instrumento terá o destaque com o solo? 🎵",
+      content: chatMessages.whichInstrument,
       inputType: 'options',
       field: 'soloInstrument',
-      options: [] // Será preenchido dinamicamente com base nos instrumentos selecionados
+      options: [] // Preenchido dinamicamente
     },
     // Step 6: Momento do solo
     {
       type: 'bot',
-      content: "Em que momento da música você quer o solo?",
+      content: chatMessages.soloMoment,
       inputType: 'options',
       field: 'soloMoment',
-      options: [
-        { id: "intro", label: "🎬 No início", description: "Para abrir com impacto" },
-        { id: "meio", label: "🌉 No meio/ponte", description: "Para criar um momento especial" },
-        { id: "final", label: "🎭 No final", description: "Para um gran finale" },
-        { id: "auto", label: "🎲 Deixar a IA decidir", description: "O melhor momento" }
-      ]
+      options: soloOptions.moment
     },
-    // Step 7: Ritmo (instrumental) - was step 6
+    // Step 7: Ritmo (instrumental)
     {
       type: 'bot',
-      content: "Qual ritmo combina mais com sua música?",
+      content: chatMessages.rhythm,
       inputType: 'options',
       field: 'rhythm',
-      options: [
-        { id: "lento", label: "🐢 Lento", description: "Calmo, contemplativo" },
-        { id: "moderado", label: "🚶 Moderado", description: "Versátil" },
-        { id: "animado", label: "🏃 Animado", description: "Energético, dançante" }
-      ]
+      options: rhythmOptions
     },
     // Step 8: Atmosfera (instrumental)
     {
       type: 'bot',
-      content: "E qual atmosfera?",
+      content: chatMessages.atmosphere,
       inputType: 'options',
       field: 'atmosphere',
-      options: [
-        { id: "intimo", label: "🕯️ Íntimo", description: "Aconchegante" },
-        { id: "festivo", label: "🎉 Festivo", description: "Celebração" },
-        { id: "melancolico", label: "🌧️ Melancólico", description: "Reflexivo" },
-        { id: "epico", label: "🏔️ Épico", description: "Grandioso" },
-        { id: "leve", label: "☁️ Leve", description: "Suave, tranquilo" },
-        { id: "misterioso", label: "🌙 Misterioso", description: "Enigmático" }
-      ]
+      options: atmosphereOptions
     },
-    // Step 9: História/Contexto (instrumental) - placeholder to keep index alignment
+    // Step 9: História/Contexto (instrumental)
     {
       type: 'bot',
-      content: "Conte um pouco sobre o contexto da sua música! 📝\n\nPara quem é? Qual ocasião? O que você quer transmitir?\n\n(Isso ajuda a IA a criar algo mais personalizado)",
+      content: chatMessages.storyInstrumental,
       inputType: 'textarea',
       field: 'story'
     },
-    // FLUXO CANTADA (Steps 10-19) - DEVE estar nos índices 10-19 do array!
+    // FLUXO CANTADA (Steps 10-19)
     // Step 10: Emoção (índice 10)
     {
       type: 'bot',
-      content: "Qual emoção principal deve transmitir?",
+      content: chatMessages.emotion,
       inputType: 'options',
       field: 'emotion',
-      options: [] // Será preenchido dinamicamente
+      options: [] // Preenchido dinamicamente com getTranslatedEmotionOptions
     },
     // Step 11: Intensidade (índice 11)
     {
       type: 'bot',
-      content: "Qual a intensidade dessa emoção?",
+      content: chatMessages.emotionIntensity,
       inputType: 'intensity',
       field: 'emotionIntensity'
     },
     // Step 12: História (índice 12)
     {
       type: 'bot',
-      content: "Agora me conte a história! 📝\n\nDescreva os fatos, momentos especiais, piadas internas, nomes importantes... Quanto mais detalhes, melhor será sua letra!",
+      content: chatMessages.storyVocal,
       inputType: 'textarea',
       field: 'story'
     },
     // Step 13: Palavras obrigatórias (índice 13)
     {
       type: 'bot',
-      content: "Tem alguma palavra, nome ou frase que DEVE aparecer na letra? (opcional)\n\nSelecione as sugestões ou digite novas:",
+      content: chatMessages.mandatoryWords,
       inputType: 'word-suggestions',
       field: 'mandatoryWords'
     },
     // Step 14: Tipo de voz (índice 14)
     {
       type: 'bot',
-      content: "Qual tipo de voz você prefere para sua música? 🎤",
+      content: chatMessages.voiceType,
       inputType: 'options',
       field: 'voiceType',
-      options: [
-        { id: "masculina", label: "👨 Voz Masculina", description: "Cantor solo masculino" },
-        { id: "feminina", label: "👩 Voz Feminina", description: "Cantora solo feminina" },
-        { id: "infantil_masc", label: "👦 Voz Infantil Masculina", description: "Criança menino" },
-        { id: "infantil_fem", label: "👧 Voz Infantil Feminina", description: "Criança menina" },
-        { id: "dueto", label: "👫 Dueto", description: "Homem e mulher cantando juntos" },
-        { id: "dupla_masc", label: "👬 Dupla Masculina", description: "Dois cantores" },
-        { id: "dupla_fem", label: "👭 Dupla Feminina", description: "Duas cantoras" },
-        { id: "coral", label: "🎶 Coral/Grupo", description: "Múltiplas vozes" }
-      ]
+      options: voiceTypeOptions
     },
     // Step 15: Estilo (cantada) (índice 15)
     {
       type: 'bot',
-      content: "Qual estilo musical você prefere?",
+      content: chatMessages.style,
       inputType: 'options-with-other',
       field: 'style',
-      options: [
-        { id: "sertanejo", label: "🤠 Sertanejo" },
-        { id: "pop", label: "🎵 Pop" },
-        { id: "rock", label: "🎸 Rock" },
-        { id: "mpb", label: "🇧🇷 MPB" },
-        { id: "rap", label: "🎤 Rap/Hip-Hop" },
-        { id: "forro", label: "🎺 Forró" },
-        { id: "pagode", label: "🪘 Pagode" },
-        { id: "gospel", label: "🙏 Gospel/Worship" },
-        { id: "bossa", label: "🎹 Bossa Nova" },
-        { id: "outros", label: "✨ Outros" }
-      ]
+      options: styleOptions
     },
     // Step 16: Ritmo (cantada) (índice 16)
     {
       type: 'bot',
-      content: "Qual ritmo combina mais?",
+      content: chatMessages.rhythm,
       inputType: 'options',
       field: 'rhythm',
-      options: [
-        { id: "lento", label: "🐢 Lento", description: "Balada, emocional" },
-        { id: "moderado", label: "🚶 Moderado", description: "Versátil" },
-        { id: "animado", label: "🏃 Animado", description: "Rápido, dançante" }
-      ]
+      options: rhythmOptions
     },
     // Step 17: Atmosfera (cantada) (índice 17)
     {
       type: 'bot',
-      content: "E qual atmosfera?",
+      content: chatMessages.atmosphere,
       inputType: 'options',
       field: 'atmosphere',
-      options: [
-        { id: "intimo", label: "🕯️ Íntimo", description: "Aconchegante" },
-        { id: "festivo", label: "🎉 Festivo", description: "Celebração" },
-        { id: "melancolico", label: "🌧️ Melancólico", description: "Reflexivo" },
-        { id: "epico", label: "🏔️ Épico", description: "Grandioso" },
-        { id: "leve", label: "☁️ Leve", description: "Suave, tranquilo" }
-      ]
+      options: atmosphereOptions
     },
     // Step 18: Nome automático? (cantada) (índice 18)
     {
       type: 'bot',
-      content: "Quase lá! 🎵\n\nVocê quer dar um nome para sua música ou deixar a IA sugerir um título criativo?",
+      content: chatMessages.songNameAuto,
       inputType: 'options',
       field: 'autoGenerateName',
-      options: [
-        { id: "auto", label: "🤖 Deixar a IA criar", description: "Título automático" },
-        { id: "manual", label: "✍️ Eu quero escolher", description: "Digitar nome" }
-      ]
+      options: nameOptions
     },
     // Step 19: Nome da música (cantada) (índice 19)
     {
       type: 'bot',
-      content: "Qual nome você quer dar para sua música?",
+      content: chatMessages.songNameInput,
       inputType: 'text',
       field: 'songName'
     },
-    // FLUXO INSTRUMENTAL - NOME (Steps 20-21) - índices 20-21 do array
+    // FLUXO INSTRUMENTAL - NOME (Steps 20-21)
     // Step 20: Nome automático? (Instrumental) (índice 20)
     {
       type: 'bot',
-      content: "Quase lá! 🎵\n\nVocê quer dar um nome para sua música instrumental ou deixar a IA sugerir?",
+      content: chatMessages.songNameAutoInstrumental,
       inputType: 'options',
       field: 'autoGenerateName',
-      options: [
-        { id: "auto", label: "🤖 Deixar a IA criar", description: "Título automático" },
-        { id: "manual", label: "✍️ Eu quero escolher", description: "Digitar nome" }
-      ]
+      options: nameOptions
     },
     // Step 21: Nome da música (Instrumental) (índice 21)
     {
       type: 'bot',
-      content: "Qual nome você quer dar para sua música instrumental?",
+      content: chatMessages.songNameInputInstrumental,
       inputType: 'text',
       field: 'songName'
     },
@@ -625,148 +551,89 @@ const Briefing = () => {
     // Índice 22: Cole sua letra
     {
       type: 'bot',
-      content: "Ótimo! 📝 Cole sua letra completa abaixo.\n\nDica: inclua a estrutura (verso, refrão, etc.) se quiser que a IA respeite esse formato.",
+      content: chatMessages.customLyricPaste,
       inputType: 'textarea',
       field: 'customLyricText'
     },
-    // Índice 23: Tem style pronto? (NOVA PERGUNTA)
+    // Índice 23: Tem style pronto?
     {
       type: 'bot',
-      content: "Você já tem um **style/prompt técnico** pronto para sua música? 🎛️\n\nIsso é uma descrição técnica do estilo musical (ex: \"male vocal, sertanejo romântico, acoustic guitar, 90bpm, emotional ballad\").",
+      content: chatMessages.hasStylePrompt,
       inputType: 'options',
       field: 'hasCustomStylePrompt',
-      options: [
-        { id: "yes", label: "✅ Sim, já tenho", description: "Quero usar meu próprio style" },
-        { id: "no", label: "🤖 Não, gerar automaticamente", description: "A IA vai criar baseado nas próximas perguntas" }
-      ]
+      options: customStylePromptOptions
     },
     // Índice 24: Cole o style (se tiver)
     {
       type: 'bot',
-      content: "Cole seu style/prompt técnico abaixo: 🎵\n\nExemplo: \"female vocal, pop ballad, piano, strings, 80bpm, emotional, intimate atmosphere\"",
+      content: chatMessages.pasteStyle,
       inputType: 'textarea',
       field: 'customStylePrompt'
     },
-    // Índice 25: Tipo de música (custom lyric - se não tiver style pronto)
+    // Índice 25: Tipo de música (custom lyric)
     {
       type: 'bot',
-      content: "Qual tipo de música você imagina para essa letra?",
+      content: chatMessages.musicTypeCustomLyric,
       inputType: 'options',
       field: 'musicType',
-      options: [
-        { id: "homenagem", label: "🎁 Homenagem", description: "Para celebrar pessoas especiais" },
-        { id: "romantica", label: "❤️ Romântica", description: "Declaração de amor" },
-        { id: "motivacional", label: "💪 Motivacional", description: "Inspirar e motivar" },
-        { id: "religiosa", label: "✝️ Religiosa", description: "Louvor e fé" },
-        { id: "corporativa", label: "🏢 Corporativa", description: "Para empresas" }
-      ]
+      options: musicTypeOptionsCustomLyric
     },
     // Índice 26: Tipo de voz (custom lyric)
     {
       type: 'bot',
-      content: "Qual tipo de voz você prefere para sua música? 🎤",
+      content: chatMessages.voiceType,
       inputType: 'options',
       field: 'voiceType',
-      options: [
-        { id: "masculina", label: "👨 Voz Masculina" },
-        { id: "feminina", label: "👩 Voz Feminina" },
-        { id: "dueto", label: "👫 Dueto" },
-        { id: "coral", label: "🎶 Coral/Grupo" }
-      ]
+      options: voiceTypeOptionsSimple
     },
     // Índice 27: Estilo (custom lyric)
     {
       type: 'bot',
-      content: "Qual estilo musical combina com sua letra?",
+      content: chatMessages.styleCustomLyric,
       inputType: 'options-with-other',
       field: 'style',
-      options: [
-        { id: "sertanejo", label: "🤠 Sertanejo" },
-        { id: "pop", label: "🎵 Pop" },
-        { id: "rock", label: "🎸 Rock" },
-        { id: "mpb", label: "🇧🇷 MPB" },
-        { id: "gospel", label: "🙏 Gospel" },
-        { id: "bossa", label: "🎹 Bossa Nova" },
-        { id: "outros", label: "✨ Outros" }
-      ]
+      options: styleOptionsCustomLyric
     },
     // Índice 28: Ritmo (custom lyric)
     {
       type: 'bot',
-      content: "Qual ritmo combina mais com sua música?",
+      content: chatMessages.rhythmCustomLyric,
       inputType: 'options',
       field: 'rhythm',
-      options: [
-        { id: "lento", label: "🐢 Lento", description: "Balada, emocional" },
-        { id: "moderado", label: "🚶 Moderado", description: "Versátil" },
-        { id: "animado", label: "🏃 Animado", description: "Rápido, dançante" }
-      ]
+      options: rhythmOptions
     },
     // Índice 29: Atmosfera (custom lyric)
     {
       type: 'bot',
-      content: "E qual atmosfera?",
+      content: chatMessages.atmosphere,
       inputType: 'options',
       field: 'atmosphere',
-      options: [
-        { id: "intimo", label: "🕯️ Íntimo" },
-        { id: "festivo", label: "🎉 Festivo" },
-        { id: "melancolico", label: "🌧️ Melancólico" },
-        { id: "epico", label: "🏔️ Épico" },
-        { id: "leve", label: "☁️ Leve" }
-      ]
+      options: atmosphereOptionsSimple
     },
     // Índice 30: Nome da música (custom lyric)
     {
       type: 'bot',
-      content: "Qual nome você quer dar para sua música? ✨",
+      content: chatMessages.songNameCustomLyric,
       inputType: 'text',
       field: 'songName'
     }
   ];
 
-  const getEmotionOptions = (musicType: string) => {
-    if (musicType === 'parodia') {
-      return [
-        { id: "zoeira", label: "😂 Zoeira Leve" },
-        { id: "sarcastico", label: "😏 Sarcástico" },
-        { id: "ironico", label: "🙃 Irônico" },
-        { id: "critica", label: "🎭 Crítica Humorada" },
-        { id: "absurdo", label: "🤪 Absurdo Total" }
-      ];
-    }
-    return [
-      { id: "alegria", label: "😊 Alegria" },
-      { id: "saudade", label: "💭 Saudade" },
-      { id: "gratidao", label: "🙏 Gratidão" },
-      { id: "amor", label: "❤️ Amor" },
-      { id: "esperanca", label: "🌈 Esperança" },
-      { id: "nostalgia", label: "📷 Nostalgia" },
-      { id: "superacao", label: "💪 Superação" }
-    ];
-  };
+  // Use translated emotion options from hook
+  const getEmotionOptions = (musicType: string) => getTranslatedEmotionOptions(musicType);
 
   // Gerar opções de solo baseado nos instrumentos selecionados
   const getSoloOptions = (instruments: string[]) => {
     // Se não tem instrumentos, só mostrar opção de não
     if (instruments.length === 0) {
-      return [{ id: "none", label: "❌ Não, sem solo", description: "Prefiro sem solo" }];
+      return [{ id: "none", label: soloOptions.wantSolo.find(o => o.id === 'none')?.label || '❌ No solo', description: '' }];
     }
     
-    const options = [
-      { id: "yes", label: "✅ Sim, quero solo!", description: "Escolher instrumento" },
-      { id: "none", label: "❌ Não, sem solo", description: "Prefiro sem solo" }
-    ];
-    
-    // Adicionar cada instrumento como opção de solo
-    instruments.forEach(instId => {
-      const inst = INSTRUMENT_OPTIONS.find(i => i.id === instId);
-      if (inst) {
-        options.push({ id: instId, label: inst.label, description: "Solo especial" });
-      }
+    // Adicionar cada instrumento como opção de solo usando labels traduzidos
+    return instruments.map(instId => {
+      const inst = instrumentOptions.find(i => i.id === instId);
+      return { id: instId, label: inst?.label || instId };
     });
-    
-    return options;
   };
 
   // Extrair palavras-chave da história para sugestões
@@ -813,21 +680,21 @@ const Briefing = () => {
       if (msg.field === 'emotion') {
         newMsg.options = getEmotionOptions(formData.musicType);
         newMsg.content = formData.musicType === 'parodia' 
-          ? "Qual tipo de humor você quer?" 
-          : "Qual emoção principal deve transmitir?";
+          ? chatMessages.emotionParody
+          : chatMessages.emotion;
       }
       
       // Se for step 5 (qual instrumento terá solo), preencher com instrumentos selecionados
       // Usar targetStep se fornecido, senão usar currentStep
       const stepToCheck = targetStep ?? currentStep;
       if (msg.field === 'soloInstrument' && stepToCheck === 5) {
-        const instrumentOptions = formData.instruments.map(instId => {
-          const inst = INSTRUMENT_OPTIONS.find(i => i.id === instId);
+        const soloInstrumentOptions = formData.instruments.map(instId => {
+          const inst = instrumentOptions.find(i => i.id === instId);
           return { id: instId, label: inst?.label || instId };
         });
-        newMsg.options = instrumentOptions.length > 0 
-          ? instrumentOptions 
-          : [{ id: "piano", label: "🎹 Piano/Teclado" }];
+        newMsg.options = soloInstrumentOptions.length > 0 
+          ? soloInstrumentOptions 
+          : [{ id: "piano", label: t('steps.instruments.piano', '🎹 Piano/Keyboard') }];
       }
       
       setMessages(prev => [...prev, newMsg]);
@@ -1128,8 +995,7 @@ const Briefing = () => {
 
   const handleIntensitySelect = (value: number) => {
     setFormData(prev => ({ ...prev, emotionIntensity: value }));
-    const labels = ['Muito sutil', 'Sutil', 'Moderada', 'Intensa', 'Muito intensa'];
-    addUserMessage(`${value}/5 - ${labels[value - 1]}`);
+    addUserMessage(`${value}/5 - ${intensityLabels[value - 1]}`);
     setStepHistory(prev => [...prev, currentStep]);
 
     const updatedFormData = { ...formData, emotionIntensity: value };

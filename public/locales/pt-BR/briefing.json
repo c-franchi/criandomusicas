@@ -60,6 +60,7 @@
     },
     "musicType": {
       "question": "Qual tipo de música você quer criar?",
+      "questionCustomLyric": "Qual tipo de música você imagina para essa letra?",
       "homenagem": "🎁 Homenagem",
       "homenagemDesc": "Para celebrar pessoas especiais",
       "romantica": "❤️ Romântica",
@@ -79,6 +80,7 @@
     },
     "style": {
       "question": "Qual estilo musical você prefere?",
+      "questionCustomLyric": "Qual estilo musical combina com sua letra?",
       "classico": "🎻 Clássico",
       "jazz": "🎷 Jazz",
       "pop": "🎵 Pop",
@@ -131,6 +133,7 @@
     },
     "rhythm": {
       "question": "Qual ritmo combina mais?",
+      "questionCustomLyric": "Qual ritmo combina mais com sua música?",
       "lento": "🐢 Lento",
       "lentoDesc": "Calmo, contemplativo",
       "moderado": "🚶 Moderado",
@@ -200,12 +203,14 @@
     },
     "songName": {
       "autoQuestion": "Quase lá! 🎵\n\nVocê quer dar um nome para sua música ou deixar a IA sugerir um título criativo?",
+      "autoQuestionInstrumental": "Quase lá! 🎵\n\nVocê quer dar um nome para sua música instrumental ou deixar a IA sugerir?",
       "auto": "🤖 Deixar a IA criar",
       "autoDesc": "Título automático",
       "manual": "✍️ Eu quero escolher",
       "manualDesc": "Digitar nome",
       "inputQuestion": "Qual nome você quer dar para sua música?",
-      "inputQuestionInstrumental": "Qual nome você quer dar para sua música instrumental?"
+      "inputQuestionInstrumental": "Qual nome você quer dar para sua música instrumental?",
+      "inputQuestionCustomLyric": "Qual nome você quer dar para sua música? ✨"
     },
     "customLyric": {
       "pasteQuestion": "Ótimo! 📝 Cole sua letra completa abaixo.\n\nDica: inclua a estrutura (verso, refrão, etc.) se quiser que a IA respeite esse formato.",
