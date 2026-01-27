@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Music, Download, Smartphone, Bell, Check, ArrowLeft } from 'lucide-react';
@@ -12,22 +13,20 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 const Install = () => {
+  const { t } = useTranslation('common');
   const { user } = useAuth();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
-    // Check if app is already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
     }
 
-    // Check if iOS
     const userAgent = window.navigator.userAgent.toLowerCase();
     setIsIOS(/iphone|ipad|ipod/.test(userAgent));
 
-    // Listen for install prompt
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -35,7 +34,6 @@ const Install = () => {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-    // Listen for app installed
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
@@ -78,7 +76,7 @@ const Install = () => {
                 <Music className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <h1 className="font-bold text-lg">Instalar App</h1>
+                <h1 className="font-bold text-lg">{t('install.title')}</h1>
                 <p className="text-xs text-muted-foreground">Criando Músicas</p>
               </div>
             </div>
@@ -94,7 +92,7 @@ const Install = () => {
           </div>
           <h2 className="text-2xl font-bold">Criando Músicas</h2>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Instale nosso app para acesso rápido e receba notificações sobre seus pedidos de música.
+            {t('install.subtitle')}
           </p>
         </div>
 
@@ -110,12 +108,12 @@ const Install = () => {
             </div>
             <div>
               <h3 className="font-semibold">
-                {isInstalled ? 'App Instalado!' : 'Instalar na Tela Inicial'}
+                {isInstalled ? t('install.installed') : t('install.addToHome')}
               </h3>
               <p className="text-sm text-muted-foreground">
                 {isInstalled 
-                  ? 'O app já está instalado no seu dispositivo.' 
-                  : 'Acesse rapidamente sem abrir o navegador.'}
+                  ? t('install.installedDesc') 
+                  : t('install.addToHomeDesc')}
               </p>
             </div>
           </div>
@@ -125,30 +123,30 @@ const Install = () => {
               {deferredPrompt ? (
                 <Button onClick={handleInstall} className="w-full gap-2">
                   <Download className="w-4 h-4" />
-                  Instalar Agora
+                  {t('install.installNow')}
                 </Button>
               ) : isIOS ? (
                 <div className="bg-muted/50 rounded-lg p-4 space-y-3">
-                  <p className="text-sm font-medium">Como instalar no iPhone/iPad:</p>
+                  <p className="text-sm font-medium">{t('install.ios.title')}</p>
                   <ol className="text-sm text-muted-foreground space-y-2">
                     <li className="flex items-start gap-2">
                       <span className="font-bold text-primary">1.</span>
-                      Toque no botão <strong>Compartilhar</strong> (ícone de quadrado com seta)
+                      {t('install.ios.step1')}
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="font-bold text-primary">2.</span>
-                      Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong>
+                      {t('install.ios.step2')}
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="font-bold text-primary">3.</span>
-                      Toque em <strong>"Adicionar"</strong> no canto superior direito
+                      {t('install.ios.step3')}
                     </li>
                   </ol>
                 </div>
               ) : (
                 <div className="bg-muted/50 rounded-lg p-4">
                   <p className="text-sm text-muted-foreground">
-                    Use o menu do navegador (⋮) e selecione "Instalar app" ou "Adicionar à tela inicial".
+                    {t('install.browserHint')}
                   </p>
                 </div>
               )}
@@ -164,9 +162,9 @@ const Install = () => {
                 <Bell className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold">Notificações Push</h3>
+                <h3 className="font-semibold">{t('install.notifications.title')}</h3>
                 <p className="text-sm text-muted-foreground">
-                  Receba atualizações sobre seus pedidos de música.
+                  {t('install.notifications.description')}
                 </p>
               </div>
             </div>
@@ -178,18 +176,18 @@ const Install = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Card className="p-4 text-center">
             <Smartphone className="w-8 h-8 mx-auto mb-2 text-primary" />
-            <h4 className="font-medium text-sm">Acesso Rápido</h4>
-            <p className="text-xs text-muted-foreground">Abra direto da tela inicial</p>
+            <h4 className="font-medium text-sm">{t('install.features.quickAccess')}</h4>
+            <p className="text-xs text-muted-foreground">{t('install.features.quickAccessDesc')}</p>
           </Card>
           <Card className="p-4 text-center">
             <Bell className="w-8 h-8 mx-auto mb-2 text-primary" />
-            <h4 className="font-medium text-sm">Notificações</h4>
-            <p className="text-xs text-muted-foreground">Atualizações em tempo real</p>
+            <h4 className="font-medium text-sm">{t('install.features.notifications')}</h4>
+            <p className="text-xs text-muted-foreground">{t('install.features.notificationsDesc')}</p>
           </Card>
           <Card className="p-4 text-center">
             <Download className="w-8 h-8 mx-auto mb-2 text-primary" />
-            <h4 className="font-medium text-sm">Funciona Offline</h4>
-            <p className="text-xs text-muted-foreground">Acesse sem internet</p>
+            <h4 className="font-medium text-sm">{t('install.features.offline')}</h4>
+            <p className="text-xs text-muted-foreground">{t('install.features.offlineDesc')}</p>
           </Card>
         </div>
 
@@ -198,7 +196,7 @@ const Install = () => {
           <Button variant="outline" asChild>
             <Link to="/">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Início
+              {t('backHome')}
             </Link>
           </Button>
         </div>

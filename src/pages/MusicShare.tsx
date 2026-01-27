@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -20,6 +21,7 @@ interface TrackData {
 }
 
 const MusicShare = () => {
+  const { t } = useTranslation('common');
   const { orderId } = useParams();
   const [track, setTrack] = useState<TrackData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +38,6 @@ const MusicShare = () => {
       }
 
       try {
-        // Use the public edge function to fetch track (bypasses RLS)
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-track?orderId=${orderId}`,
           {
@@ -64,7 +65,7 @@ const MusicShare = () => {
 
         setTrack({
           audio_url: data.audio_url,
-          title: data.title || 'Música Personalizada',
+          title: data.title || t('share.defaultTitle'),
           music_style: data.music_style || '',
           cover_url: data.cover_url || null
         });
@@ -77,9 +78,8 @@ const MusicShare = () => {
     };
 
     fetchTrack();
-  }, [orderId]);
+  }, [orderId, t]);
 
-  // Track analytics events
   const trackEvent = async (eventType: 'play' | 'cta_click') => {
     if (!orderId) return;
     try {
@@ -102,7 +102,6 @@ const MusicShare = () => {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      // Track play event only on first play
       if (!audioRef.current.played.length) {
         trackEvent('play');
       }
@@ -116,7 +115,7 @@ const MusicShare = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando música...</p>
+          <p className="text-muted-foreground">{t('share.loading')}</p>
         </div>
       </div>
     );
@@ -127,14 +126,14 @@ const MusicShare = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
         <Card className="p-8 text-center max-w-md">
           <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="text-xl font-bold mb-2">Música não encontrada</h1>
+          <h1 className="text-xl font-bold mb-2">{t('share.notFound')}</h1>
           <p className="text-muted-foreground mb-6">
-            Esta música pode ainda estar sendo produzida ou não existe.
+            {t('share.notFoundDesc')}
           </p>
           <Button asChild>
             <Link to="/">
               <Home className="w-4 h-4 mr-2" />
-              Criar minha música
+              {t('share.createOwn')}
             </Link>
           </Button>
         </Card>
@@ -144,7 +143,7 @@ const MusicShare = () => {
 
   const ogImage = track.cover_url || 'https://criandomusicas.com.br/og-image.jpg';
   const pageTitle = `${track.title} | Criando Músicas`;
-  const pageDescription = `Ouça "${track.title}" - uma música personalizada criada com carinho. ${track.music_style ? `Estilo: ${track.music_style}` : ''}`;
+  const pageDescription = `${t('share.listenTo')} "${track.title}" - ${t('share.personalizedMusic')}. ${track.music_style ? `${t('share.style')}: ${track.music_style}` : ''}`;
 
   return (
     <>
@@ -167,7 +166,7 @@ const MusicShare = () => {
             {track.cover_url ? (
               <img 
                 src={track.cover_url} 
-                alt={`Capa de ${track.title}`}
+                alt={`${t('share.coverOf')} ${track.title}`}
                 className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl object-cover mx-auto mb-3 sm:mb-4 shadow-lg"
               />
             ) : (
@@ -194,7 +193,7 @@ const MusicShare = () => {
           preload="metadata"
         />
 
-        {/* Player Controls - Only Play, no Download for public share */}
+        {/* Player Controls */}
         <div className="flex flex-col gap-2 sm:gap-3 mb-6 sm:mb-8">
           <Button 
             onClick={togglePlay} 
@@ -204,12 +203,12 @@ const MusicShare = () => {
             {isPlaying ? (
               <>
                 <Pause className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                Pausar
+                {t('share.pause')}
               </>
             ) : (
               <>
                 <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                Ouvir Música
+                {t('share.listen')}
               </>
             )}
           </Button>
@@ -218,7 +217,7 @@ const MusicShare = () => {
           {/* CTA */}
           <div className="pt-4 sm:pt-6 border-t">
             <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3">
-              Quer criar sua própria música personalizada?
+              {t('share.wantToCreate')}
             </p>
             <Button 
               asChild 
@@ -227,7 +226,7 @@ const MusicShare = () => {
               onClick={() => trackEvent('cta_click')}
             >
               <Link to="/">
-                Criar minha música
+                {t('share.createOwn')}
               </Link>
             </Button>
           </div>

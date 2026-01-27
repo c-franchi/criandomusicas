@@ -97,31 +97,32 @@
   },
   "pricePerMusic": "= {{price}} por música",
   "creator": {
-    "title": "Planos Creator",
-    "subtitle": "Para quem quer criar músicas regularmente",
-    "monthly": "Mensal",
-    "yearly": "Anual",
-    "savePercent": "Economize {{percent}}%",
-    "subscribe": "Assinar {{plan}}",
+    "badge": "Para Criadores de Conteúdo",
+    "title": "Músicas Originais para Seu",
+    "titleHighlight": "Conteúdo",
+    "description": "Esqueça prompts complexos e edição manual. Você descreve, nós criamos. Músicas prontas para YouTube, TikTok, Reels e podcasts.",
+    "subdescription": "Diferente de outras plataformas de IA, aqui você não precisa dominar prompts nem editar áudio. Receba música pronta, com letra curada e qualidade profissional.",
     "features": {
       "curatedLyrics": "Letras Curadas",
-      "curatedLyricsDesc": "Identidade musical consistente",
-      "readyToPost": "Pronto para Postar",
-      "readyToPostDesc": "Formatos 30s, 60s, completo",
-      "commercialUse": "Uso Comercial",
-      "commercialUseDesc": "Monetize sem preocupações",
+      "curatedLyricsDesc": "Identidade musical consistente para seu canal. Cada letra é única e personalizada.",
+      "readyCovers": "Capas Prontas",
+      "readyCoversDesc": "Thumbnails profissionais inclusos. Tudo pronto para publicar direto nos seus vídeos.",
+      "shortFormats": "Formatos Curtos",
+      "shortFormatsDesc": "Otimizado para 30s, 60s e formatos de Reels/Shorts. Perfeito para viralizar.",
       "humanSupport": "Suporte Humano",
-      "humanSupportDesc": "Aprovação e ajustes"
+      "humanSupportDesc": "Aprovação de letra e ajustes com nossa equipe. Você tem controle total."
     },
-    "whyUs": {
-      "title": "Por que usar Criando Músicas em vez de ferramentas genéricas?",
-      "noPrompts": "Sem Prompts Técnicos",
-      "noPromptsDesc": "Você descreve o que quer, nós criamos",
-      "lyricsAndMusic": "Letra + Música Prontas",
-      "lyricsAndMusicDesc": "Não é geração bruta - é conteúdo curado",
-      "readyToPublish": "Pronto para Publicar",
-      "readyToPublishDesc": "Direto do seu painel para as redes"
-    }
+    "whyDifferent": {
+      "title": "Por que somos diferentes?",
+      "youDescribe": "Você descreve o que quer.",
+      "weTakeCare": "Nós cuidamos de tudo: composição, produção, mixagem e entrega. Sem curva de aprendizado, sem ferramentas complexas. Música profissional em até 48h."
+    },
+    "badges": {
+      "original": "100% Original",
+      "monetizable": "Monetizável"
+    },
+    "cta": "Conhecer Planos de Criador",
+    "pricing": "Planos a partir de R$ 49,90/mês • Cancele quando quiser"
   },
   "faq": {
     "title": "Perguntas Frequentes",
