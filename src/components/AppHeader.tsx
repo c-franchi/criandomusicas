@@ -1,0 +1,146 @@
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { User, Zap, Crown, Home, Settings, Download, Music } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useAdminRole } from "@/hooks/useAdminRole";
+import { useCredits } from "@/hooks/useCredits";
+import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
+import ThemeToggle from "@/components/ThemeToggle";
+import LanguageSelector from "@/components/LanguageSelector";
+import RegionSelector from "@/components/RegionSelector";
+
+interface AppHeaderProps {
+  variant?: "floating" | "sticky" | "simple";
+  showLogo?: boolean;
+  showHomeButton?: boolean;
+  showCredits?: boolean;
+  showUserMenu?: boolean;
+  className?: string;
+}
+
+const AppHeader = ({
+  variant = "floating",
+  showLogo = false,
+  showHomeButton = false,
+  showCredits = true,
+  showUserMenu = true,
+  className = "",
+}: AppHeaderProps) => {
+  const { t: tCommon } = useTranslation('common');
+  const { user, profile, signOut } = useAuth();
+  const { isAdmin } = useAdminRole(user?.id);
+  const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
+  const { hasActiveSubscription, planDetails, loading: subscriptionLoading } = useCreatorSubscription();
+
+  // Get display name - prefer profile name, fallback to email
+  const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
+  const initials = displayName.slice(0, 2).toUpperCase();
+
+  const containerClasses = {
+    floating: "absolute top-6 right-6 z-20",
+    sticky: "sticky top-0 z-20 bg-background/80 backdrop-blur-sm border-b border-border/50 px-4 py-3",
+    simple: "flex items-center justify-end gap-3 py-3",
+  };
+
+  return (
+    <header className={`${containerClasses[variant]} ${className}`}>
+      <div className="flex items-center gap-3">
+        {/* Logo */}
+        {showLogo && (
+          <Link to="/" className="flex items-center gap-2 mr-4">
+            <Music className="w-6 h-6 text-primary" />
+            <span className="font-bold text-foreground hidden sm:inline">Criando Músicas</span>
+          </Link>
+        )}
+
+        {/* Home Button */}
+        {showHomeButton && (
+          <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
+            <Link to="/" title={tCommon('navigation.home', 'Home')}>
+              <Home className="w-4 h-4" />
+            </Link>
+          </Button>
+        )}
+
+        {/* Region Selector */}
+        <RegionSelector variant="compact" />
+
+        {/* Language Selector */}
+        <LanguageSelector />
+        
+        {/* Theme Toggle */}
+        <ThemeToggle />
+
+        {user && showUserMenu ? (
+          <>
+            {/* Creator Subscription Badge */}
+            {!subscriptionLoading && hasActiveSubscription && planDetails && (
+              <Link to="/perfil?tab=subscription">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 gap-1.5 cursor-pointer hover:from-amber-400 hover:to-orange-400 transition-colors">
+                  <Crown className="w-3 h-3" />
+                  {planDetails.name.replace('Creator ', '')}
+                </Badge>
+              </Link>
+            )}
+            
+            {/* Credits Badge - Show if user has credits */}
+            {showCredits && !creditsLoading && hasCredits && (
+              <Link to="/perfil?tab=credits">
+                <Badge className="bg-green-500 text-white border-0 gap-1.5 cursor-pointer hover:bg-green-400 transition-colors">
+                  <Zap className="w-3 h-3" />
+                  {totalAvailable} {totalAvailable !== 1 ? tCommon('credits.credits') : tCommon('credits.credit')}
+                </Badge>
+              </Link>
+            )}
+            
+            {/* User Profile */}
+            <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
+              <Avatar className="w-8 h-8 border-2 border-primary/50">
+                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                <AvatarFallback className="bg-primary/20 text-primary text-xs font-medium">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-sm font-medium text-foreground max-w-[150px] truncate hidden sm:inline">
+                {displayName}
+              </span>
+            </Link>
+            
+            {/* Install Button */}
+            <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform hidden sm:flex">
+              <Link to="/install" title={tCommon('navigation.install', 'Install')}>
+                <Download className="w-4 h-4" />
+              </Link>
+            </Button>
+            
+            {/* Admin Settings */}
+            {isAdmin && (
+              <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
+                <Link to="/admin" title={tCommon('navigation.admin', 'Admin')}>
+                  <Settings className="w-4 h-4" />
+                </Link>
+              </Button>
+            )}
+            
+            {/* Logout Button */}
+            <Button variant="outline" size="sm" onClick={() => signOut()}>
+              {tCommon('auth.logout')}
+            </Button>
+          </>
+        ) : !user ? (
+          <Link to="/auth">
+            <Button variant="outline" size="sm">
+              <User className="w-4 h-4 mr-2" />
+              {tCommon('auth.login')}
+            </Button>
+          </Link>
+        ) : null}
+      </div>
+    </header>
+  );
+};
+
+export default AppHeader;

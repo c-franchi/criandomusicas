@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, Home, ArrowLeft } from "lucide-react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +12,8 @@ import PlanTypeToggle from "@/components/PlanTypeToggle";
 import SEO from "@/components/SEO";
 import CreditsBanner from "@/components/CreditsBanner";
 import { useTranslation } from "react-i18next";
+import RegionSelector from "@/components/RegionSelector";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Accordion,
   AccordionContent,
@@ -186,6 +188,23 @@ const Planos = () => {
         description={t('seo.description')}
         keywords="planos música personalizada, preços música IA, pacote músicas, assinatura música, quanto custa música personalizada"
       />
+      
+      {/* Header Navigation */}
+      <div className="max-w-6xl mx-auto mb-8">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" asChild>
+            <Link to="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('backToHome', { defaultValue: 'Voltar' })}
+            </Link>
+          </Button>
+          <div className="flex items-center gap-2">
+            <RegionSelector variant="compact" />
+            <ThemeToggle />
+          </div>
+        </div>
+      </div>
+      
       <div className="max-w-6xl mx-auto">
         {/* Credits Banner for logged users */}
         {user && (
