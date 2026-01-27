@@ -51,10 +51,27 @@
     }
   },
   "cookies": {
-    "title": "Cookie Notice",
-    "message": "We use cookies to improve your experience. By continuing to browse, you agree to our",
-    "link": "Privacy Policy",
-    "accept": "Accept",
-    "decline": "Decline"
+    "title": "Your Privacy Matters",
+    "description": "We use cookies to improve your experience on our site. According to data protection regulations, we need your consent.",
+    "essential": {
+      "title": "Essential Cookies (Required)",
+      "description": "Necessary for site functionality, authentication, and security."
+    },
+    "analytics": {
+      "title": "Analytics Cookies",
+      "description": "Help us understand how you use the site to improve your experience."
+    },
+    "marketing": {
+      "title": "Marketing Cookies",
+      "description": "Allow us to show relevant ads on other sites."
+    },
+    "privacyLink": "Privacy Policy",
+    "termsLink": "Terms of Use",
+    "back": "Back",
+    "savePreferences": "Save Preferences",
+    "essentialOnly": "Essential Only",
+    "customize": "Customize",
+    "acceptAll": "Accept All",
+    "lgpdNotice": "By continuing to browse, you agree to our privacy policy in accordance with applicable data protection laws."
   }
 }

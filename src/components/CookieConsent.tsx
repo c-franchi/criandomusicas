@@ -7,6 +7,7 @@ import { Cookie, Shield, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 const CONSENT_STORAGE_KEY = 'criandomusicas_consent';
 
@@ -18,6 +19,7 @@ interface ConsentState {
 }
 
 const CookieConsent = () => {
+  const { t } = useTranslation('legal');
   const { user } = useAuth();
   const [showBanner, setShowBanner] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -107,11 +109,10 @@ const CookieConsent = () => {
             <div className="flex-1">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Shield className="w-5 h-5 text-primary" />
-                Sua Privacidade é Importante
+                {t('cookies.title')}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Utilizamos cookies para melhorar sua experiência em nosso site. 
-                De acordo com a LGPD (Lei Geral de Proteção de Dados), precisamos do seu consentimento.
+                {t('cookies.description')}
               </p>
             </div>
           </div>
@@ -127,10 +128,10 @@ const CookieConsent = () => {
                 />
                 <div className="flex-1">
                   <Label htmlFor="essential" className="font-medium">
-                    Cookies Essenciais (Obrigatórios)
+                    {t('cookies.essential.title')}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Necessários para o funcionamento do site, autenticação e segurança.
+                    {t('cookies.essential.description')}
                   </p>
                 </div>
               </div>
@@ -145,10 +146,10 @@ const CookieConsent = () => {
                 />
                 <div className="flex-1">
                   <Label htmlFor="analytics" className="font-medium cursor-pointer">
-                    Cookies de Análise
+                    {t('cookies.analytics.title')}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Nos ajudam a entender como você usa o site para melhorar a experiência.
+                    {t('cookies.analytics.description')}
                   </p>
                 </div>
               </div>
@@ -163,10 +164,10 @@ const CookieConsent = () => {
                 />
                 <div className="flex-1">
                   <Label htmlFor="marketing" className="font-medium cursor-pointer">
-                    Cookies de Marketing
+                    {t('cookies.marketing.title')}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Permitem mostrar anúncios relevantes em outros sites.
+                    {t('cookies.marketing.description')}
                   </p>
                 </div>
               </div>
@@ -179,14 +180,14 @@ const CookieConsent = () => {
               to="/privacidade" 
               className="text-primary hover:underline inline-flex items-center gap-1"
             >
-              Política de Privacidade
+              {t('cookies.privacyLink')}
               <ExternalLink className="w-3 h-3" />
             </Link>
             <Link 
               to="/termos" 
               className="text-primary hover:underline inline-flex items-center gap-1"
             >
-              Termos de Uso
+              {t('cookies.termsLink')}
               <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
@@ -200,13 +201,13 @@ const CookieConsent = () => {
                   onClick={() => setShowDetails(false)}
                   className="flex-1"
                 >
-                  Voltar
+                  {t('cookies.back')}
                 </Button>
                 <Button 
                   onClick={handleSavePreferences}
                   className="flex-1"
                 >
-                  Salvar Preferências
+                  {t('cookies.savePreferences')}
                 </Button>
               </>
             ) : (
@@ -216,20 +217,20 @@ const CookieConsent = () => {
                   onClick={handleAcceptEssential}
                   className="flex-1 sm:flex-none"
                 >
-                  Apenas Essenciais
+                  {t('cookies.essentialOnly')}
                 </Button>
                 <Button 
                   variant="ghost" 
                   onClick={() => setShowDetails(true)}
                   className="flex-1 sm:flex-none"
                 >
-                  Personalizar
+                  {t('cookies.customize')}
                 </Button>
                 <Button 
                   onClick={handleAcceptAll}
                   className="flex-1"
                 >
-                  Aceitar Todos
+                  {t('cookies.acceptAll')}
                 </Button>
               </>
             )}
@@ -237,7 +238,7 @@ const CookieConsent = () => {
 
           {/* LGPD Notice */}
           <p className="text-xs text-muted-foreground text-center pt-2 border-t border-border/50">
-            Ao continuar navegando, você concorda com nossa política de privacidade conforme a Lei 13.709/2018 (LGPD).
+            {t('cookies.lgpdNotice')}
           </p>
         </CardContent>
       </Card>
