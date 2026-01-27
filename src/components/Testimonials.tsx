@@ -107,12 +107,12 @@ const Testimonials = () => {
         if (data && data.length > 0) {
           const enrichedReviews = await Promise.all(
             data.map(async (review) => {
-              // Get order to get user_id and music_type
+              // Get order to get user_id and music_type - use maybeSingle to handle RLS restrictions
               const { data: orderData } = await supabase
                 .from('orders')
                 .select('user_id, music_type')
                 .eq('id', review.order_id)
-                .single();
+                .maybeSingle();
 
               let profileData = null;
               if (orderData?.user_id) {
@@ -120,7 +120,7 @@ const Testimonials = () => {
                   .from('profiles')
                   .select('name, avatar_url')
                   .eq('user_id', orderData.user_id)
-                  .single();
+                  .maybeSingle();
                 profileData = profile;
               }
 
