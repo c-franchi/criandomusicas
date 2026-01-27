@@ -272,7 +272,8 @@ const OrderDetails = () => {
     return lyrics.find(l => l.is_approved)?.title || t('orderDetails.music.title');
   };
 
-  const getShareUrl = () => `https://criandomusicas.com.br/m/${orderId}`;
+  // Include language parameter in share URL so recipients see the page in the same language
+  const getShareUrl = () => `https://criandomusicas.com.br/m/${orderId}?lang=${i18n.language}`;
 
   // Track share analytics
   const trackShare = async (platform: string) => {
