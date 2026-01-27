@@ -129,6 +129,20 @@ const Planos = () => {
     return <Zap className="w-6 h-6" />;
   };
 
+  // Translate plan names based on plan ID
+  const getPlanName = (planId: string, dbName: string): string => {
+    // For creator plans, keep English names
+    if (planId.includes('creator_start')) return planId.includes('instrumental') ? 'Creator Start Instrumental' : 'Creator Start';
+    if (planId.includes('creator_pro')) return planId.includes('instrumental') ? 'Creator Pro Instrumental' : 'Creator Pro';
+    if (planId.includes('creator_studio')) return planId.includes('instrumental') ? 'Creator Studio Instrumental' : 'Creator Studio';
+    
+    // Try to get translated name from pricing.plans
+    const translatedName = t(`plans.${planId}.name`, { defaultValue: '' });
+    
+    // Return translated name if available, otherwise fallback to DB name
+    return translatedName || dbName;
+  };
+
   const getButtonText = (planId: string) => {
     const credits = getCreditsForPlan(planId);
     if (credits === 1) return t('cta');
@@ -300,7 +314,7 @@ const Planos = () => {
                       </div>
                     </div>
                     <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
-                      {plan.name}
+                      {getPlanName(plan.id, plan.name)}
                     </CardTitle>
                     
                     {originalPrice ? (
@@ -469,7 +483,7 @@ const Planos = () => {
                         </div>
                       </div>
                       <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
-                        {plan.name}
+                        {getPlanName(plan.id, plan.name)}
                       </CardTitle>
                       
                       <CardDescription className="text-4xl font-bold text-purple-400">
@@ -521,7 +535,7 @@ const Planos = () => {
                               : "bg-purple-600 hover:bg-purple-500 text-white"
                           }`}
                         >
-                          {t('creator.subscribe', { plan: plan.name.replace(' Instrumental', '') })}
+                          {t('creator.subscribe', { plan: getPlanName(plan.id, plan.name).replace(' Instrumental', '') })}
                         </Button>
                       </div>
                     </CardContent>
@@ -551,9 +565,9 @@ const Planos = () => {
                   <p className="text-sm text-muted-foreground">{t('creator.whyUs.lyricsAndMusicDesc')}</p>
                 </div>
                 <div>
-                  <div className="text-3xl mb-2">📱</div>
-                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.readyToPublish')}</h4>
-                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.readyToPublishDesc')}</p>
+                  <div className="text-3xl mb-2">⚡</div>
+                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.fastDelivery')}</h4>
+                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.fastDeliveryDesc')}</p>
                 </div>
               </div>
             </CardContent>

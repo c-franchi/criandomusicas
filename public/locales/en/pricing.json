@@ -49,12 +49,24 @@
       "name": "Single Song",
       "description": "For special moments"
     },
+    "single_instrumental": {
+      "name": "Single Instrumental",
+      "description": "For special moments"
+    },
     "package": {
       "name": "3 Songs Package",
       "description": "Great for creatives"
     },
+    "package_instrumental": {
+      "name": "3 Instrumentals Package",
+      "description": "Great for creatives"
+    },
     "subscription": {
       "name": "5 Songs Package",
+      "description": "For power creators"
+    },
+    "subscription_instrumental": {
+      "name": "5 Instrumentals Package",
       "description": "For power creators"
     }
   },
@@ -112,6 +124,7 @@
     "titleHighlight": "Content",
     "description": "Forget complex prompts and manual editing. You describe, we create. Music ready for YouTube, TikTok, Reels and podcasts.",
     "subdescription": "Unlike other AI platforms, here you don't need to master prompts or edit audio. Receive ready music, with curated lyrics and professional quality.",
+    "subscribe": "Subscribe {{plan}}",
     "features": {
       "curatedLyrics": "Curated Lyrics",
       "curatedLyricsDesc": "Consistent musical identity for your channel. Each lyric is unique and personalized.",
@@ -120,12 +133,25 @@
       "shortFormats": "Short Formats",
       "shortFormatsDesc": "Optimized for 30s, 60s and Reels/Shorts formats. Perfect for going viral.",
       "humanSupport": "Human Support",
-      "humanSupportDesc": "Lyric approval and adjustments with our team. You have full control."
+      "humanSupportDesc": "Lyric approval and adjustments with our team. You have full control.",
+      "readyToPost": "Ready to Publish",
+      "readyToPostDesc": "Songs, covers and everything ready to go live on your channels.",
+      "commercialUse": "Commercial Use",
+      "commercialUseDesc": "100% original and monetizable. Use on any platform without issues."
     },
     "whyDifferent": {
       "title": "Why are we different?",
       "youDescribe": "You describe what you want.",
       "weTakeCare": "We take care of everything: composition, production, mixing and delivery. No learning curve, no complex tools. Professional music in up to 48h."
+    },
+    "whyUs": {
+      "title": "Why creators choose us?",
+      "noPrompts": "No Complex Prompts",
+      "noPromptsDesc": "You describe in natural language, we make the magic happen.",
+      "lyricsAndMusic": "Lyrics + Music",
+      "lyricsAndMusicDesc": "Get curated lyrics and produced music. All ready, no extra work.",
+      "fastDelivery": "Fast Delivery",
+      "fastDeliveryDesc": "Professional music in up to 48h. No delays in your content production."
     },
     "badges": {
       "original": "100% Original",

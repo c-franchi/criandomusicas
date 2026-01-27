@@ -49,12 +49,24 @@
       "name": "Canción Única",
       "description": "Para momentos especiales"
     },
+    "single_instrumental": {
+      "name": "Instrumental Único",
+      "description": "Para momentos especiales"
+    },
     "package": {
       "name": "Paquete 3 Canciones",
       "description": "Ideal para creativos"
     },
+    "package_instrumental": {
+      "name": "Paquete 3 Instrumentales",
+      "description": "Ideal para creativos"
+    },
     "subscription": {
       "name": "Paquete 5 Canciones",
+      "description": "Para quien crea mucho"
+    },
+    "subscription_instrumental": {
+      "name": "Paquete 5 Instrumentales",
       "description": "Para quien crea mucho"
     }
   },
@@ -112,6 +124,7 @@
     "titleHighlight": "Contenido",
     "description": "Olvida prompts complejos y edición manual. Tú describes, nosotros creamos. Música lista para YouTube, TikTok, Reels y podcasts.",
     "subdescription": "A diferencia de otras plataformas de IA, aquí no necesitas dominar prompts ni editar audio. Recibe música lista, con letras curadas y calidad profesional.",
+    "subscribe": "Suscribir {{plan}}",
     "features": {
       "curatedLyrics": "Letras Curadas",
       "curatedLyricsDesc": "Identidad musical consistente para tu canal. Cada letra es única y personalizada.",
@@ -120,19 +133,32 @@
       "shortFormats": "Formatos Cortos",
       "shortFormatsDesc": "Optimizado para 30s, 60s y formatos de Reels/Shorts. Perfecto para viralizar.",
       "humanSupport": "Soporte Humano",
-      "humanSupportDesc": "Aprobación de letras y ajustes con nuestro equipo. Tienes control total."
+      "humanSupportDesc": "Aprobación de letras y ajustes con nuestro equipo. Tienes control total.",
+      "readyToPost": "Listo para Publicar",
+      "readyToPostDesc": "Canciones, portadas y todo listo para subir a tus canales.",
+      "commercialUse": "Uso Comercial",
+      "commercialUseDesc": "100% original y monetizable. Usa en cualquier plataforma sin problemas."
     },
     "whyDifferent": {
       "title": "¿Por qué somos diferentes?",
       "youDescribe": "Tú describes lo que quieres.",
       "weTakeCare": "Nosotros nos encargamos de todo: composición, producción, mezcla y entrega. Sin curva de aprendizaje, sin herramientas complejas. Música profesional en hasta 48h."
     },
+    "whyUs": {
+      "title": "¿Por qué los creadores nos eligen?",
+      "noPrompts": "Sin Prompts Complejos",
+      "noPromptsDesc": "Describes en lenguaje natural, nosotros hacemos la magia.",
+      "lyricsAndMusic": "Letra + Música",
+      "lyricsAndMusicDesc": "Recibe letra curada y música producida. Todo listo, sin trabajo extra.",
+      "fastDelivery": "Entrega Rápida",
+      "fastDeliveryDesc": "Música profesional en hasta 48h. Sin atrasos en tu producción de contenido."
+    },
     "badges": {
       "original": "100% Original",
       "monetizable": "Monetizable"
     },
-    "cta": "Conocer Planes de Creador",
-    "pricing": "Planes desde $49.90/mes • Cancela cuando quieras"
+    "cta": "Explorar Planes Creator",
+    "pricing": "Planes desde €49,90/mes • Cancela cuando quieras"
   },
   "faq": {
     "title": "Preguntas Frecuentes",
