@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Music, Share2, Package, Sparkles, ChevronRight } from "lucide-react";
@@ -5,23 +6,25 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 const ProcessSteps = () => {
+  const { t } = useTranslation('home');
+
   const steps = [
     {
       icon: FileText,
-      title: "Conte sua história",
-      description: "Você escreve os detalhes, sentimentos ou a ideia da música.",
+      title: t('process.step1.title'),
+      description: t('process.step1.description'),
       badge: "1"
     },
     {
       icon: Music,
-      title: "Nós criamos a música",
-      description: "Transformamos sua história em uma música única, no estilo que você escolher.",
+      title: t('process.step2.title'),
+      description: t('process.step2.description'),
       badge: "2"
     },
     {
       icon: Share2,
-      title: "Receba e compartilhe",
-      description: "Baixe sua música e, se quiser, receba também o vídeo pronto para emocionar.",
+      title: t('process.step3.title'),
+      description: t('process.step3.description'),
       badge: "3"
     }
   ];
@@ -31,11 +34,11 @@ const ProcessSteps = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">
-            Como{" "}
-            <span className="gradient-text">funciona</span>
+            {t('process.title')}{" "}
+            <span className="gradient-text">{t('process.titleHighlight')}</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            É simples, rápido e você não precisa saber nada de música
+            {t('process.subtitle')}
           </p>
         </div>
         
@@ -74,33 +77,31 @@ const ProcessSteps = () => {
             <div className="flex-1 text-center md:text-left">
               <h3 className="text-2xl font-bold mb-2 flex items-center justify-center md:justify-start gap-2">
                 <Sparkles className="w-5 h-5 text-accent" />
-                Economize com Pacotes de Músicas
+                {t('process.packages.title')}
               </h3>
               <p className="text-foreground/80 mb-4">
-                Compre um pacote e crie múltiplas músicas pagando menos! 
-                Seus créditos ficam salvos e você usa quando quiser — 
-                sem precisar pagar a cada nova música.
+                {t('process.packages.description')}
               </p>
               
               <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
                 <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-full">
                   <Badge variant="secondary" className="bg-accent text-white border-accent">
-                    3 músicas
+                    {t('process.packages.songs3')}
                   </Badge>
-                  <span className="text-muted-foreground">Economia de 16%</span>
+                  <span className="text-muted-foreground">{t('process.packages.savings16')}</span>
                 </div>
                 <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-full">
                   <Badge variant="secondary" className="bg-primary text-white border-primary">
-                    5 músicas
+                    {t('process.packages.songs5')}
                   </Badge>
-                  <span className="text-muted-foreground">Maior economia</span>
+                  <span className="text-muted-foreground">{t('process.packages.bestSavings')}</span>
                 </div>
               </div>
             </div>
             
             <Button asChild size="lg" className="shrink-0">
               <Link to="/planos">
-                Ver Pacotes
+                {t('process.packages.viewPackages')}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Link>
             </Button>
