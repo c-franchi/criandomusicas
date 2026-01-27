@@ -342,17 +342,17 @@ const Dashboard = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'AWAITING_PAYMENT':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+        return 'bg-orange-600 dark:bg-orange-500/20 text-white dark:text-orange-300 border-orange-600 dark:border-orange-500/30';
       case 'PAID':
       case 'LYRICS_GENERATED':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+        return 'bg-blue-600 dark:bg-blue-500/20 text-white dark:text-blue-300 border-blue-600 dark:border-blue-500/30';
       case 'LYRICS_APPROVED':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+        return 'bg-purple-600 dark:bg-purple-500/20 text-white dark:text-purple-300 border-purple-600 dark:border-purple-500/30';
       case 'MUSIC_GENERATING':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+        return 'bg-yellow-500 dark:bg-yellow-500/20 text-yellow-900 dark:text-yellow-300 border-yellow-500 dark:border-yellow-500/30';
       case 'MUSIC_READY':
       case 'COMPLETED':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
+        return 'bg-green-600 dark:bg-green-500/20 text-white dark:text-green-300 border-green-600 dark:border-green-500/30';
       default:
         return 'bg-muted text-muted-foreground';
     }
@@ -525,12 +525,12 @@ const Dashboard = () => {
                           {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
                         </Badge>
                         {order.has_custom_lyric && (
-                          <Badge variant="outline" className="text-xs border-amber-500/30 text-amber-400">
+                          <Badge variant="outline" className="text-xs border-amber-600 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-transparent">
                             📝 Letra Própria
                           </Badge>
                         )}
                         {order.is_instrumental && !order.has_custom_lyric && (
-                          <Badge variant="outline" className="text-xs border-purple-500/30 text-purple-400">
+                          <Badge variant="outline" className="text-xs border-purple-600 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-transparent">
                             🎹 Instrumental
                           </Badge>
                         )}
