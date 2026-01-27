@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles, CreditCard, Zap, Piano } from "lucide-react";
+import { Music, Send, Bot, User, ArrowRight, Loader2, ArrowLeft, Mic, MicOff, Check, Edit, Sparkles, CreditCard, Zap, Piano, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
@@ -12,6 +12,8 @@ import { supabase } from "@/integrations/supabase/client";
 import WhatsAppModal from "@/components/WhatsAppModal";
 import CreditsBanner from "@/components/CreditsBanner";
 import { useCredits, getPlanLabel } from "@/hooks/useCredits";
+import { useBriefingTranslations, INSTRUMENT_OPTIONS } from "@/hooks/useBriefingTranslations";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -85,34 +87,24 @@ const detectCriticalTerms = (text: string): string[] => {
   return Array.from(terms);
 };
 
-// Opções de instrumentos disponíveis
-const INSTRUMENT_OPTIONS = [
-  { id: "piano", label: "🎹 Piano/Teclado" },
-  { id: "violao", label: "🎸 Violão/Guitarra Acústica" },
-  { id: "guitarra", label: "⚡ Guitarra Elétrica" },
-  { id: "violino", label: "🎻 Violino/Cordas" },
-  { id: "saxofone", label: "🎷 Saxofone" },
-  { id: "trompete", label: "🎺 Trompete/Metais" },
-  { id: "bateria", label: "🥁 Bateria/Percussão" },
-  { id: "baixo", label: "🎵 Baixo" },
-  { id: "ukulele", label: "🪕 Ukulele" },
-  { id: "acordeao", label: "🪗 Acordeão/Sanfona" },
-  { id: "orquestra", label: "🎼 Orquestra Completa" },
-  { id: "sintetizador", label: "✨ Sintetizadores/Eletrônico" },
-  { id: "flauta", label: "🎶 Flauta" },
-  { id: "harpa", label: "🎵 Harpa" },
-  { id: "outro", label: "✏️ Outro (digitar)" },
-];
-
-// Plan labels for display
-const PLAN_LABELS: Record<string, { name: string; credits: number; icon: string }> = {
-  'single': { name: 'Música Única', credits: 1, icon: '🎵' },
-  'single_instrumental': { name: 'Instrumental Única', credits: 1, icon: '🎹' },
-  'single_custom_lyric': { name: 'Letra Própria', credits: 1, icon: '📝' },
-  'package': { name: 'Pacote 3 Músicas', credits: 3, icon: '🎶' },
-  'package_instrumental': { name: 'Pacote 3 Instrumentais', credits: 3, icon: '🎹' },
-  'subscription': { name: 'Pacote 5 Músicas', credits: 5, icon: '👑' },
-  'subscription_instrumental': { name: 'Pacote 5 Instrumentais', credits: 5, icon: '🎹' },
+// Currency Warning Component
+const CurrencyWarning = ({ language }: { language: string }) => {
+  if (language === 'pt-BR') return null;
+  
+  const messages: Record<string, string> = {
+    'en': '💱 Prices displayed in local currency. Payment processed in BRL (Brazilian Real).',
+    'es': '💱 Precios mostrados en moneda local. Pago procesado en BRL (Real Brasileño).',
+    'it': '💱 Prezzi visualizzati in valuta locale. Pagamento elaborato in BRL (Real Brasiliano).',
+  };
+  
+  return (
+    <Alert className="bg-amber-500/10 border-amber-500/30">
+      <AlertCircle className="h-4 w-4 text-amber-500" />
+      <AlertDescription className="text-amber-600 dark:text-amber-400 text-sm">
+        {messages[language] || messages['en']}
+      </AlertDescription>
+    </Alert>
+  );
 };
 
 const Briefing = () => {
@@ -121,6 +113,41 @@ const Briefing = () => {
   const navigate = useNavigate();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isListening, isSupported, transcript, startListening, stopListening, resetTranscript } = useSpeechToText();
+  
+  // i18n translations
+  const {
+    t,
+    i18n,
+    getInstrumentOptions,
+    getEmotionOptions: getTranslatedEmotionOptions,
+    voiceTypeOptions,
+    musicTypeOptions,
+    styleOptions,
+    instrumentalStyleOptions,
+    rhythmOptions,
+    atmosphereOptions,
+    soloOptions,
+    nameOptions,
+    customStylePromptOptions,
+    isInstrumentalOptions,
+    getPlanLabels,
+    getIntensityLabels,
+    getChatMessages,
+    getRestoreSessionMessages,
+    getConfirmationLabels,
+    getCreditModalLabels,
+    getToastMessages,
+  } = useBriefingTranslations();
+  
+  // Get translated labels
+  const PLAN_LABELS = getPlanLabels();
+  const chatMessages = getChatMessages();
+  const restoreMessages = getRestoreSessionMessages();
+  const confirmationLabels = getConfirmationLabels();
+  const creditModalLabels = getCreditModalLabels();
+  const toastMessages = getToastMessages();
+  const intensityLabels = getIntensityLabels();
+  const instrumentOptions = getInstrumentOptions();
   
   // Plan selection state
   const [showPlanSelection, setShowPlanSelection] = useState(false);
@@ -259,11 +286,11 @@ const Briefing = () => {
         setMessages([{
           id: 'msg-restore',
           type: 'bot',
-          content: `Bem-vindo de volta! 👋\n\nVocê tem um briefing em andamento. Deseja continuar de onde parou ou começar um novo?`,
+          content: `${restoreMessages.welcome}\n\n${restoreMessages.description}`,
           inputType: 'options',
           options: [
-            { id: 'continue', label: '▶️ Continuar', description: 'Retomar de onde parei' },
-            { id: 'restart', label: '🔄 Recomeçar', description: 'Iniciar um novo briefing' }
+            { id: 'continue', label: restoreMessages.continueLabel, description: restoreMessages.continueDesc },
+            { id: 'restart', label: restoreMessages.restartLabel, description: restoreMessages.restartDesc }
           ]
         }]);
       } else {
@@ -1657,103 +1684,51 @@ const Briefing = () => {
 
   const getFieldLabel = (field: string, value: string | boolean | number | string[]): string => {
     if (Array.isArray(value)) {
-      if (value.length === 0) return "(nenhum)";
+      if (value.length === 0) return t('confirmation.none', '(nenhum)');
       return value.map(v => {
-        const inst = INSTRUMENT_OPTIONS.find(i => i.id === v);
+        if (v.startsWith('custom:')) {
+          return `✏️ ${v.replace('custom:', '')}`;
+        }
+        const inst = instrumentOptions.find(i => i.id === v);
         return inst?.label || v;
       }).join(', ');
     }
 
-    const labelMaps: Record<string, Record<string, string>> = {
-      musicType: {
-        homenagem: "🎁 Homenagem",
-        romantica: "❤️ Romântica",
-        motivacional: "💪 Motivacional",
-        infantil: "🎈 Infantil",
-        religiosa: "✝️ Religiosa",
-        parodia: "🎭 Paródia/Humor",
-        corporativa: "🏢 Corporativa",
-        trilha: "🎬 Trilha Sonora"
-      },
-      emotion: {
-        alegria: "😊 Alegria",
-        saudade: "💭 Saudade",
-        gratidao: "🙏 Gratidão",
-        amor: "❤️ Amor",
-        esperanca: "🌈 Esperança",
-        nostalgia: "📷 Nostalgia",
-        superacao: "💪 Superação",
-        zoeira: "😂 Zoeira Leve",
-        sarcastico: "😏 Sarcástico",
-        ironico: "🙃 Irônico",
-        critica: "🎭 Crítica Humorada",
-        absurdo: "🤪 Absurdo Total"
-      },
-      style: {
-        sertanejo: "🤠 Sertanejo",
-        pop: "🎵 Pop",
-        rock: "🎸 Rock",
-        mpb: "🇧🇷 MPB",
-        rap: "🎤 Rap/Hip-Hop",
-        forro: "🎺 Forró",
-        pagode: "🪘 Pagode",
-        gospel: "🙏 Gospel/Worship",
-        bossa: "🎹 Bossa Nova",
-        classico: "🎻 Clássico",
-        jazz: "🎷 Jazz",
-        lofi: "🎧 Lo-fi",
-        eletronico: "🎹 Eletrônico",
-        ambiente: "🌙 Ambiente/Relaxante",
-        cinematico: "🎬 Cinematográfico",
-        outros: `✨ ${formData.customStyle}`
-      },
-      voiceType: {
-        masculina: "👨 Voz Masculina",
-        feminina: "👩 Voz Feminina",
-        infantil_masc: "👦 Voz Infantil Masculina",
-        infantil_fem: "👧 Voz Infantil Feminina",
-        dueto: "👫 Dueto",
-        dupla_masc: "👬 Dupla Masculina",
-        dupla_fem: "👭 Dupla Feminina",
-        coral: "🎶 Coral/Grupo"
-      },
-      rhythm: {
-        lento: "🐢 Lento",
-        moderado: "🚶 Moderado",
-        animado: "🏃 Animado"
-      },
-      atmosphere: {
-        intimo: "🕯️ Íntimo",
-        festivo: "🎉 Festivo",
-        melancolico: "🌧️ Melancólico",
-        epico: "🏔️ Épico",
-        leve: "☁️ Leve",
-        misterioso: "🌙 Misterioso"
-      },
-      soloMoment: {
-        intro: "🎬 No início",
-        meio: "🌉 No meio/ponte",
-        final: "🎭 No final",
-        auto: "🎲 IA decide"
-      }
-    };
+    // Use translated options from hook
+    const findLabel = (options: { id: string; label: string }[], id: string) => 
+      options.find(o => o.id === id)?.label || id;
 
     if (typeof value === 'boolean') {
-      return value ? "Sim" : "Não";
+      return value ? t('common:yes', 'Sim') : t('common:no', 'Não');
     }
     if (typeof value === 'number') {
-      const labels = ['Muito sutil', 'Sutil', 'Moderada', 'Intensa', 'Muito intensa'];
-      return `${value}/5 - ${labels[value - 1]}`;
+      return `${value}/5 - ${intensityLabels[value - 1]}`;
     }
     
-    // Solo instrument
-    if (field === 'soloInstrument') {
-      if (value === 'none' || !value) return "Sem solo";
-      const inst = INSTRUMENT_OPTIONS.find(i => i.id === value);
-      return inst?.label || value;
+    // Map fields to their translated options
+    switch (field) {
+      case 'musicType':
+        return findLabel(musicTypeOptions, value);
+      case 'emotion':
+        return findLabel(getTranslatedEmotionOptions(formData.musicType), value);
+      case 'style':
+        if (value === 'outros') return `✨ ${formData.customStyle}`;
+        return findLabel([...styleOptions, ...instrumentalStyleOptions], value);
+      case 'voiceType':
+        return findLabel(voiceTypeOptions, value);
+      case 'rhythm':
+        return findLabel(rhythmOptions, value);
+      case 'atmosphere':
+        return findLabel(atmosphereOptions, value);
+      case 'soloMoment':
+        return findLabel(soloOptions.moment, value);
+      case 'soloInstrument':
+        if (value === 'none' || !value) return t('confirmation.noSolo', 'Sem solo');
+        const inst = instrumentOptions.find(i => i.id === value);
+        return inst?.label || value;
+      default:
+        return value || t('confirmation.none', '(nenhum)');
     }
-    
-    return labelMaps[field]?.[value] || value || "(nenhum)";
   };
 
   if (!loading && !user) {
@@ -1776,7 +1751,7 @@ const Briefing = () => {
   const suggestedKeywords = extractKeywords(formData.story);
 
   // Get plan info for display
-  const currentPlanInfo = selectedPlanId ? PLAN_LABELS[selectedPlanId] : null;
+  const currentPlanInfo = selectedPlanId ? PLAN_LABELS[selectedPlanId as keyof typeof PLAN_LABELS] : null;
 
   // Get credit info for plan selection badges
   const { totalVocal, totalInstrumental, hasCredits } = useCredits();
@@ -1820,8 +1795,8 @@ const Briefing = () => {
               <Music className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-semibold">Escolha seu Pacote</h1>
-              <p className="text-sm text-muted-foreground">Selecione o plano para continuar</p>
+              <h1 className="font-semibold">{t('planSelection.title')}</h1>
+              <p className="text-sm text-muted-foreground">{t('planSelection.subtitle')}</p>
             </div>
           </div>
         </header>
@@ -1830,17 +1805,20 @@ const Briefing = () => {
           <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
             {/* Credits Banner */}
             <CreditsBanner showBuyButton={false} />
+            
+            {/* Currency Warning */}
+            <CurrencyWarning language={i18n.language} />
 
             <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">Qual tipo de música você quer criar?</h2>
-              <p className="text-muted-foreground">Escolha o pacote ideal para você</p>
+              <h2 className="text-2xl font-bold mb-2">{t('planSelection.whatType')}</h2>
+              <p className="text-muted-foreground">{t('planSelection.choosePackage')}</p>
             </div>
 
             {/* Single Music Options */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Zap className="w-5 h-5 text-primary" />
-                Música Única
+                {t('planSelection.singleMusic')}
               </h3>
               
               <div className="grid gap-3">
@@ -1854,16 +1832,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">🎤</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Música Cantada</p>
-                      <p className="text-sm text-muted-foreground">Com letra e vocal profissional</p>
+                      <p className="font-semibold">{t('planSelection.vocalSingle')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.vocalSingleDesc')}</p>
                     </div>
                     {hasVocalCredits ? (
                       <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Usar crédito
+                        {t('planSelection.useCredit')}
                       </Badge>
                     ) : (
-                      <Badge variant="secondary">1 música</Badge>
+                      <Badge variant="secondary">1 {t('planSelection.single').toLowerCase()}</Badge>
                     )}
                   </div>
                 </Button>
@@ -1878,16 +1856,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">🎹</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Música Instrumental</p>
-                      <p className="text-sm text-muted-foreground">Apenas música, sem vocal</p>
+                      <p className="font-semibold">{t('planSelection.instrumentalSingle')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.instrumentalSingleDesc')}</p>
                     </div>
                     {hasInstrumentalCredits ? (
                       <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Usar crédito
+                        {t('planSelection.useCredit')}
                       </Badge>
                     ) : (
-                      <Badge variant="secondary">1 música</Badge>
+                      <Badge variant="secondary">1 {t('planSelection.single').toLowerCase()}</Badge>
                     )}
                   </div>
                 </Button>
@@ -1902,16 +1880,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">📝</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Já Tenho a Letra</p>
-                      <p className="text-sm text-muted-foreground">Traga sua própria composição</p>
+                      <p className="font-semibold">{t('planSelection.customLyricSingle')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.customLyricSingleDesc')}</p>
                     </div>
                     {hasVocalCredits ? (
                       <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Usar crédito
+                        {t('planSelection.useCredit')}
                       </Badge>
                     ) : (
-                      <Badge variant="secondary">1 música</Badge>
+                      <Badge variant="secondary">1 {t('planSelection.single').toLowerCase()}</Badge>
                     )}
                   </div>
                 </Button>
@@ -1922,7 +1900,7 @@ const Briefing = () => {
             <div className="space-y-4 pt-4 border-t">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-accent" />
-                Pacotes com Desconto
+                {t('planSelection.packageDiscount')}
               </h3>
               
               <div className="grid gap-3">
@@ -1936,16 +1914,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">🎶</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Pacote 3 Músicas Cantadas</p>
-                      <p className="text-sm text-muted-foreground">Economize comprando em pacote</p>
+                      <p className="font-semibold">{t('planSelection.vocalPackage3')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.vocalPackage3Desc')}</p>
                     </div>
                     {hasVocalCredits ? (
                       <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Tem créditos
+                        {t('planSelection.hasCredits')}
                       </Badge>
                     ) : (
-                      <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                      <Badge className="bg-accent/20 text-accent border-accent/30">3 {t('planSelection.single').toLowerCase()}s</Badge>
                     )}
                   </div>
                 </Button>
@@ -1960,16 +1938,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">🎹</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Pacote 3 Instrumentais</p>
-                      <p className="text-sm text-muted-foreground">Trilhas personalizadas</p>
+                      <p className="font-semibold">{t('planSelection.instrumentalPackage3')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.instrumentalPackage3Desc')}</p>
                     </div>
                     {hasInstrumentalCredits ? (
                       <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Tem créditos
+                        {t('planSelection.hasCredits')}
                       </Badge>
                     ) : (
-                      <Badge className="bg-accent/20 text-accent border-accent/30">3 músicas</Badge>
+                      <Badge className="bg-accent/20 text-accent border-accent/30">3 {t('planSelection.single').toLowerCase()}s</Badge>
                     )}
                   </div>
                 </Button>
@@ -1984,16 +1962,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">👑</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Pacote 5 Músicas Cantadas</p>
-                      <p className="text-sm text-muted-foreground">Melhor custo-benefício!</p>
+                      <p className="font-semibold">{t('planSelection.vocalPackage5')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.vocalPackage5Desc')}</p>
                     </div>
                     {hasVocalCredits ? (
                       <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Tem créditos
+                        {t('planSelection.hasCredits')}
                       </Badge>
                     ) : (
-                      <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                      <Badge className="bg-primary/20 text-primary border-primary/30">5 {t('planSelection.single').toLowerCase()}s</Badge>
                     )}
                   </div>
                 </Button>
@@ -2008,16 +1986,16 @@ const Briefing = () => {
                   <div className="flex items-center gap-3 w-full">
                     <span className="text-2xl">🎹</span>
                     <div className="flex-1">
-                      <p className="font-semibold">Pacote 5 Instrumentais</p>
-                      <p className="text-sm text-muted-foreground">Trilhas em quantidade</p>
+                      <p className="font-semibold">{t('planSelection.instrumentalPackage5')}</p>
+                      <p className="text-sm text-muted-foreground">{t('planSelection.instrumentalPackage5Desc')}</p>
                     </div>
                     {hasInstrumentalCredits ? (
                       <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
                         <Check className="w-3 h-3 mr-1" />
-                        Tem créditos
+                        {t('planSelection.hasCredits')}
                       </Badge>
                     ) : (
-                      <Badge className="bg-primary/20 text-primary border-primary/30">5 músicas</Badge>
+                      <Badge className="bg-primary/20 text-primary border-primary/30">5 {t('planSelection.single').toLowerCase()}s</Badge>
                     )}
                   </div>
                 </Button>
@@ -2025,7 +2003,7 @@ const Briefing = () => {
             </div>
 
             <p className="text-center text-sm text-muted-foreground pt-4">
-              💡 Pacotes permitem criar múltiplas músicas com economia. Use quando quiser!
+              {t('planSelection.packagesNote')}
             </p>
           </div>
         </div>
@@ -2043,9 +2021,9 @@ const Briefing = () => {
               <Music className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="font-semibold">Confirme seu Briefing</h1>
+              <h1 className="font-semibold">{confirmationLabels.title}</h1>
               <p className="text-sm text-muted-foreground">
-                {formData.hasCustomLyric ? "📝 Letra Própria" : formData.isInstrumental ? "Música Instrumental 🎹" : "Música Cantada 🎤"}
+                {formData.hasCustomLyric ? t('confirmation.customLyricBadge') : formData.isInstrumental ? t('confirmation.instrumentalBadge') + " 🎹" : t('confirmation.vocalBadge') + " 🎤"}
               </p>
             </div>
           </div>
@@ -2053,24 +2031,27 @@ const Briefing = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-3xl mx-auto px-4 py-6 space-y-4">
+            {/* Currency Warning */}
+            <CurrencyWarning language={i18n.language} />
+            
             <div className="bg-muted rounded-2xl p-6 space-y-4">
               <h2 className="text-lg font-semibold flex items-center gap-2">
-                🎵 Resumo da sua música
+                {t('confirmation.summary')}
                 {formData.hasCustomLyric ? (
-                  <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 border-amber-500/30">📝 Letra Própria</Badge>
+                  <Badge variant="secondary" className="bg-amber-500/20 text-amber-400 border-amber-500/30">{t('confirmation.customLyricBadge')}</Badge>
                 ) : formData.isInstrumental ? (
-                  <Badge variant="secondary">Instrumental</Badge>
+                  <Badge variant="secondary">{t('confirmation.instrumentalBadge')}</Badge>
                 ) : null}
               </h2>
               
               <div className="space-y-3">
                 <ConfirmationItem 
-                  label="Formato" 
-                  value={formData.isInstrumental ? "🎹 Instrumental" : "🎤 Música Cantada"} 
+                  label={t('confirmation.format')} 
+                  value={formData.isInstrumental ? "🎹 " + t('confirmation.instrumentalBadge') : "🎤 " + t('confirmation.vocalBadge')} 
                   onEdit={() => handleEditField(0)} 
                 />
                 <ConfirmationItem 
-                  label="Tipo" 
+                  label={t('confirmation.type')} 
                   value={getFieldLabel('musicType', formData.musicType)} 
                   onEdit={() => handleEditField(1)} 
                 />
@@ -2079,19 +2060,19 @@ const Briefing = () => {
                   // Campos para letra customizada
                   <>
                     <ConfirmationItem 
-                      label="Nome da música" 
-                      value={formData.songName || "(não definido)"} 
+                      label={t('confirmation.songName')} 
+                      value={formData.songName || t('confirmation.none')} 
                       onEdit={() => handleEditField(30)} 
                     />
                     <ConfirmationItem 
-                      label="Letra" 
+                      label={t('confirmation.customLyric')} 
                       value={formData.customLyricText.length > 100 ? formData.customLyricText.substring(0, 100) + "..." : formData.customLyricText} 
                       onEdit={() => handleEditField(22)} 
                     />
                     {formData.hasCustomStylePrompt ? (
                       // Mostrar style prompt customizado
                       <ConfirmationItem 
-                        label="Style/Prompt técnico" 
+                        label={t('confirmation.stylePrompt')} 
                         value={formData.customStylePrompt.length > 100 ? formData.customStylePrompt.substring(0, 100) + "..." : formData.customStylePrompt} 
                         onEdit={() => handleEditField(24)} 
                       />
@@ -2099,22 +2080,22 @@ const Briefing = () => {
                       // Mostrar opções de estilo geradas pela IA
                       <>
                         <ConfirmationItem 
-                          label="Tipo de voz" 
+                          label={t('confirmation.voiceType')} 
                           value={getFieldLabel('voiceType', formData.voiceType)} 
                           onEdit={() => handleEditField(26)} 
                         />
                         <ConfirmationItem 
-                          label="Estilo" 
+                          label={t('confirmation.style')} 
                           value={getFieldLabel('style', formData.style)} 
                           onEdit={() => handleEditField(27)} 
                         />
                         <ConfirmationItem 
-                          label="Ritmo" 
+                          label={t('confirmation.rhythm')} 
                           value={getFieldLabel('rhythm', formData.rhythm)} 
                           onEdit={() => handleEditField(28)} 
                         />
                         <ConfirmationItem 
-                          label="Atmosfera" 
+                          label={t('confirmation.atmosphere')} 
                           value={getFieldLabel('atmosphere', formData.atmosphere)} 
                           onEdit={() => handleEditField(29)} 
                         />
@@ -2125,52 +2106,52 @@ const Briefing = () => {
                   // Campos instrumentais
                   <>
                     <ConfirmationItem 
-                      label="Estilo" 
+                      label={t('confirmation.style')} 
                       value={getFieldLabel('style', formData.style)} 
                       onEdit={() => handleEditField(2)} 
                     />
                     <ConfirmationItem 
-                      label="Instrumentos" 
+                      label={t('confirmation.instruments')} 
                       value={getFieldLabel('instruments', formData.instruments)} 
                       onEdit={() => handleEditField(3)} 
                     />
                     <ConfirmationItem 
-                      label="Solo" 
+                      label={t('confirmation.solo')} 
                       value={getFieldLabel('soloInstrument', formData.soloInstrument)} 
                       onEdit={() => handleEditField(4)} 
                     />
                     {formData.soloInstrument && formData.soloInstrument !== 'none' && (
                       <ConfirmationItem 
-                        label="Momento do solo" 
+                        label={t('confirmation.soloMoment')} 
                         value={getFieldLabel('soloMoment', formData.soloMoment)} 
                         onEdit={() => handleEditField(5)} 
                       />
                     )}
                     <ConfirmationItem 
-                      label="Ritmo" 
+                      label={t('confirmation.rhythm')} 
                       value={getFieldLabel('rhythm', formData.rhythm)} 
                       onEdit={() => handleEditField(6)} 
                     />
                     <ConfirmationItem 
-                      label="Atmosfera" 
+                      label={t('confirmation.atmosphere')} 
                       value={getFieldLabel('atmosphere', formData.atmosphere)} 
                       onEdit={() => handleEditField(7)} 
                     />
                     <ConfirmationItem 
-                      label="Contexto" 
+                      label={t('confirmation.context')} 
                       value={formData.story.length > 100 ? formData.story.substring(0, 100) + "..." : formData.story} 
                       onEdit={() => handleEditField(8)} 
                     />
                     {formData.instrumentationNotes && (
                       <ConfirmationItem 
-                        label="Observações" 
+                        label={t('confirmation.notes')} 
                         value={formData.instrumentationNotes.length > 100 ? formData.instrumentationNotes.substring(0, 100) + "..." : formData.instrumentationNotes} 
                         onEdit={() => handleEditField(9)} 
                       />
                     )}
                     <ConfirmationItem 
-                      label="Nome da música" 
-                      value={formData.autoGenerateName ? "Gerado pela IA" : formData.songName} 
+                      label={t('confirmation.songName')} 
+                      value={formData.autoGenerateName ? t('confirmation.aiGenerated') : formData.songName} 
                       onEdit={() => handleEditField(20)} 
                     />
                   </>
@@ -2178,48 +2159,48 @@ const Briefing = () => {
                   // Campos cantada
                   <>
                     <ConfirmationItem 
-                      label="Emoção" 
+                      label={t('confirmation.emotion')} 
                       value={getFieldLabel('emotion', formData.emotion)} 
                       onEdit={() => handleEditField(10)} 
                     />
                     <ConfirmationItem 
-                      label="Intensidade" 
+                      label={t('confirmation.intensity')} 
                       value={getFieldLabel('emotionIntensity', formData.emotionIntensity)} 
                       onEdit={() => handleEditField(11)} 
                     />
                     <ConfirmationItem 
-                      label="História" 
+                      label={t('confirmation.story')} 
                       value={formData.story.length > 100 ? formData.story.substring(0, 100) + "..." : formData.story} 
                       onEdit={() => handleEditField(12)} 
                     />
                     <ConfirmationItem 
-                      label="Palavras obrigatórias" 
-                      value={formData.mandatoryWords || "(nenhuma)"} 
+                      label={t('confirmation.mandatoryWords')} 
+                      value={formData.mandatoryWords || t('confirmation.none')} 
                       onEdit={() => handleEditField(13)} 
                     />
                     <ConfirmationItem 
-                      label="Tipo de voz" 
+                      label={t('confirmation.voiceType')} 
                       value={getFieldLabel('voiceType', formData.voiceType)} 
                       onEdit={() => handleEditField(14)} 
                     />
                     <ConfirmationItem 
-                      label="Estilo" 
+                      label={t('confirmation.style')} 
                       value={getFieldLabel('style', formData.style)} 
                       onEdit={() => handleEditField(15)} 
                     />
                     <ConfirmationItem 
-                      label="Ritmo" 
+                      label={t('confirmation.rhythm')} 
                       value={getFieldLabel('rhythm', formData.rhythm)} 
                       onEdit={() => handleEditField(16)} 
                     />
                     <ConfirmationItem 
-                      label="Atmosfera" 
+                      label={t('confirmation.atmosphere')} 
                       value={getFieldLabel('atmosphere', formData.atmosphere)} 
                       onEdit={() => handleEditField(17)} 
                     />
                     <ConfirmationItem 
-                      label="Nome da música" 
-                      value={formData.autoGenerateName ? "Gerado pela IA" : formData.songName} 
+                      label={t('confirmation.songName')} 
+                      value={formData.autoGenerateName ? t('confirmation.aiGenerated') : formData.songName} 
                       onEdit={() => handleEditField(18)} 
                     />
                   </>
