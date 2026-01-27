@@ -77,21 +77,40 @@
   },
   "profile": {
     "title": "Il Mio Profilo",
-    "name": "Nome",
-    "email": "Email",
-    "phone": "Telefono",
-    "whatsapp": "WhatsApp",
-    "save": "Salva modifiche",
-    "saving": "Salvataggio...",
-    "avatarUpload": "Cambia foto",
-    "avatarUploading": "Caricamento...",
-    "avatarSuccess": "Foto aggiornata!",
-    "avatarError": "Errore nel caricamento della foto",
+    "subtitle": "Gestisci le tue informazioni",
+    "backToDashboard": "Torna al Pannello",
+    "clickToChange": "Clicca sulla foto per cambiare",
+    "save": "Salva Modifiche",
     "tabs": {
       "profile": "Profilo",
       "credits": "Crediti",
       "subscription": "Abbonamento",
       "transfer": "Trasferisci"
+    },
+    "fields": {
+      "email": "Email",
+      "emailHint": "L'email non può essere cambiata",
+      "name": "Nome",
+      "namePlaceholder": "Il tuo nome completo",
+      "phone": "Telefono",
+      "whatsapp": "WhatsApp per ricevere la tua musica",
+      "whatsappHint": "La tua musica sarà inviata a questo numero quando pronta",
+      "region": "Paese/Regione",
+      "regionHint": "Seleziona il tuo paese per regolare lingua e valuta automaticamente"
+    },
+    "success": {
+      "updated": "Profilo aggiornato!",
+      "saved": "Le tue informazioni sono state salvate con successo.",
+      "photoUpdated": "Foto aggiornata!",
+      "photoSaved": "La tua foto profilo è stata salvata con successo."
+    },
+    "errors": {
+      "invalidFile": "File non valido",
+      "selectImage": "Per favore, seleziona un'immagine.",
+      "fileTooLarge": "File troppo grande",
+      "maxSize": "L'immagine deve essere al massimo 5MB.",
+      "uploadError": "Errore nel caricamento della foto",
+      "saveError": "Errore nel salvataggio"
     },
     "noCredits": "Non hai crediti disponibili.",
     "buyCredits": "Acquista crediti",

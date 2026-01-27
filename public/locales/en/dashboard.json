@@ -77,21 +77,40 @@
   },
   "profile": {
     "title": "My Profile",
-    "name": "Name",
-    "email": "Email",
-    "phone": "Phone",
-    "whatsapp": "WhatsApp",
-    "save": "Save changes",
-    "saving": "Saving...",
-    "avatarUpload": "Change photo",
-    "avatarUploading": "Uploading...",
-    "avatarSuccess": "Photo updated!",
-    "avatarError": "Error uploading photo",
+    "subtitle": "Manage your information",
+    "backToDashboard": "Back to Dashboard",
+    "clickToChange": "Click on the photo to change",
+    "save": "Save Changes",
     "tabs": {
       "profile": "Profile",
       "credits": "Credits",
       "subscription": "Subscription",
       "transfer": "Transfer"
+    },
+    "fields": {
+      "email": "Email",
+      "emailHint": "Email cannot be changed",
+      "name": "Name",
+      "namePlaceholder": "Your full name",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp to receive your music",
+      "whatsappHint": "Your music will be sent to this number when ready",
+      "region": "Country/Region",
+      "regionHint": "Select your country to adjust language and currency automatically"
+    },
+    "success": {
+      "updated": "Profile updated!",
+      "saved": "Your information has been saved successfully.",
+      "photoUpdated": "Photo updated!",
+      "photoSaved": "Your profile photo has been saved successfully."
+    },
+    "errors": {
+      "invalidFile": "Invalid file",
+      "selectImage": "Please select an image.",
+      "fileTooLarge": "File too large",
+      "maxSize": "The image must be at most 5MB.",
+      "uploadError": "Error uploading photo",
+      "saveError": "Error saving"
     },
     "noCredits": "You don't have any credits available.",
     "buyCredits": "Buy credits",

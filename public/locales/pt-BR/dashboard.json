@@ -94,7 +94,9 @@
       "namePlaceholder": "Seu nome completo",
       "phone": "Telefone",
       "whatsapp": "WhatsApp para receber a música",
-      "whatsappHint": "Sua música será enviada para este número quando estiver pronta"
+      "whatsappHint": "Sua música será enviada para este número quando estiver pronta",
+      "region": "País/Região",
+      "regionHint": "Selecione seu país para ajustar idioma e moeda automaticamente"
     },
     "success": {
       "updated": "Perfil atualizado!",

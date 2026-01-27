@@ -9,7 +9,7 @@ const dateLocales: Record<string, Locale> = {
   'it': it,
 };
 
-// Currency mapping by language
+// Currency mapping by language (fallback when no region is set)
 const currencyMap: Record<string, { currency: string; locale: string }> = {
   'pt-BR': { currency: 'BRL', locale: 'pt-BR' },
   'en': { currency: 'USD', locale: 'en-US' },
@@ -17,36 +17,80 @@ const currencyMap: Record<string, { currency: string; locale: string }> = {
   'it': { currency: 'EUR', locale: 'it-IT' },
 };
 
+// Currency locale mapping for proper formatting
+const currencyLocaleMap: Record<string, string> = {
+  'BRL': 'pt-BR',
+  'USD': 'en-US',
+  'EUR': 'es-ES',
+  'GBP': 'en-GB',
+  'CAD': 'en-CA',
+  'AUD': 'en-AU',
+  'MXN': 'es-MX',
+  'ARS': 'es-AR',
+  'COP': 'es-CO',
+  'CLP': 'es-CL',
+  'PEN': 'es-PE',
+  'CHF': 'de-CH',
+};
+
 // Exchange rates (approximate - would be updated from an API in production)
 // Updated 2026-01: 1 BRL ≈ 0.17 USD ≈ 0.16 EUR
 const exchangeRates: Record<string, number> = {
-  'BRL': 1,      // Base currency
-  'USD': 0.17,   // 1 BRL ≈ 0.17 USD
-  'EUR': 0.16,   // 1 BRL ≈ 0.16 EUR
+  'BRL': 1,         // Base currency
+  'USD': 0.17,      // 1 BRL ≈ 0.17 USD
+  'EUR': 0.16,      // 1 BRL ≈ 0.16 EUR
+  'GBP': 0.14,      // 1 BRL ≈ 0.14 GBP
+  'CAD': 0.24,      // 1 BRL ≈ 0.24 CAD
+  'AUD': 0.27,      // 1 BRL ≈ 0.27 AUD
+  'MXN': 3.50,      // 1 BRL ≈ 3.50 MXN
+  'ARS': 180,       // 1 BRL ≈ 180 ARS
+  'COP': 700,       // 1 BRL ≈ 700 COP
+  'CLP': 160,       // 1 BRL ≈ 160 CLP
+  'PEN': 0.64,      // 1 BRL ≈ 0.64 PEN
+  'CHF': 0.15,      // 1 BRL ≈ 0.15 CHF
+};
+
+/**
+ * Get stored region currency preference
+ */
+export const getStoredCurrency = (): string | null => {
+  if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem('criandomusicas-currency');
+  }
+  return null;
 };
 
 /**
  * Get formatted price with currency conversion
  * Returns both the converted value and formatted string
+ * Now supports region-based currency when available
  */
 export const getLocalizedPrice = (
   brlCents: number,
-  lang: string = 'pt-BR'
+  lang: string = 'pt-BR',
+  overrideCurrency?: string
 ): { value: number; formatted: string; currency: string } => {
-  const currencyInfo = currencyMap[lang] || currencyMap['pt-BR'];
+  // Priority: override > stored region currency > language default
+  const storedCurrency = getStoredCurrency();
+  const targetCurrency = overrideCurrency || storedCurrency;
   
-  let value: number;
   let currency: string;
+  let locale: string;
   
-  if (lang !== 'pt-BR') {
-    value = convertPrice(brlCents, currencyInfo.currency);
-    currency = currencyInfo.currency;
+  if (targetCurrency && exchangeRates[targetCurrency]) {
+    currency = targetCurrency;
+    locale = currencyLocaleMap[targetCurrency] || 'en-US';
   } else {
-    value = brlCents / 100;
-    currency = 'BRL';
+    const currencyInfo = currencyMap[lang] || currencyMap['pt-BR'];
+    currency = currencyInfo.currency;
+    locale = currencyInfo.locale;
   }
   
-  const formatter = new Intl.NumberFormat(currencyInfo.locale, {
+  const value = currency === 'BRL' 
+    ? brlCents / 100 
+    : convertPrice(brlCents, currency);
+  
+  const formatter = new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 2,
@@ -116,7 +160,7 @@ export const convertPrice = (brlCents: number, targetCurrency: string): number =
 };
 
 /**
- * Format currency according to the current locale
+ * Format currency according to the current locale or stored region
  */
 export const formatCurrency = (
   cents: number,
@@ -124,25 +168,35 @@ export const formatCurrency = (
   options: { 
     convert?: boolean;
     showSymbol?: boolean;
+    overrideCurrency?: string;
   } = {}
 ): string => {
-  const { convert = true, showSymbol = true } = options;
-  const currencyInfo = currencyMap[lang] || currencyMap['pt-BR'];
+  const { convert = true, showSymbol = true, overrideCurrency } = options;
+  
+  // Priority: override > stored region currency > language default
+  const storedCurrency = getStoredCurrency();
+  const targetCurrency = overrideCurrency || storedCurrency;
   
   let value: number;
   let currency: string;
+  let locale: string;
   
-  if (convert && lang !== 'pt-BR') {
-    // Convert from BRL to target currency
-    value = convertPrice(cents, currencyInfo.currency);
+  if (targetCurrency && exchangeRates[targetCurrency] && convert) {
+    currency = targetCurrency;
+    locale = currencyLocaleMap[targetCurrency] || 'en-US';
+    value = currency === 'BRL' ? cents / 100 : convertPrice(cents, currency);
+  } else if (convert && lang !== 'pt-BR') {
+    const currencyInfo = currencyMap[lang] || currencyMap['pt-BR'];
     currency = currencyInfo.currency;
+    locale = currencyInfo.locale;
+    value = convertPrice(cents, currency);
   } else {
-    // Keep as BRL
     value = cents / 100;
     currency = 'BRL';
+    locale = 'pt-BR';
   }
   
-  const formatter = new Intl.NumberFormat(currencyInfo.locale, {
+  const formatter = new Intl.NumberFormat(locale, {
     style: showSymbol ? 'currency' : 'decimal',
     currency: showSymbol ? currency : undefined,
     minimumFractionDigits: 2,
