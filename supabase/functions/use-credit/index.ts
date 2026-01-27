@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -93,34 +94,136 @@ serve(async (req) => {
       throw new Error(`Error fetching credits: ${creditsError.message}`);
     }
 
-    if (!credits || credits.length === 0) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: "Nenhum crédito disponível",
-        needs_purchase: true,
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    // Find first COMPATIBLE package with available credits
+    // Find first COMPATIBLE package with available credits (priority: packages first)
     let creditToUse = null;
-    for (const credit of credits) {
-      if (credit.total_credits > credit.used_credits) {
-        if (isCreditCompatible(credit.plan_id, orderType)) {
-          creditToUse = credit;
-          break;
+    if (credits && credits.length > 0) {
+      for (const credit of credits) {
+        if (credit.total_credits > credit.used_credits) {
+          if (isCreditCompatible(credit.plan_id, orderType)) {
+            creditToUse = credit;
+            break;
+          }
         }
       }
     }
 
+    // If no package credits found, check for subscription credits from Stripe
+    let useSubscription = false;
+    let subscriptionPlanId: string | null = null;
+    
     if (!creditToUse) {
-      // Check if they have any credits at all
-      const hasAnyCredits = credits.some(c => c.total_credits > c.used_credits);
+      logStep("No package credits, checking subscription");
       
-      if (hasAnyCredits) {
-        // They have credits but wrong type
+      try {
+        const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+        if (stripeKey && user.email) {
+          const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+          
+          // Find customer
+          const customers = await stripe.customers.list({ 
+            email: user.email, 
+            limit: 1 
+          });
+          
+          if (customers.data.length > 0) {
+            const customerId = customers.data[0].id;
+            
+            // Find active creator subscription
+            const subscriptions = await stripe.subscriptions.list({
+              customer: customerId,
+              status: "active",
+              limit: 10,
+            });
+            
+            const creatorSub = subscriptions.data.find(
+              (sub: any) => sub.metadata?.plan_type === 'creator'
+            );
+            
+            if (creatorSub) {
+              const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
+              const planId = creatorSub.metadata?.plan_id || 'creator_start';
+              const isInstrumental = planId.includes('instrumental');
+              
+              // Check compatibility
+              const isCompatible = isInstrumental 
+                ? orderType === 'instrumental' 
+                : orderType !== 'instrumental';
+              
+              if (!isCompatible) {
+                const creditTypeName = orderType === 'instrumental' ? 'instrumental' : 'vocal';
+                return new Response(JSON.stringify({
+                  success: false,
+                  error: `Sua assinatura Creator é ${isInstrumental ? 'instrumental' : 'vocal'}, mas este pedido requer créditos ${creditTypeName === 'instrumental' ? 'instrumentais' : 'vocais'}.`,
+                  needs_purchase: true,
+                  wrong_type: true,
+                }), {
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                  status: 200,
+                });
+              }
+              
+              // Get period data with fallbacks
+              let currentPeriodStartTs = creatorSub.current_period_start;
+              
+              if (!currentPeriodStartTs) {
+                const firstItem = creatorSub.items?.data?.[0];
+                if (firstItem) {
+                  currentPeriodStartTs = (firstItem as any).current_period_start;
+                }
+              }
+
+              if (!currentPeriodStartTs) {
+                const fullSub = await stripe.subscriptions.retrieve(creatorSub.id);
+                currentPeriodStartTs = fullSub.current_period_start;
+              }
+
+              if (currentPeriodStartTs) {
+                const periodStart = new Date(currentPeriodStartTs * 1000).toISOString();
+                
+                // Count orders in current period
+                const { count: usedCount } = await supabaseClient
+                  .from('orders')
+                  .select('*', { count: 'exact', head: true })
+                  .eq('user_id', user.id)
+                  .gte('created_at', periodStart)
+                  .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
+                  .like('plan_id', 'creator_%');
+
+                const creditsUsed = usedCount || 0;
+                const creditsRemaining = creditsTotal - creditsUsed;
+                
+                logStep("Subscription credits check", { creditsTotal, creditsUsed, creditsRemaining });
+                
+                if (creditsRemaining > 0) {
+                  useSubscription = true;
+                  subscriptionPlanId = planId;
+                  logStep("Using subscription credit", { planId, creditsRemaining });
+                } else {
+                  return new Response(JSON.stringify({
+                    success: false,
+                    error: `Você já usou todos os ${creditsTotal} créditos da sua assinatura Creator este mês.`,
+                    needs_purchase: true,
+                  }), {
+                    headers: { ...corsHeaders, "Content-Type": "application/json" },
+                    status: 200,
+                  });
+                }
+              }
+            }
+          }
+        }
+      } catch (stripeError: any) {
+        logStep("Stripe check failed", { error: stripeError.message });
+        // Continue to show no credits available
+      }
+    }
+
+    // If still no credits available
+    if (!creditToUse && !useSubscription) {
+      // Check if they have any credits at all (wrong type)
+      const hasAnyPackageCredits = credits?.some(c => c.total_credits > c.used_credits) || false;
+      
+      if (hasAnyPackageCredits) {
         const creditTypeName = orderType === 'instrumental' ? 'instrumental' : 'vocal';
         return new Response(JSON.stringify({
           success: false,
@@ -135,7 +238,7 @@ serve(async (req) => {
       
       return new Response(JSON.stringify({
         success: false,
-        error: "Todos os créditos foram utilizados",
+        error: "Nenhum crédito disponível",
         needs_purchase: true,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -143,85 +246,122 @@ serve(async (req) => {
       });
     }
 
-    logStep("Compatible credit found", { 
-      creditId: creditToUse.id, 
-      planId: creditToUse.plan_id,
-      creditType: getCreditType(creditToUse.plan_id),
-      orderType,
-      used: creditToUse.used_credits, 
-      total: creditToUse.total_credits 
-    });
+    // Use the credit
+    if (useSubscription && subscriptionPlanId) {
+      // Mark order as paid using subscription credit
+      const { error: orderError } = await supabaseClient
+        .from('orders')
+        .update({
+          payment_status: 'PAID',
+          status: 'PAID',
+          payment_method: 'subscription',
+          plan_id: subscriptionPlanId,
+          amount: 0,
+        })
+        .eq('id', orderId)
+        .eq('user_id', user.id);
 
-    // Increment used_credits
-    const newUsedCredits = creditToUse.used_credits + 1;
-    const { error: updateError } = await supabaseClient
-      .from('user_credits')
-      .update({ 
-        used_credits: newUsedCredits,
-        // Mark as inactive if all credits used
-        is_active: newUsedCredits < creditToUse.total_credits,
-      })
-      .eq('id', creditToUse.id);
+      if (orderError) {
+        throw new Error(`Error updating order: ${orderError.message}`);
+      }
 
-    if (updateError) {
-      throw new Error(`Error updating credits: ${updateError.message}`);
+      logStep("Subscription credit used successfully", { 
+        planId: subscriptionPlanId,
+        orderId 
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Crédito da assinatura utilizado com sucesso",
+        source: 'subscription',
+        credit_package: {
+          plan_id: subscriptionPlanId,
+          credit_type: getCreditType(subscriptionPlanId),
+        },
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
-    // Update order to mark as paid via credits
-    const { error: orderError } = await supabaseClient
-      .from('orders')
-      .update({
-        payment_status: 'PAID',
-        status: 'PAID',
-        payment_method: 'credits',
-        amount: 0, // No charge for credit-based orders
-      })
-      .eq('id', orderId)
-      .eq('user_id', user.id);
+    // Use package credit
+    if (creditToUse) {
+      logStep("Compatible package credit found", { 
+        creditId: creditToUse.id, 
+        planId: creditToUse.plan_id,
+        creditType: getCreditType(creditToUse.plan_id),
+        orderType,
+        used: creditToUse.used_credits, 
+        total: creditToUse.total_credits 
+      });
 
-    if (orderError) {
-      // Rollback credit usage
-      await supabaseClient
+      // Increment used_credits
+      const newUsedCredits = creditToUse.used_credits + 1;
+      const { error: updateError } = await supabaseClient
         .from('user_credits')
         .update({ 
-          used_credits: creditToUse.used_credits,
-          is_active: true,
+          used_credits: newUsedCredits,
+          // Mark as inactive if all credits used
+          is_active: newUsedCredits < creditToUse.total_credits,
         })
         .eq('id', creditToUse.id);
-      
-      throw new Error(`Error updating order: ${orderError.message}`);
+
+      if (updateError) {
+        throw new Error(`Error updating credits: ${updateError.message}`);
+      }
+
+      // Update order to mark as paid via credits
+      const { error: orderError } = await supabaseClient
+        .from('orders')
+        .update({
+          payment_status: 'PAID',
+          status: 'PAID',
+          payment_method: 'credits',
+          plan_id: creditToUse.plan_id,
+          amount: 0,
+        })
+        .eq('id', orderId)
+        .eq('user_id', user.id);
+
+      if (orderError) {
+        // Rollback credit usage
+        await supabaseClient
+          .from('user_credits')
+          .update({ 
+            used_credits: creditToUse.used_credits,
+            is_active: true,
+          })
+          .eq('id', creditToUse.id);
+        
+        throw new Error(`Error updating order: ${orderError.message}`);
+      }
+
+      logStep("Package credit used successfully", { 
+        creditId: creditToUse.id, 
+        creditType: getCreditType(creditToUse.plan_id),
+        newUsed: newUsedCredits, 
+        remainingCredits: creditToUse.total_credits - newUsedCredits 
+      });
+
+      return new Response(JSON.stringify({
+        success: true,
+        message: "Crédito utilizado com sucesso",
+        source: 'package',
+        remaining_credits: creditToUse.total_credits - newUsedCredits,
+        credit_package: {
+          plan_id: creditToUse.plan_id,
+          total: creditToUse.total_credits,
+          used: newUsedCredits,
+          remaining: creditToUse.total_credits - newUsedCredits,
+          credit_type: getCreditType(creditToUse.plan_id),
+        },
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
 
-    // Update profile songs_generated
-    await supabaseClient
-      .from('profiles')
-      .update({ 
-        songs_generated: supabaseClient.rpc('increment', { x: 1 }) // Will fail silently if RPC doesn't exist
-      })
-      .eq('user_id', user.id);
-
-    logStep("Credit used successfully", { 
-      creditId: creditToUse.id, 
-      creditType: getCreditType(creditToUse.plan_id),
-      newUsed: newUsedCredits, 
-      remainingCredits: creditToUse.total_credits - newUsedCredits 
-    });
-
-    return new Response(JSON.stringify({
-      success: true,
-      message: "Crédito utilizado com sucesso",
-      remaining_credits: creditToUse.total_credits - newUsedCredits,
-      credit_package: {
-        plan_id: creditToUse.plan_id,
-        total: creditToUse.total_credits,
-        used: newUsedCredits,
-        remaining: creditToUse.total_credits - newUsedCredits,
-        credit_type: getCreditType(creditToUse.plan_id),
-      },
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    throw new Error("Unexpected state: no credit source available");
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
