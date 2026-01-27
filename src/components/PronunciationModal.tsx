@@ -10,6 +10,30 @@ interface Pronunciation {
   phonetic: string;
 }
 
+// Dicionário de pronúncias brasileiras comuns
+const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
+  // Siglas pronunciadas como palavras
+  'UTI': 'utei',
+  'ONU': 'onu',
+  'FIFA': 'fifa',
+  'NASA': 'nasa',
+  'PIX': 'pix',
+  'INSS': 'inésse',
+  'PIB': 'pib',
+  'FGTS': 'éfe gê tê ésse',
+  // Siglas soletradas
+  'CPF': 'cê pê éfe',
+  'RG': 'érre gê',
+  'CEO': 'ci-i-ôu',
+  'DJ': 'di-jêi',
+  'PT': 'pê tê',
+  'MG': 'ême gê',
+  'SP': 'ésse pê',
+  'RJ': 'érre jota',
+  'PR': 'pê érre',
+  'RS': 'érre ésse',
+};
+
 interface PronunciationModalProps {
   open: boolean;
   onClose: () => void;
@@ -25,8 +49,11 @@ const PronunciationModal = ({
   onSubmit,
   loading = false
 }: PronunciationModalProps) => {
+  // Pre-populate with known pronunciations
   const [pronunciations, setPronunciations] = useState<Record<string, string>>(
-    Object.fromEntries(missingTerms.map(term => [term, '']))
+    Object.fromEntries(
+      missingTerms.map(term => [term, BRAZILIAN_PRONUNCIATIONS[term] || ''])
+    )
   );
 
   const handleSubmit = () => {
@@ -83,11 +110,15 @@ const PronunciationModal = ({
         <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg text-sm space-y-2">
           <p className="font-medium text-foreground">💡 Exemplos de pronúncia:</p>
           <ul className="text-muted-foreground space-y-1 list-disc list-inside">
-            <li><strong>NYV8</strong> → "ene ipsolon vê oito"</li>
+            <li><strong>UTI</strong> → "utei" (como palavra)</li>
+            <li><strong>CPF</strong> → "cê pê éfe" (soletrado)</li>
             <li><strong>iPhone</strong> → "aifón"</li>
             <li><strong>Wi-Fi</strong> → "uái-fái"</li>
-            <li><strong>ABC</strong> → "a bê cê"</li>
+            <li><strong>CEO</strong> → "ci-i-ôu" (soletrado em inglês)</li>
           </ul>
+          <p className="text-xs text-muted-foreground mt-2">
+            💡 Algumas siglas brasileiras são preenchidas automaticamente!
+          </p>
         </div>
 
         <DialogFooter>

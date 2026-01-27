@@ -28,6 +28,37 @@ interface Pronunciation {
   phonetic: string;
 }
 
+// Dicionário de pronúncias brasileiras comuns
+const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
+  // Siglas pronunciadas como palavras
+  'UTI': 'utei',
+  'ONU': 'onu',
+  'FIFA': 'fifa',
+  'NASA': 'nasa',
+  'PIX': 'pix',
+  'INSS': 'inésse',
+  'PIB': 'pib',
+  'FGTS': 'éfe gê tê ésse',
+  // Siglas soletradas
+  'CPF': 'cê pê éfe',
+  'RG': 'érre gê',
+  'CEO': 'ci-i-ôu',
+  'DJ': 'di-jêi',
+  'PT': 'pê tê',
+  'MG': 'ême gê',
+  'SP': 'ésse pê',
+  'RJ': 'érre jota',
+  'PR': 'pê érre',
+  'RS': 'érre ésse',
+};
+
+// Aplicar pronúncias conhecidas automaticamente
+function applyKnownPronunciations(terms: string[]): Pronunciation[] {
+  return terms
+    .filter(term => BRAZILIAN_PRONUNCIATIONS[term])
+    .map(term => ({ term, phonetic: BRAZILIAN_PRONUNCIATIONS[term] }));
+}
+
 // Detectar termos que precisam de pronúncia fonética
 function detectCriticalTerms(text: string): string[] {
   const patterns = [
