@@ -8,6 +8,7 @@ import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCredits } from "@/hooks/useCredits";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import heroImage from "@/assets/hero-music.jpg";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const Hero = () => {
   const { user, profile, signOut } = useAuth();
@@ -34,49 +35,54 @@ const Hero = () => {
       
       {/* Auth Section */}
       <div className="absolute top-6 right-6 z-20">
-        {user ? (
-          <div className="flex items-center gap-3">
-            {/* Creator Subscription Badge */}
-            {!subscriptionLoading && hasActiveSubscription && planDetails && (
-              <Link to="/perfil?tab=subscription">
-                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 gap-1.5 cursor-pointer hover:from-amber-400 hover:to-orange-400 transition-colors">
-                  <Crown className="w-3 h-3" />
-                  {planDetails.name.replace('Creator ', '')}
-                </Badge>
+        <div className="flex items-center gap-3">
+          {/* Theme Toggle */}
+          <ThemeToggle />
+          
+          {user ? (
+            <>
+              {/* Creator Subscription Badge */}
+              {!subscriptionLoading && hasActiveSubscription && planDetails && (
+                <Link to="/perfil?tab=subscription">
+                  <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 gap-1.5 cursor-pointer hover:from-amber-400 hover:to-orange-400 transition-colors">
+                    <Crown className="w-3 h-3" />
+                    {planDetails.name.replace('Creator ', '')}
+                  </Badge>
+                </Link>
+              )}
+              {/* Credits Badge - Show if user has credits */}
+              {!creditsLoading && hasCredits && (
+                <Link to="/perfil?tab=credits">
+                  <Badge className="bg-green-500 text-white border-0 gap-1.5 cursor-pointer hover:bg-green-400 transition-colors">
+                    <Zap className="w-3 h-3" />
+                    {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
+                  </Badge>
+                </Link>
+              )}
+              <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
+                <Avatar className="w-8 h-8 border-2 border-primary/50">
+                  <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
+                  <AvatarFallback className="bg-primary/20 text-primary text-xs font-medium">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm font-medium text-foreground max-w-[150px] truncate">
+                  {displayName}
+                </span>
               </Link>
-            )}
-            {/* Credits Badge - Show if user has credits */}
-            {!creditsLoading && hasCredits && (
-              <Link to="/perfil?tab=credits">
-                <Badge className="bg-green-500 text-white border-0 gap-1.5 cursor-pointer hover:bg-green-400 transition-colors">
-                  <Zap className="w-3 h-3" />
-                  {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
-                </Badge>
-              </Link>
-            )}
-            <Link to="/perfil" className="flex items-center gap-2 bg-secondary/80 backdrop-blur-sm rounded-full pl-1 pr-3 py-1 hover:bg-secondary transition-colors">
-              <Avatar className="w-8 h-8 border-2 border-primary/50">
-                <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
-                <AvatarFallback className="bg-primary/20 text-primary text-xs font-medium">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium text-foreground max-w-[150px] truncate">
-                {displayName}
-              </span>
+              <Button variant="outline" size="sm" onClick={() => signOut()}>
+                Sair
+              </Button>
+            </>
+          ) : (
+            <Link to="/auth">
+              <Button variant="outline" size="sm">
+                <User className="w-4 h-4 mr-2" />
+                Entrar
+              </Button>
             </Link>
-            <Button variant="outline" size="sm" onClick={() => signOut()}>
-              Sair
-            </Button>
-          </div>
-        ) : (
-          <Link to="/auth">
-            <Button variant="outline" size="sm">
-              <User className="w-4 h-4 mr-2" />
-              Entrar
-            </Button>
-          </Link>
-        )}
+          )}
+        </div>
       </div>
       
       {/* Floating Elements - decorative, hidden from screen readers */}

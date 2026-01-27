@@ -5,7 +5,66 @@
 /* Music Studio Design System - All colors, gradients, fonts, etc defined here */
 
 @layer base {
+  /* Light Theme */
   :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 10%;
+
+    /* Music-themed color palette */
+    --primary: 259 100% 55%;
+    --primary-glow: 270 100% 70%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 240 10% 94%;
+    --secondary-foreground: 240 10% 10%;
+    
+    --accent: 315 100% 55%;
+    --accent-foreground: 0 0% 100%;
+    
+    --muted: 240 10% 92%;
+    --muted-foreground: 240 5% 40%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+    
+    --border: 240 10% 85%;
+    --input: 240 10% 92%;
+    --ring: 259 100% 55%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --radius: 0.75rem;
+
+    /* Musical gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(259 100% 55%), hsl(315 100% 55%));
+    --gradient-secondary: linear-gradient(180deg, hsl(240 10% 98%), hsl(0 0% 100%));
+    --gradient-hero: linear-gradient(135deg, hsl(259 100% 55% / 0.1), hsl(315 100% 55% / 0.1));
+    
+    /* Status colors for semantic usage */
+    --status-success: 142 76% 36%;
+    --status-success-foreground: 0 0% 100%;
+    --status-warning: 38 92% 50%;
+    --status-warning-foreground: 240 10% 10%;
+    --status-info: 199 89% 48%;
+    --status-info-foreground: 0 0% 100%;
+    
+    /* Accent colors for card highlights */
+    --gold: 45 100% 50%;
+    
+    /* Shadows */
+    --shadow-glow: 0 0 40px hsl(259 100% 55% / 0.2);
+    --shadow-card: 0 10px 30px -10px hsl(240 10% 10% / 0.1);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Dark Theme */
+  .dark {
     --background: 240 15% 3%;
     --foreground: 0 0% 98%;
 
@@ -35,8 +94,6 @@
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    
-    --radius: 0.75rem;
 
     /* Musical gradients */
     --gradient-primary: linear-gradient(135deg, hsl(259 100% 65%), hsl(315 100% 70%));
@@ -51,19 +108,9 @@
     --status-info: 199 89% 48%;
     --status-info-foreground: 0 0% 98%;
     
-    /* Accent colors for card highlights */
-    --gold: 45 100% 50%;
-    
     /* Shadows */
     --shadow-glow: 0 0 40px hsl(259 100% 65% / 0.3);
     --shadow-card: 0 10px 30px -10px hsl(240 15% 3% / 0.5);
-    
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .dark {
-    /* Already dark theme - keep same values */
   }
 }
 
@@ -89,8 +136,13 @@
   }
   
   .glass-card {
-    background: rgba(255, 255, 255, 0.05);
+    background: hsl(var(--card) / 0.8);
     backdrop-filter: blur(20px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  
+  .dark .glass-card {
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }
