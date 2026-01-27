@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,13 +21,22 @@ interface TrackData {
 }
 
 const MusicShare = () => {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const { orderId } = useParams();
+  const [searchParams] = useSearchParams();
   const [track, setTrack] = useState<TrackData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Apply language from URL parameter if present
+  useEffect(() => {
+    const langParam = searchParams.get('lang');
+    if (langParam && ['pt-BR', 'en', 'es', 'it'].includes(langParam)) {
+      i18n.changeLanguage(langParam);
+    }
+  }, [searchParams, i18n]);
 
   useEffect(() => {
     const fetchTrack = async () => {

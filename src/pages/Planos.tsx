@@ -144,6 +144,21 @@ const Planos = () => {
     return translatedName || dbName;
   };
 
+  // Get translated plan description
+  const getPlanDescription = (planId: string): string => {
+    const description = t(`plans.${planId}.description`, { defaultValue: '' });
+    if (description) return description;
+    
+    // Fallback descriptions for Creator plans
+    const credits = getCreditsForPlan(planId);
+    const isInstrumentalPlan = planId.includes('instrumental');
+    const songWord = isInstrumentalPlan 
+      ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
+      : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
+    
+    return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
+  };
+
   const getButtonText = (planId: string) => {
     const credits = getCreditsForPlan(planId);
     if (credits === 1) return t('cta');
@@ -489,7 +504,7 @@ const Planos = () => {
                       
                       {/* Plan Description */}
                       <p className="text-sm text-muted-foreground mb-2">
-                        {t(`plans.${plan.id}.description`, { defaultValue: '' })}
+                        {getPlanDescription(plan.id)}
                       </p>
                       
                       <CardDescription className="text-4xl font-bold text-purple-400">
