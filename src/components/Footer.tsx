@@ -66,6 +66,17 @@ const Footer = () => {
         <div className="border-t border-border/50 mt-8 pt-8 text-center text-muted-foreground">
           <p>© 2025 Criando Músicas. Todos os direitos reservados.</p>
           <p className="text-xs mt-2 opacity-60">v{APP_VERSION}</p>
+          <p className="text-xs mt-2">
+            Desenvolvido por{" "}
+            <a 
+              href="https://neitechweb.web.app/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline transition-colors"
+            >
+              Neitch
+            </a>
+          </p>
         </div>
       </div>
     </footer>;
