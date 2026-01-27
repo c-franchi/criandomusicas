@@ -84,13 +84,13 @@ const ProcessSteps = () => {
               
               <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
                 <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-full">
-                  <Badge variant="secondary" className="bg-accent/20 text-accent-foreground border-accent/30">
+                  <Badge variant="secondary" className="bg-accent text-white border-accent">
                     3 músicas
                   </Badge>
                   <span className="text-muted-foreground">Economia de 16%</span>
                 </div>
                 <div className="flex items-center gap-2 bg-background/50 px-3 py-1.5 rounded-full">
-                  <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
+                  <Badge variant="secondary" className="bg-primary text-white border-primary">
                     5 músicas
                   </Badge>
                   <span className="text-muted-foreground">Maior economia</span>

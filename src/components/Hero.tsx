@@ -39,7 +39,7 @@ const Hero = () => {
             {/* Creator Subscription Badge */}
             {!subscriptionLoading && hasActiveSubscription && planDetails && (
               <Link to="/perfil?tab=subscription">
-                <Badge className="bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-400 border-amber-500/30 gap-1.5 cursor-pointer hover:from-amber-500/30 hover:to-orange-500/30 transition-colors">
+                <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 gap-1.5 cursor-pointer hover:from-amber-400 hover:to-orange-400 transition-colors">
                   <Crown className="w-3 h-3" />
                   {planDetails.name.replace('Creator ', '')}
                 </Badge>
@@ -48,7 +48,7 @@ const Hero = () => {
             {/* Credits Badge - Show if user has credits */}
             {!creditsLoading && hasCredits && (
               <Link to="/perfil?tab=credits">
-                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 gap-1.5 cursor-pointer hover:bg-green-500/30 transition-colors">
+                <Badge className="bg-green-500 text-white border-0 gap-1.5 cursor-pointer hover:bg-green-400 transition-colors">
                   <Zap className="w-3 h-3" />
                   {totalAvailable} crédito{totalAvailable !== 1 ? 's' : ''}
                 </Badge>

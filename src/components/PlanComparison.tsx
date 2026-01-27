@@ -90,7 +90,7 @@ const PlanComparison = () => {
                 <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
                   <Repeat className="w-5 h-5 text-purple-500" />
                 </div>
-                <Badge className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-primary border-primary/30">
+                <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white border-0">
                   Assinatura Creator
                 </Badge>
               </div>
