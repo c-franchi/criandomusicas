@@ -22,7 +22,13 @@
     "back": "Back",
     "next": "Next",
     "submit": "Submit",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "close": "Close",
+    "continue": "Continue",
+    "download": "Download",
+    "share": "Share",
+    "copy": "Copy",
+    "copied": "Copied!"
   },
   "status": {
     "pending": "Pending",
@@ -36,20 +42,72 @@
     "generic": "Something went wrong. Please try again.",
     "notFound": "Page not found",
     "unauthorized": "Unauthorized access",
-    "required": "Required field"
+    "required": "Required field",
+    "loadFailed": "Error loading data"
   },
   "success": {
     "saved": "Successfully saved!",
     "deleted": "Successfully deleted!",
-    "updated": "Successfully updated!"
+    "updated": "Successfully updated!",
+    "copied": "Copied to clipboard!"
   },
   "credits": {
     "credit": "credit",
     "credits": "credits",
-    "use": "Use Credit"
+    "use": "Use Credit",
+    "available": "available",
+    "availablePlural": "available"
   },
   "subscription": {
     "active": "Active",
     "inactive": "Inactive"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "subtitle": "Oops! The page you're looking for doesn't exist or has been moved.",
+    "backHome": "Back to home"
+  },
+  "install": {
+    "title": "Install the App",
+    "subtitle": "Get quick access to Criando Músicas right from your home screen",
+    "installButton": "Install Now",
+    "iosInstructions": "On iPhone/iPad:",
+    "iosStep1": "Tap the share button",
+    "iosStep2": "Scroll down and tap \"Add to Home Screen\"",
+    "iosStep3": "Tap \"Add\"",
+    "benefits": {
+      "title": "App benefits:",
+      "fast": "Quick access from home screen",
+      "notifications": "Get notifications when your song is ready",
+      "offline": "Works even offline",
+      "fullscreen": "Full screen experience"
+    },
+    "alreadyInstalled": "App already installed!",
+    "openApp": "Open App"
+  },
+  "share": {
+    "title": "Share",
+    "shareOn": "Share on {{platform}}",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied!",
+    "shareAll": "Share everywhere",
+    "listenSong": "🎵 Listen to my personalized song",
+    "createYours": "Create yours too!",
+    "errorLoading": "Error loading song",
+    "songNotFound": "Song not found"
+  },
+  "player": {
+    "play": "Play",
+    "pause": "Pause",
+    "download": "Download song",
+    "share": "Share"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "daysAgo": "{{count}} days ago",
+    "hoursAgo": "{{count}} hours ago",
+    "minutesAgo": "{{count}} minutes ago",
+    "justNow": "just now"
   }
 }

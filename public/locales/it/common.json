@@ -22,7 +22,13 @@
     "back": "Indietro",
     "next": "Avanti",
     "submit": "Invia",
-    "loading": "Caricamento..."
+    "loading": "Caricamento...",
+    "close": "Chiudi",
+    "continue": "Continua",
+    "download": "Scarica",
+    "share": "Condividi",
+    "copy": "Copia",
+    "copied": "Copiato!"
   },
   "status": {
     "pending": "In attesa",
@@ -36,20 +42,72 @@
     "generic": "Qualcosa è andato storto. Riprova.",
     "notFound": "Pagina non trovata",
     "unauthorized": "Accesso non autorizzato",
-    "required": "Campo obbligatorio"
+    "required": "Campo obbligatorio",
+    "loadFailed": "Errore nel caricamento dati"
   },
   "success": {
     "saved": "Salvato con successo!",
     "deleted": "Eliminato con successo!",
-    "updated": "Aggiornato con successo!"
+    "updated": "Aggiornato con successo!",
+    "copied": "Copiato negli appunti!"
   },
   "credits": {
     "credit": "credito",
     "credits": "crediti",
-    "use": "Usa Credito"
+    "use": "Usa Credito",
+    "available": "disponibile",
+    "availablePlural": "disponibili"
   },
   "subscription": {
     "active": "Attivo",
     "inactive": "Inattivo"
+  },
+  "notFound": {
+    "title": "Pagina non trovata",
+    "subtitle": "Ops! La pagina che stai cercando non esiste o è stata spostata.",
+    "backHome": "Torna alla home"
+  },
+  "install": {
+    "title": "Installa l'App",
+    "subtitle": "Accedi rapidamente a Criando Músicas dalla tua schermata home",
+    "installButton": "Installa Ora",
+    "iosInstructions": "Su iPhone/iPad:",
+    "iosStep1": "Tocca il pulsante condividi",
+    "iosStep2": "Scorri verso il basso e tocca \"Aggiungi alla schermata Home\"",
+    "iosStep3": "Tocca \"Aggiungi\"",
+    "benefits": {
+      "title": "Vantaggi dell'app:",
+      "fast": "Accesso rapido dalla schermata home",
+      "notifications": "Ricevi notifiche quando la tua canzone è pronta",
+      "offline": "Funziona anche offline",
+      "fullscreen": "Esperienza a schermo intero"
+    },
+    "alreadyInstalled": "App già installata!",
+    "openApp": "Apri App"
+  },
+  "share": {
+    "title": "Condividi",
+    "shareOn": "Condividi su {{platform}}",
+    "copyLink": "Copia link",
+    "linkCopied": "Link copiato!",
+    "shareAll": "Condividi ovunque",
+    "listenSong": "🎵 Ascolta la mia canzone personalizzata",
+    "createYours": "Crea anche la tua!",
+    "errorLoading": "Errore nel caricamento della canzone",
+    "songNotFound": "Canzone non trovata"
+  },
+  "player": {
+    "play": "Riproduci",
+    "pause": "Pausa",
+    "download": "Scarica canzone",
+    "share": "Condividi"
+  },
+  "time": {
+    "today": "Oggi",
+    "yesterday": "Ieri",
+    "daysAgo": "{{count}} giorni fa",
+    "hoursAgo": "{{count}} ore fa",
+    "minutesAgo": "{{count}} minuti fa",
+    "justNow": "proprio ora"
   }
 }

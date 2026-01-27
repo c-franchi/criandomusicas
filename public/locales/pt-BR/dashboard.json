@@ -1,6 +1,7 @@
 {
   "title": "Meus Pedidos",
   "subtitle": "Acompanhe suas músicas personalizadas",
+  "loading": "Carregando seus pedidos...",
   "empty": {
     "title": "Nenhum pedido ainda",
     "subtitle": "Crie sua primeira música personalizada!",
@@ -12,25 +13,67 @@
     "plan": "Plano",
     "view": "Ver detalhes",
     "track": "Acompanhar",
-    "listen": "Ouvir música"
+    "listen": "Ouvir música",
+    "delete": "Excluir pedido",
+    "createdAt": "Criado em {{date}}",
+    "style": "Estilo",
+    "type": "Tipo"
   },
   "statuses": {
     "DRAFT": "Rascunho",
     "AWAITING_PAYMENT": "Aguardando pagamento",
     "PAID": "Pago",
     "BRIEFING_COMPLETE": "Briefing completo",
-    "LYRICS_PENDING": "Letra pendente",
+    "LYRICS_PENDING": "Gerando letra",
     "LYRICS_GENERATED": "Letra gerada",
     "LYRICS_APPROVED": "Letra aprovada",
-    "MUSIC_GENERATING": "Gerando música",
+    "MUSIC_GENERATING": "Em produção",
     "MUSIC_READY": "Música pronta",
     "COMPLETED": "Concluído",
     "CANCELLED": "Cancelado"
+  },
+  "statusesInstrumental": {
+    "LYRICS_PENDING": "Preparando produção",
+    "LYRICS_GENERATED": "Preparando produção",
+    "LYRICS_APPROVED": "Pronto para produção"
   },
   "filters": {
     "all": "Todos",
     "pending": "Pendentes",
     "completed": "Concluídos"
+  },
+  "badges": {
+    "customLyric": "📝 Letra Própria",
+    "instrumental": "🎹 Instrumental"
+  },
+  "buttons": {
+    "newSong": "Criar Nova Música",
+    "home": "Voltar ao Início",
+    "install": "Instalar App",
+    "profile": "Meu Perfil",
+    "admin": "Painel Admin"
+  },
+  "deleteDialog": {
+    "title": "Excluir pedido?",
+    "description": "Esta ação não pode ser desfeita. O pedido será removido permanentemente.",
+    "cancel": "Cancelar",
+    "confirm": "Excluir"
+  },
+  "toasts": {
+    "newOrder": "🎵 Novo pedido criado!",
+    "newOrderDesc": "Seu pedido foi adicionado à lista.",
+    "lyricsReady": "✨ Letra pronta!",
+    "lyricsReadyDesc": "A letra da sua música foi gerada.",
+    "musicReady": "🎵 Música pronta!",
+    "musicReadyDesc": "Sua música está disponível para download!",
+    "paymentConfirmed": "✅ Pagamento confirmado!",
+    "paymentConfirmedDesc": "Estamos gerando a letra da sua música.",
+    "deleteSuccess": "Pedido excluído",
+    "deleteSuccessDesc": "O pedido foi removido com sucesso.",
+    "deleteError": "Erro ao excluir pedido",
+    "loadError": "Erro ao carregar pedidos",
+    "subscriptionSuccess": "🎉 Assinatura Ativada!",
+    "subscriptionDesc": "Sua assinatura {{plan}} está confirmada. Seus créditos já estão disponíveis!"
   },
   "profile": {
     "title": "Meu Perfil",
@@ -39,10 +82,103 @@
     "phone": "Telefone",
     "whatsapp": "WhatsApp",
     "save": "Salvar alterações",
+    "saving": "Salvando...",
+    "avatarUpload": "Alterar foto",
+    "avatarUploading": "Enviando...",
+    "avatarSuccess": "Foto atualizada!",
+    "avatarError": "Erro ao enviar foto",
     "tabs": {
       "profile": "Perfil",
       "credits": "Créditos",
-      "subscription": "Assinatura"
+      "subscription": "Assinatura",
+      "transfer": "Transferir"
+    },
+    "noCredits": "Você não tem créditos disponíveis.",
+    "buyCredits": "Comprar créditos",
+    "noSubscription": "Você não tem assinatura ativa.",
+    "viewPlans": "Ver planos",
+    "creditsRemaining": "{{count}} crédito restante",
+    "creditsRemainingPlural": "{{count}} créditos restantes",
+    "expiresAt": "Expira em {{date}}",
+    "neverExpires": "Nunca expira"
+  },
+  "orderDetails": {
+    "title": "Detalhes do Pedido",
+    "back": "Voltar",
+    "orderNumber": "Pedido #{{id}}",
+    "createdAt": "Criado em {{date}}",
+    "sections": {
+      "status": "Status",
+      "briefing": "Briefing",
+      "lyrics": "Letra",
+      "music": "Música",
+      "share": "Compartilhar",
+      "review": "Avaliação"
+    },
+    "briefingFields": {
+      "musicType": "Tipo de Música",
+      "style": "Estilo Musical",
+      "emotion": "Emoção",
+      "rhythm": "Ritmo",
+      "atmosphere": "Atmosfera",
+      "voiceType": "Tipo de Voz",
+      "instruments": "Instrumentos",
+      "story": "História"
+    },
+    "lyrics": {
+      "title": "Letra da Música",
+      "version": "Versão {{version}}",
+      "approved": "Aprovada",
+      "pending": "Aguardando aprovação",
+      "approve": "Aprovar esta letra",
+      "edit": "Solicitar alterações",
+      "generating": "Gerando letra...",
+      "noLyrics": "Letra ainda não disponível"
+    },
+    "music": {
+      "title": "Sua Música",
+      "download": "Baixar música",
+      "play": "Reproduzir",
+      "pause": "Pausar",
+      "generating": "Sua música está sendo produzida...",
+      "ready": "Música pronta!",
+      "notReady": "Música ainda não disponível"
+    },
+    "share": {
+      "title": "Compartilhar",
+      "whatsapp": "WhatsApp",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "copyLink": "Copiar link",
+      "shareAll": "Compartilhar em todas",
+      "copied": "Link copiado!"
+    },
+    "review": {
+      "title": "Deixe sua avaliação",
+      "subtitle": "Sua opinião é muito importante para nós!",
+      "rating": "Nota",
+      "comment": "Comentário (opcional)",
+      "commentPlaceholder": "Conte como foi sua experiência...",
+      "allowSample": "Permitir que minha música seja usada como exemplo",
+      "submit": "Enviar avaliação",
+      "thanks": "Obrigado pela avaliação!",
+      "alreadyReviewed": "Você já avaliou este pedido"
     }
+  },
+  "orderTracking": {
+    "title": "Acompanhar Pedido",
+    "timeline": {
+      "orderCreated": "Pedido criado",
+      "paymentReceived": "Pagamento recebido",
+      "lyricsGenerated": "Letra gerada",
+      "lyricsApproved": "Letra aprovada",
+      "musicProduction": "Música em produção",
+      "musicReady": "Música pronta!",
+      "completed": "Pedido concluído"
+    },
+    "current": "Etapa atual",
+    "completed": "Concluído",
+    "pending": "Aguardando",
+    "estimatedTime": "Tempo estimado: {{time}}"
   }
 }

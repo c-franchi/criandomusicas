@@ -45,11 +45,57 @@
   },
   "samples": {
     "title": "Listen to Samples",
-    "subtitle": "Check out some of the songs we've created"
+    "subtitle": "Check out some of the songs we've created",
+    "badge": "Real Examples",
+    "swipeHint": "Swipe to see more →",
+    "playButton": "Play",
+    "pauseButton": "Pause"
   },
   "testimonials": {
     "title": "What Our Clients Say",
-    "subtitle": "Real stories from those who turned moments into music"
+    "subtitle": "Real stories from those who turned moments into music",
+    "badge": "Real Testimonials",
+    "stats": {
+      "songs": "500+",
+      "songsLabel": "Songs Created",
+      "rating": "5.0★",
+      "ratingLabel": "Average Rating",
+      "satisfaction": "100%",
+      "satisfactionLabel": "Satisfaction",
+      "delivery": "48h",
+      "deliveryLabel": "Average Time"
+    },
+    "musicTypes": {
+      "tribute": "Tribute",
+      "romantic": "Romantic",
+      "birthday": "Birthday",
+      "wedding": "Wedding",
+      "mothers": "Mother's Day",
+      "fathers": "Father's Day"
+    }
+  },
+  "instrumental": {
+    "title": "Instrumental",
+    "titleHighlight": "Tracks",
+    "subtitle": "Music without vocals, perfect for videos, podcasts and creative projects",
+    "badge": "100% Instrumental",
+    "discount": "20% off",
+    "discountBadge": "-20%",
+    "features": [
+      "Perfect for videos and podcasts",
+      "Ideal for background content",
+      "Commercial use allowed",
+      "Delivery within 48h"
+    ],
+    "cta": "Create Instrumental Track",
+    "styles": {
+      "ambient": "Ambient",
+      "cinematic": "Cinematic",
+      "lofi": "Lo-fi",
+      "classical": "Classical",
+      "electronic": "Electronic",
+      "jazz": "Jazz"
+    }
   },
   "whyUs": {
     "title": "Why choose Criando Músicas?",
