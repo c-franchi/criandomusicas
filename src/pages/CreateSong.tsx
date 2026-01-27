@@ -376,8 +376,15 @@ const CreateSong = () => {
   };
 
   const handleApproveLyric = async (customPronunciations?: Pronunciation[]) => {
+    // Determine which lyric is being approved: modified, original, or custom
+    const isUsingModified = hasUsedModification && modifiedLyric && editedLyric === modifiedLyric.body;
+    const effectiveLyric = isUsingModified ? modifiedLyric : selectedLyric;
+    
     console.log("handleApproveLyric called", {
       selectedLyric: selectedLyric?.id,
+      modifiedLyric: modifiedLyric?.id,
+      effectiveLyric: effectiveLyric?.id,
+      isUsingModified,
       orderId,
       editedLyric: editedLyric?.substring(0, 50),
       editedLyricLength: editedLyric?.length,
@@ -388,8 +395,8 @@ const CreateSong = () => {
     // Para letras customizadas, podemos aprovar mesmo sem selectedLyric já que temos editedLyric
     const isCustomLyric = briefingData?.hasCustomLyric === true;
     
-    if (!isCustomLyric && !selectedLyric) {
-      console.error("Missing selectedLyric for non-custom lyric");
+    if (!isCustomLyric && !effectiveLyric) {
+      console.error("Missing effectiveLyric for non-custom lyric");
       toast.error("Dados incompletos", { description: "Selecione uma letra antes de aprovar" });
       return;
     }
@@ -411,8 +418,9 @@ const CreateSong = () => {
 
     try {
       // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
-      // Para letra customizada, usar 'custom' como lyricId
-      const lyricId = selectedLyric?.id || 'custom';
+      // Use modified lyric ID if user is approving the modified version, original otherwise
+      // For custom lyrics, use 'custom' as lyricId
+      const lyricId = effectiveLyric?.id || 'custom';
       
       const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
         body: {
