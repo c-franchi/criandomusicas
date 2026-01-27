@@ -287,6 +287,17 @@ export default function Checkout() {
         if (data.is_free) {
           // For 100% discount, trigger generation automatically based on order type
           const isInstrumental = order.is_instrumental === true;
+          const hasCustomLyric = order.has_custom_lyric === true;
+          
+          // For custom lyrics, redirect directly to CreateSong page for approval
+          // The prompt will be generated when the user approves the lyrics there
+          if (hasCustomLyric) {
+            toast.success('Voucher aplicado! Redirecionando para aprovação da letra...');
+            setTimeout(() => {
+              navigate(`/criar-musica?orderId=${order.id}`);
+            }, 1000);
+            return;
+          }
           
           toast.info(isInstrumental 
             ? 'Preparando sua música instrumental...' 

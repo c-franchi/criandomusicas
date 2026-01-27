@@ -1519,8 +1519,17 @@ const Briefing = () => {
           });
           clearSavedBriefing();
           navigate('/dashboard');
+        } else if (orderData.has_custom_lyric) {
+          // Letra própria: redirecionar para aprovação, prompt será gerado lá
+          console.log('Custom lyric order - redirecting to approval...');
+          toast({
+            title: '📝 Letra pronta para revisão!',
+            description: 'Revise e aprove sua letra para continuar.',
+          });
+          clearSavedBriefing();
+          navigate(`/criar-musica?orderId=${pendingOrderId}`);
         } else {
-          // Vocal ou letra própria: gerar letras
+          // Vocal: gerar letras via IA
           console.log('Generating lyrics for vocal order...');
           await supabase.functions.invoke('generate-lyrics', {
             body: {
