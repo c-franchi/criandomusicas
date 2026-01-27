@@ -2,32 +2,215 @@
   "privacy": {
     "title": "Política de Privacidade",
     "lastUpdated": "Última atualização",
+    "seoDescription": "Saiba como a Criando Músicas coleta, utiliza e protege seus dados pessoais em conformidade com a LGPD. Transparência e segurança para você.",
+    "seoKeywords": "política de privacidade, LGPD, proteção de dados, privacidade criandomusicas",
     "sections": {
-      "intro": "Introdução",
-      "dataCollection": "Coleta de Dados",
-      "dataUse": "Uso dos Dados",
-      "dataSecurity": "Segurança dos Dados",
-      "cookies": "Cookies",
-      "rights": "Seus Direitos",
-      "contact": "Contato"
+      "intro": {
+        "title": "1. Introdução",
+        "content": "A Criando Músicas está comprometida em proteger sua privacidade. Esta Política de Privacidade explica como coletamos, usamos, armazenamos e protegemos suas informações pessoais em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018)."
+      },
+      "dataCollection": {
+        "title": "2. Dados que Coletamos",
+        "items": [
+          "Dados de cadastro: Nome, e-mail, telefone e WhatsApp",
+          "Dados de briefing: Histórias, nomes, preferências musicais e informações fornecidas para criação das músicas",
+          "Dados de pagamento: Processados de forma segura por terceiros (gateways de pagamento)",
+          "Dados de uso: Informações sobre como você utiliza nossa plataforma"
+        ]
+      },
+      "dataUse": {
+        "title": "3. Finalidade do Tratamento",
+        "intro": "Utilizamos seus dados para:",
+        "items": [
+          "Criar músicas personalizadas conforme suas especificações",
+          "Entrar em contato sobre o andamento do seu pedido",
+          "Enviar a música finalizada via WhatsApp ou e-mail",
+          "Processar pagamentos de forma segura",
+          "Melhorar nossos serviços e experiência do usuário",
+          "Cumprir obrigações legais e regulatórias"
+        ]
+      },
+      "legalBasis": {
+        "title": "4. Base Legal",
+        "intro": "Tratamos seus dados com base nas seguintes hipóteses legais previstas na LGPD:",
+        "items": [
+          "Execução de contrato: Para prestar os serviços contratados",
+          "Consentimento: Para comunicações de marketing e uso de dados sensíveis",
+          "Legítimo interesse: Para melhorar nossos serviços",
+          "Cumprimento de obrigação legal: Para atender exigências legais"
+        ]
+      },
+      "dataSharing": {
+        "title": "5. Compartilhamento de Dados",
+        "intro": "Não vendemos seus dados pessoais. Podemos compartilhar informações com:",
+        "items": [
+          "Processadores de pagamento para finalizar transações",
+          "Provedores de serviços de tecnologia que nos auxiliam",
+          "Autoridades públicas quando exigido por lei"
+        ]
+      },
+      "rights": {
+        "title": "6. Seus Direitos (LGPD)",
+        "intro": "Você tem os seguintes direitos em relação aos seus dados:",
+        "items": [
+          "Confirmar a existência de tratamento de dados",
+          "Acessar seus dados pessoais",
+          "Corrigir dados incompletos ou desatualizados",
+          "Solicitar anonimização, bloqueio ou eliminação de dados",
+          "Solicitar portabilidade dos dados",
+          "Revogar o consentimento a qualquer momento",
+          "Obter informações sobre compartilhamento de dados"
+        ]
+      },
+      "dataSecurity": {
+        "title": "7. Segurança dos Dados",
+        "content": "Implementamos medidas técnicas e organizacionais para proteger seus dados, incluindo criptografia, controle de acesso e monitoramento de segurança. Armazenamos seus dados em servidores seguros e seguimos as melhores práticas do mercado."
+      },
+      "retention": {
+        "title": "8. Retenção de Dados",
+        "content": "Mantemos seus dados pelo tempo necessário para prestar os serviços e cumprir obrigações legais. Após esse período, os dados são eliminados ou anonimizados de forma segura."
+      },
+      "cookies": {
+        "title": "9. Cookies",
+        "content": "Utilizamos cookies para melhorar sua experiência. Você pode gerenciar as preferências de cookies através das configurações do seu navegador."
+      },
+      "dpo": {
+        "title": "10. Contato do Encarregado (DPO)",
+        "intro": "Para exercer seus direitos ou esclarecer dúvidas sobre esta política, entre em contato:",
+        "email": "E-mail",
+        "whatsapp": "WhatsApp"
+      },
+      "changes": {
+        "title": "11. Alterações",
+        "content": "Esta política pode ser atualizada periodicamente. Notificaremos sobre mudanças significativas por e-mail ou através de aviso em nossa plataforma."
+      }
     }
   },
   "terms": {
     "title": "Termos de Uso",
     "lastUpdated": "Última atualização",
+    "seoDescription": "Termos e condições de uso do serviço Criando Músicas. Saiba sobre garantias, política de reembolso, propriedade intelectual e processo de criação.",
+    "seoKeywords": "termos de uso, condições de serviço, garantia música personalizada, reembolso, direitos autorais",
     "sections": {
-      "acceptance": "Aceitação dos Termos",
-      "services": "Descrição dos Serviços",
-      "account": "Conta do Usuário",
-      "payment": "Pagamento",
-      "content": "Conteúdo e Propriedade Intelectual",
-      "restrictions": "Restrições de Uso",
-      "termination": "Rescisão",
-      "liability": "Limitação de Responsabilidade",
-      "changes": "Alterações nos Termos",
-      "contact": "Contato"
+      "acceptance": {
+        "title": "1. Aceitação dos Termos",
+        "content": "Ao utilizar os serviços da Criando Músicas, você concorda com estes Termos de Uso. Se você não concordar com qualquer parte destes termos, não utilize nossos serviços."
+      },
+      "services": {
+        "title": "2. Descrição do Serviço",
+        "content": "A Criando Músicas oferece serviços de criação de músicas personalizadas utilizando inteligência artificial, com base nas informações e preferências fornecidas pelo cliente."
+      },
+      "account": {
+        "title": "3. Cadastro e Conta",
+        "items": [
+          "Você deve fornecer informações verdadeiras e atualizadas",
+          "É responsável por manter a confidencialidade de sua conta",
+          "Deve ter pelo menos 18 anos ou autorização de responsável legal",
+          "Cada pessoa deve ter apenas uma conta"
+        ]
+      },
+      "process": {
+        "title": "4. Processo de Criação",
+        "intro": "O processo de criação de música segue as seguintes etapas:",
+        "items": [
+          "Preenchimento do briefing com informações da música desejada",
+          "Pagamento do serviço escolhido",
+          "Geração da letra pela inteligência artificial",
+          "Aprovação da letra pelo cliente",
+          "Produção musical completa",
+          "Entrega da música finalizada"
+        ]
+      },
+      "intellectualProperty": {
+        "title": "5. Propriedade Intelectual",
+        "items": [
+          "A música criada é de propriedade do cliente após o pagamento integral",
+          "O cliente tem direito de uso pessoal e não comercial da música",
+          "Para uso comercial, é necessário adquirir licença específica",
+          "A Criando Músicas reserva-se o direito de utilizar amostras anônimas para demonstração"
+        ]
+      },
+      "guarantee": {
+        "title": "6. Política de Garantia e Revisões",
+        "satisfactionTitle": "🎵 Nossa Garantia de Satisfação",
+        "satisfactionIntro": "Queremos que você ame sua música! Por isso, oferecemos:",
+        "satisfactionItems": [
+          "2 versões de letra: Geramos duas opções para você escolher a que mais combina",
+          "1 modificação opcional: Você pode solicitar ajustes na letra escolhida (apenas uma vez)",
+          "Backup da original: Se não gostar da versão modificada, pode voltar para a original antes de aprovar"
+        ],
+        "noRefundTitle": "⚠️ Política de Não Devolução",
+        "noRefundItems": [
+          "Após a aprovação da letra, não há devoluções ou reembolsos",
+          "Revise com muita atenção antes de aprovar a letra final",
+          "Quanto mais detalhes você fornecer no briefing, melhor será o resultado",
+          "A garantia não cobre preferências subjetivas após aprovação"
+        ]
+      },
+      "payment": {
+        "title": "7. Pagamentos",
+        "items": [
+          "Os pagamentos são processados de forma segura por terceiros",
+          "Aceitamos Pix e cartões de crédito",
+          "A produção só inicia após confirmação do pagamento",
+          "Cupons de desconto seguem regras específicas de cada promoção"
+        ]
+      },
+      "refund": {
+        "title": "8. Política de Cancelamento e Reembolso",
+        "items": [
+          "Antes da geração da letra: Reembolso integral",
+          "Após geração da letra: Reembolso de 50% do valor",
+          "Após produção musical: Não há reembolso, mas garantimos revisões conforme política de garantia"
+        ]
+      },
+      "prohibited": {
+        "title": "9. Conteúdo Proibido",
+        "intro": "Não criamos músicas que contenham:",
+        "items": [
+          "Discurso de ódio ou discriminação",
+          "Apologia a crimes ou violência",
+          "Conteúdo difamatório sobre terceiros",
+          "Pornografia ou conteúdo sexual explícito",
+          "Violação de direitos autorais de terceiros",
+          "Qualquer conteúdo ilegal"
+        ]
+      },
+      "delivery": {
+        "title": "10. Prazos de Entrega",
+        "items": [
+          "Geração de letras: Até 24 horas após pagamento",
+          "Produção musical: 3 a 7 dias úteis após aprovação da letra",
+          "Prazos podem variar em períodos de alta demanda"
+        ]
+      },
+      "liability": {
+        "title": "11. Limitação de Responsabilidade",
+        "intro": "A Criando Músicas não se responsabiliza por:",
+        "items": [
+          "Uso indevido das músicas pelo cliente",
+          "Informações incorretas fornecidas no briefing",
+          "Expectativas subjetivas não expressas no briefing",
+          "Danos indiretos ou consequenciais"
+        ]
+      },
+      "changes": {
+        "title": "12. Alterações nos Termos",
+        "content": "Podemos atualizar estes termos periodicamente. Mudanças significativas serão comunicadas por e-mail. O uso continuado dos serviços implica aceitação dos novos termos."
+      },
+      "jurisdiction": {
+        "title": "13. Foro e Lei Aplicável",
+        "content": "Estes termos são regidos pelas leis brasileiras. Eventuais disputas serão resolvidas no foro da comarca de Ribeirão Preto - SP."
+      },
+      "contact": {
+        "title": "14. Contato",
+        "intro": "Para dúvidas sobre estes termos:",
+        "email": "E-mail",
+        "whatsapp": "WhatsApp"
+      }
     }
   },
+  "back": "Voltar",
   "rules": {
     "title": "Regras para Criação de Músicas",
     "subtitle": "Diretrizes para o conteúdo das suas músicas",

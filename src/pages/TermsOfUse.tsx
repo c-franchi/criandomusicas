@@ -1,187 +1,179 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
+
 const TermsOfUse = () => {
+  const { t, i18n } = useTranslation('legal');
   const currentDate = new Date().toISOString();
+  
+  const formatDate = (date: Date) => {
+    const localeMap: Record<string, string> = {
+      'pt-BR': 'pt-BR',
+      'en': 'en-US',
+      'es': 'es-ES',
+      'it': 'it-IT'
+    };
+    return date.toLocaleDateString(localeMap[i18n.language] || 'pt-BR');
+  };
   
   return (
     <div className="min-h-screen bg-background py-12 px-6">
       <SEO 
         canonical="/termos"
-        title="Termos de Uso"
-        description="Termos e condições de uso do serviço Criando Músicas. Saiba sobre garantias, política de reembolso, propriedade intelectual e processo de criação."
-        keywords="termos de uso, condições de serviço, garantia música personalizada, reembolso, direitos autorais"
+        title={t('terms.title')}
+        description={t('terms.seoDescription')}
+        keywords={t('terms.seoKeywords')}
         updatedAt={currentDate}
       />
       <div className="max-w-4xl mx-auto">
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
+            {t('back')}
           </Link>
         </Button>
 
-        <h1 className="text-3xl font-bold mb-8">Termos de Uso</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('terms.title')}</h1>
         
         <div className="prose prose-invert max-w-none space-y-6">
           <p className="text-muted-foreground">
-            Última atualização: {new Date().toLocaleDateString('pt-BR')}
+            {t('terms.lastUpdated')}: {formatDate(new Date())}
           </p>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">1. Aceitação dos Termos</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.acceptance.title')}</h2>
             <p className="text-muted-foreground">
-              Ao utilizar os serviços da Criando Músicas, você concorda com estes Termos de Uso. 
-              Se você não concordar com qualquer parte destes termos, não utilize nossos serviços.
+              {t('terms.sections.acceptance.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">2. Descrição do Serviço</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.services.title')}</h2>
             <p className="text-muted-foreground">
-              A Criando Músicas oferece serviços de criação de músicas personalizadas utilizando 
-              inteligência artificial, com base nas informações e preferências fornecidas pelo cliente.
+              {t('terms.sections.services.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">3. Cadastro e Conta</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.account.title')}</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Você deve fornecer informações verdadeiras e atualizadas</li>
-              <li>É responsável por manter a confidencialidade de sua conta</li>
-              <li>Deve ter pelo menos 18 anos ou autorização de responsável legal</li>
-              <li>Cada pessoa deve ter apenas uma conta</li>
+              {(t('terms.sections.account.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">4. Processo de Criação</h2>
-            <p className="text-muted-foreground">
-              O processo de criação de música segue as seguintes etapas:
-            </p>
+            <h2 className="text-xl font-semibold">{t('terms.sections.process.title')}</h2>
+            <p className="text-muted-foreground">{t('terms.sections.process.intro')}</p>
             <ol className="list-decimal pl-6 text-muted-foreground space-y-2">
-              <li>Preenchimento do briefing com informações da música desejada</li>
-              <li>Pagamento do serviço escolhido</li>
-              <li>Geração da letra pela inteligência artificial</li>
-              <li>Aprovação da letra pelo cliente</li>
-              <li>Produção musical completa</li>
-              <li>Entrega da música finalizada</li>
+              {(t('terms.sections.process.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ol>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">5. Propriedade Intelectual</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.intellectualProperty.title')}</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>A música criada é de propriedade do cliente após o pagamento integral</li>
-              <li>O cliente tem direito de uso pessoal e não comercial da música</li>
-              <li>Para uso comercial, é necessário adquirir licença específica</li>
-              <li>A Criando Músicas reserva-se o direito de utilizar amostras anônimas para demonstração</li>
+              {(t('terms.sections.intellectualProperty.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">6. Política de Garantia e Revisões</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.guarantee.title')}</h2>
             <div className="bg-primary/10 p-4 rounded-lg border border-primary/20">
-              <h3 className="font-semibold mb-2">🎵 Nossa Garantia de Satisfação</h3>
+              <h3 className="font-semibold mb-2">{t('terms.sections.guarantee.satisfactionTitle')}</h3>
               <p className="text-muted-foreground mb-3">
-                Queremos que você ame sua música! Por isso, oferecemos:
+                {t('terms.sections.guarantee.satisfactionIntro')}
               </p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li><strong>2 versões de letra:</strong> Geramos duas opções para você escolher a que mais combina</li>
-                <li><strong>1 modificação opcional:</strong> Você pode solicitar ajustes na letra escolhida (apenas uma vez)</li>
-                <li><strong>Backup da original:</strong> Se não gostar da versão modificada, pode voltar para a original antes de aprovar</li>
+                {(t('terms.sections.guarantee.satisfactionItems', { returnObjects: true }) as string[]).map((item, index) => (
+                  <li key={index} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/, '<strong>$1:</strong>') }} />
+                ))}
               </ul>
             </div>
             <div className="bg-red-500/10 p-4 rounded-lg border border-red-500/20 mt-4">
-              <h3 className="font-semibold mb-2 text-red-500">⚠️ Política de Não Devolução</h3>
+              <h3 className="font-semibold mb-2 text-red-500">{t('terms.sections.guarantee.noRefundTitle')}</h3>
               <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-                <li><strong>Após a aprovação da letra, não há devoluções ou reembolsos</strong></li>
-                <li>Revise com muita atenção antes de aprovar a letra final</li>
-                <li>Quanto mais detalhes você fornecer no briefing, melhor será o resultado</li>
-                <li>A garantia não cobre preferências subjetivas após aprovação</li>
+                {(t('terms.sections.guarantee.noRefundItems', { returnObjects: true }) as string[]).map((item, index) => (
+                  <li key={index} dangerouslySetInnerHTML={{ __html: item.replace(/^([^,]+,)/, '<strong>$1</strong>') }} />
+                ))}
               </ul>
             </div>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">7. Pagamentos</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.payment.title')}</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Os pagamentos são processados de forma segura por terceiros</li>
-              <li>Aceitamos Pix e cartões de crédito</li>
-              <li>A produção só inicia após confirmação do pagamento</li>
-              <li>Cupons de desconto seguem regras específicas de cada promoção</li>
+              {(t('terms.sections.payment.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">8. Política de Cancelamento e Reembolso</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.refund.title')}</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Antes da geração da letra:</strong> Reembolso integral</li>
-              <li><strong>Após geração da letra:</strong> Reembolso de 50% do valor</li>
-              <li><strong>Após produção musical:</strong> Não há reembolso, mas garantimos revisões conforme política de garantia</li>
+              {(t('terms.sections.refund.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/, '<strong>$1:</strong>') }} />
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">9. Conteúdo Proibido</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.prohibited.title')}</h2>
+            <p className="text-muted-foreground">{t('terms.sections.prohibited.intro')}</p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              {(t('terms.sections.prohibited.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold">{t('terms.sections.delivery.title')}</h2>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              {(t('terms.sections.delivery.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/, '<strong>$1:</strong>') }} />
+              ))}
+            </ul>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold">{t('terms.sections.liability.title')}</h2>
+            <p className="text-muted-foreground">{t('terms.sections.liability.intro')}</p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              {(t('terms.sections.liability.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="space-y-4">
+            <h2 className="text-xl font-semibold">{t('terms.sections.changes.title')}</h2>
             <p className="text-muted-foreground">
-              Não criamos músicas que contenham:
-            </p>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Discurso de ódio ou discriminação</li>
-              <li>Apologia a crimes ou violência</li>
-              <li>Conteúdo difamatório sobre terceiros</li>
-              <li>Pornografia ou conteúdo sexual explícito</li>
-              <li>Violação de direitos autorais de terceiros</li>
-              <li>Qualquer conteúdo ilegal</li>
-            </ul>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold">10. Prazos de Entrega</h2>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Geração de letras:</strong> Até 24 horas após pagamento</li>
-              <li><strong>Produção musical:</strong> 3 a 7 dias úteis após aprovação da letra</li>
-              <li>Prazos podem variar em períodos de alta demanda</li>
-            </ul>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold">11. Limitação de Responsabilidade</h2>
-            <p className="text-muted-foreground">
-              A Criando Músicas não se responsabiliza por:
-            </p>
-            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Uso indevido das músicas pelo cliente</li>
-              <li>Informações incorretas fornecidas no briefing</li>
-              <li>Expectativas subjetivas não expressas no briefing</li>
-              <li>Danos indiretos ou consequenciais</li>
-            </ul>
-          </section>
-
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold">12. Alterações nos Termos</h2>
-            <p className="text-muted-foreground">
-              Podemos atualizar estes termos periodicamente. Mudanças significativas serão 
-              comunicadas por e-mail. O uso continuado dos serviços implica aceitação dos novos termos.
+              {t('terms.sections.changes.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">13. Foro e Lei Aplicável</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.jurisdiction.title')}</h2>
             <p className="text-muted-foreground">
-              Estes termos são regidos pelas leis brasileiras. Eventuais disputas serão resolvidas 
-              no foro da comarca de Ribeirão Preto - SP.
+              {t('terms.sections.jurisdiction.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">14. Contato</h2>
+            <h2 className="text-xl font-semibold">{t('terms.sections.contact.title')}</h2>
             <p className="text-muted-foreground">
-              Para dúvidas sobre estes termos:<br />
-              <strong>E-mail:</strong> contato@criandomusicas.com.br<br />
-              <strong>WhatsApp:</strong> (16) 99999-9999
+              {t('terms.sections.contact.intro')}<br />
+              <strong>{t('terms.sections.contact.email')}:</strong> contato@criandomusicas.com.br<br />
+              <strong>{t('terms.sections.contact.whatsapp')}:</strong> (16) 99999-9999
             </p>
           </section>
         </div>

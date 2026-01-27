@@ -1,148 +1,139 @@
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import SEO from "@/components/SEO";
+
 const PrivacyPolicy = () => {
+  const { t, i18n } = useTranslation('legal');
   const currentDate = new Date().toISOString();
+  
+  const formatDate = (date: Date) => {
+    const localeMap: Record<string, string> = {
+      'pt-BR': 'pt-BR',
+      'en': 'en-US',
+      'es': 'es-ES',
+      'it': 'it-IT'
+    };
+    return date.toLocaleDateString(localeMap[i18n.language] || 'pt-BR');
+  };
   
   return (
     <div className="min-h-screen bg-background py-12 px-6">
       <SEO 
         canonical="/privacidade"
-        title="Política de Privacidade"
-        description="Saiba como a Criando Músicas coleta, utiliza e protege seus dados pessoais em conformidade com a LGPD. Transparência e segurança para você."
-        keywords="política de privacidade, LGPD, proteção de dados, privacidade criandomusicas"
+        title={t('privacy.title')}
+        description={t('privacy.seoDescription')}
+        keywords={t('privacy.seoKeywords')}
         updatedAt={currentDate}
       />
       <div className="max-w-4xl mx-auto">
         <Button variant="ghost" asChild className="mb-6">
           <Link to="/">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
+            {t('back')}
           </Link>
         </Button>
 
-        <h1 className="text-3xl font-bold mb-8">Política de Privacidade</h1>
+        <h1 className="text-3xl font-bold mb-8">{t('privacy.title')}</h1>
         
         <div className="prose prose-invert max-w-none space-y-6">
           <p className="text-muted-foreground">
-            Última atualização: {new Date().toLocaleDateString('pt-BR')}
+            {t('privacy.lastUpdated')}: {formatDate(new Date())}
           </p>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">1. Introdução</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.intro.title')}</h2>
             <p className="text-muted-foreground">
-              A Criando Músicas está comprometida em proteger sua privacidade. Esta Política de Privacidade 
-              explica como coletamos, usamos, armazenamos e protegemos suas informações pessoais em conformidade 
-              com a Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
+              {t('privacy.sections.intro.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">2. Dados que Coletamos</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.dataCollection.title')}</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Dados de cadastro:</strong> Nome, e-mail, telefone e WhatsApp</li>
-              <li><strong>Dados de briefing:</strong> Histórias, nomes, preferências musicais e informações fornecidas para criação das músicas</li>
-              <li><strong>Dados de pagamento:</strong> Processados de forma segura por terceiros (gateways de pagamento)</li>
-              <li><strong>Dados de uso:</strong> Informações sobre como você utiliza nossa plataforma</li>
+              {(t('privacy.sections.dataCollection.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/, '<strong>$1:</strong>') }} />
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">3. Finalidade do Tratamento</h2>
-            <p className="text-muted-foreground">Utilizamos seus dados para:</p>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.dataUse.title')}</h2>
+            <p className="text-muted-foreground">{t('privacy.sections.dataUse.intro')}</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Criar músicas personalizadas conforme suas especificações</li>
-              <li>Entrar em contato sobre o andamento do seu pedido</li>
-              <li>Enviar a música finalizada via WhatsApp ou e-mail</li>
-              <li>Processar pagamentos de forma segura</li>
-              <li>Melhorar nossos serviços e experiência do usuário</li>
-              <li>Cumprir obrigações legais e regulatórias</li>
+              {(t('privacy.sections.dataUse.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">4. Base Legal</h2>
-            <p className="text-muted-foreground">
-              Tratamos seus dados com base nas seguintes hipóteses legais previstas na LGPD:
-            </p>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.legalBasis.title')}</h2>
+            <p className="text-muted-foreground">{t('privacy.sections.legalBasis.intro')}</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Execução de contrato:</strong> Para prestar os serviços contratados</li>
-              <li><strong>Consentimento:</strong> Para comunicações de marketing e uso de dados sensíveis</li>
-              <li><strong>Legítimo interesse:</strong> Para melhorar nossos serviços</li>
-              <li><strong>Cumprimento de obrigação legal:</strong> Para atender exigências legais</li>
+              {(t('privacy.sections.legalBasis.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index} dangerouslySetInnerHTML={{ __html: item.replace(/^([^:]+):/, '<strong>$1:</strong>') }} />
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">5. Compartilhamento de Dados</h2>
-            <p className="text-muted-foreground">
-              Não vendemos seus dados pessoais. Podemos compartilhar informações com:
-            </p>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.dataSharing.title')}</h2>
+            <p className="text-muted-foreground">{t('privacy.sections.dataSharing.intro')}</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Processadores de pagamento para finalizar transações</li>
-              <li>Provedores de serviços de tecnologia que nos auxiliam</li>
-              <li>Autoridades públicas quando exigido por lei</li>
+              {(t('privacy.sections.dataSharing.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">6. Seus Direitos (LGPD)</h2>
-            <p className="text-muted-foreground">
-              Você tem os seguintes direitos em relação aos seus dados:
-            </p>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.rights.title')}</h2>
+            <p className="text-muted-foreground">{t('privacy.sections.rights.intro')}</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Confirmar a existência de tratamento de dados</li>
-              <li>Acessar seus dados pessoais</li>
-              <li>Corrigir dados incompletos ou desatualizados</li>
-              <li>Solicitar anonimização, bloqueio ou eliminação de dados</li>
-              <li>Solicitar portabilidade dos dados</li>
-              <li>Revogar o consentimento a qualquer momento</li>
-              <li>Obter informações sobre compartilhamento de dados</li>
+              {(t('privacy.sections.rights.items', { returnObjects: true }) as string[]).map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
             </ul>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">7. Segurança dos Dados</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.dataSecurity.title')}</h2>
             <p className="text-muted-foreground">
-              Implementamos medidas técnicas e organizacionais para proteger seus dados, incluindo 
-              criptografia, controle de acesso e monitoramento de segurança. Armazenamos seus dados 
-              em servidores seguros e seguimos as melhores práticas do mercado.
+              {t('privacy.sections.dataSecurity.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">8. Retenção de Dados</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.retention.title')}</h2>
             <p className="text-muted-foreground">
-              Mantemos seus dados pelo tempo necessário para prestar os serviços e cumprir obrigações 
-              legais. Após esse período, os dados são eliminados ou anonimizados de forma segura.
+              {t('privacy.sections.retention.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">9. Cookies</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.cookies.title')}</h2>
             <p className="text-muted-foreground">
-              Utilizamos cookies para melhorar sua experiência. Você pode gerenciar as preferências 
-              de cookies através das configurações do seu navegador.
+              {t('privacy.sections.cookies.content')}
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">10. Contato do Encarregado (DPO)</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.dpo.title')}</h2>
             <p className="text-muted-foreground">
-              Para exercer seus direitos ou esclarecer dúvidas sobre esta política, entre em contato:
+              {t('privacy.sections.dpo.intro')}
             </p>
             <p className="text-muted-foreground">
-              <strong>E-mail:</strong> privacidade@criandomusicas.com.br<br />
-              <strong>WhatsApp:</strong> (16) 99999-9999
+              <strong>{t('privacy.sections.dpo.email')}:</strong> privacidade@criandomusicas.com.br<br />
+              <strong>{t('privacy.sections.dpo.whatsapp')}:</strong> (16) 99999-9999
             </p>
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold">11. Alterações</h2>
+            <h2 className="text-xl font-semibold">{t('privacy.sections.changes.title')}</h2>
             <p className="text-muted-foreground">
-              Esta política pode ser atualizada periodicamente. Notificaremos sobre mudanças 
-              significativas por e-mail ou através de aviso em nossa plataforma.
+              {t('privacy.sections.changes.content')}
             </p>
           </section>
         </div>
