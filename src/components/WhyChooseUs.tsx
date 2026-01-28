@@ -1,6 +1,28 @@
 import { useTranslation } from "react-i18next";
 import { Clock, Heart, Music, Shield, Sparkles, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import { Marquee } from "@/components/ui/marquee";
+
+// Benefit Card Component
+interface BenefitCardProps {
+  icon: React.ElementType;
+  title: string;
+  description: string;
+}
+
+const BenefitCard = ({ icon: Icon, title, description }: BenefitCardProps) => (
+  <article className="premium-card group p-8 w-[320px] md:w-[380px] flex-shrink-0">
+    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
+      <Icon className="w-7 h-7 text-primary" aria-hidden="true" />
+    </div>
+    <h3 className="text-xl font-semibold text-foreground mb-3">
+      {title}
+    </h3>
+    <p className="text-muted-foreground leading-relaxed">
+      {description}
+    </p>
+  </article>
+);
 
 const WhyChooseUs = () => {
   const { t } = useTranslation('home');
@@ -42,11 +64,11 @@ const WhyChooseUs = () => {
   const targetAudience = t('whyUs.target', { returnObjects: true }) as string[];
 
   return (
-    <section className="section-spacing bg-background" id="diferenciais" aria-labelledby="why-choose-title">
+    <section className="section-spacing bg-background overflow-hidden" id="diferenciais" aria-labelledby="why-choose-title">
       <div className="max-w-7xl mx-auto">
         {/* Target Audience */}
         <motion.div 
-          className="text-center mb-20"
+          className="text-center mb-20 px-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -76,7 +98,7 @@ const WhyChooseUs = () => {
         </motion.div>
 
         <motion.header 
-          className="text-center mb-16"
+          className="text-center mb-16 px-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -90,32 +112,21 @@ const WhyChooseUs = () => {
           </p>
         </motion.header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Benefits Marquee */}
+        <Marquee direction="left" speed="slow" pauseOnHover>
           {benefits.map((benefit, index) => (
-            <motion.article 
-              key={index} 
-              className="premium-card group p-8"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
-                <benefit.icon className="w-7 h-7 text-primary" aria-hidden="true" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">
-                {benefit.title}
-              </h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {benefit.description}
-              </p>
-            </motion.article>
+            <BenefitCard
+              key={index}
+              icon={benefit.icon}
+              title={benefit.title}
+              description={benefit.description}
+            />
           ))}
-        </div>
+        </Marquee>
 
         {/* Additional SEO Content */}
         <motion.div 
-          className="mt-20 max-w-4xl mx-auto"
+          className="mt-20 max-w-4xl mx-auto px-6"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
