@@ -9,12 +9,6 @@ interface MarqueeProps {
   className?: string;
 }
 
-const speedMap = {
-  slow: "animate-marquee-slow",
-  normal: "animate-marquee-normal",
-  fast: "animate-marquee-fast",
-};
-
 const Marquee = React.forwardRef<HTMLDivElement, MarqueeProps>(
   (
     {
@@ -26,10 +20,9 @@ const Marquee = React.forwardRef<HTMLDivElement, MarqueeProps>(
     },
     ref
   ) => {
-    const animationClass =
-      direction === "left"
-        ? speedMap[speed].replace("marquee", "marquee-left")
-        : speedMap[speed].replace("marquee", "marquee-right");
+    const animationClass = direction === "left" 
+      ? `animate-marquee-left-${speed}` 
+      : `animate-marquee-right-${speed}`;
 
     return (
       <div
@@ -42,10 +35,13 @@ const Marquee = React.forwardRef<HTMLDivElement, MarqueeProps>(
         <div
           className={cn(
             "flex w-max gap-6",
-            direction === "left" ? `animate-marquee-left-${speed}` : `animate-marquee-right-${speed}`,
+            animationClass,
             pauseOnHover && "hover:[animation-play-state:paused]"
           )}
-          style={{ willChange: "transform" }}
+          style={{ 
+            willChange: "transform",
+            animationPlayState: "running"
+          }}
         >
           {/* Original cards */}
           {children}
