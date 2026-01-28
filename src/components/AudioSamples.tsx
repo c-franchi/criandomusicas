@@ -329,7 +329,7 @@ const AudioSamples = () => {
         
         {/* Marquee Row 1 - Left direction */}
         <div className="mb-6">
-          <Marquee direction="left" speed="slow" pauseOnHover>
+          <Marquee direction="left" speed="normal" pauseOnHover>
             {row1.map((sample) => {
               const isPlaying = currentPlaying === sample.id;
               const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -352,7 +352,7 @@ const AudioSamples = () => {
         
         {/* Marquee Row 2 - Right direction */}
         <div>
-          <Marquee direction="right" speed="normal" pauseOnHover>
+          <Marquee direction="right" speed="fast" pauseOnHover>
             {row2.map((sample) => {
               const isPlaying = currentPlaying === sample.id;
               const progress = duration > 0 ? (currentTime / duration) * 100 : 0;

@@ -113,7 +113,7 @@ const WhyChooseUs = () => {
         </motion.header>
 
         {/* Benefits Marquee */}
-        <Marquee direction="left" speed="slow" pauseOnHover>
+        <Marquee direction="left" speed="normal" pauseOnHover>
           {benefits.map((benefit, index) => (
             <BenefitCard
               key={index}

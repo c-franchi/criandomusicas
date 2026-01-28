@@ -276,7 +276,7 @@ const Testimonials = () => {
         
         {/* Marquee Row 1 - Left direction */}
         <div className="mb-6">
-          <Marquee direction="left" speed="normal" pauseOnHover>
+          <Marquee direction="left" speed="fast" pauseOnHover>
             {row1.map((testimonial, index) => (
               <TestimonialCard
                 key={`row1-${index}`}
@@ -292,7 +292,7 @@ const Testimonials = () => {
         
         {/* Marquee Row 2 - Right direction */}
         <div>
-          <Marquee direction="right" speed="slow" pauseOnHover>
+          <Marquee direction="right" speed="normal" pauseOnHover>
             {row2.map((testimonial, index) => (
               <TestimonialCard
                 key={`row2-${index}`}
