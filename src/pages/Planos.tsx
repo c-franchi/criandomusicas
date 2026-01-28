@@ -159,6 +159,48 @@ const Planos = () => {
     return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
   };
 
+  // Get description for Creator plans with credits
+  const getCreatorPlanDescription = (planId: string): string => {
+    const credits = getCreditsForPlan(planId);
+    const isInstrumentalPlan = planId.includes('instrumental');
+    
+    // Define descriptions for each plan tier
+    if (planId.includes('creator_start')) {
+      const songType = isInstrumentalPlan 
+        ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
+        : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
+      const desc = i18n.language === 'pt-BR' ? 'Ideal para criadores que estão começando' 
+        : i18n.language === 'es' ? 'Ideal para creadores que están comenzando' 
+        : i18n.language === 'it' ? 'Ideale per creator che stanno iniziando' 
+        : 'Ideal for creators just starting out';
+      return `${credits} ${songType}/mês • ${desc}`;
+    }
+    
+    if (planId.includes('creator_pro')) {
+      const songType = isInstrumentalPlan 
+        ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
+        : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
+      const desc = i18n.language === 'pt-BR' ? 'Para criadores de conteúdo frequentes' 
+        : i18n.language === 'es' ? 'Para creadores de contenido frecuentes' 
+        : i18n.language === 'it' ? 'Per creator di contenuti frequenti' 
+        : 'For frequent content creators';
+      return `${credits} ${songType}/mês • ${desc}`;
+    }
+    
+    if (planId.includes('creator_studio')) {
+      const songType = isInstrumentalPlan 
+        ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
+        : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
+      const desc = i18n.language === 'pt-BR' ? 'Produção em escala para profissionais' 
+        : i18n.language === 'es' ? 'Producción a escala para profesionales' 
+        : i18n.language === 'it' ? 'Produzione su larga scala per professionisti' 
+        : 'Scale production for professionals';
+      return `${credits} ${songType}/mês • ${desc}`;
+    }
+    
+    return '';
+  };
+
   // Get translated features for Creator plans
   const getCreatorPlanFeatures = (planId: string, dbFeatures: string[]): string[] => {
     const translatedFeatures = t(`plans.${planId}.features`, { returnObjects: true, defaultValue: [] });
@@ -511,6 +553,11 @@ const Planos = () => {
                       <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
                         {getPlanName(plan.id, plan.name)}
                       </CardTitle>
+                      
+                      {/* Plan Description with credits */}
+                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                        {getCreatorPlanDescription(plan.id)}
+                      </p>
                       
                       <CardDescription className="text-4xl font-bold text-purple-400">
                         {formatPrice(plan.price_promo_cents || plan.price_cents)}
