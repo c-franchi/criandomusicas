@@ -15,8 +15,9 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 };
 
 interface PurchaseEmailRequest {
-  email: string;
-  userName: string;
+  email?: string;
+  userName?: string;
+  userId?: string; // Used to fetch email/name if not provided
   purchaseType: 'single' | 'package' | 'subscription' | 'video';
   planName: string;
   amount: number;
@@ -25,6 +26,7 @@ interface PurchaseEmailRequest {
   credits?: number;
   isInstrumental?: boolean;
   renewalDate?: string;
+  paymentMethod?: 'card' | 'pix';
 }
 
 const formatCurrency = (amount: number, currency: string): string => {
@@ -43,6 +45,12 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest): string => {
     month: 'long',
     day: 'numeric',
   });
+
+  const isPixPayment = data.paymentMethod === 'pix';
+  const paymentMethodLabel = isPixPayment ? 'PIX' : 'Cartão de Crédito';
+  const paymentConfirmationMessage = isPixPayment 
+    ? 'Seu pagamento via PIX foi confirmado com sucesso!'
+    : 'Sua compra foi confirmada com sucesso!';
 
   let purchaseDetails = '';
   let purchaseTypeLabel = '';
@@ -185,13 +193,13 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest): string => {
               </h2>
               
               <p style="margin: 0 0 25px; color: #4b5563; font-size: 16px; line-height: 1.6;">
-                Sua compra foi confirmada com sucesso! Estamos muito felizes em tê-lo(a) conosco.
+                ${paymentConfirmationMessage} Estamos muito felizes em tê-lo(a) conosco.
               </p>
 
               <!-- Order Badge -->
               <div style="background-color: #dcfce7; border: 1px solid #86efac; border-radius: 8px; padding: 12px 16px; margin-bottom: 25px; text-align: center;">
                 <span style="color: #166534; font-weight: 600; font-size: 14px;">
-                  ✅ Pagamento Confirmado
+                  ✅ ${isPixPayment ? 'Pagamento PIX Confirmado' : 'Pagamento Confirmado'}
                 </span>
               </div>
 
@@ -219,6 +227,14 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest): string => {
                     </td>
                   </tr>
                   ${purchaseDetails}
+                  <tr>
+                    <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
+                      <strong>Forma de pagamento:</strong>
+                    </td>
+                    <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
+                      ${paymentMethodLabel}
+                    </td>
+                  </tr>
                   ${data.orderId ? `
                   <tr>
                     <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">
@@ -308,25 +324,62 @@ serve(async (req) => {
 
     const data: PurchaseEmailRequest = await req.json();
     
+    // If userId provided but no email/userName, fetch from auth
+    let email = data.email;
+    let userName = data.userName;
+    
+    if (data.userId && (!email || !userName)) {
+      logStep("Fetching user data from userId", { userId: data.userId });
+      
+      const supabaseAdmin = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      
+      const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(data.userId);
+      
+      if (userError) {
+        logStep("Error fetching user", { error: userError.message });
+        throw new Error(`Failed to fetch user data: ${userError.message}`);
+      }
+      
+      email = email || userData.user?.email || '';
+      
+      // Fetch profile for name
+      const { data: profileData } = await supabaseAdmin
+        .from('profiles')
+        .select('name')
+        .eq('user_id', data.userId)
+        .maybeSingle();
+      
+      userName = userName || profileData?.name || userData.user?.email?.split('@')[0] || 'Cliente';
+      
+      logStep("User data fetched", { email, userName });
+    }
+    
     // Validate required fields
-    if (!data.email || !data.userName || !data.planName || !data.amount) {
+    if (!email || !userName || !data.planName || !data.amount) {
       throw new Error("Missing required fields: email, userName, planName, amount");
     }
 
     logStep("Sending purchase confirmation email", { 
-      email: data.email, 
+      email, 
       purchaseType: data.purchaseType,
-      planName: data.planName 
+      planName: data.planName,
+      paymentMethod: data.paymentMethod 
     });
 
-    const html = generatePurchaseEmailHtml(data);
+    const html = generatePurchaseEmailHtml({ ...data, email, userName });
 
     const emailResponse = await resend.emails.send({
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
-      to: [data.email],
-      subject: `🎵 Confirmação de Compra - ${data.planName}`,
+      to: [email],
+      subject: data.paymentMethod === 'pix' 
+        ? `✅ Pagamento PIX Confirmado - ${data.planName}`
+        : `🎵 Confirmação de Compra - ${data.planName}`,
       html,
     });
+
 
     if (emailResponse.error) {
       logStep("Resend error", { error: emailResponse.error });

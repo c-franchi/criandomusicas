@@ -474,6 +474,29 @@ const AdminDashboard = () => {
         console.error('Push notification error:', pushError);
       }
 
+      // 6. Send PIX confirmation email
+      try {
+        await supabase.functions.invoke('send-purchase-email', {
+          body: {
+            email: '', // Will be fetched by edge function using admin API
+            userName: '', // Will be fetched by edge function
+            userId: userId,
+            purchaseType: creditsToAdd > 1 ? 'package' : 'single',
+            planName: planId.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+            amount: orderData.amount || 0,
+            currency: orderData.currency || 'BRL',
+            orderId: orderId,
+            credits: creditsToAdd,
+            isInstrumental: isInstrumental,
+            paymentMethod: 'pix'
+          }
+        });
+        console.log('PIX confirmation email sent');
+      } catch (emailError) {
+        console.error('PIX confirmation email error:', emailError);
+        // Don't fail the payment confirmation if email fails
+      }
+
       toast({
         title: '✅ Pagamento confirmado!',
         description: isInstrumental 
