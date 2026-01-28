@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Play, Pause, Volume2, ChevronLeft, ChevronRight, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 import { 
   Carousel, 
   CarouselContent, 
@@ -156,7 +157,7 @@ const AudioSamples = () => {
 
   if (loading) {
     return (
-      <section className="py-24 px-6 bg-gradient-to-b from-background to-secondary/20">
+      <section className="section-spacing gradient-section">
         <div className="max-w-6xl mx-auto flex justify-center">
           <Music className="w-8 h-8 animate-spin text-primary" />
         </div>
@@ -165,20 +166,26 @@ const AudioSamples = () => {
   }
 
   return (
-    <section className="py-24 px-6 bg-gradient-to-b from-background to-secondary/20" id="exemplos">
+    <section className="section-spacing gradient-section" id="exemplos">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <Badge variant="outline" className="mb-4">
-            <Volume2 className="w-3 h-3 mr-1" />
-            {t('samples.badge')}
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <Badge variant="outline" className="mb-4 px-4 py-2 border-primary/30 bg-primary/5">
+            <Volume2 className="w-4 h-4 mr-2 text-primary" />
+            <span className="text-primary font-medium">{t('samples.badge')}</span>
           </Badge>
-          <h2 className="text-4xl font-bold mb-4">
-            {t('samples.title')} 🎵
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            {t('samples.title')} <span className="gradient-text">🎵</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {t('samples.subtitle')}
           </p>
-        </div>
+        </motion.div>
         
         {/* Carousel for mobile-friendly display */}
         <Carousel
@@ -189,107 +196,114 @@ const AudioSamples = () => {
           className="w-full"
         >
           <CarouselContent className="-ml-2 md:-ml-4">
-            {samples.map((sample) => {
+            {samples.map((sample, index) => {
               const isPlaying = currentPlaying === sample.id;
               const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
               
               return (
                 <CarouselItem key={sample.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                  <Card 
-                    className={`overflow-hidden border-border/50 transition-all duration-500 group ${
-                      isPlaying 
-                        ? 'ring-2 ring-primary shadow-lg shadow-primary/20 scale-[1.02]' 
-                        : 'hover:border-primary/50 hover:shadow-md'
-                    }`}
+                  <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
                   >
-                    <div className="relative h-48">
-                      <img 
-                        src={sample.cover_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop"}
-                        alt={`${t('samples.playButton')}: ${sample.title}`}
-                        className={`w-full h-full object-cover transition-transform duration-500 ${
-                          isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
-                        }`}
-                        loading="lazy"
-                      />
-                      <div className={`absolute inset-0 transition-all duration-300 ${
+                    <Card 
+                      className={`premium-card overflow-hidden transition-all duration-500 group ${
                         isPlaying 
-                          ? 'bg-gradient-to-t from-primary/90 via-primary/40 to-transparent' 
-                          : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'
-                      }`} />
-                      
-                      {/* Animated sound waves when playing */}
-                      {isPlaying && (
-                        <div className="absolute top-4 right-4 flex items-end gap-0.5">
-                          <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '0ms' }} />
-                          <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '18px', animationDelay: '150ms' }} />
-                          <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '10px', animationDelay: '300ms' }} />
-                          <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '16px', animationDelay: '450ms' }} />
-                        </div>
-                      )}
-                      
-                      {sample.audio_url && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className={`absolute bottom-4 right-4 w-14 h-14 rounded-full transition-all duration-300 ${
-                            isPlaying 
-                              ? 'bg-white text-primary hover:bg-white/90 scale-110' 
-                              : 'bg-primary hover:bg-primary/90 text-white'
+                          ? 'ring-2 ring-primary shadow-xl' 
+                          : ''
+                      }`}
+                    >
+                      <div className="relative h-48 overflow-hidden">
+                        <img 
+                          src={sample.cover_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop"}
+                          alt={`${t('samples.playButton')}: ${sample.title}`}
+                          className={`w-full h-full object-cover transition-transform duration-700 ${
+                            isPlaying ? 'scale-110' : 'group-hover:scale-105'
                           }`}
-                          onClick={() => togglePlay(sample)}
-                          aria-label={isPlaying ? t('samples.pauseButton') : t('samples.playButton')}
-                        >
-                          {isPlaying ? (
-                            <Pause className="w-6 h-6" />
-                          ) : (
-                            <Play className="w-6 h-6 ml-0.5" />
-                          )}
-                        </Button>
-                      )}
-                      
-                      <Badge className="absolute top-3 left-3 bg-primary/90">
-                        {sample.style}
-                      </Badge>
-                    </div>
-                    
-                    <div className="p-5">
-                      <h3 className="text-lg font-semibold mb-2">{sample.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {sample.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge variant="outline" className="text-xs">
-                          {sample.occasion}
-                        </Badge>
+                          loading="lazy"
+                        />
+                        <div className={`absolute inset-0 transition-all duration-300 ${
+                          isPlaying 
+                            ? 'bg-gradient-to-t from-primary/90 via-primary/40 to-transparent' 
+                            : 'bg-gradient-to-t from-background/90 via-background/40 to-transparent'
+                        }`} />
                         
-                        {/* Duration display */}
-                        {isPlaying && duration > 0 && (
-                          <span className="text-xs text-primary font-mono">
-                            {formatTime(currentTime)} / {formatTime(duration)}
-                          </span>
+                        {/* Animated sound waves when playing */}
+                        {isPlaying && (
+                          <div className="absolute top-4 right-4 flex items-end gap-0.5">
+                            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '0ms' }} />
+                            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '18px', animationDelay: '150ms' }} />
+                            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '10px', animationDelay: '300ms' }} />
+                            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '16px', animationDelay: '450ms' }} />
+                          </div>
                         )}
+                        
+                        {sample.audio_url && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className={`absolute bottom-4 right-4 w-14 h-14 rounded-full transition-all duration-300 shadow-xl ${
+                              isPlaying 
+                                ? 'bg-white text-primary hover:bg-white/90 scale-110' 
+                                : 'bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white'
+                            }`}
+                            onClick={() => togglePlay(sample)}
+                            aria-label={isPlaying ? t('samples.pauseButton') : t('samples.playButton')}
+                          >
+                            {isPlaying ? (
+                              <Pause className="w-6 h-6" />
+                            ) : (
+                              <Play className="w-6 h-6 ml-0.5" />
+                            )}
+                          </Button>
+                        )}
+                        
+                        <Badge className="absolute top-3 left-3 bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg">
+                          {sample.style}
+                        </Badge>
                       </div>
                       
-                      {/* Progress bar when playing */}
-                      {isPlaying && (
-                        <div className="mt-2">
-                          <Progress 
-                            value={progress} 
-                            className="h-1.5 bg-muted"
-                          />
+                      <div className="p-6">
+                        <h3 className="text-lg font-semibold mb-2 text-foreground">{sample.title}</h3>
+                        <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">
+                          {sample.description}
+                        </p>
+                        
+                        <div className="flex items-center justify-between mb-3">
+                          <Badge variant="outline" className="text-xs border-primary/30">
+                            {sample.occasion}
+                          </Badge>
+                          
+                          {/* Duration display */}
+                          {isPlaying && duration > 0 && (
+                            <span className="text-xs text-primary font-mono">
+                              {formatTime(currentTime)} / {formatTime(duration)}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </Card>
+                        
+                        {/* Progress bar when playing */}
+                        {isPlaying && (
+                          <div className="mt-2">
+                            <Progress 
+                              value={progress} 
+                              className="h-1.5 bg-muted"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  </motion.div>
                 </CarouselItem>
               );
             })}
           </CarouselContent>
           
           {/* Navigation buttons */}
-          <CarouselPrevious className="hidden md:flex -left-12 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary hover:text-white" />
-          <CarouselNext className="hidden md:flex -right-12 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary hover:text-white" />
+          <CarouselPrevious className="hidden md:flex -left-12 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary hover:text-white hover:border-primary" />
+          <CarouselNext className="hidden md:flex -right-12 bg-background/80 backdrop-blur-sm border-primary/20 hover:bg-primary hover:text-white hover:border-primary" />
         </Carousel>
         
         {/* Mobile navigation indicators */}

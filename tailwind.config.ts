@@ -61,6 +61,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				gold: 'hsl(var(--gold))',
+				success: {
+					DEFAULT: 'hsl(var(--status-success))',
+					foreground: 'hsl(var(--status-success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--status-warning))',
+					foreground: 'hsl(var(--status-warning-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--status-info))',
+					foreground: 'hsl(var(--status-info-foreground))'
 				}
 			},
 			borderRadius: {

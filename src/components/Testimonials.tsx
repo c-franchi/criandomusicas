@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
 
 interface PublicReview {
   id: string;
@@ -170,131 +171,160 @@ const Testimonials = () => {
   const hasRealReviews = reviews.length > 0;
 
   return (
-    <section className="py-24 px-6" id="depoimentos" aria-labelledby="testimonials-heading">
+    <section className="section-spacing" id="depoimentos" aria-labelledby="testimonials-heading">
       <div className="max-w-6xl mx-auto">
         {/* Stats bar for social proof */}
-        <div className="flex flex-wrap justify-center gap-6 md:gap-12 mb-12">
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.songs')}</div>
-            <div className="text-sm text-muted-foreground">{t('testimonials.stats.songsLabel')}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.rating')}</div>
-            <div className="text-sm text-muted-foreground">{t('testimonials.stats.ratingLabel')}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.satisfaction')}</div>
-            <div className="text-sm text-muted-foreground">{t('testimonials.stats.satisfactionLabel')}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text">{t('testimonials.stats.delivery')}</div>
-            <div className="text-sm text-muted-foreground">{t('testimonials.stats.deliveryLabel')}</div>
-          </div>
-        </div>
+        <motion.div 
+          className="flex flex-wrap justify-center gap-8 md:gap-16 mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          {[
+            { value: t('testimonials.stats.songs'), label: t('testimonials.stats.songsLabel') },
+            { value: t('testimonials.stats.rating'), label: t('testimonials.stats.ratingLabel') },
+            { value: t('testimonials.stats.satisfaction'), label: t('testimonials.stats.satisfactionLabel') },
+            { value: t('testimonials.stats.delivery'), label: t('testimonials.stats.deliveryLabel') },
+          ].map((stat, index) => (
+            <div key={index} className="text-center">
+              <div className="text-3xl md:text-5xl font-bold gradient-text mb-1">{stat.value}</div>
+              <div className="text-sm text-muted-foreground">{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
 
-        <div className="text-center mb-16">
-          <h2 id="testimonials-heading" className="text-4xl font-bold mb-4">
-            {t('testimonials.title')} 💜
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <h2 id="testimonials-heading" className="text-4xl md:text-5xl font-bold mb-4">
+            {t('testimonials.title')} <span className="gradient-text">💜</span>
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             {hasRealReviews 
               ? t('testimonials.subtitleReal')
               : t('testimonials.subtitle')
             }
           </p>
-        </div>
+        </motion.div>
         
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {hasRealReviews ? (
             reviews.slice(0, 6).map((review, index) => (
-              <Card key={review.id} className="p-6 glass-card border-border/50 hover:border-primary/50 transition-all duration-300 relative">
-                <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/20" />
-                
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(review.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-accent text-accent" />
-                  ))}
-                  {[...Array(5 - review.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 text-muted-foreground/30" />
-                  ))}
-                </div>
-                
-                <p className="text-muted-foreground mb-6 leading-relaxed line-clamp-4">
-                  "{review.comment}"
-                </p>
-                
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-12 h-12 border-2 border-primary/30">
-                    {review.profiles?.avatar_url ? (
-                      <AvatarImage 
-                        src={review.profiles.avatar_url} 
-                        alt={review.profiles?.name || t('testimonials.verifiedClient')}
-                      />
-                    ) : null}
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {getInitials(review.profiles?.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-semibold text-foreground">
-                      {review.profiles?.name || t('testimonials.verifiedClient')}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {getMusicTypeLabel(review.orders?.music_type)}
+              <motion.div
+                key={review.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="premium-card p-6 h-full relative">
+                  <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/10" />
+                  
+                  <div className="flex items-center gap-1 mb-4">
+                    {[...Array(review.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
+                    ))}
+                    {[...Array(5 - review.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 text-muted-foreground/30" />
+                    ))}
+                  </div>
+                  
+                  <p className="text-muted-foreground mb-6 leading-relaxed line-clamp-4">
+                    "{review.comment}"
+                  </p>
+                  
+                  <div className="flex items-center gap-3 mt-auto">
+                    <Avatar className="w-12 h-12 border-2 border-primary/30 ring-2 ring-primary/10">
+                      {review.profiles?.avatar_url ? (
+                        <AvatarImage 
+                          src={review.profiles.avatar_url} 
+                          alt={review.profiles?.name || t('testimonials.verifiedClient')}
+                        />
+                      ) : null}
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium">
+                        {getInitials(review.profiles?.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold text-foreground">
+                        {review.profiles?.name || t('testimonials.verifiedClient')}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {getMusicTypeLabel(review.orders?.music_type)}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             ))
           ) : (
             defaultTestimonials.slice(0, 6).map((testimonial, index) => (
-              <Card key={index} className="p-6 glass-card border-border/50 hover:border-primary/50 transition-all duration-300 relative">
-                <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/20" aria-hidden="true" />
-                
-                <div className="flex items-center gap-1 mb-4" role="img" aria-label={`${t('testimonials.ratingAria')}: ${testimonial.rating}`}>
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-accent text-accent" aria-hidden="true" />
-                  ))}
-                </div>
-                
-                <blockquote className="text-muted-foreground mb-6 leading-relaxed">
-                  "{testimonial.content}"
-                </blockquote>
-                
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-12 h-12 border-2 border-primary/30">
-                    <AvatarImage 
-                      src={testimonial.avatarUrl} 
-                      alt={testimonial.name}
-                    />
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {testimonial.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="font-semibold text-foreground">{testimonial.name}</div>
-                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="premium-card p-6 h-full relative">
+                  <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/10" aria-hidden="true" />
+                  
+                  <div className="flex items-center gap-1 mb-4" role="img" aria-label={`${t('testimonials.ratingAria')}: ${testimonial.rating}`}>
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" aria-hidden="true" />
+                    ))}
                   </div>
-                </div>
-              </Card>
+                  
+                  <blockquote className="text-muted-foreground mb-6 leading-relaxed">
+                    "{testimonial.content}"
+                  </blockquote>
+                  
+                  <div className="flex items-center gap-3 mt-auto">
+                    <Avatar className="w-12 h-12 border-2 border-primary/30 ring-2 ring-primary/10">
+                      <AvatarImage 
+                        src={testimonial.avatarUrl} 
+                        alt={testimonial.name}
+                      />
+                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium">
+                        {testimonial.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold text-foreground">{testimonial.name}</div>
+                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
             ))
           )}
         </div>
 
         {/* Average Rating Display */}
         {hasRealReviews && (
-          <div className="mt-12 text-center">
-            <div className="inline-flex items-center gap-2 bg-card/50 backdrop-blur-sm border border-border/50 rounded-full px-6 py-3">
+          <motion.div 
+            className="mt-12 text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <div className="inline-flex items-center gap-3 glass-card rounded-full px-6 py-3">
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-accent text-accent" />
+                  <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
                 ))}
               </div>
               <span className="text-muted-foreground">
                 {t('testimonials.basedOn', { count: reviews.length })}
               </span>
             </div>
-          </div>
+          </motion.div>
         )}
       </div>
     </section>
