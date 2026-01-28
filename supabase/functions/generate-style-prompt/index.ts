@@ -625,7 +625,7 @@ ${cleanedLyrics}`;
     }
     // Note: For vocal tracks without provided title, the title comes from generate-lyrics
 
-    // Only save approved_lyric_id if it's a valid UUID (not "custom" string)
+    // Only save approved_lyric_id if it's a valid UUID (not "custom", "lyric-modified", etc.)
     if (!isInstrumental && isValidUuid(lyricId)) {
       updateData.approved_lyric_id = lyricId;
       updateData.voice_type = voiceType;
@@ -633,7 +633,8 @@ ${cleanedLyrics}`;
         updateData.pronunciations = pronunciations;
       }
     } else if (!isInstrumental) {
-      // For custom lyrics, just save voice_type and pronunciations without lyric reference
+      // For custom lyrics or modified lyrics without valid UUID, just save voice_type and pronunciations without lyric reference
+      console.log("Non-UUID lyricId detected:", lyricId, "- skipping approved_lyric_id update");
       updateData.voice_type = voiceType;
       if (pronunciations.length > 0) {
         updateData.pronunciations = pronunciations;
@@ -647,6 +648,7 @@ ${cleanedLyrics}`;
 
     if (updateError) {
       console.error("Error updating order:", updateError);
+      // Don't throw here - the main operation succeeded
     }
 
     // Mark lyric as approved and update phonetic body if needed (only for vocal with valid UUID)
@@ -672,9 +674,10 @@ ${cleanedLyrics}`;
 
       if (lyricError) {
         console.error("Error marking lyric as approved:", lyricError);
+        // Don't throw here - the main operation succeeded
       }
     } else if (!isInstrumental) {
-      console.log("Custom lyric flow - skipping lyrics table update (no valid lyricId)");
+      console.log("Modified/custom lyric flow - skipping lyrics table update (lyricId:", lyricId, ")");
     }
 
     console.log("Order updated with style prompt. isInstrumental:", isInstrumental);
