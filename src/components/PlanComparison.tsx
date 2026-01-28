@@ -113,9 +113,9 @@ const PlanComparison = () => {
 
               <div className="pt-4">
                 <p className="text-sm text-muted-foreground mb-3">{t('comparison.subscription.startingAt')}</p>
-                {/* Price with currency conversion - base: R$ 49,90 = 4990 cents */}
+                {/* Price with currency conversion - base: R$ 29,90 = 2990 cents (Creator Start) */}
                 <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-3xl font-bold text-primary">{formatPrice(4990)}</span>
+                  <span className="text-3xl font-bold text-primary">{formatPrice(2990)}</span>
                   <span className="text-muted-foreground">{t('comparison.subscription.perMonth')}</span>
                 </div>
                 <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600" asChild>
