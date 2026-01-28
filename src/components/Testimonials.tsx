@@ -5,6 +5,7 @@ import { Star, Quote } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
+import { Marquee } from "@/components/ui/marquee";
 
 interface PublicReview {
   id: string;
@@ -29,6 +30,51 @@ const placeholderAvatars = [
   "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
 ];
+
+// Testimonial Card Component
+interface TestimonialCardProps {
+  name: string;
+  role: string;
+  content: string;
+  rating: number;
+  avatarUrl?: string | null;
+}
+
+const TestimonialCard = ({ name, role, content, rating, avatarUrl }: TestimonialCardProps) => {
+  const { t } = useTranslation('home');
+  
+  return (
+    <Card className="premium-card p-6 w-[320px] md:w-[380px] flex-shrink-0 relative">
+      <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/10" aria-hidden="true" />
+      
+      <div className="flex items-center gap-1 mb-4" role="img" aria-label={`${t('testimonials.ratingAria')}: ${rating}`}>
+        {[...Array(rating)].map((_, i) => (
+          <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" aria-hidden="true" />
+        ))}
+        {[...Array(5 - rating)].map((_, i) => (
+          <Star key={`empty-${i}`} className="w-5 h-5 text-muted-foreground/30" aria-hidden="true" />
+        ))}
+      </div>
+      
+      <blockquote className="text-muted-foreground mb-6 leading-relaxed line-clamp-4 min-h-[80px]">
+        "{content}"
+      </blockquote>
+      
+      <div className="flex items-center gap-3 mt-auto">
+        <Avatar className="w-12 h-12 border-2 border-primary/30 ring-2 ring-primary/10">
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
+          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium">
+            {name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <div className="font-semibold text-foreground">{name}</div>
+          <div className="text-sm text-muted-foreground">{role}</div>
+        </div>
+      </div>
+    </Card>
+  );
+};
 
 const Testimonials = () => {
   const { t } = useTranslation('home');
@@ -162,20 +208,36 @@ const Testimonials = () => {
     return labels[type || ''] || t('testimonials.musicTypes.custom');
   };
 
-  const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'C';
-    return name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-  };
-
   // Use real reviews if available, otherwise use defaults
   const hasRealReviews = reviews.length > 0;
+  
+  // Prepare testimonials for marquee
+  const testimonialData = hasRealReviews 
+    ? reviews.map(review => ({
+        name: review.profiles?.name || t('testimonials.verifiedClient'),
+        role: getMusicTypeLabel(review.orders?.music_type),
+        content: review.comment || '',
+        rating: review.rating,
+        avatarUrl: review.profiles?.avatar_url
+      }))
+    : defaultTestimonials.map(t => ({
+        name: t.name,
+        role: t.role,
+        content: t.content,
+        rating: t.rating,
+        avatarUrl: t.avatarUrl
+      }));
+
+  // Split into two rows for alternating direction
+  const row1 = testimonialData.slice(0, Math.ceil(testimonialData.length / 2));
+  const row2 = testimonialData.slice(Math.ceil(testimonialData.length / 2));
 
   return (
-    <section className="section-spacing" id="depoimentos" aria-labelledby="testimonials-heading">
-      <div className="max-w-6xl mx-auto">
+    <section className="section-spacing overflow-hidden" id="depoimentos" aria-labelledby="testimonials-heading">
+      <div className="max-w-6xl mx-auto px-0">
         {/* Stats bar for social proof */}
         <motion.div 
-          className="flex flex-wrap justify-center gap-8 md:gap-16 mb-16"
+          className="flex flex-wrap justify-center gap-8 md:gap-16 mb-16 px-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -195,7 +257,7 @@ const Testimonials = () => {
         </motion.div>
 
         <motion.div 
-          className="text-center mb-16"
+          className="text-center mb-16 px-6"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -212,103 +274,42 @@ const Testimonials = () => {
           </p>
         </motion.div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {hasRealReviews ? (
-            reviews.slice(0, 6).map((review, index) => (
-              <motion.div
-                key={review.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="premium-card p-6 h-full relative">
-                  <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/10" />
-                  
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
-                    ))}
-                    {[...Array(5 - review.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-muted-foreground/30" />
-                    ))}
-                  </div>
-                  
-                  <p className="text-muted-foreground mb-6 leading-relaxed line-clamp-4">
-                    "{review.comment}"
-                  </p>
-                  
-                  <div className="flex items-center gap-3 mt-auto">
-                    <Avatar className="w-12 h-12 border-2 border-primary/30 ring-2 ring-primary/10">
-                      {review.profiles?.avatar_url ? (
-                        <AvatarImage 
-                          src={review.profiles.avatar_url} 
-                          alt={review.profiles?.name || t('testimonials.verifiedClient')}
-                        />
-                      ) : null}
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium">
-                        {getInitials(review.profiles?.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-semibold text-foreground">
-                        {review.profiles?.name || t('testimonials.verifiedClient')}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {getMusicTypeLabel(review.orders?.music_type)}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))
-          ) : (
-            defaultTestimonials.slice(0, 6).map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <Card className="premium-card p-6 h-full relative">
-                  <Quote className="absolute top-4 right-4 w-8 h-8 text-primary/10" aria-hidden="true" />
-                  
-                  <div className="flex items-center gap-1 mb-4" role="img" aria-label={`${t('testimonials.ratingAria')}: ${testimonial.rating}`}>
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" aria-hidden="true" />
-                    ))}
-                  </div>
-                  
-                  <blockquote className="text-muted-foreground mb-6 leading-relaxed">
-                    "{testimonial.content}"
-                  </blockquote>
-                  
-                  <div className="flex items-center gap-3 mt-auto">
-                    <Avatar className="w-12 h-12 border-2 border-primary/30 ring-2 ring-primary/10">
-                      <AvatarImage 
-                        src={testimonial.avatarUrl} 
-                        alt={testimonial.name}
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary font-medium">
-                        {testimonial.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-semibold text-foreground">{testimonial.name}</div>
-                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                    </div>
-                  </div>
-                </Card>
-              </motion.div>
-            ))
-          )}
+        {/* Marquee Row 1 - Left direction */}
+        <div className="mb-6">
+          <Marquee direction="left" speed="normal" pauseOnHover>
+            {row1.map((testimonial, index) => (
+              <TestimonialCard
+                key={`row1-${index}`}
+                name={testimonial.name}
+                role={testimonial.role}
+                content={testimonial.content}
+                rating={testimonial.rating}
+                avatarUrl={testimonial.avatarUrl}
+              />
+            ))}
+          </Marquee>
+        </div>
+        
+        {/* Marquee Row 2 - Right direction */}
+        <div>
+          <Marquee direction="right" speed="slow" pauseOnHover>
+            {row2.map((testimonial, index) => (
+              <TestimonialCard
+                key={`row2-${index}`}
+                name={testimonial.name}
+                role={testimonial.role}
+                content={testimonial.content}
+                rating={testimonial.rating}
+                avatarUrl={testimonial.avatarUrl}
+              />
+            ))}
+          </Marquee>
         </div>
 
         {/* Average Rating Display */}
         {hasRealReviews && (
           <motion.div 
-            className="mt-12 text-center"
+            className="mt-12 text-center px-6"
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
