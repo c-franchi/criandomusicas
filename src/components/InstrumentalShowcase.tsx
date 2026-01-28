@@ -3,14 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Play, Pause, Music, Piano, ChevronLeft, ChevronRight } from "lucide-react";
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselNext, 
-  CarouselPrevious 
-} from "@/components/ui/carousel";
+import { Play, Pause, Music, Piano } from "lucide-react";
+import { Marquee } from "@/components/ui/marquee";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -192,127 +186,186 @@ const InstrumentalShowcase = () => {
           </p>
         </div>
         
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {samples.map((sample) => {
+        {/* Marquee Row 1 - Left direction */}
+        <div className="mb-6">
+          <Marquee direction="left" speed="normal" pauseOnHover>
+            {samples.slice(0, Math.ceil(samples.length / 2)).map((sample) => {
               const isPlaying = currentPlaying === sample.id;
               const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
               
               return (
-                <CarouselItem key={sample.id} className="pl-2 md:pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                  <Card 
-                    className={`overflow-hidden border-border/50 transition-all duration-300 group ${
+                <Card 
+                  key={sample.id}
+                  className={`overflow-hidden border-border/50 transition-all duration-300 group w-[300px] md:w-[340px] flex-shrink-0 ${
+                    isPlaying 
+                      ? 'ring-2 ring-accent shadow-lg shadow-accent/20' 
+                      : 'hover:border-accent/50 hover:shadow-md'
+                  }`}
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={sample.coverUrl}
+                      alt={`Música instrumental ${sample.style}: ${sample.title} - ${sample.description}`}
+                      className={`w-full h-full object-cover transition-transform duration-500 ${
+                        isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
+                      }`}
+                      loading="lazy"
+                    />
+                    <div className={`absolute inset-0 transition-all duration-300 ${
                       isPlaying 
-                        ? 'ring-2 ring-accent shadow-lg shadow-accent/20' 
-                        : 'hover:border-accent/50 hover:shadow-md'
-                    }`}
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={sample.coverUrl}
-                        alt={`Música instrumental ${sample.style}: ${sample.title} - ${sample.description}`}
-                        className={`w-full h-full object-cover transition-transform duration-500 ${
-                          isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
-                        }`}
-                        loading="lazy"
-                      />
-                      <div className={`absolute inset-0 transition-all duration-300 ${
+                        ? 'bg-gradient-to-t from-accent/90 via-accent/40 to-transparent' 
+                        : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'
+                    }`} />
+                    
+                    {isPlaying && (
+                      <div className="absolute top-4 right-4 flex items-end gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <div 
+                            key={i}
+                            className="w-1 bg-white rounded-full animate-pulse" 
+                            style={{ 
+                              height: `${8 + Math.random() * 12}px`, 
+                              animationDelay: `${i * 100}ms`,
+                              animationDuration: '0.5s'
+                            }} 
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={`absolute bottom-4 right-4 w-14 h-14 rounded-full transition-all duration-300 ${
                         isPlaying 
-                          ? 'bg-gradient-to-t from-accent/90 via-accent/40 to-transparent' 
-                          : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'
-                      }`} />
-                      
-                      {/* Animated equalizer when playing */}
-                      {isPlaying && (
-                        <div className="absolute top-4 right-4 flex items-end gap-0.5">
-                          {[...Array(5)].map((_, i) => (
-                            <div 
-                              key={i}
-                              className="w-1 bg-white rounded-full animate-pulse" 
-                              style={{ 
-                                height: `${8 + Math.random() * 12}px`, 
-                                animationDelay: `${i * 100}ms`,
-                                animationDuration: '0.5s'
-                              }} 
-                            />
-                          ))}
-                        </div>
+                          ? 'bg-white text-accent hover:bg-white/90 scale-110' 
+                          : 'bg-accent hover:bg-accent/90 text-white'
+                      }`}
+                      onClick={() => togglePlay(sample)}
+                      aria-label={isPlaying ? `Pausar ${sample.title}` : `Reproduzir ${sample.title}`}
+                    >
+                      {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+                    </Button>
+                    
+                    <Badge className="absolute top-3 left-3 bg-accent/90">
+                      🎹 {sample.style}
+                    </Badge>
+                  </div>
+                  
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold mb-2">{sample.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{sample.description}</p>
+                    
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-xs">{sample.occasion}</Badge>
+                      {isPlaying && duration > 0 && (
+                        <span className="text-xs text-accent font-mono">
+                          {formatTime(currentTime)} / {formatTime(duration)}
+                        </span>
                       )}
-                      
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={`absolute bottom-4 right-4 w-14 h-14 rounded-full transition-all duration-300 ${
-                          isPlaying 
-                            ? 'bg-white text-accent hover:bg-white/90 scale-110' 
-                            : 'bg-accent hover:bg-accent/90 text-white'
-                        }`}
-                        onClick={() => togglePlay(sample)}
-                        aria-label={isPlaying ? `Pausar ${sample.title}` : `Reproduzir ${sample.title}`}
-                      >
-                        {isPlaying ? (
-                          <Pause className="w-6 h-6" />
-                        ) : (
-                          <Play className="w-6 h-6 ml-0.5" />
-                        )}
-                      </Button>
-                      
-                      <Badge className="absolute top-3 left-3 bg-accent/90">
-                        🎹 {sample.style}
-                      </Badge>
                     </div>
                     
-                    <div className="p-5">
-                      <h3 className="text-lg font-semibold mb-2">{sample.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                        {sample.description}
-                      </p>
-                      
-                      <div className="flex items-center justify-between">
-                        <Badge variant="outline" className="text-xs">
-                          {sample.occasion}
-                        </Badge>
-                        
-                        {isPlaying && duration > 0 && (
-                          <span className="text-xs text-accent font-mono">
-                            {formatTime(currentTime)} / {formatTime(duration)}
-                          </span>
-                        )}
+                    {isPlaying && (
+                      <div className="mt-3">
+                        <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-accent" />
                       </div>
-                      
-                      {/* Progress bar when playing */}
-                      {isPlaying && (
-                        <div className="mt-3">
-                          <Progress 
-                            value={progress} 
-                            className="h-1.5 bg-muted [&>div]:bg-accent"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                </CarouselItem>
+                    )}
+                  </div>
+                </Card>
               );
             })}
-          </CarouselContent>
-          
-          <CarouselPrevious className="-left-4 md:-left-12 bg-background/80 backdrop-blur-sm border-accent/20 hover:bg-accent hover:text-white" />
-          <CarouselNext className="-right-4 md:-right-12 bg-background/80 backdrop-blur-sm border-accent/20 hover:bg-accent hover:text-white" />
-        </Carousel>
+          </Marquee>
+        </div>
         
-        {/* Mobile swipe indicator */}
-        <div className="flex justify-center gap-2 mt-6 md:hidden">
-          <p className="text-sm text-muted-foreground flex items-center gap-2">
-            <ChevronLeft className="w-4 h-4" />
-            {t('samples.swipeHint')}
-            <ChevronRight className="w-4 h-4" />
-          </p>
+        {/* Marquee Row 2 - Right direction */}
+        <div>
+          <Marquee direction="right" speed="fast" pauseOnHover>
+            {samples.slice(Math.ceil(samples.length / 2)).map((sample) => {
+              const isPlaying = currentPlaying === sample.id;
+              const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+              
+              return (
+                <Card 
+                  key={sample.id}
+                  className={`overflow-hidden border-border/50 transition-all duration-300 group w-[300px] md:w-[340px] flex-shrink-0 ${
+                    isPlaying 
+                      ? 'ring-2 ring-accent shadow-lg shadow-accent/20' 
+                      : 'hover:border-accent/50 hover:shadow-md'
+                  }`}
+                >
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={sample.coverUrl}
+                      alt={`Música instrumental ${sample.style}: ${sample.title} - ${sample.description}`}
+                      className={`w-full h-full object-cover transition-transform duration-500 ${
+                        isPlaying ? 'scale-105' : 'group-hover:scale-[1.03]'
+                      }`}
+                      loading="lazy"
+                    />
+                    <div className={`absolute inset-0 transition-all duration-300 ${
+                      isPlaying 
+                        ? 'bg-gradient-to-t from-accent/90 via-accent/40 to-transparent' 
+                        : 'bg-gradient-to-t from-black/80 via-black/40 to-transparent'
+                    }`} />
+                    
+                    {isPlaying && (
+                      <div className="absolute top-4 right-4 flex items-end gap-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <div 
+                            key={i}
+                            className="w-1 bg-white rounded-full animate-pulse" 
+                            style={{ 
+                              height: `${8 + Math.random() * 12}px`, 
+                              animationDelay: `${i * 100}ms`,
+                              animationDuration: '0.5s'
+                            }} 
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className={`absolute bottom-4 right-4 w-14 h-14 rounded-full transition-all duration-300 ${
+                        isPlaying 
+                          ? 'bg-white text-accent hover:bg-white/90 scale-110' 
+                          : 'bg-accent hover:bg-accent/90 text-white'
+                      }`}
+                      onClick={() => togglePlay(sample)}
+                      aria-label={isPlaying ? `Pausar ${sample.title}` : `Reproduzir ${sample.title}`}
+                    >
+                      {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6 ml-0.5" />}
+                    </Button>
+                    
+                    <Badge className="absolute top-3 left-3 bg-accent/90">
+                      🎹 {sample.style}
+                    </Badge>
+                  </div>
+                  
+                  <div className="p-5">
+                    <h3 className="text-lg font-semibold mb-2">{sample.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{sample.description}</p>
+                    
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="text-xs">{sample.occasion}</Badge>
+                      {isPlaying && duration > 0 && (
+                        <span className="text-xs text-accent font-mono">
+                          {formatTime(currentTime)} / {formatTime(duration)}
+                        </span>
+                      )}
+                    </div>
+                    
+                    {isPlaying && (
+                      <div className="mt-3">
+                        <Progress value={progress} className="h-1.5 bg-muted [&>div]:bg-accent" />
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </Marquee>
         </div>
         
         {/* CTA */}
