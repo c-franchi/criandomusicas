@@ -187,7 +187,7 @@ const InstrumentalShowcase = () => {
         </div>
         
         {/* Single Marquee Row */}
-        <Marquee direction="left" speed="normal" pauseOnHover>
+        <Marquee direction="right" speed="normal" pauseOnHover>
           {samples.map((sample) => {
             const isPlaying = currentPlaying === sample.id;
             const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
