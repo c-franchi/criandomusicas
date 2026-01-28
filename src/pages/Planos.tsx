@@ -512,11 +512,6 @@ const Planos = () => {
                         {getPlanName(plan.id, plan.name)}
                       </CardTitle>
                       
-                      {/* Plan Description */}
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {getPlanDescription(plan.id)}
-                      </p>
-                      
                       <CardDescription className="text-4xl font-bold text-purple-400">
                         {formatPrice(plan.price_promo_cents || plan.price_cents)}
                       </CardDescription>
