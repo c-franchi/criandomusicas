@@ -196,7 +196,7 @@ const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background py-12 px-6">
       <div className="max-w-xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -273,7 +273,7 @@ const Profile = () => {
           
           <TabsContent value="profile">
             {/* Profile Form */}
-            <Card className="p-6">
+            <Card className="p-6 premium-card">
               <div className="space-y-6">
                 {/* Email (read-only) */}
                 <div className="space-y-2">

@@ -30,8 +30,8 @@ const PlanComparison = () => {
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Pacotes Avulsos */}
-          <Card className="relative overflow-hidden border-2 hover:border-primary/50 transition-all">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
+          <Card className="relative overflow-visible border-2 hover:border-primary/50 transition-all premium-card">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-t-lg" />
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
@@ -75,10 +75,10 @@ const PlanComparison = () => {
           </Card>
 
           {/* Assinatura Creator */}
-          <Card className="relative overflow-hidden border-2 border-primary/50 shadow-lg shadow-primary/10">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500" />
-            <div className="absolute -top-px -right-px">
-              <Badge className="rounded-tl-none rounded-br-none bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0">
+          <Card className="relative overflow-visible border-2 border-primary/50 shadow-lg shadow-primary/10 premium-card">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-t-lg" />
+            <div className="absolute -top-3 right-4 z-10">
+              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1">
                 {t('comparison.subscription.forCreators')}
               </Badge>
             </div>

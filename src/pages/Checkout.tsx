@@ -740,9 +740,9 @@ export default function Checkout() {
   // PIX Waiting State
   if (showPixSection && pixConfirmed) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background py-8 px-4">
         <div className="max-w-lg mx-auto">
-          <Card className="text-center p-6">
+          <Card className="text-center p-6 premium-card">
             <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center mx-auto mb-4">
               <Clock className="w-8 h-8 text-yellow-500" />
             </div>
@@ -810,7 +810,7 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background py-8 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
@@ -833,7 +833,7 @@ export default function Checkout() {
         </div>
 
         {/* Order Summary */}
-        <Card className="glass-card border-primary/20">
+        <Card className="premium-card border-primary/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Music className="h-5 w-5 text-primary" />

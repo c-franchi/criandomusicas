@@ -288,7 +288,7 @@ const Planos = () => {
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 mb-16">
+          <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 pt-4 mb-16">
             {currentPlans.map((plan) => {
               const hasPromo = plan.price_promo_cents !== null;
               const displayPrice = hasPromo ? formatPrice(plan.price_promo_cents!) : formatPrice(plan.price_cents);
@@ -305,21 +305,21 @@ const Planos = () => {
               return (
                 <Card
                   key={plan.id}
-                  className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl glass-card ${
+                  className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl glass-card overflow-visible ${
                     plan.is_popular 
                       ? "ring-2 ring-primary music-glow border-primary/50" 
                       : "border-border/50 hover:border-primary/30"
                   }`}
                 >
                   {plan.is_popular && (
-                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold px-4 py-1">
+                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10 bg-gradient-to-r from-primary to-accent text-primary-foreground font-semibold px-4 py-1 shadow-lg">
                       {t('popular')}
                     </Badge>
                   )}
 
                   {/* Credits Badge */}
                   {credits > 1 && (
-                    <Badge className="absolute -top-3 right-4 bg-green-500 text-white px-3 py-1 font-bold">
+                    <Badge className="absolute -top-3 right-4 z-10 bg-green-500 text-white px-3 py-1 font-bold shadow-lg">
                       <Music className="w-3 h-3 mr-1" />
                       {t('badges.musics', { count: credits })}
                     </Badge>
@@ -471,7 +471,7 @@ const Planos = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <div className="grid lg:grid-cols-3 gap-8 mb-12">
+            <div className="grid lg:grid-cols-3 gap-8 mb-12 pt-4">
               {(isInstrumental ? creatorInstrumentalPlans : creatorPlans).map((plan) => {
                 const credits = getCreditsForPlan(plan.id);
                 const pricePerMusic = Math.round((plan.price_promo_cents || plan.price_cents) / credits);
@@ -484,20 +484,20 @@ const Planos = () => {
                 return (
                   <Card
                     key={plan.id}
-                    className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl ${
+                    className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl overflow-visible premium-card ${
                       isPopular 
                         ? "ring-2 ring-purple-500 border-purple-500/50 shadow-lg shadow-purple-500/20" 
                         : "border-border/50 hover:border-purple-500/30"
                     }`}
                   >
                     {isPopular && (
-                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-4 py-1">
+                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-4 py-1 shadow-lg">
                         ⭐ {t('popular')}
                       </Badge>
                     )}
 
                     {/* Credits Badge */}
-                    <Badge className="absolute -top-3 right-4 bg-purple-500 text-white px-3 py-1 font-bold">
+                    <Badge className="absolute -top-3 right-4 z-10 bg-purple-500 text-white px-3 py-1 font-bold shadow-lg">
                       <Music className="w-3 h-3 mr-1" />
                       {t('badges.musicsPerMonth', { count: credits })}
                     </Badge>

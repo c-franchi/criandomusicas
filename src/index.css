@@ -207,7 +207,7 @@
   
   /* Premium card with glow border on hover */
   .premium-card {
-    @apply relative rounded-2xl overflow-hidden transition-all duration-500;
+    @apply relative rounded-2xl transition-all duration-500;
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow-card);
@@ -226,6 +226,8 @@
     mask-composite: exclude;
     opacity: 0;
     transition: opacity 0.5s ease;
+    pointer-events: none;
+    z-index: 0;
   }
   
   .premium-card:hover::before {
