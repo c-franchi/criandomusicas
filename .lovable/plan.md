@@ -1,162 +1,68 @@
 
-# Análise: Animação Marquee Contínua nos Cards
+# Corrigir Animações Marquee Estáticas
 
-## Status Atual
+## Problema Identificado
 
-Analisei os componentes e verifiquei que **nenhuma animação de marquee horizontal infinito existe atualmente**. Todas as seções de cards usam layouts estáticos ou carrosséis manuais:
+As animações marquee não funcionam porque o **Tailwind JIT não detecta classes CSS dinâmicas**.
 
-| Seção | Componente | Estado Atual |
-|-------|------------|--------------|
-| Cards de exemplos de músicas | `AudioSamples.tsx` | Carousel manual (Embla) |
-| Cards instrumentais | `InstrumentalShowcase.tsx` | Carousel manual (Embla) |
-| Cards de depoimentos | `Testimonials.tsx` | Grid estático 3 colunas |
-| Cards de benefícios | `WhyChooseUs.tsx` | Grid estático 3 colunas |
-| Cards Creator | `CreatorSection.tsx` | Grid estático 3 colunas |
+O componente `marquee.tsx` constrói os nomes das classes assim:
+```javascript
+`animate-marquee-left-${speed}`  // Tailwind não vê isso!
+```
+
+Como resultado, as classes CSS necessárias **nunca são geradas**.
 
 ---
 
-## O Que Falta Implementar
+## Solução
 
-### 1. Criar Componente Marquee Reutilizável
+### Opção 1: Safelist no Tailwind (Recomendada)
 
-Um novo componente `MarqueeCards.tsx` que:
-- Aceita cards como children
-- Duplica os cards para criar loop infinito
-- Aplica animação CSS contínua
-- Aceita props para direção (left/right) e velocidade
-
-### 2. Adicionar Keyframes CSS no Tailwind
-
-No arquivo `tailwind.config.ts`, adicionar:
+Adicionar as classes ao `safelist` do `tailwind.config.ts` para forçar a geração:
 
 ```text
-keyframes: {
-  'marquee-left': {
-    '0%': { transform: 'translateX(0)' },
-    '100%': { transform: 'translateX(-50%)' }
-  },
-  'marquee-right': {
-    '0%': { transform: 'translateX(-50%)' },
-    '100%': { transform: 'translateX(0)' }
-  }
-}
-
-animation: {
-  'marquee-left': 'marquee-left 40s linear infinite',
-  'marquee-right': 'marquee-right 50s linear infinite'
-}
+// tailwind.config.ts
+safelist: [
+  'animate-marquee-left-slow',
+  'animate-marquee-left-normal',
+  'animate-marquee-left-fast',
+  'animate-marquee-right-slow',
+  'animate-marquee-right-normal',
+  'animate-marquee-right-fast',
+]
 ```
 
-### 3. Adicionar Estilos de Fade nas Bordas
+### Opção 2: Usar Classes Completas no Componente
 
-No `index.css`, criar classes para gradientes de fade:
+Alterar o `marquee.tsx` para usar um mapeamento de classes completas:
 
 ```text
-.marquee-container {
-  mask-image: linear-gradient(
-    to right, 
-    transparent, 
-    black 5%, 
-    black 95%, 
-    transparent
-  );
-}
+const animationClasses = {
+  'left-slow': 'animate-marquee-left-slow',
+  'left-normal': 'animate-marquee-left-normal',
+  'left-fast': 'animate-marquee-left-fast',
+  'right-slow': 'animate-marquee-right-slow',
+  'right-normal': 'animate-marquee-right-normal',
+  'right-fast': 'animate-marquee-right-fast',
+};
+
+const animationClass = animationClasses[`${direction}-${speed}`];
 ```
-
-### 4. Atualizar Componentes
-
-Modificar os seguintes componentes para usar o marquee:
-
-**`Testimonials.tsx`**
-- Trocar grid por 2 linhas de marquee
-- Linha 1: direção esquerda, 40s
-- Linha 2: direção direita, 50s
-
-**`WhyChooseUs.tsx`**
-- Trocar grid dos benefícios por marquee de linha única
-- Direção: esquerda, 35s
-
-**`AudioSamples.tsx`** (opcional)
-- Substituir Carousel por marquee
-- Considerar manter carousel para interação com player
-
-**`InstrumentalShowcase.tsx`** (opcional)
-- Mesma consideração acima
 
 ---
 
-## Arquivos a Criar/Modificar
+## Arquivos a Modificar
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/ui/marquee.tsx` | **CRIAR** - Componente base |
-| `tailwind.config.ts` | **MODIFICAR** - Adicionar keyframes |
-| `src/index.css` | **MODIFICAR** - Adicionar estilos de máscara |
-| `src/components/Testimonials.tsx` | **MODIFICAR** - Usar marquee |
-| `src/components/WhyChooseUs.tsx` | **MODIFICAR** - Usar marquee |
-
----
-
-## Detalhes Técnicos
-
-### Estrutura do Componente Marquee
-
-```text
-<div className="marquee-container overflow-hidden">
-  <div className="flex animate-marquee-left hover:pause">
-    {/* Cards originais */}
-    {children}
-    {/* Cards duplicados para loop */}
-    {children}
-  </div>
-</div>
-```
-
-### Props do Componente
-
-```text
-interface MarqueeProps {
-  children: React.ReactNode;
-  direction?: 'left' | 'right';  // Direção do movimento
-  speed?: 'slow' | 'normal' | 'fast';  // 50s / 40s / 30s
-  pauseOnHover?: boolean;  // Pausa no desktop
-  className?: string;
-}
-```
-
-### Comportamento
-
-- **Desktop**: Pausa suave ao hover (opcional)
-- **Mobile**: Movimento contínuo sem pausa
-- **Performance**: Usa CSS `transform` e `will-change` para GPU acceleration
-- **Acessibilidade**: Respeita `prefers-reduced-motion`
+| Arquivo | Mudança |
+|---------|---------|
+| `tailwind.config.ts` | Adicionar `safelist` com todas as classes de animação |
 
 ---
 
 ## Resultado Esperado
 
-Após implementação, as seções terão movimento contínuo horizontal:
-
-```text
-┌────────────────────────────────────────────────────────────┐
-│  DEPOIMENTOS                                               │
-│                                                            │
-│  ←←← [Card 1] [Card 2] [Card 3] [Card 4] ←←←              │
-│                                                            │
-│  →→→ [Card 5] [Card 6] [Card 1] [Card 2] →→→              │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-
-┌────────────────────────────────────────────────────────────┐
-│  BENEFÍCIOS                                                │
-│                                                            │
-│  ←←← [Benefit] [Benefit] [Benefit] [Benefit] ←←←          │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-```
-
-As animações serão:
-- Suaves e elegantes (30-50 segundos por ciclo)
-- Contínuas sem interrupção
-- Com fade nas bordas para evitar cortes bruscos
-- Responsivas em todos os dispositivos
+Após a correção:
+- Os cards de **Depoimentos** terão 2 linhas com direções alternadas (esquerda/direita)
+- Os cards de **Benefícios** terão movimento contínuo para a esquerda
+- Os cards de **AudioSamples** terão 2 linhas com direções alternadas
+- Animação suave, contínua e infinita em todas as seções
