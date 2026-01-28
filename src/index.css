@@ -2,27 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Music Studio Design System - All colors, gradients, fonts, etc defined here */
+/* Premium Music Studio Design System - Inspired by Magiclight.ai */
 
 @layer base {
-  /* Light Theme */
+  /* Light Theme - Premium & Clean */
   :root {
-    --background: 0 0% 100%;
+    --background: 240 20% 98%;
     --foreground: 240 10% 10%;
 
-    /* Music-themed color palette */
-    --primary: 259 100% 55%;
-    --primary-glow: 270 100% 70%;
+    /* Premium purple palette */
+    --primary: 259 94% 51%;
+    --primary-glow: 280 100% 65%;
     --primary-foreground: 0 0% 100%;
     
     --secondary: 240 10% 94%;
     --secondary-foreground: 240 10% 10%;
     
-    --accent: 315 100% 55%;
+    --accent: 315 90% 58%;
     --accent-foreground: 0 0% 100%;
     
-    --muted: 240 10% 92%;
-    --muted-foreground: 240 5% 40%;
+    --muted: 240 10% 90%;
+    --muted-foreground: 240 5% 45%;
     
     --card: 0 0% 100%;
     --card-foreground: 240 10% 10%;
@@ -30,21 +30,25 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 10%;
     
-    --border: 240 10% 85%;
+    --border: 240 10% 88%;
     --input: 240 10% 92%;
-    --ring: 259 100% 55%;
+    --ring: 259 94% 51%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     
     --radius: 0.75rem;
 
-    /* Musical gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(259 100% 55%), hsl(315 100% 55%));
-    --gradient-secondary: linear-gradient(180deg, hsl(240 10% 98%), hsl(0 0% 100%));
-    --gradient-hero: linear-gradient(135deg, hsl(259 100% 55% / 0.1), hsl(315 100% 55% / 0.1));
+    /* Premium gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(259 94% 51%), hsl(315 90% 58%));
+    --gradient-secondary: linear-gradient(180deg, hsl(240 20% 98%), hsl(0 0% 100%));
+    --gradient-hero: linear-gradient(135deg, hsl(259 94% 51% / 0.08), hsl(315 90% 58% / 0.08));
+    --gradient-glow: linear-gradient(135deg, hsl(259 94% 51% / 0.15), hsl(315 90% 58% / 0.15));
     
-    /* Status colors for semantic usage */
+    /* Hero overlays for light mode */
+    --hero-overlay: linear-gradient(135deg, hsl(0 0% 100% / 0.88), hsl(240 20% 98% / 0.85), hsl(259 94% 51% / 0.05));
+    
+    /* Status colors */
     --status-success: 142 76% 36%;
     --status-success-foreground: 0 0% 100%;
     --status-warning: 38 92% 50%;
@@ -52,65 +56,98 @@
     --status-info: 199 89% 48%;
     --status-info-foreground: 0 0% 100%;
     
-    /* Accent colors for card highlights */
+    /* Premium accents */
     --gold: 45 100% 50%;
     
-    /* Shadows */
-    --shadow-glow: 0 0 40px hsl(259 100% 55% / 0.2);
-    --shadow-card: 0 10px 30px -10px hsl(240 10% 10% / 0.1);
+    /* Premium shadows */
+    --shadow-glow: 0 0 50px hsl(259 94% 51% / 0.15);
+    --shadow-card: 0 4px 24px -4px hsl(240 10% 10% / 0.08);
+    --shadow-card-hover: 0 8px 40px -8px hsl(259 94% 51% / 0.2);
+    --shadow-button: 0 4px 14px -2px hsl(259 94% 51% / 0.4);
     
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Glass effect */
+    --glass-bg: hsl(0 0% 100% / 0.7);
+    --glass-border: hsl(0 0% 100% / 0.5);
+    
+    /* Sidebar tokens */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 10% 10%;
+    --sidebar-primary: 259 94% 51%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 315 90% 58%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 10% 88%;
+    --sidebar-ring: 259 94% 51%;
   }
 
-  /* Dark Theme */
+  /* Dark Theme - Premium & Immersive */
   .dark {
-    --background: 240 15% 3%;
+    --background: 240 20% 4%;
     --foreground: 0 0% 98%;
 
-    /* Music-themed color palette */
+    /* Premium purple palette - more vibrant for dark */
     --primary: 259 100% 65%;
-    --primary-glow: 270 100% 80%;
-    --primary-foreground: 240 15% 3%;
+    --primary-glow: 280 100% 75%;
+    --primary-foreground: 240 20% 4%;
     
-    --secondary: 240 20% 15%;
+    --secondary: 240 15% 12%;
     --secondary-foreground: 0 0% 98%;
     
-    --accent: 315 100% 70%;
-    --accent-foreground: 240 15% 3%;
+    --accent: 315 100% 68%;
+    --accent-foreground: 240 20% 4%;
     
-    --muted: 240 10% 18%;
-    --muted-foreground: 240 5% 75%;
+    --muted: 240 12% 14%;
+    --muted-foreground: 240 5% 70%;
     
-    --card: 240 15% 14%;
+    --card: 240 15% 8%;
     --card-foreground: 0 0% 100%;
     
-    --popover: 240 20% 8%;
+    --popover: 240 20% 6%;
     --popover-foreground: 0 0% 98%;
     
-    --border: 240 20% 20%;
-    --input: 240 20% 15%;
+    --border: 240 15% 18%;
+    --input: 240 15% 12%;
     --ring: 259 100% 65%;
     
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Musical gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(259 100% 65%), hsl(315 100% 70%));
-    --gradient-secondary: linear-gradient(180deg, hsl(240 20% 8%), hsl(240 15% 3%));
-    --gradient-hero: linear-gradient(135deg, hsl(259 100% 65% / 0.1), hsl(315 100% 70% / 0.1));
+    /* Premium gradients - more vivid for dark */
+    --gradient-primary: linear-gradient(135deg, hsl(259 100% 65%), hsl(315 100% 68%));
+    --gradient-secondary: linear-gradient(180deg, hsl(240 20% 6%), hsl(240 20% 4%));
+    --gradient-hero: linear-gradient(135deg, hsl(259 100% 65% / 0.12), hsl(315 100% 68% / 0.12));
+    --gradient-glow: linear-gradient(135deg, hsl(259 100% 65% / 0.2), hsl(315 100% 68% / 0.2));
     
-    /* Status colors for semantic usage */
-    --status-success: 142 76% 36%;
+    /* Hero overlays for dark mode */
+    --hero-overlay: linear-gradient(135deg, hsl(240 20% 4% / 0.7), hsl(240 20% 4% / 0.5), hsl(259 100% 65% / 0.08));
+    
+    /* Status colors */
+    --status-success: 142 76% 42%;
     --status-success-foreground: 0 0% 98%;
-    --status-warning: 38 92% 50%;
-    --status-warning-foreground: 240 15% 3%;
-    --status-info: 199 89% 48%;
+    --status-warning: 38 92% 55%;
+    --status-warning-foreground: 240 20% 4%;
+    --status-info: 199 89% 52%;
     --status-info-foreground: 0 0% 98%;
     
-    /* Shadows */
-    --shadow-glow: 0 0 40px hsl(259 100% 65% / 0.3);
-    --shadow-card: 0 10px 30px -10px hsl(240 15% 3% / 0.5);
+    /* Premium shadows - more dramatic for dark */
+    --shadow-glow: 0 0 60px hsl(259 100% 65% / 0.25);
+    --shadow-card: 0 4px 32px -4px hsl(0 0% 0% / 0.4);
+    --shadow-card-hover: 0 12px 48px -8px hsl(259 100% 65% / 0.3);
+    --shadow-button: 0 4px 20px -2px hsl(259 100% 65% / 0.5);
+    
+    /* Glass effect - darker for dark mode */
+    --glass-bg: hsl(240 15% 8% / 0.6);
+    --glass-border: hsl(240 15% 20% / 0.5);
+    
+    /* Sidebar tokens */
+    --sidebar-background: 240 15% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 259 100% 65%;
+    --sidebar-primary-foreground: 240 20% 4%;
+    --sidebar-accent: 315 100% 68%;
+    --sidebar-accent-foreground: 240 20% 4%;
+    --sidebar-border: 240 15% 18%;
+    --sidebar-ring: 259 100% 65%;
   }
 }
 
@@ -119,15 +156,34 @@
     @apply border-border;
   }
   
+  html {
+    scroll-behavior: smooth;
+  }
+  
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    letter-spacing: -0.01em;
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
+    letter-spacing: -0.02em;
   }
   
+  h1 {
+    @apply text-4xl md:text-5xl lg:text-6xl leading-tight;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl leading-tight;
+  }
+  
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+  
+  /* Premium gradient text */
   .gradient-text {
     background: var(--gradient-primary);
     -webkit-background-clip: text;
@@ -135,29 +191,149 @@
     background-clip: text;
   }
   
+  /* Premium glass card effect */
   .glass-card {
-    background: hsl(var(--card) / 0.8);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(var(--border) / 0.5);
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-card);
   }
   
-  .dark .glass-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .glass-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    border-color: hsl(var(--primary) / 0.3);
+  }
+  
+  /* Premium card with glow border on hover */
+  .premium-card {
+    @apply relative rounded-2xl overflow-hidden transition-all duration-500;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: var(--shadow-card);
+  }
+  
+  .premium-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--gradient-primary);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  
+  .premium-card:hover::before {
+    opacity: 1;
+  }
+  
+  .premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
   }
 }
 
 @layer components {
+  /* Premium glow effect */
   .music-glow {
-    box-shadow: var(--shadow-glow);
+    box-shadow: var(--shadow-button);
   }
   
+  .music-glow:hover {
+    box-shadow: 0 6px 24px -2px hsl(var(--primary) / 0.5);
+  }
+  
+  /* Floating animation - smoother */
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: float 8s ease-in-out infinite;
   }
   
   @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-25px) rotate(3deg); }
   }
+  
+  /* Fade in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Slide up animation */
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Scale in animation */
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+  
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* Hover scale effect */
+  .hover-scale {
+    @apply transition-transform duration-300;
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.03);
+  }
+  
+  /* Premium section spacing */
+  .section-spacing {
+    @apply py-20 md:py-28 lg:py-32 px-6;
+  }
+  
+  /* Premium gradient background sections */
+  .gradient-section {
+    background: linear-gradient(180deg, 
+      hsl(var(--background)) 0%, 
+      hsl(var(--secondary) / 0.3) 50%, 
+      hsl(var(--background)) 100%
+    );
+  }
+  
+  /* Staggered animation delays */
+  .stagger-1 { animation-delay: 0.1s; }
+  .stagger-2 { animation-delay: 0.2s; }
+  .stagger-3 { animation-delay: 0.3s; }
+  .stagger-4 { animation-delay: 0.4s; }
+  .stagger-5 { animation-delay: 0.5s; }
+  .stagger-6 { animation-delay: 0.6s; }
 }
