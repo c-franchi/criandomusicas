@@ -160,24 +160,25 @@ const CreatorSection = () => {
                 </div>
               )}
               
-              <CardHeader className="pb-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Crown className="w-5 h-5 text-purple-400" />
-                  <CardTitle className="text-xl text-card-foreground font-bold">
-                    {plan.name}
-                  </CardTitle>
+              <CardHeader className="pb-4 text-center">
+                <div className="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mb-4">
+                  <Crown className="w-7 h-7 text-purple-400" />
                 </div>
                 
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {getPlanDescription(plan.id, plan.credits)}
-                </p>
+                <CardTitle className="text-xl text-card-foreground font-bold mb-2">
+                  {plan.name}
+                </CardTitle>
                 
-                <CardDescription className="text-3xl font-bold text-purple-400 mt-3">
+                <div className="text-3xl font-bold text-purple-400 mb-3">
                   {formatPrice(plan.price)}
                   <span className="text-sm font-normal text-muted-foreground">
                     /{i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}
                   </span>
-                </CardDescription>
+                </div>
+                
+                <p className="text-sm text-muted-foreground leading-relaxed min-h-[40px]">
+                  {getPlanDescription(plan.id, plan.credits)}
+                </p>
               </CardHeader>
               
               <CardContent className="pt-0">
