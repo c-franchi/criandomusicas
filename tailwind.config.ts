@@ -8,6 +8,14 @@ export default {
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
 	],
+	safelist: [
+		'animate-marquee-left-slow',
+		'animate-marquee-left-normal',
+		'animate-marquee-left-fast',
+		'animate-marquee-right-slow',
+		'animate-marquee-right-normal',
+		'animate-marquee-right-fast',
+	],
 	prefix: "",
 	theme: {
 		container: {
