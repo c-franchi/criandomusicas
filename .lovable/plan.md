@@ -1,152 +1,99 @@
 
-# Sistema de Notificações por E-mail
+# Plano: Corrigir Descrições dos Cards Creator
 
-## Resumo
+## Problema Identificado
+Os cards dos planos Creator (Start, Pro, Studio) **não mostram as descrições** na página de planos (/planos), embora o código esteja correto nos arquivos.
 
-Vou implementar um sistema completo de e-mails transacionais para registrar e notificar os usuários em momentos-chave da jornada, usando a infraestrutura já existente (Resend + Edge Functions).
+Analisando o código atual:
+- ✅ `Planos.tsx` tem a função `getCreatorPlanDescription()` (linhas 163-202)
+- ✅ O JSX chama corretamente `{getCreatorPlanDescription(plan.id)}` (linha 559)
+- ❌ Porém, na tela do usuário, as descrições **não aparecem**
 
-## Tipos de E-mail a Implementar
+## Causa Provável
+O código anterior pode não ter sido aplicado corretamente. Vou **reescrever completamente** a seção de cards Creator no `Planos.tsx` para garantir que as descrições apareçam.
 
-### 1. E-mail de Boas-Vindas (Cadastro)
-- **Gatilho**: Novo usuário se registra na plataforma
-- **Conteúdo**: Saudação personalizada, instruções de uso, link para dashboard
-- **Template**: Design moderno com gradiente roxo, branding "Criando Músicas"
+---
 
-### 2. E-mail de Compra/Créditos (já existe parcialmente)
-- **Atual**: `send-purchase-email` já envia confirmações de compra
-- **Melhorias**: Adicionar mais detalhes da transação, número do pedido formatado
+## Solução Proposta
 
-### 3. E-mail de Música Pronta
-- **Gatilho**: Quando o status do pedido muda para `MUSIC_READY`
-- **Conteúdo**: Notificação de que a música está pronta, link direto para ouvir
-- **CTA**: "Ouvir Minha Música"
+### Alterações no `src/pages/Planos.tsx`
 
-### 4. E-mail de PIX Confirmado (para Admin confirmar)
-- **Gatilho**: Admin confirma pagamento PIX
-- **Conteúdo**: Confirmação de pagamento recebido, próximos passos
+Modificarei a estrutura do card Creator para garantir que:
 
-## Arquitetura Técnica
+1. **Descrição apareça logo abaixo do nome do plano** com informações claras:
+   - Número de créditos por mês (ex: "50 músicas/mês")
+   - Descrição do perfil do usuário (ex: "Ideal para criadores que estão começando")
 
+2. **Layout atualizado do CardHeader**:
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                    SISTEMA DE E-MAILS                       │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────────┐     ┌─────────────────────────────┐   │
-│  │   Auth Events   │────►│  send-welcome-email         │   │
-│  │   (Sign Up)     │     │  (Nova Edge Function)       │   │
-│  └─────────────────┘     └─────────────────────────────┘   │
-│                                                             │
-│  ┌─────────────────┐     ┌─────────────────────────────┐   │
-│  │  Payment Flow   │────►│  send-purchase-email        │   │
-│  │  (verify-payment│     │  (Já Existe - Melhorar)     │   │
-│  │   / PIX Admin)  │     └─────────────────────────────┘   │
-│  └─────────────────┘                                        │
-│                                                             │
-│  ┌─────────────────┐     ┌─────────────────────────────┐   │
-│  │  Music Ready    │────►│  send-music-ready-email     │   │
-│  │  Status Change  │     │  (Nova Edge Function)       │   │
-│  └─────────────────┘     └─────────────────────────────┘   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────┐
+│         [Badge: X músicas/mês]       │  ← Badge no topo
+│                                      │
+│            🎵 [Ícone]                │
+│                                      │
+│          Creator Start               │  ← Nome do plano
+│                                      │
+│    50 músicas/mês • Ideal para       │  ← DESCRIÇÃO
+│    criadores que estão começando     │
+│                                      │
+│          R$ 29,90                    │  ← Preço
+│          /mês                        │
+│                                      │
+│    Apenas R$ 0,60 por música         │  ← Custo unitário
+└──────────────────────────────────────┘
 ```
 
-## Implementação Detalhada
+---
 
-### Fase 1: E-mail de Boas-Vindas
+## Arquivos a Modificar
 
-**Nova Edge Function: `send-welcome-email`**
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/pages/Planos.tsx` | Garantir que `getCreatorPlanDescription()` seja chamado corretamente e exibido com destaque visual |
+| `src/components/CreatorSection.tsx` | Confirmar que os cards na homepage também exibem descrições (já verificado que está correto) |
 
-```typescript
-// supabase/functions/send-welcome-email/index.ts
-interface WelcomeEmailRequest {
-  email: string;
-  userName: string;
-}
+---
+
+## Detalhes Técnicos
+
+### Reforço na exibição da descrição em `Planos.tsx`:
+
+```jsx
+<CardHeader className="text-center pb-4 pt-8">
+  {/* Ícone */}
+  <div className="flex justify-center mb-4">
+    <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500">
+      <PlanIcon className="w-8 h-8 text-white" />
+    </div>
+  </div>
+  
+  {/* Nome do plano */}
+  <CardTitle className="text-2xl mb-2">
+    {getPlanName(plan.id, plan.name)}
+  </CardTitle>
+  
+  {/* ✅ DESCRIÇÃO - forçar visibilidade */}
+  <p className="text-sm text-muted-foreground mb-4 leading-relaxed min-h-[48px]">
+    {getCreatorPlanDescription(plan.id)}
+  </p>
+  
+  {/* Preço */}
+  <CardDescription className="text-4xl font-bold text-purple-400">
+    {formatPrice(plan.price_cents)}
+    <span className="text-base font-normal text-muted-foreground block mt-1">
+      /mês
+    </span>
+  </CardDescription>
+</CardHeader>
 ```
 
-**Template do E-mail:**
-- Header com logo e gradiente roxo
-- Mensagem de boas-vindas personalizada
-- 3 passos para começar (Briefing → Pagamento → Música)
-- Botão CTA "Criar Minha Primeira Música"
-- Footer com contato
+---
 
-**Integração:**
-- Chamar no `Auth.tsx` após `signUp` bem-sucedido
-- Ou usar Database Webhook no Supabase (quando profile é criado)
+## Resultado Esperado
 
-### Fase 2: E-mail de Música Pronta
+Após a implementação:
+- **Creator Start**: "50 músicas/mês • Ideal para criadores que estão começando"
+- **Creator Pro**: "150 músicas/mês • Para criadores de conteúdo frequentes"  
+- **Creator Studio**: "300 músicas/mês • Produção em escala para profissionais"
 
-**Nova Edge Function: `send-music-ready-email`**
-
-```typescript
-interface MusicReadyEmailRequest {
-  email: string;
-  userName: string;
-  orderId: string;
-  songTitle?: string;
-  musicType: string;
-}
-```
-
-**Template do E-mail:**
-- Celebração com emoji 🎵
-- Título da música (se disponível)
-- Botão "Ouvir Minha Música"
-- Seção para compartilhar
-- CTA para avaliar o serviço
-
-**Integração:**
-- Chamar no `AdminDashboard.tsx` quando admin marca música como pronta
-- Ou usar Database Trigger no Supabase
-
-### Fase 3: Melhorias no E-mail de Compra
-
-**Atualizações em `send-purchase-email`:**
-- Adicionar ID do pedido formatado (primeiros 8 caracteres)
-- Incluir resumo do briefing (tipo de música, estilo)
-- Prazo estimado de entrega
-- Instruções específicas por tipo de compra
-
-### Fase 4: E-mail de PIX Confirmado
-
-**Reutilizar `send-purchase-email`**
-- Adicionar flag `paymentMethod: 'pix'`
-- Mensagem específica para PIX
-- Instruções de próximos passos
-
-## Arquivos a Criar/Modificar
-
-### Novos Arquivos:
-1. `supabase/functions/send-welcome-email/index.ts` - E-mail de boas-vindas
-2. `supabase/functions/send-music-ready-email/index.ts` - E-mail de música pronta
-
-### Arquivos a Modificar:
-1. `supabase/config.toml` - Adicionar novas funções
-2. `src/hooks/useAuth.tsx` ou `src/pages/Auth.tsx` - Chamar welcome email
-3. `src/pages/AdminDashboard.tsx` - Chamar music ready email
-4. `supabase/functions/send-purchase-email/index.ts` - Adicionar suporte a PIX
-
-## Templates de E-mail (Visual)
-
-Todos os e-mails seguirão o padrão visual existente:
-- **Header**: Gradiente roxo (#7c3aed → #a855f7) com logo
-- **Corpo**: Fundo branco, tipografia clara
-- **Cards**: Fundo cinza claro para destaque de informações
-- **Botões**: Gradiente roxo, bordas arredondadas
-- **Footer**: Copyright + aviso de e-mail automático
-
-## Considerações de Segurança
-
-1. **Validação de entrada**: Zod para validar campos obrigatórios
-2. **Rate limiting**: Não enviar duplicados
-3. **Logs**: Registrar todas as tentativas de envio
-4. **Fallback**: Não falhar operações principais se e-mail falhar
-
-## Próximos Passos (Opcionais)
-
-- E-mail de lembrete para pedidos abandonados
-- E-mail de renovação de assinatura Creator
-- E-mail de aniversário de cliente
-- E-mail de feedback após 7 dias da entrega
+As descrições aparecerão de forma clara e consistente tanto na página `/planos` quanto na homepage.
