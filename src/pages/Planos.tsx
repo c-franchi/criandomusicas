@@ -159,6 +159,16 @@ const Planos = () => {
     return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
   };
 
+  // Get translated features for Creator plans
+  const getCreatorPlanFeatures = (planId: string, dbFeatures: string[]): string[] => {
+    const translatedFeatures = t(`plans.${planId}.features`, { returnObjects: true, defaultValue: [] });
+    if (Array.isArray(translatedFeatures) && translatedFeatures.length > 0 && typeof translatedFeatures[0] === 'string') {
+      return translatedFeatures as string[];
+    }
+    // Fallback to DB features if translations not available
+    return dbFeatures.length > 0 ? dbFeatures : [];
+  };
+
   const getButtonText = (planId: string) => {
     const credits = getCreditsForPlan(planId);
     if (credits === 1) return t('cta');
@@ -524,7 +534,7 @@ const Planos = () => {
 
                     <CardContent className="flex-1 flex flex-col">
                       <ul className="space-y-3 mb-8 flex-1">
-                        {plan.features.map((feature, index) => (
+                        {getCreatorPlanFeatures(plan.id, plan.features).map((feature, index) => (
                           <li key={index} className="flex items-start gap-3">
                             <div className="p-1 rounded-full bg-purple-500/20 mt-0.5">
                               <Check className="w-3 h-3 text-purple-400 flex-shrink-0" />

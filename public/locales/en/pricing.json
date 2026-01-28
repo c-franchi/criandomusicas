@@ -72,27 +72,81 @@
     },
     "creator_start": {
       "name": "Creator Start",
-      "description": "50 songs/month for beginner creators"
+      "description": "50 songs/month for beginner creators",
+      "features": [
+        "50 songs per month",
+        "Professionally curated lyrics",
+        "Thumbnail-ready covers",
+        "Commercial use & monetization",
+        "Delivery within 48h",
+        "Email support"
+      ]
     },
     "creator_pro": {
       "name": "Creator Pro",
-      "description": "150 songs/month for active creators"
+      "description": "150 songs/month for active creators",
+      "features": [
+        "150 songs per month",
+        "Professionally curated lyrics",
+        "Thumbnail-ready covers",
+        "Commercial use & monetization",
+        "Optimized formats (30s, 60s)",
+        "Priority delivery",
+        "Dedicated VIP support"
+      ]
     },
     "creator_studio": {
       "name": "Creator Studio",
-      "description": "300 songs/month for professional studios"
+      "description": "300 songs/month for professional studios",
+      "features": [
+        "300 songs per month",
+        "Professionally curated lyrics",
+        "Thumbnail-ready covers",
+        "Commercial use & monetization",
+        "Optimized formats (30s, 60s)",
+        "Express priority delivery",
+        "Dedicated account manager",
+        "24/7 priority support"
+      ]
     },
     "creator_start_instrumental": {
       "name": "Creator Start Instrumental",
-      "description": "50 instrumentals/month for beginner creators"
+      "description": "50 instrumentals/month for beginner creators",
+      "features": [
+        "50 instrumentals per month",
+        "Custom arrangements",
+        "Thumbnail-ready covers",
+        "Commercial use & monetization",
+        "Delivery within 48h",
+        "Email support"
+      ]
     },
     "creator_pro_instrumental": {
       "name": "Creator Pro Instrumental",
-      "description": "150 instrumentals/month for active creators"
+      "description": "150 instrumentals/month for active creators",
+      "features": [
+        "150 instrumentals per month",
+        "Custom arrangements",
+        "Thumbnail-ready covers",
+        "Commercial use & monetization",
+        "Optimized formats (30s, 60s)",
+        "Priority delivery",
+        "Dedicated VIP support"
+      ]
     },
     "creator_studio_instrumental": {
       "name": "Creator Studio Instrumental",
-      "description": "300 instrumentals/month for professional studios"
+      "description": "300 instrumentals/month for professional studios",
+      "features": [
+        "300 instrumentals per month",
+        "Custom arrangements",
+        "Thumbnail-ready covers",
+        "Commercial use & monetization",
+        "Optimized formats (30s, 60s)",
+        "Express priority delivery",
+        "Dedicated account manager",
+        "24/7 priority support"
+      ]
     }
   },
   "instrumental": {

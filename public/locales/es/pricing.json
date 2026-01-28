@@ -72,27 +72,81 @@
     },
     "creator_start": {
       "name": "Creator Start",
-      "description": "50 canciones/mes para creadores principiantes"
+      "description": "50 canciones/mes para creadores principiantes",
+      "features": [
+        "50 canciones por mes",
+        "Letras curadas profesionalmente",
+        "Portadas listas para miniaturas",
+        "Uso comercial y monetización",
+        "Entrega en hasta 48h",
+        "Soporte por email"
+      ]
     },
     "creator_pro": {
       "name": "Creator Pro",
-      "description": "150 canciones/mes para creadores activos"
+      "description": "150 canciones/mes para creadores activos",
+      "features": [
+        "150 canciones por mes",
+        "Letras curadas profesionalmente",
+        "Portadas listas para miniaturas",
+        "Uso comercial y monetización",
+        "Formatos optimizados (30s, 60s)",
+        "Entrega prioritaria",
+        "Soporte VIP dedicado"
+      ]
     },
     "creator_studio": {
       "name": "Creator Studio",
-      "description": "300 canciones/mes para estudios profesionales"
+      "description": "300 canciones/mes para estudios profesionales",
+      "features": [
+        "300 canciones por mes",
+        "Letras curadas profesionalmente",
+        "Portadas listas para miniaturas",
+        "Uso comercial y monetización",
+        "Formatos optimizados (30s, 60s)",
+        "Entrega express prioritaria",
+        "Gerente de cuenta dedicado",
+        "Soporte prioritario 24/7"
+      ]
     },
     "creator_start_instrumental": {
       "name": "Creator Start Instrumental",
-      "description": "50 instrumentales/mes para creadores principiantes"
+      "description": "50 instrumentales/mes para creadores principiantes",
+      "features": [
+        "50 instrumentales por mes",
+        "Arreglos personalizados",
+        "Portadas listas para miniaturas",
+        "Uso comercial y monetización",
+        "Entrega en hasta 48h",
+        "Soporte por email"
+      ]
     },
     "creator_pro_instrumental": {
       "name": "Creator Pro Instrumental",
-      "description": "150 instrumentales/mes para creadores activos"
+      "description": "150 instrumentales/mes para creadores activos",
+      "features": [
+        "150 instrumentales por mes",
+        "Arreglos personalizados",
+        "Portadas listas para miniaturas",
+        "Uso comercial y monetización",
+        "Formatos optimizados (30s, 60s)",
+        "Entrega prioritaria",
+        "Soporte VIP dedicado"
+      ]
     },
     "creator_studio_instrumental": {
       "name": "Creator Studio Instrumental",
-      "description": "300 instrumentales/mes para estudios profesionales"
+      "description": "300 instrumentales/mes para estudios profesionales",
+      "features": [
+        "300 instrumentales por mes",
+        "Arreglos personalizados",
+        "Portadas listas para miniaturas",
+        "Uso comercial y monetización",
+        "Formatos optimizados (30s, 60s)",
+        "Entrega express prioritaria",
+        "Gerente de cuenta dedicado",
+        "Soporte prioritario 24/7"
+      ]
     }
   },
   "instrumental": {
