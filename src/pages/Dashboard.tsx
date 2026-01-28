@@ -384,7 +384,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background py-12 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background py-12 px-6">
       <div className="max-w-4xl mx-auto">
         {/* Notification Banner */}
         <motion.div
@@ -476,7 +476,7 @@ const Dashboard = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.3 }}
             >
-              <Card className="p-8 text-center">
+              <Card className="p-8 text-center premium-card">
                 <motion.div
                   animate={{ y: [0, -10, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}

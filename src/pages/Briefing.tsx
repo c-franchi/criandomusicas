@@ -1651,8 +1651,8 @@ const Briefing = () => {
   // Tela de seleção de pacote
   if (showPlanSelection) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+        <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
           <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="mr-1">
               <ArrowLeft className="w-5 h-5" />
@@ -1880,8 +1880,8 @@ const Briefing = () => {
   // Tela de confirmação
   if (showConfirmation) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+        <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
           <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
               <Music className="w-5 h-5 text-primary" />
@@ -1900,7 +1900,7 @@ const Briefing = () => {
             {/* Currency Warning */}
             <CurrencyWarning language={i18n.language} />
             
-            <div className="bg-muted rounded-2xl p-6 space-y-4">
+            <div className="bg-card rounded-2xl p-6 space-y-4 border border-border/50 shadow-lg">
               <h2 className="text-lg font-semibold flex items-center gap-2">
                 {t('confirmation.summary')}
                 {formData.hasCustomLyric ? (
@@ -2134,9 +2134,9 @@ const Briefing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
       {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
           {stepHistory.length > 0 ? (
             <Button variant="ghost" size="icon" onClick={handleGoBack} className="mr-1">
@@ -2187,8 +2187,8 @@ const Briefing = () => {
               <div
                 className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                   msg.type === 'user'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted'
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : 'bg-card border border-border/50 shadow-md'
                 }`}
               >
                 <p className="whitespace-pre-wrap">{msg.content}</p>
