@@ -1,12 +1,125 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Image, Clock, Users, ArrowRight, Sparkles, Video, Headphones } from "lucide-react";
+import { FileText, Image, Clock, Users, ArrowRight, Sparkles, Video, Headphones, Crown, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 
+// Creator plan data with credits and descriptions
+const CREATOR_PLANS = [
+  {
+    id: 'creator_start',
+    name: 'Creator Start',
+    credits: 50,
+    price: 2990, // cents
+    popular: false,
+  },
+  {
+    id: 'creator_pro',
+    name: 'Creator Pro',
+    credits: 150,
+    price: 4990, // cents
+    popular: true,
+  },
+  {
+    id: 'creator_studio',
+    name: 'Creator Studio',
+    credits: 300,
+    price: 7990, // cents
+    popular: false,
+  },
+];
+
 const CreatorSection = () => {
-  const { t } = useTranslation('pricing');
+  const { t, i18n } = useTranslation('pricing');
+
+  // Format price based on language
+  const formatPrice = (cents: number): string => {
+    const value = cents / 100;
+    if (i18n.language === 'pt-BR') {
+      return `R$ ${value.toFixed(2).replace('.', ',')}`;
+    }
+    return `R$ ${value.toFixed(2)}`;
+  };
+
+  // Get plan description with credits
+  const getPlanDescription = (planId: string, credits: number): string => {
+    const songWord = i18n.language === 'pt-BR' ? 'músicas' 
+      : i18n.language === 'es' ? 'canciones' 
+      : i18n.language === 'it' ? 'canzoni' 
+      : 'songs';
+    
+    const monthWord = i18n.language === 'pt-BR' ? 'mês' 
+      : i18n.language === 'es' ? 'mes' 
+      : i18n.language === 'it' ? 'mese' 
+      : 'month';
+
+    if (planId === 'creator_start') {
+      const desc = i18n.language === 'pt-BR' ? 'Ideal para criadores que estão começando' 
+        : i18n.language === 'es' ? 'Ideal para creadores que están comenzando' 
+        : i18n.language === 'it' ? 'Ideale per creator che stanno iniziando' 
+        : 'Ideal for creators just starting out';
+      return `${credits} ${songWord}/${monthWord} • ${desc}`;
+    }
+    
+    if (planId === 'creator_pro') {
+      const desc = i18n.language === 'pt-BR' ? 'Para criadores de conteúdo frequentes' 
+        : i18n.language === 'es' ? 'Para creadores de contenido frecuentes' 
+        : i18n.language === 'it' ? 'Per creator di contenuti frequenti' 
+        : 'For frequent content creators';
+      return `${credits} ${songWord}/${monthWord} • ${desc}`;
+    }
+    
+    if (planId === 'creator_studio') {
+      const desc = i18n.language === 'pt-BR' ? 'Produção em escala para profissionais' 
+        : i18n.language === 'es' ? 'Producción a escala para profesionales' 
+        : i18n.language === 'it' ? 'Produzione su larga scala per professionisti' 
+        : 'Scale production for professionals';
+      return `${credits} ${songWord}/${monthWord} • ${desc}`;
+    }
+    
+    return `${credits} ${songWord}/${monthWord}`;
+  };
+
+  // Get features for Creator plans
+  const getCreatorFeatures = (): string[] => {
+    if (i18n.language === 'pt-BR') {
+      return [
+        'Letras curadas por humanos',
+        'Capas prontas para thumbnail',
+        'Formatos curtos (30s/60s)',
+        'Suporte prioritário',
+        '100% original e monetizável',
+      ];
+    }
+    if (i18n.language === 'es') {
+      return [
+        'Letras curadas por humanos',
+        'Portadas listas para miniatura',
+        'Formatos cortos (30s/60s)',
+        'Soporte prioritario',
+        '100% original y monetizable',
+      ];
+    }
+    if (i18n.language === 'it') {
+      return [
+        'Testi curati da umani',
+        'Copertine pronte per miniatura',
+        'Formati brevi (30s/60s)',
+        'Supporto prioritario',
+        '100% originale e monetizzabile',
+      ];
+    }
+    return [
+      'Human-curated lyrics',
+      'Thumbnail-ready covers',
+      'Short formats (30s/60s)',
+      'Priority support',
+      '100% original & monetizable',
+    ];
+  };
+
+  const features = getCreatorFeatures();
 
   return (
     <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10" id="criadores">
@@ -28,6 +141,70 @@ const CreatorSection = () => {
           <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
             {t('creator.subdescription')}
           </p>
+        </div>
+        
+        {/* Creator Plan Cards */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {CREATOR_PLANS.map((plan) => (
+            <Card 
+              key={plan.id}
+              className={`relative overflow-hidden transition-all hover:shadow-xl ${
+                plan.popular 
+                  ? 'border-2 border-purple-500 shadow-lg shadow-purple-500/20' 
+                  : 'border-primary/20 hover:border-primary/50'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                  {i18n.language === 'pt-BR' ? 'POPULAR' : i18n.language === 'es' ? 'POPULAR' : i18n.language === 'it' ? 'POPOLARE' : 'POPULAR'}
+                </div>
+              )}
+              
+              <CardHeader className="pb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Crown className="w-5 h-5 text-purple-400" />
+                  <CardTitle className="text-xl text-card-foreground font-bold">
+                    {plan.name}
+                  </CardTitle>
+                </div>
+                
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {getPlanDescription(plan.id, plan.credits)}
+                </p>
+                
+                <CardDescription className="text-3xl font-bold text-purple-400 mt-3">
+                  {formatPrice(plan.price)}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    /{i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}
+                  </span>
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="pt-0">
+                <ul className="space-y-2 mb-6">
+                  {features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+                
+                <Button 
+                  asChild 
+                  className={`w-full ${
+                    plan.popular 
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
+                      : 'bg-purple-600 hover:bg-purple-700 text-white'
+                  }`}
+                >
+                  <Link to="/planos#creator">
+                    {i18n.language === 'pt-BR' ? 'Assinar Agora' : i18n.language === 'es' ? 'Suscribirse' : i18n.language === 'it' ? 'Abbonati Ora' : 'Subscribe Now'}
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
         </div>
         
         {/* Diferenciais Grid */}
