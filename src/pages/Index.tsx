@@ -31,7 +31,7 @@ const Index = () => {
       <AudioSamples />
       <InstrumentalShowcase />
       <WhyChooseUs />
-      {/* PricingPlans removido - apenas CreatorSection na homepage */}
+      <PricingPlans />
       <CreatorSection />
       <PlanComparison />
       <CustomLyricHighlight />
