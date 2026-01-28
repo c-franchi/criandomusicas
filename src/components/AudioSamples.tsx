@@ -291,9 +291,6 @@ const AudioSamples = () => {
     }
   };
 
-  // Split samples into two rows for alternating directions
-  const row1 = samples.slice(0, Math.ceil(samples.length / 2));
-  const row2 = samples.slice(Math.ceil(samples.length / 2));
 
   if (loading) {
     return (
@@ -327,51 +324,26 @@ const AudioSamples = () => {
           </p>
         </motion.div>
         
-        {/* Marquee Row 1 - Left direction */}
-        <div className="mb-6">
-          <Marquee direction="left" speed="normal" pauseOnHover>
-            {row1.map((sample) => {
-              const isPlaying = currentPlaying === sample.id;
-              const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-              
-              return (
-                <AudioSampleCard
-                  key={`row1-${sample.id}`}
-                  sample={sample}
-                  isPlaying={isPlaying}
-                  progress={progress}
-                  currentTime={currentTime}
-                  duration={duration}
-                  onTogglePlay={() => togglePlay(sample)}
-                  formatTime={formatTime}
-                />
-              );
-            })}
-          </Marquee>
-        </div>
-        
-        {/* Marquee Row 2 - Right direction */}
-        <div>
-          <Marquee direction="right" speed="fast" pauseOnHover>
-            {row2.map((sample) => {
-              const isPlaying = currentPlaying === sample.id;
-              const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
-              
-              return (
-                <AudioSampleCard
-                  key={`row2-${sample.id}`}
-                  sample={sample}
-                  isPlaying={isPlaying}
-                  progress={progress}
-                  currentTime={currentTime}
-                  duration={duration}
-                  onTogglePlay={() => togglePlay(sample)}
-                  formatTime={formatTime}
-                />
-              );
-            })}
-          </Marquee>
-        </div>
+        {/* Single Marquee Row */}
+        <Marquee direction="left" speed="normal" pauseOnHover>
+          {samples.map((sample) => {
+            const isPlaying = currentPlaying === sample.id;
+            const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+            
+            return (
+              <AudioSampleCard
+                key={sample.id}
+                sample={sample}
+                isPlaying={isPlaying}
+                progress={progress}
+                currentTime={currentTime}
+                duration={duration}
+                onTogglePlay={() => togglePlay(sample)}
+                formatTime={formatTime}
+              />
+            );
+          })}
+        </Marquee>
       </div>
     </section>
   );
