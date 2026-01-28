@@ -637,6 +637,23 @@ const AdminDashboard = () => {
         console.error('Push notification error:', pushError);
       }
 
+      // Send music ready email notification (uses userId, Edge Function fetches email via admin API)
+      try {
+        await supabase.functions.invoke('send-music-ready-email', {
+          body: {
+            userId: order.user_id,
+            orderId: order.id,
+            songTitle: order.lyric_title || order.song_title,
+            musicType: order.music_type,
+            isInstrumental: order.is_instrumental
+          }
+        });
+        console.log('Music ready email sent');
+      } catch (emailError) {
+        console.error('Email notification error:', emailError);
+        // Non-critical - don't show error to admin
+      }
+
       // Update local state
       setOrders(prev => prev.map(o => 
         o.id === order.id ? { ...o, status: 'COMPLETED', track_url: audioUrl } : o

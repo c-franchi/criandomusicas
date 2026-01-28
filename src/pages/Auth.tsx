@@ -183,6 +183,17 @@ const Auth = () => {
           title: t('success.signup'),
           description: t('success.signupLoggedIn'),
         });
+        
+        // Send welcome email (don't block on failure)
+        try {
+          await supabase.functions.invoke('send-welcome-email', {
+            body: { email, userName: name }
+          });
+          console.log('Welcome email sent successfully');
+        } catch (emailError) {
+          console.error('Failed to send welcome email:', emailError);
+          // Don't show error to user - welcome email is non-critical
+        }
       }
     } catch (err) {
       console.error('Sign up error:', err);

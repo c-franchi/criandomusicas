@@ -68,3 +68,9 @@ verify_jwt = false
 
 [functions.send-purchase-email]
 verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-music-ready-email]
+verify_jwt = false
