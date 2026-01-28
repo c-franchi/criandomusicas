@@ -545,22 +545,29 @@ const Planos = () => {
                     </Badge>
 
                     <CardHeader className="text-center pb-4 pt-8">
+                      {/* Icon */}
                       <div className="flex justify-center mb-4">
                         <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
                           <PlanIcon className="w-8 h-8 text-white" />
                         </div>
                       </div>
-                      <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
+                      
+                      {/* Plan Name */}
+                      <CardTitle className="text-2xl mb-3 text-card-foreground font-bold">
                         {getPlanName(plan.id, plan.name)}
                       </CardTitle>
                       
-                      {/* Plan Description with credits */}
-                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                        {getCreatorPlanDescription(plan.id)}
-                      </p>
+                      {/* ✅ DESCRIPTION - forced visibility with min-height */}
+                      <div className="mb-4 min-h-[52px] flex items-center justify-center">
+                        <p className="text-sm text-muted-foreground leading-relaxed text-center px-2">
+                          {getCreatorPlanDescription(plan.id) || `${credits} músicas/mês`}
+                        </p>
+                      </div>
                       
+                      {/* Price */}
                       <CardDescription className="text-4xl font-bold text-purple-400">
                         {formatPrice(plan.price_promo_cents || plan.price_cents)}
+                        <span className="text-base font-normal text-muted-foreground block mt-1">/mês</span>
                       </CardDescription>
 
                       {/* Price per music */}
