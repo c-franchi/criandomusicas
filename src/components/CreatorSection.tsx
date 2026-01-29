@@ -6,6 +6,49 @@ import { FileText, Image, Clock, Users, ArrowRight, Sparkles, Video, Headphones,
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import PlanTypeToggle from "@/components/PlanTypeToggle";
+import { motion } from "framer-motion";
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut" as const,
+    },
+  },
+};
+
+const cardHoverVariants = {
+  rest: { 
+    scale: 1, 
+    y: 0,
+    boxShadow: "0 4px 24px -4px hsl(240 10% 10% / 0.08)"
+  },
+  hover: { 
+    scale: 1.02, 
+    y: -8,
+    boxShadow: "0 20px 40px -8px hsl(259 94% 51% / 0.25)",
+    transition: {
+      duration: 0.3,
+      ease: "easeOut" as const
+    }
+  },
+};
 
 // Creator plan data with credits and descriptions
 const CREATOR_PLANS = [
@@ -125,210 +168,335 @@ const CreatorSection = () => {
   const features = getCreatorFeatures();
 
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10" id="criadores">
+    <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10 overflow-hidden" id="criadores">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Badge + Headline */}
-        <div className="text-center mb-12">
-          <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-4 py-1.5 text-sm">
-            🎬 {t('creator.badge')}
-          </Badge>
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-4 py-1.5 text-sm">
+              🎬 {t('creator.badge')}
+            </Badge>
+          </motion.div>
           
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
+          <motion.h2 
+            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             {t('creator.title')} <span className="gradient-text">{t('creator.titleHighlight')}</span>
-          </h2>
+          </motion.h2>
           
-          <p className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto">
+          <motion.p 
+            className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
             {t('creator.description')}
-          </p>
+          </motion.p>
           
-          <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-6">
+          <motion.p 
+            className="text-muted-foreground text-sm max-w-2xl mx-auto mb-6"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
             {t('creator.subdescription')}
-          </p>
+          </motion.p>
           
           {/* Toggle Vocal/Instrumental */}
-          <PlanTypeToggle 
-            isInstrumental={isInstrumental} 
-            onToggle={setIsInstrumental}
-            className="mb-4"
-          />
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <PlanTypeToggle 
+              isInstrumental={isInstrumental} 
+              onToggle={setIsInstrumental}
+              className="mb-4"
+            />
+          </motion.div>
           
           {isInstrumental && (
-            <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
-              {t('section.instrumentalCreatorDiscount')}
-            </Badge>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
+                {t('section.instrumentalCreatorDiscount')}
+              </Badge>
+            </motion.div>
           )}
-        </div>
+        </motion.div>
         
         {/* Creator Plan Cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {CREATOR_PLANS.map((plan) => (
-            <Card 
+        <motion.div 
+          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-10%" }}
+        >
+          {CREATOR_PLANS.map((plan, index) => (
+            <motion.div
               key={plan.id}
-              className={`relative overflow-hidden transition-all hover:shadow-xl ${
-                plan.popular 
-                  ? 'border-2 border-purple-500 shadow-lg shadow-purple-500/20' 
-                  : 'border-primary/20 hover:border-primary/50'
-              }`}
+              variants={itemVariants}
+              whileHover="hover"
+              initial="rest"
+              animate="rest"
             >
-              {plan.popular && (
-                <div className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
-                  {i18n.language === 'pt-BR' ? 'POPULAR' : i18n.language === 'es' ? 'POPULAR' : i18n.language === 'it' ? 'POPOLARE' : 'POPULAR'}
-                </div>
-              )}
-              
-              <CardHeader className="pb-4 text-center">
-                <div className="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mb-4">
-                  <Crown className="w-7 h-7 text-purple-400" />
-                </div>
-                
-                <CardTitle className="text-xl text-card-foreground font-bold mb-2">
-                  {plan.name}
-                </CardTitle>
-                
-                <div className="text-3xl font-bold text-purple-400 mb-3">
-                  {formatPrice(plan.price)}
-                  <span className="text-sm font-normal text-muted-foreground">
-                    /{i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}
-                  </span>
-                </div>
-                
-                <p className="text-sm text-muted-foreground leading-relaxed min-h-[40px]">
-                  {getPlanDescription(plan.id, plan.credits)}
-                </p>
-              </CardHeader>
-              
-              <CardContent className="pt-0">
-                <ul className="space-y-2 mb-6">
-                  {features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                
-                <Button 
-                  asChild 
-                  className={`w-full ${
+              <motion.div variants={cardHoverVariants}>
+                <Card 
+                  className={`relative overflow-hidden h-full ${
                     plan.popular 
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
-                      : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      ? 'border-2 border-purple-500 shadow-lg shadow-purple-500/20' 
+                      : 'border-primary/20'
                   }`}
                 >
-                  <Link to="/planos#creator">
-                    {i18n.language === 'pt-BR' ? 'Assinar Agora' : i18n.language === 'es' ? 'Suscribirse' : i18n.language === 'it' ? 'Abbonati Ora' : 'Subscribe Now'}
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+                  {plan.popular && (
+                    <motion.div 
+                      className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg"
+                      initial={{ x: 20, opacity: 0 }}
+                      whileInView={{ x: 0, opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: 0.5 + index * 0.1 }}
+                    >
+                      {i18n.language === 'pt-BR' ? 'POPULAR' : i18n.language === 'es' ? 'POPULAR' : i18n.language === 'it' ? 'POPOLARE' : 'POPULAR'}
+                    </motion.div>
+                  )}
+                  
+                  <CardHeader className="pb-4 text-center">
+                    <motion.div 
+                      className="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mb-4"
+                      whileHover={{ 
+                        scale: 1.1, 
+                        rotate: [0, -10, 10, 0],
+                        transition: { duration: 0.5 }
+                      }}
+                    >
+                      <Crown className="w-7 h-7 text-purple-400" />
+                    </motion.div>
+                    
+                    <CardTitle className="text-xl text-card-foreground font-bold mb-2">
+                      {plan.name}
+                    </CardTitle>
+                    
+                    <div className="text-3xl font-bold text-purple-400 mb-3">
+                      {formatPrice(plan.price)}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        /{i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}
+                      </span>
+                    </div>
+                    
+                    <p className="text-sm text-muted-foreground leading-relaxed min-h-[40px]">
+                      {getPlanDescription(plan.id, plan.credits)}
+                    </p>
+                  </CardHeader>
+                  
+                  <CardContent className="pt-0">
+                    <ul className="space-y-2 mb-6">
+                      {features.map((feature, idx) => (
+                        <motion.li 
+                          key={idx} 
+                          className="flex items-center gap-2 text-sm text-muted-foreground"
+                          initial={{ opacity: 0, x: -10 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.6 + idx * 0.05 }}
+                        >
+                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                          {feature}
+                        </motion.li>
+                      ))}
+                    </ul>
+                    
+                    <Button 
+                      asChild 
+                      className={`w-full ${
+                        plan.popular 
+                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
+                          : 'bg-purple-600 hover:bg-purple-700 text-white'
+                      }`}
+                    >
+                      <Link to="/planos#creator">
+                        {i18n.language === 'pt-BR' ? 'Assinar Agora' : i18n.language === 'es' ? 'Suscribirse' : i18n.language === 'it' ? 'Abbonati Ora' : 'Subscribe Now'}
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
         
         {/* Credit Type Warning */}
-        <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 max-w-3xl mx-auto">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+        <motion.div 
+          className="mb-16 mt-8 p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+            </div>
             <div>
-              <p className="font-medium text-amber-400">
+              <p className="font-semibold text-amber-400 mb-1.5">
                 {t('creator.creditTypeWarning.title')}
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {isInstrumental 
                   ? t('creator.creditTypeWarning.instrumental')
                   : t('creator.creditTypeWarning.vocal')}
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
         
         {/* Diferenciais Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          <Card className="border-primary/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-3">
-                <FileText className="w-6 h-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">{t('creator.features.curatedLyrics')}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              {t('creator.features.curatedLyricsDesc')}
-            </CardContent>
-          </Card>
-          
-          <Card className="border-primary/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-3">
-                <Image className="w-6 h-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">{t('creator.features.readyCovers')}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              {t('creator.features.readyCoversDesc')}
-            </CardContent>
-          </Card>
-          
-          <Card className="border-primary/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-3">
-                <Clock className="w-6 h-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">{t('creator.features.shortFormats')}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              {t('creator.features.shortFormatsDesc')}
-            </CardContent>
-          </Card>
-          
-          <Card className="border-primary/20 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
-            <CardHeader className="pb-2">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-3">
-                <Users className="w-6 h-6 text-primary" />
-              </div>
-              <CardTitle className="text-lg">{t('creator.features.humanSupport')}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-muted-foreground text-sm">
-              {t('creator.features.humanSupportDesc')}
-            </CardContent>
-          </Card>
-        </div>
+        <motion.div 
+          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-5%" }}
+        >
+          {[
+            { icon: FileText, titleKey: 'curatedLyrics', descKey: 'curatedLyricsDesc' },
+            { icon: Image, titleKey: 'readyCovers', descKey: 'readyCoversDesc' },
+            { icon: Clock, titleKey: 'shortFormats', descKey: 'shortFormatsDesc' },
+            { icon: Users, titleKey: 'humanSupport', descKey: 'humanSupportDesc' },
+          ].map((item, index) => (
+            <motion.div key={item.titleKey} variants={itemVariants}>
+              <motion.div
+                whileHover={{ 
+                  y: -8, 
+                  scale: 1.02,
+                  transition: { duration: 0.3 }
+                }}
+              >
+                <Card className="border-primary/20 hover:border-primary/50 transition-colors h-full">
+                  <CardHeader className="pb-2">
+                    <motion.div 
+                      className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-3"
+                      whileHover={{ 
+                        scale: 1.15, 
+                        rotate: 360,
+                        transition: { duration: 0.6 }
+                      }}
+                    >
+                      <item.icon className="w-6 h-6 text-primary" />
+                    </motion.div>
+                    <CardTitle className="text-lg">{t(`creator.features.${item.titleKey}`)}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground text-sm">
+                    {t(`creator.features.${item.descKey}`)}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
         
         {/* Comparison Box */}
-        <Card className="mb-12 p-6 sm:p-8 border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
-          <div className="flex flex-col lg:flex-row items-center gap-6">
-            <div className="flex-1">
-              <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-primary" />
-                {t('creator.whyDifferent.title')}
-              </h3>
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">{t('creator.whyDifferent.youDescribe')}</strong> {t('creator.whyDifferent.weTakeCare')}
-              </p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/20 border border-green-500/40">
-                <Headphones className="w-4 h-4 text-green-400" />
-                <span className="text-sm font-medium text-green-400">{t('creator.badges.original')}</span>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <Card className="mb-12 p-6 sm:p-8 border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
+            <div className="flex flex-col lg:flex-row items-center gap-6">
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+                  <motion.div
+                    animate={{ 
+                      rotate: [0, 15, -15, 0],
+                      scale: [1, 1.1, 1]
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity, 
+                      repeatDelay: 3 
+                    }}
+                  >
+                    <Sparkles className="w-5 h-5 text-primary" />
+                  </motion.div>
+                  {t('creator.whyDifferent.title')}
+                </h3>
+                <p className="text-muted-foreground">
+                  <strong className="text-foreground">{t('creator.whyDifferent.youDescribe')}</strong> {t('creator.whyDifferent.weTakeCare')}
+                </p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 border border-blue-500/40">
-                <Video className="w-4 h-4 text-blue-400" />
-                <span className="text-sm font-medium text-blue-400">{t('creator.badges.monetizable')}</span>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <motion.div 
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/20 border border-green-500/40"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Headphones className="w-4 h-4 text-green-400" />
+                  <span className="text-sm font-medium text-green-400">{t('creator.badges.original')}</span>
+                </motion.div>
+                <motion.div 
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 border border-blue-500/40"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Video className="w-4 h-4 text-blue-400" />
+                  <span className="text-sm font-medium text-blue-400">{t('creator.badges.monetizable')}</span>
+                </motion.div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
         
         {/* CTA */}
-        <div className="text-center">
-          <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-primary/30">
-            <Link to="/planos#creator">
-              {t('creator.cta')}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Link>
-          </Button>
+        <motion.div 
+          className="text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-primary/30">
+              <Link to="/planos#creator">
+                {t('creator.cta')}
+                <motion.div
+                  className="ml-2"
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </motion.div>
+              </Link>
+            </Button>
+          </motion.div>
           <p className="mt-4 text-sm text-muted-foreground">
             {t('creator.pricing')}
           </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
