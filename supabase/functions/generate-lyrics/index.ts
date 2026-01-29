@@ -268,7 +268,7 @@ serve(async (req) => {
     };
     const voiceDescription = voiceTypeMap[voiceType] || 'voz feminina solo';
 
-    const systemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : 'momentos especiais'}.
+    const systemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 REGRAS OBRIGATÓRIAS:
 1. Gere APENAS a letra final, sem comentários, explicações ou metadados
@@ -308,6 +308,28 @@ ${hasMonologue ? `
 ❌ ERRADO:
 [Verse]
 Texto falado...
+` : ''}
+
+${musicType === 'corporativa' && hasMonologue ? `
+⚠️ REGRAS ESPECIAIS PARA JINGLE/PROPAGANDA:
+- Esta é uma música PUBLICITÁRIA para marketing
+- O refrão deve ser MUITO simples, curto e fácil de memorizar (estilo "pegajoso")
+- Use frases diretas e marcantes para máximo impacto publicitário
+- O monólogo DEVE incluir TODAS as informações de contato fornecidas na história (telefone, endereço, site, redes sociais)
+- O monólogo deve soar como um LOCUTOR DE RÁDIO/TV profissional
+- Inclua a chamada para ação de forma clara e convincente
+- Estrutura ideal para jingle:
+  [Intro] - gancho musical curto
+  [Chorus] - refrão memorável e repetitivo (2-4 linhas)
+  [Verse 1] - apresentação da empresa/serviço
+  [Chorus] - repetição do refrão
+  [monologue] - informações de contato faladas pelo locutor
+  [Outro] - refrão final ou gancho
+
+Exemplo de monólogo para jingle:
+[monologue]
+"Ligue agora mesmo: (11) 99999-9999! Pizzaria do João, Rua das Flores, 123, Centro. 
+Entrega grátis para toda a cidade! Siga no Instagram @pizzariadojoao!"
 ` : ''}
 
 FORMATO DE SAÍDA OBRIGATÓRIO:

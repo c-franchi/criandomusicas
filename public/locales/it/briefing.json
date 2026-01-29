@@ -78,6 +78,15 @@
       "trilha": "🎬 Colonna Sonora",
       "trilhaDesc": "Per video/progetti"
     },
+    "corporateFormat": {
+      "question": "Quale formato aziendale desideri? 🏢",
+      "institucional": "🎵 Musica Istituzionale",
+      "institucionalDesc": "Colonne sonore, inno aziendale, eventi",
+      "jingle": "📢 Jingle/Pubblicità",
+      "jingleDesc": "Per marketing, con telefono/indirizzo",
+      "contactInfoQuestion": "Ora inserisci le informazioni di contatto per il jingle! 📞\n\nIncludi: telefono, indirizzo, sito web, social media...",
+      "callToActionQuestion": "Quale invito all'azione deve apparire nel jingle? 📢\n\nEsempio: \"Chiama ora!\", \"Visita il nostro negozio!\", \"Seguici su Instagram!\""
+    },
     "style": {
       "question": "Quale stile musicale preferisci?",
       "questionCustomLyric": "Quale stile musicale si adatta al tuo testo?",

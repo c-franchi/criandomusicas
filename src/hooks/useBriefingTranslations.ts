@@ -92,6 +92,12 @@ export const useBriefingTranslations = () => {
     { id: "corporativa", label: t('steps.musicType.corporativa'), description: t('steps.musicType.corporativaDesc') }
   ];
 
+  // Corporate format options (institutional vs jingle)
+  const corporateFormatOptions = [
+    { id: "institucional", label: t('steps.corporateFormat.institucional'), description: t('steps.corporateFormat.institucionalDesc') },
+    { id: "jingle", label: t('steps.corporateFormat.jingle'), description: t('steps.corporateFormat.jingleDesc') }
+  ];
+
   // Style options (vocal)
   const styleOptions = [
     { id: "sertanejo", label: t('steps.style.sertanejo') },
@@ -240,6 +246,10 @@ export const useBriefingTranslations = () => {
     customLyricPaste: t('steps.customLyric.pasteQuestion'),
     hasStylePrompt: t('steps.customLyric.hasStyleQuestion'),
     pasteStyle: t('steps.customLyric.pasteStyle'),
+    // Corporate jingle flow
+    corporateFormat: t('steps.corporateFormat.question', 'Which corporate format do you want? 🏢'),
+    contactInfo: t('steps.corporateFormat.contactInfoQuestion', 'Provide the contact information for the jingle 📞\n\nInclude: phone, address, website, social media...'),
+    callToAction: t('steps.corporateFormat.callToActionQuestion', 'What call to action should be in the jingle? 📢\n\nExample: "Call now!", "Visit our store!", "Follow us on Instagram!"'),
   });
 
   // Restore session messages
@@ -349,6 +359,7 @@ export const useBriefingTranslations = () => {
     nameOptions,
     customStylePromptOptions,
     isInstrumentalOptions,
+    corporateFormatOptions,
     // Labels
     getPlanLabels,
     getIntensityLabels,
