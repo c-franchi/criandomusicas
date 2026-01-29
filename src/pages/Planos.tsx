@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, Home, ArrowLeft } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, Home, ArrowLeft, AlertTriangle } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -620,10 +620,27 @@ const Planos = () => {
                       </div>
                     </CardContent>
                   </Card>
-                );
-              })}
+              );
+            })}
             </div>
           )}
+
+          {/* Credit Type Warning for Creator plans */}
+          <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 max-w-3xl mx-auto">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium text-amber-400">
+                  {t('creator.creditTypeWarning.title')}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isInstrumental 
+                    ? t('creator.creditTypeWarning.instrumental')
+                    : t('creator.creditTypeWarning.vocal')}
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Why Choose Us Section */}
           <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5">

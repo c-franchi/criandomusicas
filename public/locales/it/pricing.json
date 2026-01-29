@@ -237,7 +237,12 @@
       "monetizable": "Monetizzabile"
     },
     "cta": "Scopri i Piani Creator",
-    "pricing": "Piani a partire da €29,90/mese • Annulla quando vuoi"
+    "pricing": "Piani a partire da €29,90/mese • Annulla quando vuoi",
+    "creditTypeWarning": {
+      "title": "Importante sui crediti",
+      "vocal": "I crediti di questo piano sono esclusivi per canzoni con voce. Non possono essere usati per creare strumentali.",
+      "instrumental": "I crediti di questo piano sono esclusivi per tracce strumentali. Non possono essere usati per creare canzoni con voce."
+    }
   },
   "faq": {
     "title": "Domande Frequenti",

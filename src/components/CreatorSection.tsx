@@ -2,8 +2,10 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Image, Clock, Users, ArrowRight, Sparkles, Video, Headphones, Crown, Check } from "lucide-react";
+import { FileText, Image, Clock, Users, ArrowRight, Sparkles, Video, Headphones, Crown, Check, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import PlanTypeToggle from "@/components/PlanTypeToggle";
 
 // Creator plan data with credits and descriptions
 const CREATOR_PLANS = [
@@ -32,6 +34,7 @@ const CREATOR_PLANS = [
 
 const CreatorSection = () => {
   const { t, i18n } = useTranslation('pricing');
+  const [isInstrumental, setIsInstrumental] = useState(false);
 
   // Format price based on language
   const formatPrice = (cents: number): string => {
@@ -138,9 +141,22 @@ const CreatorSection = () => {
             {t('creator.description')}
           </p>
           
-          <p className="text-muted-foreground text-sm max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-sm max-w-2xl mx-auto mb-6">
             {t('creator.subdescription')}
           </p>
+          
+          {/* Toggle Vocal/Instrumental */}
+          <PlanTypeToggle 
+            isInstrumental={isInstrumental} 
+            onToggle={setIsInstrumental}
+            className="mb-4"
+          />
+          
+          {isInstrumental && (
+            <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
+              {t('section.instrumentalCreatorDiscount')}
+            </Badge>
+          )}
         </div>
         
         {/* Creator Plan Cards */}
@@ -206,6 +222,23 @@ const CreatorSection = () => {
               </CardContent>
             </Card>
           ))}
+        </div>
+        
+        {/* Credit Type Warning */}
+        <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 max-w-3xl mx-auto">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-amber-400">
+                {t('creator.creditTypeWarning.title')}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isInstrumental 
+                  ? t('creator.creditTypeWarning.instrumental')
+                  : t('creator.creditTypeWarning.vocal')}
+              </p>
+            </div>
+          </div>
         </div>
         
         {/* Diferenciais Grid */}

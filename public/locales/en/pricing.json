@@ -237,7 +237,12 @@
       "monetizable": "Monetizable"
     },
     "cta": "Explore Creator Plans",
-    "pricing": "Plans starting at $29.90/month • Cancel anytime"
+    "pricing": "Plans starting at $29.90/month • Cancel anytime",
+    "creditTypeWarning": {
+      "title": "Important about credits",
+      "vocal": "Credits from this plan are exclusive for songs with vocals. They cannot be used to create instrumentals.",
+      "instrumental": "Credits from this plan are exclusive for instrumental tracks. They cannot be used to create songs with vocals."
+    }
   },
   "faq": {
     "title": "Frequently Asked Questions",
