@@ -6,6 +6,87 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Generate contextual visual prompt using GPT-4o-mini
+async function generateContextualPrompt(
+  openaiApiKey: string,
+  story: string | null,
+  lyricsBody: string | null,
+  musicType: string | null,
+  emotion: string | null,
+  purpose: string | null,
+  isInstrumental: boolean
+): Promise<string | null> {
+  try {
+    const systemPrompt = `Você é um diretor de arte especializado em capas de álbuns musicais.
+
+TAREFA:
+Crie uma descrição visual detalhada (máximo 150 palavras) para uma capa de álbum que represente fielmente o contexto e a letra fornecidos.
+
+REGRAS ABSOLUTAS:
+- NUNCA descreva pessoas, rostos, mãos ou partes do corpo humano
+- NUNCA inclua texto, letras, palavras ou tipografia na descrição
+- Foque EXCLUSIVAMENTE em: paisagens, objetos simbólicos, luzes, atmosfera, natureza, elementos abstratos
+- Seja específico sobre cores, iluminação, composição e atmosfera
+- Os elementos visuais devem representar simbolicamente a ocasião e emoção da música
+- Use linguagem visual cinematográfica: "luz dourada", "silhueta ao entardecer", "névoa suave"
+- Prefira elementos abstratos e simbólicos ao invés de literais`;
+
+    const lyricsSection = isInstrumental 
+      ? "Música instrumental - sem letra. Foque na atmosfera e ocasião descritas."
+      : (lyricsBody || "Letra não disponível - use apenas o contexto.");
+
+    const userPrompt = `CONTEXTO DA SOLICITAÇÃO:
+${story || "Contexto não especificado"}
+
+TIPO DE MÚSICA: ${musicType || "Não especificado"}
+EMOÇÃO: ${emotion || "Não especificada"}
+OCASIÃO/PROPÓSITO: ${purpose || "Não especificado"}
+
+LETRA DA MÚSICA:
+${lyricsSection}
+
+Crie a descrição visual para a capa:`;
+
+    console.log('Calling GPT-4o-mini for contextual prompt generation...');
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        max_tokens: 300,
+        temperature: 0.8
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('GPT-4o-mini API error:', errorData);
+      return null;
+    }
+
+    const data = await response.json();
+    const contextualPrompt = data.choices?.[0]?.message?.content?.trim();
+
+    if (contextualPrompt) {
+      console.log('Contextual prompt generated successfully:', contextualPrompt.substring(0, 100) + '...');
+      return contextualPrompt;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error generating contextual prompt:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -36,10 +117,10 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch order data
+    // Fetch order data including story and approved_lyric_id
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental')
+      .select('id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental, story, approved_lyric_id, atmosphere')
       .eq('id', orderId)
       .single();
 
@@ -51,26 +132,68 @@ serve(async (req) => {
       );
     }
 
-    console.log('Order found:', order.id);
+    console.log('Order found:', order.id, '| Has story:', !!order.story, '| Has approved_lyric_id:', !!order.approved_lyric_id);
 
-    // Build visual prompt from style_prompt or order details
-    let basePrompt = customPrompt;
-    
-    if (!basePrompt) {
-      if (order.style_prompt) {
-        basePrompt = order.style_prompt;
-      } else {
-        // Build from order details
-        const parts = [];
-        if (order.music_style) parts.push(order.music_style);
-        if (order.emotion) parts.push(`mood: ${order.emotion}`);
-        if (order.purpose) parts.push(`occasion: ${order.purpose}`);
-        if (order.tone) parts.push(`tone: ${order.tone}`);
-        basePrompt = parts.join(', ') || 'beautiful music album cover';
+    // Fetch approved lyrics if available
+    let lyricsBody: string | null = null;
+    if (order.approved_lyric_id) {
+      const { data: lyric, error: lyricError } = await supabase
+        .from('lyrics')
+        .select('body')
+        .eq('id', order.approved_lyric_id)
+        .maybeSingle();
+
+      if (lyricError) {
+        console.error('Lyrics fetch error:', lyricError);
+      } else if (lyric) {
+        lyricsBody = lyric.body;
+        console.log('Lyrics fetched successfully, length:', lyricsBody?.length);
       }
     }
 
-    // Convert musical prompt to visual art prompt - ABSTRACT/LANDSCAPE FOCUS
+    // Generate contextual prompt using GPT-4o-mini
+    let basePrompt = customPrompt;
+    
+    if (!basePrompt) {
+      // Try to generate contextual prompt with story and lyrics
+      const hasContextualData = order.story || lyricsBody;
+      
+      if (hasContextualData) {
+        const contextualPrompt = await generateContextualPrompt(
+          openaiApiKey,
+          order.story,
+          lyricsBody,
+          order.music_type,
+          order.emotion,
+          order.purpose,
+          order.is_instrumental || false
+        );
+
+        if (contextualPrompt) {
+          basePrompt = contextualPrompt;
+          console.log('Using AI-generated contextual prompt');
+        }
+      }
+      
+      // Fallback to original logic if contextual generation failed
+      if (!basePrompt) {
+        console.log('Falling back to original prompt logic');
+        if (order.style_prompt) {
+          basePrompt = order.style_prompt;
+        } else {
+          // Build from order details
+          const parts = [];
+          if (order.music_style) parts.push(order.music_style);
+          if (order.emotion) parts.push(`mood: ${order.emotion}`);
+          if (order.purpose) parts.push(`occasion: ${order.purpose}`);
+          if (order.tone) parts.push(`tone: ${order.tone}`);
+          if (order.atmosphere) parts.push(`atmosphere: ${order.atmosphere}`);
+          basePrompt = parts.join(', ') || 'beautiful music album cover';
+        }
+      }
+    }
+
+    // Convert to visual art prompt - ABSTRACT/LANDSCAPE FOCUS
     // CRITICAL: Avoid people, hands, faces to prevent AI distortion issues
     const visualPrompt = `Create a stunning CINEMATIC album cover art. Theme: ${basePrompt}. 
     
@@ -186,7 +309,8 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         cover_url: coverUrl,
-        message: 'Cover image generated successfully'
+        message: 'Cover image generated successfully',
+        used_contextual_ai: !!order.story || !!lyricsBody
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
