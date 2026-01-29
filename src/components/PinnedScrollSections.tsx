@@ -20,6 +20,10 @@ const PinnedScrollSections = () => {
   const creatorOpacity = useTransform(scrollYProgress, [0, 0.4], [0, 1]);
   const creatorY = useTransform(scrollYProgress, [0, 0.5], [100, 0]);
   const creatorScale = useTransform(scrollYProgress, [0, 0.5], [0.95, 1]);
+  
+  // Background blur effect when Creator section enters
+  const bgBlur = useTransform(scrollYProgress, [0, 0.3], [0, 8]);
+  const bgDarken = useTransform(scrollYProgress, [0, 0.4], [0, 0.4]);
 
   if (isMobile) {
     // Simplified mobile experience - just fade in
@@ -51,6 +55,16 @@ const PinnedScrollSections = () => {
   // Desktop: First section static, Creator section overlays with parallax
   return (
     <div ref={containerRef} className="relative">
+      {/* Blur overlay that activates when Creator section enters */}
+      <motion.div
+        className="fixed inset-0 pointer-events-none z-25"
+        style={{
+          backdropFilter: useTransform(bgBlur, (v) => `blur(${v}px)`),
+          WebkitBackdropFilter: useTransform(bgBlur, (v) => `blur(${v}px)`),
+          backgroundColor: useTransform(bgDarken, (v) => `rgba(0, 0, 0, ${v})`),
+        }}
+      />
+
       {/* Section 1: AudioSamples - NO scroll animations, stays static */}
       <div className="relative z-10">
         <AudioSamples />
