@@ -1,9 +1,7 @@
 import Hero from "@/components/Hero";
 import ProcessSteps from "@/components/ProcessSteps";
-import AudioSamples from "@/components/AudioSamples";
 import InstrumentalShowcase from "@/components/InstrumentalShowcase";
 import WhyChooseUs from "@/components/WhyChooseUs";
-import PricingPlans from "@/components/PricingPlans";
 import CustomLyricHighlight from "@/components/CustomLyricHighlight";
 import Testimonials from "@/components/Testimonials";
 import VideoServiceSection from "@/components/VideoServiceSection";
@@ -14,8 +12,8 @@ import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
 import ScrollToTop from "@/components/ScrollToTop";
-import CreatorSection from "@/components/CreatorSection";
 import PlanComparison from "@/components/PlanComparison";
+import PinnedScrollSections from "@/components/PinnedScrollSections";
 
 const Index = () => {
   return (
@@ -28,12 +26,13 @@ const Index = () => {
       />
       <Hero />
       <ProcessSteps />
-      <AudioSamples />
+      
+      {/* Pinned Scroll Sections: AudioSamples, PricingPlans, CreatorSection */}
+      <PinnedScrollSections />
+      
+      <PlanComparison />
       <InstrumentalShowcase />
       <WhyChooseUs />
-      <PricingPlans />
-      <CreatorSection />
-      <PlanComparison />
       <CustomLyricHighlight />
       <VideoServiceSection />
       <Testimonials />
