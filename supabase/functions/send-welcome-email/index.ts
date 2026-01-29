@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { Resend } from "https://esm.sh/resend@4.1.2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -165,6 +165,7 @@ serve(async (req) => {
 
     const emailResponse = await resend.emails.send({
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
+      replyTo: "contato@criandomusicas.com.br",
       to: [data.email],
       subject: "🎵 Bem-vindo ao Criando Músicas!",
       html,
