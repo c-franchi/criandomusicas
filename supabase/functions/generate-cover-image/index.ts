@@ -17,19 +17,24 @@ async function generateContextualPrompt(
   isInstrumental: boolean
 ): Promise<string | null> {
   try {
-    const systemPrompt = `Você é um diretor de arte especializado em capas de álbuns musicais.
+    const systemPrompt = `Você é um diretor de arte especializado em capas de álbuns musicais de alta qualidade.
 
 TAREFA:
-Crie uma descrição visual detalhada (máximo 150 palavras) para uma capa de álbum que represente fielmente o contexto e a letra fornecidos.
+Crie uma descrição visual EXTREMAMENTE detalhada (máximo 200 palavras) para uma capa de álbum que represente fielmente o contexto e a letra fornecidos.
 
-REGRAS ABSOLUTAS:
-- NUNCA descreva pessoas, rostos, mãos ou partes do corpo humano
-- NUNCA inclua texto, letras, palavras ou tipografia na descrição
-- Foque EXCLUSIVAMENTE em: paisagens, objetos simbólicos, luzes, atmosfera, natureza, elementos abstratos
-- Seja específico sobre cores, iluminação, composição e atmosfera
-- Os elementos visuais devem representar simbolicamente a ocasião e emoção da música
-- Use linguagem visual cinematográfica: "luz dourada", "silhueta ao entardecer", "névoa suave"
-- Prefira elementos abstratos e simbólicos ao invés de literais`;
+DIRETRIZES PARA PESSOAS (quando apropriado ao contexto):
+- Descreva pessoas de forma MUITO detalhada: idade aproximada, expressão facial, postura, vestimenta, iluminação no rosto
+- Especifique ângulo de câmera (close-up, plano médio, corpo inteiro, de costas, perfil)
+- Descreva interações entre pessoas se houver mais de uma
+- Inclua detalhes como: "mãos entrelaçadas com detalhes das veias", "olhos brilhantes refletindo luz", "sorriso suave com covinhas"
+- Para evitar distorções, seja PRECISO: "mulher de 30 anos, cabelos castanhos ondulados até os ombros, pele clara, vestido azul marinho"
+
+ELEMENTOS VISUAIS ESSENCIAIS:
+- NUNCA inclua texto, letras, palavras ou tipografia
+- Use linguagem cinematográfica: "iluminação Rembrandt", "golden hour", "bokeh suave ao fundo"
+- Especifique composição: regra dos terços, ponto focal, profundidade de campo
+- Descreva atmosfera: cores dominantes, temperatura da luz, mood geral
+- Conecte elementos visuais simbolicamente à ocasião e emoção da música`;
 
     const lyricsSection = isInstrumental 
       ? "Música instrumental - sem letra. Foque na atmosfera e ocasião descritas."
@@ -193,22 +198,20 @@ serve(async (req) => {
       }
     }
 
-    // Convert to visual art prompt - ABSTRACT/LANDSCAPE FOCUS
-    // CRITICAL: Avoid people, hands, faces to prevent AI distortion issues
-    const visualPrompt = `Create a stunning CINEMATIC album cover art. Theme: ${basePrompt}. 
+    // Convert to visual art prompt - RICH DETAILED FOCUS
+    const visualPrompt = `Create a stunning PHOTOREALISTIC album cover art. Theme: ${basePrompt}. 
     
-    CRITICAL REQUIREMENTS:
-    - ABSOLUTELY NO HUMANS, NO PEOPLE, NO HANDS, NO FACES, NO BODY PARTS
-    - Focus on: landscapes, nature, abstract shapes, light rays, atmospheric fog, silhouettes of objects
-    - Musical instruments shown ONLY as artistic silhouettes or abstract shapes in distance
-    - Professional DSLR photography style with dramatic cinematic lighting
-    - Deep color grading: moody shadows, vibrant accent colors, atmospheric depth
-    - Visual elements: cosmic scenes, ocean waves, mountain silhouettes, dramatic skies, abstract light patterns
+    VISUAL EXCELLENCE REQUIREMENTS:
+    - Professional DSLR photography style, 85mm lens, f/1.8 aperture for beautiful bokeh
+    - Cinematic color grading: rich shadows, vibrant highlights, film-like tones
+    - If people are described: render them with EXTREME detail - skin texture, hair strands, fabric folds, natural expressions
+    - Lighting: use Rembrandt lighting, golden hour, or dramatic rim lighting as appropriate
+    - Composition: rule of thirds, clear focal point, intentional negative space
     - NO text, NO letters, NO words, NO typography whatsoever
-    - ${order.is_instrumental ? 'Ethereal atmospheric landscape with dramatic lighting, abstract nature elements' : 'Abstract emotional scene with symbolic elements like floating lights, cosmic dust, aurora'}
-    - High contrast with beautiful bokeh and depth of field
+    - ${order.is_instrumental ? 'Focus on atmospheric landscapes, nature, or symbolic objects with dramatic lighting' : 'Capture the emotional essence - can include people if contextually appropriate'}
+    - 8K resolution quality, sharp focus on subject, cinematic depth of field
     - Commercial quality suitable for Spotify/Apple Music covers
-    - Style: cinematic movie poster aesthetic, abstract art photography`;
+    - Style: high-end music industry photography, editorial quality`;
 
     console.log('Generating image with prompt:', visualPrompt.substring(0, 200) + '...');
 
