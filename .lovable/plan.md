@@ -1,66 +1,64 @@
 
-# Correção do Efeito de Blur nas Seções
+# Correção: Segunda Seção Não Aparecendo
 
 ## Problema Identificado
 
-O overlay de blur está configurado incorretamente:
+O componente `PinnedScrollSections` tem dois problemas:
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│                    PROBLEMA ATUAL                          │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│  ❌ Overlay com "fixed inset-0"                            │
-│     → Cobre TODA a página, não só as seções alvo           │
-│                                                            │
-│  ❌ Blur só aumenta, nunca diminui                         │
-│     → scrollYProgress [0, 0.3] → blur [0, 8]               │
-│     → Quando scrollYProgress = 1, blur fica em 8px         │
-│                                                            │
-│  ❌ Seções abaixo ficam embaçadas                          │
-│     → PlanComparison, InstrumentalShowcase, etc.           │
-│     → Todas essas seções ficam com blur permanente         │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-```
+1. **Uso incorreto de `useTransform` no style**: O `backdropFilter` está recebendo um `MotionValue` diretamente, mas deveria usar uma abordagem diferente para CSS custom properties.
+
+2. **Opacidade inicial 0 na seção Creator**: A `creatorOpacity` começa em 0 e depende do scroll para aumentar, mas se houver qualquer problema no tracking do scroll, a seção permanece invisível.
 
 ## Solução
 
-Modificar o comportamento do blur para:
-1. Aparecer quando a seção Creator ENTRA na tela
-2. Desaparecer quando a seção Creator está TOTALMENTE visível
-3. Limitar o escopo do efeito apenas às seções dentro do PinnedScrollSections
+Simplificar a implementação removendo o uso problemático de `useTransform` dentro do `style` inline e garantindo que as seções sejam visíveis.
 
-### Mudança no Transform do Blur
+### Mudanças no `PinnedScrollSections.tsx`:
 
-**Antes:**
+1. **Remover blur overlay problemático** - Simplificar removendo o efeito de blur que está causando conflitos
+
+2. **Garantir visibilidade das seções** - Usar `whileInView` para todas as seções ao invés de depender de `scrollYProgress` para opacidade
+
+3. **Manter animações de entrada** - Preservar os efeitos de parallax e scale, mas com opacidade garantida
+
+---
+
+## Código Corrigido
+
 ```typescript
-const bgBlur = useTransform(scrollYProgress, [0, 0.3], [0, 8]);
-const bgDarken = useTransform(scrollYProgress, [0, 0.4], [0, 0.4]);
+// Desktop: Seções com animações simples e confiáveis
+return (
+  <div ref={containerRef} className="relative">
+    {/* Section 1: AudioSamples - Estática */}
+    <div className="relative z-10">
+      <AudioSamples />
+    </div>
+
+    {/* Section 2: PricingPlans - Fade in simples */}
+    <motion.div
+      className="relative z-20"
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-10%" }}
+      transition={{ duration: 0.5 }}
+    >
+      <PricingPlans />
+    </motion.div>
+
+    {/* Section 3: CreatorSection - Entrada cinematográfica */}
+    <motion.div
+      ref={creatorSectionRef}
+      className="relative z-30"
+      initial={{ opacity: 0, y: 60, scale: 0.95 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, margin: "-5%" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+    >
+      <CreatorSection />
+    </motion.div>
+  </div>
+);
 ```
-
-**Depois:**
-```typescript
-// Blur aparece e DESAPARECE - forma de "montanha"
-const bgBlur = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 8, 8, 0]);
-const bgDarken = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.4, 0.4, 0]);
-```
-
-### Mudança no Posicionamento do Overlay
-
-**Antes:**
-```tsx
-<motion.div className="fixed inset-0 pointer-events-none z-25">
-```
-
-**Depois:**
-```tsx
-<motion.div className="absolute inset-0 pointer-events-none z-15">
-```
-
-Mudanças:
-- `fixed` → `absolute`: limita o overlay ao container pai
-- `z-25` → `z-15`: fica abaixo das seções internas mas acima do fundo
 
 ---
 
@@ -68,46 +66,14 @@ Mudanças:
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/components/PinnedScrollSections.tsx` | Corrigir transform do blur e posicionamento do overlay |
-
----
-
-## Código Final
-
-```typescript
-// Blur aparece durante transição e desaparece quando seção está visível
-const bgBlur = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 8, 8, 0]);
-const bgDarken = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.4, 0.4, 0]);
-
-// Overlay limitado ao container, não fixo na tela inteira
-<motion.div
-  className="absolute inset-0 pointer-events-none z-15 overflow-hidden"
-  style={{
-    backdropFilter: useTransform(bgBlur, (v) => `blur(${v}px)`),
-    WebkitBackdropFilter: useTransform(bgBlur, (v) => `blur(${v}px)`),
-    backgroundColor: useTransform(bgDarken, (v) => `rgba(0, 0, 0, ${v})`),
-  }}
-/>
-```
+| `src/components/PinnedScrollSections.tsx` | Simplificar lógica de animação para garantir visibilidade |
 
 ---
 
 ## Resultado Esperado
 
-```text
-┌────────────────────────────────────────────────────────────┐
-│                    COMPORTAMENTO CORRETO                   │
-├────────────────────────────────────────────────────────────┤
-│                                                            │
-│  Scroll 0%   → Blur: 0px    (normal)                       │
-│  Scroll 30%  → Blur: 8px    (transição entrando)           │
-│  Scroll 50%  → Blur: 8px    (Creator em foco)              │
-│  Scroll 70%  → Blur: 8px    (ainda em foco)                │
-│  Scroll 100% → Blur: 0px    (transição saindo)             │
-│                                                            │
-│  ✅ Seções abaixo (PlanComparison, etc.) NÃO afetadas      │
-│  ✅ Efeito cinematográfico preservado                      │
-│  ✅ Blur some quando Creator está totalmente visível       │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
-```
+- ✅ AudioSamples aparece normalmente (sem animação)
+- ✅ PricingPlans aparece com fade-in ao scrollar
+- ✅ CreatorSection aparece com entrada cinematográfica (scale + fade + movimento)
+- ✅ Sem erros de renderização
+- ✅ Todas as seções visíveis e funcionais
