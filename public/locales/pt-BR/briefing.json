@@ -78,6 +78,15 @@
       "trilha": "🎬 Trilha Sonora",
       "trilhaDesc": "Para vídeos/projetos"
     },
+    "corporateFormat": {
+      "question": "Qual formato corporativo você deseja? 🏢",
+      "institucional": "🎵 Música Institucional",
+      "institucionalDesc": "Trilha, hino da empresa, eventos",
+      "jingle": "📢 Jingle/Propaganda",
+      "jingleDesc": "Para marketing, com telefone/endereço",
+      "contactInfoQuestion": "Agora digite as informações de contato para o jingle! 📞\n\nInclua: telefone, endereço, site, redes sociais...",
+      "callToActionQuestion": "Qual chamada para ação deve aparecer no jingle? 📢\n\nExemplo: \"Ligue agora!\", \"Visite nossa loja!\", \"Siga no Instagram!\""
+    },
     "style": {
       "question": "Qual estilo musical você prefere?",
       "questionCustomLyric": "Qual estilo musical combina com sua letra?",

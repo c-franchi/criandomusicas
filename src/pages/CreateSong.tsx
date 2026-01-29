@@ -48,6 +48,18 @@ interface Pronunciation {
 
 type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
 
+// Auto-redirect effect for complete step
+const useAutoRedirect = (step: Step, navigate: ReturnType<typeof useNavigate>) => {
+  useEffect(() => {
+    if (step === 'complete') {
+      const timer = setTimeout(() => {
+        navigate('/dashboard');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, navigate]);
+};
+
 const CreateSong = () => {
   const { t } = useTranslation('dashboard');
   const { t: tc } = useTranslation('common');
@@ -72,6 +84,9 @@ const CreateSong = () => {
   const [showPronunciationModal, setShowPronunciationModal] = useState(false);
   const [missingPronunciations, setMissingPronunciations] = useState<string[]>([]);
   const [pronunciations, setPronunciations] = useState<Pronunciation[]>([]);
+
+  // Auto-redirect to dashboard after complete
+  useAutoRedirect(step, navigate);
 
 
   // Carregar dados do briefing OU order existente (voucher flow)
@@ -1010,6 +1025,9 @@ const CreateSong = () => {
             <p className="text-muted-foreground">
               {t('createSong.readyForStep2')}
             </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              {t('createSong.redirectingToDashboard', 'Redirecionando para o painel em 3 segundos...')}
+            </p>
           </div>
 
           {/* Approved Lyric */}
@@ -1056,13 +1074,9 @@ const CreateSong = () => {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
+            <Button onClick={() => navigate('/dashboard')}>
+              <ArrowRight className="w-4 h-4 mr-2" />
               {t('createSong.goToDashboard')}
-            </Button>
-            <Button disabled className="bg-gradient-to-r from-primary to-purple-600">
-              <Music className="w-4 h-4 mr-2" />
-              {t('createSong.produceMusicSoon')}
             </Button>
           </div>
         </div>

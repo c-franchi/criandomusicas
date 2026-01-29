@@ -58,6 +58,10 @@ interface BriefingFormData {
   soloInstrument: string;
   soloMoment: string;
   instrumentationNotes: string;
+  // Campos para jingle/propaganda corporativa
+  corporateFormat: 'institucional' | 'jingle' | '';
+  contactInfo: string;
+  callToAction: string;
 }
 
 const BRIEFING_STORAGE_KEY = 'briefing_autosave';
@@ -134,6 +138,7 @@ const Briefing = () => {
     nameOptions,
     customStylePromptOptions,
     isInstrumentalOptions,
+    corporateFormatOptions,
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
@@ -205,7 +210,11 @@ const Briefing = () => {
     instruments: [],
     soloInstrument: "",
     soloMoment: "",
-    instrumentationNotes: ""
+    instrumentationNotes: "",
+    // Campos para jingle/propaganda corporativa
+    corporateFormat: '',
+    contactInfo: '',
+    callToAction: ''
   };
 
   const [formData, setFormData] = useState<BriefingFormData>(() => {
@@ -616,6 +625,29 @@ const Briefing = () => {
       content: chatMessages.songNameCustomLyric,
       inputType: 'text',
       field: 'songName'
+    },
+    // FLUXO JINGLE/CORPORATIVO (índices 31-33)
+    // Índice 31: Formato corporativo
+    {
+      type: 'bot',
+      content: chatMessages.corporateFormat,
+      inputType: 'options',
+      field: 'corporateFormat',
+      options: corporateFormatOptions
+    },
+    // Índice 32: Informações de contato (para jingle)
+    {
+      type: 'bot',
+      content: chatMessages.contactInfo,
+      inputType: 'textarea',
+      field: 'contactInfo'
+    },
+    // Índice 33: Chamada para ação (para jingle)
+    {
+      type: 'bot',
+      content: chatMessages.callToAction,
+      inputType: 'text',
+      field: 'callToAction'
     }
   ];
 
@@ -721,8 +753,22 @@ const Briefing = () => {
     
     // Step 1: musicType
     if (current === 1) {
+      // Se é corporativa e cantada, perguntar formato (institucional vs jingle)
+      if (!data.isInstrumental && data.musicType === 'corporativa') {
+        return 31; // Vai para formato corporativo
+      }
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
     }
+    
+    // FLUXO JINGLE/CORPORATIVO (31-33)
+    if (current === 31) {
+      if (data.corporateFormat === 'jingle') {
+        return 32; // Jingle vai para contactInfo
+      }
+      return 10; // Institucional continua fluxo normal (emotion)
+    }
+    if (current === 32) return 33; // contactInfo -> callToAction
+    if (current === 33) return 10; // callToAction -> emotion (continua fluxo)
     
     // FLUXO "JÁ TENHO A LETRA" (índices 22-30 do chatFlow)
     if (data.hasCustomLyric) {
@@ -867,6 +913,40 @@ const Briefing = () => {
       setStepHistory(prev => [...prev, currentStep]);
       
       const updatedFormData = { ...formData, hasCustomStylePrompt: hasStylePrompt };
+      
+      if (isEditingSingleField) {
+        setIsEditingSingleField(false);
+        setEditingFieldStep(null);
+        setTimeout(() => {
+          showConfirmationScreen(updatedFormData);
+        }, 500);
+        return;
+      }
+      
+      const nextStep = getNextStep(currentStep, updatedFormData);
+      setCurrentStep(nextStep);
+      setTimeout(() => addBotMessage(chatFlow[nextStep]), 500);
+      return;
+    }
+
+    // Handle corporateFormat - se for jingle, ativar monólogo automaticamente
+    if (field === 'corporateFormat') {
+      const isJingle = option.id === 'jingle';
+      setFormData(prev => ({ 
+        ...prev, 
+        corporateFormat: option.id as 'institucional' | 'jingle',
+        hasMonologue: isJingle, // Jingles sempre têm monólogo
+        monologuePosition: isJingle ? 'outro' : '' // Monólogo no final para jingles
+      }));
+      addUserMessage(displayValue);
+      setStepHistory(prev => [...prev, currentStep]);
+      
+      const updatedFormData = { 
+        ...formData, 
+        corporateFormat: option.id as 'institucional' | 'jingle',
+        hasMonologue: isJingle,
+        monologuePosition: isJingle ? 'outro' : ''
+      };
       
       if (isEditingSingleField) {
         setIsEditingSingleField(false);
@@ -1290,6 +1370,12 @@ const Briefing = () => {
     clearSavedBriefing();
     
     // Criar ordem no banco primeiro
+    // Para jingles, forçar hasMonologue=true e adicionar contactInfo ao story
+    const isJingle = data.corporateFormat === 'jingle';
+    const storyWithJingleInfo = isJingle 
+      ? `${data.story}\n\n[INFORMAÇÕES DE CONTATO PARA O JINGLE]\n${data.contactInfo}\n\n[CHAMADA PARA AÇÃO]\n${data.callToAction}`
+      : data.story;
+    
     const briefingData = {
       isInstrumental: data.isInstrumental,
       hasCustomLyric: data.hasCustomLyric,
@@ -1300,10 +1386,10 @@ const Briefing = () => {
       musicType: data.musicType,
       emotion: data.emotion,
       emotionIntensity: data.emotionIntensity,
-      story: data.story,
+      story: storyWithJingleInfo,
       structure: ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
-      hasMonologue: data.hasMonologue,
-      monologuePosition: data.monologuePosition || 'bridge',
+      hasMonologue: isJingle ? true : data.hasMonologue, // Jingles sempre têm monólogo
+      monologuePosition: isJingle ? 'outro' : (data.monologuePosition || 'bridge'),
       mandatoryWords: data.mandatoryWords,
       restrictedWords: data.restrictedWords,
       voiceType: data.voiceType,
@@ -1317,6 +1403,10 @@ const Briefing = () => {
       soloInstrument: data.soloInstrument,
       soloMoment: data.soloMoment,
       instrumentationNotes: data.instrumentationNotes,
+      // Campos de jingle
+      corporateFormat: data.corporateFormat,
+      contactInfo: data.contactInfo,
+      callToAction: data.callToAction,
       plan: userPlan,
       lgpdConsent: true
     };
