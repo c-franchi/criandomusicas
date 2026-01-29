@@ -1,138 +1,148 @@
 
+# Plano: Navegação para Dashboard e Opção de Propaganda/Jingle para Música Corporativa
 
-# Enriquecimento da Geração de Capas com Contexto + Letra
+## Visão Geral
 
-## Objetivo
+Este plano implementa duas funcionalidades solicitadas:
 
-Melhorar a geração de capas de álbum usando duas fontes de contexto:
-1. **Story** - O texto que o usuário digitou no chat descrevendo o contexto
-2. **Letra aprovada** - O conteúdo da música gerada
-
-A IA (GPT-4o-mini via OpenAI) analisará esses dados e criará um prompt visual rico e contextualizado para o DALL-E 3.
+1. **Navegação pós-aprovação de letra** → Ir para o Dashboard em vez do Briefing
+2. **Opção de Jingle/Propaganda** → Novo tipo de música para corporativa e cantada que inclui monólogo com informações de contato (telefone, endereço, etc.)
 
 ---
 
-## Fluxo de Funcionamento
+## 1. Navegação Após Aprovação da Letra
+
+### Problema Atual
+Na tela `complete` do `CreateSong.tsx` (linhas 1058-1067), há um botão "Voltar ao Painel" que já navega para `/dashboard`. Porém, não há redirecionamento automático após a aprovação.
+
+### Solução
+O comportamento atual já está correto - o usuário vê a tela de sucesso e tem o botão para ir ao Dashboard. Se o desejo é um redirecionamento automático, podemos adicionar isso.
+
+### Mudanças Técnicas
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/pages/CreateSong.tsx` | Adicionar redirecionamento automático para `/dashboard` após 3 segundos na tela `complete`, com opção de ir imediatamente |
+
+---
+
+## 2. Opção de Jingle/Propaganda para Música Corporativa
+
+### Conceito
+Quando o usuário escolhe **Música Cantada** e seleciona o tipo **Corporativa**, será perguntado se deseja criar um **Jingle/Propaganda** - aquele estilo de áudio promocional que inclui:
+- Telefone da empresa
+- Endereço
+- Slogans
+- Chamadas para ação
+
+Essas músicas terão **monólogo obrigatório** para falar as informações de contato com clareza.
+
+### Fluxo Proposto
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                    DADOS DE ENTRADA                         │
-├─────────────────────────────────────────────────────────────┤
-│  1. orders.story (contexto do chat do usuário)              │
-│     Ex: "Música para aniversário de 30 anos da minha mãe"   │
-│                                                             │
-│  2. lyrics.body (letra aprovada pelo usuário)               │
-│     Ex: "[Verse] Trinta anos de amor e carinho..."          │
-│                                                             │
-│  3. orders.music_type, emotion, purpose (metadados)         │
-├─────────────────────────────────────────────────────────────┤
-│                           ▼                                 │
-│              OPENAI GPT-4o-mini                             │
-│     "Analise o contexto e letra, crie prompt visual..."     │
-│                           ▼                                 │
-│              Prompt Visual Contextualizado                  │
-│     Ex: "Bolo elegante com 30 velas, tons dourados,         │
-│          pétalas de rosa, atmosfera íntima de festa..."     │
-│                           ▼                                 │
-│                      DALL-E 3                               │
-│              (gera imagem 1024x1024)                        │
-│                           ▼                                 │
-│               Capa Personalizada                            │
-└─────────────────────────────────────────────────────────────┘
+Usuário escolhe "Música Cantada"
+        ↓
+Usuário escolhe "Corporativa"
+        ↓
+  [NOVA PERGUNTA]
+  "Qual formato corporativo você deseja?"
+    - 🎵 Música institucional (trilha, hino da empresa)
+    - 📢 Jingle/Propaganda (para marketing, com telefone/endereço)
+        ↓
+  Se escolher "Jingle/Propaganda":
+    → hasMonologue = true
+    → monologuePosition = 'intro' ou 'outro'
+    → Perguntas adicionais sobre telefone/endereço
+        ↓
+  Continua fluxo normal
+```
+
+### Mudanças Técnicas
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/hooks/useBriefingTranslations.ts` | Adicionar opções de `corporateFormat` (institucional vs jingle) |
+| `src/pages/Briefing.tsx` | Adicionar novo step para perguntar formato corporativo após musicType = 'corporativa' |
+| `src/pages/Briefing.tsx` | Adicionar step para coletar informações de contato (telefone, endereço, redes sociais) |
+| `src/pages/Briefing.tsx` | Configurar automaticamente `hasMonologue = true` para jingles |
+| `public/locales/pt-BR/briefing.json` | Adicionar traduções para o novo fluxo |
+| `public/locales/en/briefing.json` | Adicionar traduções em inglês |
+| `public/locales/es/briefing.json` | Adicionar traduções em espanhol |
+| `public/locales/it/briefing.json` | Adicionar traduções em italiano |
+| `supabase/functions/generate-lyrics/index.ts` | Ajustar prompt para incluir informações de contato no monólogo |
+
+### Novos Campos do Formulário
+
+```typescript
+interface BriefingFormData {
+  // ... campos existentes
+  corporateFormat: 'institucional' | 'jingle' | '';
+  contactInfo: string;  // Telefone, endereço, redes sociais
+  callToAction: string; // "Ligue agora!", "Visite nossa loja!"
+}
+```
+
+### Prompt Ajustado para Jingles
+
+Quando `corporateFormat === 'jingle'`, o prompt de geração de letra incluirá:
+
+```text
+REGRAS ESPECIAIS PARA JINGLE/PROPAGANDA:
+1. INCLUA OBRIGATORIAMENTE a tag [monologue] no início ou final
+2. O monólogo DEVE conter as informações de contato: ${contactInfo}
+3. Inclua uma chamada para ação clara: ${callToAction}
+4. O refrão deve ser MUITO simples e fácil de memorizar
+5. Use frases curtas e diretas para máximo impacto publicitário
+6. O monólogo deve soar como um locutor de rádio/TV
+```
+
+### Exemplo de Saída para Jingle
+
+```text
+Pizzaria do João
+
+[Intro]
+Hmm, que fome, que vontade
+De uma pizza de verdade!
+
+[Chorus]
+Pizzaria do João, sabor que encanta o coração
+Massa fresquinha, queijo derretendo
+Cada mordida, você vai querer mais!
+
+[Verse 1]
+Calabresa, marguerita, quatro queijos também
+Frango catupiry, portuguesa, tem de tudo aqui pra você!
+
+[monologue]
+"Ligue agora mesmo: (11) 99999-9999! Pizzaria do João, Rua das Flores, 123, Centro. 
+Entrega grátis para toda a cidade! Siga no Instagram @pizzariadojoao!"
+
+[Outro]
+Pizzaria do João... sabor que encanta o coração!
 ```
 
 ---
 
-## Exemplos de Resultado
+## Resumo das Alterações
 
-| Contexto (story) | Letra | Prompt Visual Gerado |
-|------------------|-------|---------------------|
-| "Aniversário de 30 anos da mãe" | "Trinta anos de amor..." | "Bolo elegante com 30 velas douradas, pétalas de rosa, luz quente de entardecer, atmosfera íntima e celebratória" |
-| "Motivação para amigo em crise" | "Você vai superar..." | "Nascer do sol épico sobre montanhas, raios de luz rompendo nuvens escuras, caminho iluminado, esperança" |
-| "Música infantil para Bruno" | "Bruno é especial..." | "Quarto infantil mágico com brinquedos coloridos, estrelas brilhantes, arco-íris suave, atmosfera de sonho" |
-| "Instrumental relaxante" | *(sem letra)* | "Paisagem serena de lago ao entardecer, montanhas ao fundo, neblina suave, tons azuis e dourados" |
-
----
-
-## Mudanças Técnicas
-
-### Arquivo: `supabase/functions/generate-cover-image/index.ts`
-
-| Etapa | Mudança |
-|-------|---------|
-| 1. Expandir query | Adicionar `story` e `approved_lyric_id` na busca de orders |
-| 2. Buscar letra | Se `approved_lyric_id` existir, buscar `lyrics.body` |
-| 3. Gerar prompt inteligente | Chamar GPT-4o-mini para analisar contexto + letra |
-| 4. Usar no DALL-E | Injetar prompt contextualizado no template visual |
-
-### Estrutura do Código
-
-```text
-1. Buscar order com story e approved_lyric_id
-2. Se approved_lyric_id existir → buscar lyrics.body
-3. Chamar OpenAI GPT-4o-mini com:
-   - System prompt: "Você é diretor de arte de capas de álbuns"
-   - User prompt: contexto + letra + metadados
-4. Receber descrição visual contextualizada (max 150 palavras)
-5. Injetar no template DALL-E existente
-6. Gerar e salvar imagem
-```
-
-### Prompt do Diretor de Arte (GPT-4o-mini)
-
-```text
-Você é um diretor de arte especializado em capas de álbuns musicais.
-
-CONTEXTO DA SOLICITAÇÃO:
-{story}
-
-TIPO: {music_type} | EMOÇÃO: {emotion} | OCASIÃO: {purpose}
-
-LETRA DA MÚSICA:
-{lyrics.body ou "Música instrumental - sem letra"}
-
-TAREFA:
-Crie uma descrição visual (máximo 150 palavras) para capa de álbum que represente 
-fielmente o contexto e a letra.
-
-REGRAS ABSOLUTAS:
-- NUNCA descreva pessoas, rostos, mãos ou partes do corpo
-- Foque em: paisagens, objetos simbólicos, luzes, atmosfera
-- Seja específico sobre cores, iluminação e composição
-- Elementos devem representar a ocasião e emoção da música
-```
-
----
-
-## Tratamento para Instrumentais
-
-Para músicas sem letra (`is_instrumental = true`):
-- Usar apenas `story`, `music_type`, `emotion` e `atmosphere`
-- A IA criará prompt baseado na atmosfera e ocasião descritas
-
----
-
-## Fallback de Segurança
-
-Se a chamada GPT-4o-mini falhar:
-1. Logar erro no console
-2. Usar comportamento atual (style_prompt ou metadados)
-3. Não bloquear a geração da capa
-
----
-
-## Resumo das Mudanças
-
-| Arquivo | Ação |
-|---------|------|
-| `supabase/functions/generate-cover-image/index.ts` | Adicionar lógica de análise contextual com GPT-4o-mini antes de gerar imagem |
+| # | Arquivo | Tipo | Descrição |
+|---|---------|------|-----------|
+| 1 | `src/pages/CreateSong.tsx` | Edição | Adicionar redirect automático para dashboard na tela complete |
+| 2 | `src/hooks/useBriefingTranslations.ts` | Edição | Adicionar opções de formato corporativo |
+| 3 | `src/pages/Briefing.tsx` | Edição | Adicionar steps para formato corporativo e informações de contato |
+| 4 | `public/locales/pt-BR/briefing.json` | Edição | Traduções do novo fluxo |
+| 5 | `public/locales/en/briefing.json` | Edição | Traduções em inglês |
+| 6 | `public/locales/es/briefing.json` | Edição | Traduções em espanhol |
+| 7 | `public/locales/it/briefing.json` | Edição | Traduções em italiano |
+| 8 | `supabase/functions/generate-lyrics/index.ts` | Edição | Ajustar prompt para jingles |
 
 ---
 
 ## Benefícios
 
-- **Capas únicas**: Cada capa reflete exatamente a história do cliente
-- **Maior valor percebido**: Arte personalizada para cada música
-- **Usa chave OpenAI existente**: Sem custo adicional de API (já configurada)
-- **Fallback seguro**: Se IA falhar, usa método atual
+- **UX Melhorada**: Navegação direta para o dashboard após aprovação
+- **Novo Nicho de Mercado**: Jingles para empresas locais (pizzarias, lojas, serviços)
+- **Diferenciação**: Poucos concorrentes oferecem geração de jingles com IA
+- **Valor Agregado**: Empresas pagam bem por jingles personalizados
 
