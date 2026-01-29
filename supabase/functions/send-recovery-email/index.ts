@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Resend } from "resend";
+import { Resend } from "https://esm.sh/resend@4.1.2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -139,7 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
                 © 2026 Criando Músicas - Todos os direitos reservados
               </p>
               <p style="color: #4a5568; font-size: 11px; margin: 0;">
-                Este é um email automático, por favor não responda.
+                Responda este email para falar diretamente conosco.
               </p>
             </td>
           </tr>
@@ -154,6 +154,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
+      replyTo: "contato@criandomusicas.com.br",
       to: [email],
       subject: "Redefinir sua senha - Criando Músicas",
       html: emailHtml,
