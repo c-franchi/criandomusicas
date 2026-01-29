@@ -237,7 +237,12 @@
       "monetizable": "Monetizable"
     },
     "cta": "Explorar Planes Creator",
-    "pricing": "Planes desde €29,90/mes • Cancela cuando quieras"
+    "pricing": "Planes desde €29,90/mes • Cancela cuando quieras",
+    "creditTypeWarning": {
+      "title": "Importante sobre los créditos",
+      "vocal": "Los créditos de este plan son exclusivos para canciones con voz. No pueden usarse para crear instrumentales.",
+      "instrumental": "Los créditos de este plan son exclusivos para pistas instrumentales. No pueden usarse para crear canciones con voz."
+    }
   },
   "faq": {
     "title": "Preguntas Frecuentes",

@@ -237,7 +237,12 @@
       "monetizable": "Monetizável"
     },
     "cta": "Conhecer Planos de Criador",
-    "pricing": "Planos a partir de R$ 29,90/mês • Cancele quando quiser"
+    "pricing": "Planos a partir de R$ 29,90/mês • Cancele quando quiser",
+    "creditTypeWarning": {
+      "title": "Importante sobre os créditos",
+      "vocal": "Os créditos deste plano são exclusivos para músicas cantadas. Não podem ser usados para criar instrumentais.",
+      "instrumental": "Os créditos deste plano são exclusivos para músicas instrumentais. Não podem ser usados para criar músicas cantadas."
+    }
   },
   "faq": {
     "title": "Perguntas Frequentes",
