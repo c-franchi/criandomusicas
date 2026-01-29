@@ -21,9 +21,9 @@ const PinnedScrollSections = () => {
   const creatorY = useTransform(scrollYProgress, [0, 0.5], [100, 0]);
   const creatorScale = useTransform(scrollYProgress, [0, 0.5], [0.95, 1]);
   
-  // Background blur effect when Creator section enters
-  const bgBlur = useTransform(scrollYProgress, [0, 0.3], [0, 8]);
-  const bgDarken = useTransform(scrollYProgress, [0, 0.4], [0, 0.4]);
+  // Background blur effect - appears during transition and fades out
+  const bgBlur = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 8, 8, 0]);
+  const bgDarken = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0, 0.4, 0.4, 0]);
 
   if (isMobile) {
     // Simplified mobile experience - just fade in
@@ -55,9 +55,9 @@ const PinnedScrollSections = () => {
   // Desktop: First section static, Creator section overlays with parallax
   return (
     <div ref={containerRef} className="relative">
-      {/* Blur overlay that activates when Creator section enters */}
+      {/* Blur overlay - limited to container, fades in and out */}
       <motion.div
-        className="fixed inset-0 pointer-events-none z-25"
+        className="absolute inset-0 pointer-events-none z-[15] overflow-hidden"
         style={{
           backdropFilter: useTransform(bgBlur, (v) => `blur(${v}px)`),
           WebkitBackdropFilter: useTransform(bgBlur, (v) => `blur(${v}px)`),
