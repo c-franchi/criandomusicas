@@ -1,120 +1,114 @@
 
-# Arquitetura Profissional de Emails
+# Plano: Correção de Preços Instrumentais e Clarificação de Créditos Creator
 
-## Configuração Ideal
+## Problemas Identificados
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    ARQUITETURA DE EMAILS                        │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  📤 RESEND (Envio Automático)                                   │
-│  ├── Remetente: noreply@criandomusicas.com.br                   │
-│  ├── Reply-To: contato@criandomusicas.com.br  ← NOVO!           │
-│  ├── SPF, DKIM, DMARC configurados                              │
-│  └── Todos os emails transacionais                              │
-│                                                                 │
-│                        ↓ Resposta do cliente                    │
-│                                                                 │
-│  📥 HOSTINGER (Recebimento)                                     │
-│  ├── contato@criandomusicas.com.br                              │
-│  ├── suporte@criandomusicas.com.br                              │
-│  └── Caixa de entrada para responder usuários                   │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
+### 1. Valores Instrumentais Inconsistentes
+O registro `single_custom_lyric` no banco de dados tem:
+- `price_cents: 790` (R$ 7,90)
+- `price_display: R$ 9,90`
+
+Isso causa inconsistência visual no checkout.
+
+### 2. Consumo de Créditos Creator
+A lógica de consumo de créditos está funcionando corretamente nas Edge Functions, mas preciso:
+- Verificar se o `plan_id` está sendo salvo corretamente nos pedidos ao usar créditos Creator
+- Confirmar que a contagem de uso considera apenas pedidos do ciclo atual
+
+### 3. Falta Clarificação de Créditos Vocal/Instrumental
+Os planos Creator na homepage (`CreatorSection.tsx`) e página de planos (`Planos.tsx`) não deixam claro que:
+- Créditos **vocais** só podem ser usados para músicas cantadas
+- Créditos **instrumentais** só podem ser usados para músicas instrumentais
+- Os créditos NÃO são intercambiáveis
 
 ---
 
-## O Que Será Feito
+## Mudanças Propostas
 
-### Adicionar `replyTo` em Todas as Edge Functions
+### 1. Correção no Banco de Dados
+Atualizar o registro `single_custom_lyric` para ter preços consistentes.
 
-O Resend suporta o campo `replyTo` que permite:
-- Manter `noreply@` como remetente técnico
-- Direcionar respostas para `contato@` no Hostinger
+| Campo | Valor Atual | Valor Correto |
+|-------|-------------|---------------|
+| price_display | R$ 9,90 | R$ 7,90 |
 
-**Antes:**
-```typescript
-from: "Criando Músicas <noreply@criandomusicas.com.br>",
-```
+### 2. Adicionar Aviso de Tipo de Crédito nos Planos Creator
 
-**Depois:**
-```typescript
-from: "Criando Músicas <noreply@criandomusicas.com.br>",
-replyTo: "contato@criandomusicas.com.br",
-```
+#### Na Homepage (`src/components/CreatorSection.tsx`)
+Adicionar um aviso abaixo dos cards de planos Creator explicando:
+- Créditos são específicos por tipo (vocal ou instrumental)
+- Usar o toggle para alternar entre versões vocal e instrumental
+
+#### Na Página de Planos (`src/pages/Planos.tsx`)
+Na seção Creator, adicionar um badge ou aviso visual após o toggle indicando:
+- "Créditos vocais: apenas para músicas com voz"
+- "Créditos instrumentais: apenas para trilhas"
+
+### 3. Atualizar Traduções
+Adicionar novas chaves de tradução em todos os idiomas para os avisos de compatibilidade.
 
 ---
 
 ## Arquivos a Serem Alterados
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `supabase/functions/send-recovery-email/index.ts` | Adicionar `replyTo: "contato@criandomusicas.com.br"` |
-| `supabase/functions/send-welcome-email/index.ts` | Adicionar `replyTo: "contato@criandomusicas.com.br"` |
-| `supabase/functions/send-purchase-email/index.ts` | Adicionar `replyTo: "contato@criandomusicas.com.br"` |
-| `supabase/functions/send-music-ready-email/index.ts` | Adicionar `replyTo: "contato@criandomusicas.com.br"` |
+| # | Arquivo | Tipo | Descrição |
+|---|---------|------|-----------|
+| 1 | Database Migration | SQL | Corrigir `price_display` do `single_custom_lyric` |
+| 2 | `src/components/CreatorSection.tsx` | Edição | Adicionar aviso sobre tipo de crédito após cards |
+| 3 | `src/pages/Planos.tsx` | Edição | Adicionar badge de compatibilidade na seção Creator |
+| 4 | `public/locales/pt-BR/pricing.json` | Edição | Adicionar traduções dos avisos |
+| 5 | `public/locales/en/pricing.json` | Edição | Adicionar traduções em inglês |
+| 6 | `public/locales/es/pricing.json` | Edição | Adicionar traduções em espanhol |
+| 7 | `public/locales/it/pricing.json` | Edição | Adicionar traduções em italiano |
 
 ---
 
-## Mudança de Texto nos Emails
+## Detalhes das Alterações
 
-Também vou atualizar o texto do footer dos emails:
-
-**Antes:**
-```html
-Este é um email automático, por favor não responda.
+### SQL Migration
+```sql
+UPDATE pricing_config 
+SET price_display = 'R$ 7,90' 
+WHERE id = 'single_custom_lyric';
 ```
 
-**Depois:**
-```html
-Responda este email para falar diretamente conosco.
+### CreatorSection.tsx - Novo Aviso
+Adicionar abaixo do grid de cards Creator:
+```tsx
+{/* Credit Type Warning */}
+<div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
+  <div className="flex items-start gap-3">
+    <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+    <div>
+      <p className="font-medium text-amber-400">
+        {t('creator.creditTypeWarning.title')}
+      </p>
+      <p className="text-sm text-muted-foreground mt-1">
+        {isInstrumental 
+          ? t('creator.creditTypeWarning.instrumental')
+          : t('creator.creditTypeWarning.vocal')}
+      </p>
+    </div>
+  </div>
+</div>
+```
+
+### Novas Traduções (pt-BR)
+```json
+"creator": {
+  "creditTypeWarning": {
+    "title": "Importante sobre os créditos",
+    "vocal": "Os créditos deste plano são exclusivos para músicas cantadas. Não podem ser usados para criar instrumentais.",
+    "instrumental": "Os créditos deste plano são exclusivos para músicas instrumentais. Não podem ser usados para criar músicas cantadas."
+  }
+}
 ```
 
 ---
 
 ## Benefícios
 
-| Recurso | Descrição |
-|---------|-----------|
-| **Profissionalismo** | Email técnico separado do email de atendimento |
-| **Resposta Fácil** | Clientes podem responder diretamente e cai na caixa Hostinger |
-| **Sem Conflito** | Resend envia, Hostinger recebe - cada um faz sua função |
-| **Melhor Entregabilidade** | `noreply@` com SPF/DKIM adequado |
-
----
-
-## Detalhes Técnicos
-
-### Código Final (Exemplo)
-
-```typescript
-const emailResponse = await resend.emails.send({
-  from: "Criando Músicas <noreply@criandomusicas.com.br>",
-  replyTo: "contato@criandomusicas.com.br",
-  to: [email],
-  subject: "...",
-  html: emailHtml,
-});
-```
-
-### Resultado para o Usuário
-
-Quando o cliente receber um email e clicar em "Responder":
-- O email será enviado para `contato@criandomusicas.com.br`
-- Você receberá na caixa de entrada do Hostinger
-- Pode responder normalmente pelo Hostinger
-
----
-
-## Resumo
-
-| # | Arquivo | Ação |
-|---|---------|------|
-| 1 | `send-recovery-email/index.ts` | Adicionar `replyTo` + atualizar texto footer |
-| 2 | `send-welcome-email/index.ts` | Adicionar `replyTo` |
-| 3 | `send-purchase-email/index.ts` | Adicionar `replyTo` |
-| 4 | `send-music-ready-email/index.ts` | Adicionar `replyTo` |
-
-Esta é a arquitetura correta e profissional que você solicitou!
+- **Transparência**: Usuários entendem claramente o que estão comprando
+- **Menos Confusão**: Evita frustração ao tentar usar créditos incompatíveis
+- **Preços Corretos**: Elimina inconsistência entre valor exibido e cobrado
+- **UX Melhorada**: Informação clara antes da compra
