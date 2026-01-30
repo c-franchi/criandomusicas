@@ -39,6 +39,7 @@
     "packagesNote": "💡 Packages let you create multiple songs with savings. Use whenever you want!"
   },
   "chat": {
+    "subtitle": "Chat with me to create your song",
     "typeMessage": "Type your message...",
     "send": "Send",
     "skip": "Skip",
@@ -301,6 +302,14 @@
     "question": "How about creating a special song for this date?",
     "createFor": "Create song for",
     "noThanks": "No, thanks",
-    "dismiss": "Close"
+    "dismiss": "Close",
+    "selectType": "Song for",
+    "selectTypeDesc": "Choose the type of song you want to create",
+    "vocalFor": "Vocal Song",
+    "instrumentalFor": "Instrumental",
+    "customLyricFor": "I Have the Lyrics",
+    "intro": "{{emoji}} Let's create your {{name}} song!\n\nI've already selected the ideal settings for this special date.",
+    "letsCreate": "Let's create your song for",
+    "preselected": "I've already selected the ideal settings for this special date."
   }
 }

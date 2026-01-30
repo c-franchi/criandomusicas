@@ -39,6 +39,7 @@
     "packagesNote": "💡 Pacotes permitem criar múltiplas músicas com economia. Use quando quiser!"
   },
   "chat": {
+    "subtitle": "Converse comigo para criar sua música",
     "typeMessage": "Digite sua mensagem...",
     "send": "Enviar",
     "skip": "Pular",
@@ -301,6 +302,14 @@
     "question": "Que tal criar uma música especial para essa data?",
     "createFor": "Criar música de",
     "noThanks": "Não, obrigado",
-    "dismiss": "Fechar"
+    "dismiss": "Fechar",
+    "selectType": "Música de",
+    "selectTypeDesc": "Escolha o tipo de música que você quer criar",
+    "vocalFor": "Música Cantada",
+    "instrumentalFor": "Instrumental",
+    "customLyricFor": "Já Tenho a Letra",
+    "intro": "{{emoji}} Vamos criar sua música de {{name}}!\n\nJá selecionei as configurações ideais para essa data especial.",
+    "letsCreate": "Vamos criar sua música de",
+    "preselected": "Já selecionei as configurações ideais para essa data especial."
   }
 }
