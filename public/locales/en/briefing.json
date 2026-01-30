@@ -292,5 +292,15 @@
     "creditError": "Error using credit",
     "savedCleared": "Saved briefing cleared",
     "loginRequired": "You need to be logged in"
+  },
+  "celebration": {
+    "today": "today!",
+    "tomorrow": "tomorrow!",
+    "inDays": "in {{count}} days",
+    "isComing": "is coming!",
+    "question": "How about creating a special song for this date?",
+    "createFor": "Create song for",
+    "noThanks": "No, thanks",
+    "dismiss": "Close"
   }
 }

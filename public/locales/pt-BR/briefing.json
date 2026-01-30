@@ -292,5 +292,15 @@
     "creditError": "Erro ao usar crédito",
     "savedCleared": "Briefing salvo limpo",
     "loginRequired": "Você precisa estar logado"
+  },
+  "celebration": {
+    "today": "hoje!",
+    "tomorrow": "amanhã!",
+    "inDays": "em {{count}} dias",
+    "isComing": "está chegando!",
+    "question": "Que tal criar uma música especial para essa data?",
+    "createFor": "Criar música de",
+    "noThanks": "Não, obrigado",
+    "dismiss": "Fechar"
   }
 }

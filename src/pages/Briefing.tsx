@@ -14,6 +14,8 @@ import CreditsBanner from "@/components/CreditsBanner";
 import { useCredits, getPlanLabel } from "@/hooks/useCredits";
 import { useBriefingTranslations, INSTRUMENT_OPTIONS } from "@/hooks/useBriefingTranslations";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
+import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import {
   Dialog,
   DialogContent,
@@ -163,6 +165,10 @@ const Briefing = () => {
   // Plan selection state
   const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
+  
+  // Celebration banner state
+  const { closestDate, isLoading: isCelebrationLoading } = useUpcomingCelebrations(30);
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -1738,6 +1744,21 @@ const Briefing = () => {
     }
   };
 
+  // Handler para aceitar sugestão de data comemorativa
+  const handleCelebrationAccept = () => {
+    if (!closestDate) return;
+    
+    setCelebrationDismissed(true);
+    
+    // Pré-preencher formData com as sugestões da data comemorativa
+    setFormData(prev => ({
+      ...prev,
+      musicType: closestDate.suggested_music_type || prev.musicType,
+      atmosphere: closestDate.suggested_atmosphere || prev.atmosphere,
+      emotion: closestDate.suggested_emotion || prev.emotion,
+    }));
+  };
+
   // Tela de seleção de pacote
   if (showPlanSelection) {
     return (
@@ -1759,6 +1780,15 @@ const Briefing = () => {
 
         <div className="flex-1 overflow-y-auto">
           <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+            {/* Celebration Suggestion Banner */}
+            {closestDate && !celebrationDismissed && !isCelebrationLoading && (
+              <CelebrationSuggestion
+                celebration={closestDate}
+                onAccept={handleCelebrationAccept}
+                onDismiss={() => setCelebrationDismissed(true)}
+              />
+            )}
+            
             {/* Credits Banner */}
             <CreditsBanner showBuyButton={false} />
             
