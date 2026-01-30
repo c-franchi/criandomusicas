@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Hero from "@/components/Hero";
 import ProcessSteps from "@/components/ProcessSteps";
 import InstrumentalShowcase from "@/components/InstrumentalShowcase";
@@ -14,8 +16,31 @@ import SEO from "@/components/SEO";
 import ScrollToTop from "@/components/ScrollToTop";
 import PlanComparison from "@/components/PlanComparison";
 import PinnedScrollSections from "@/components/PinnedScrollSections";
+import CelebrationSuggestion from "@/components/CelebrationSuggestion";
+import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { closestDate, isLoading } = useUpcomingCelebrations(30);
+  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
+
+  const handleCelebrationAccept = () => {
+    if (!closestDate) return;
+    
+    // Navigate to briefing with celebration context
+    const params = new URLSearchParams({
+      celebration: closestDate.id,
+      celebrationName: closestDate.localizedName,
+      celebrationEmoji: closestDate.emoji,
+    });
+    
+    navigate(`/briefing?${params.toString()}`);
+  };
+
+  const handleCelebrationDismiss = () => {
+    setCelebrationDismissed(true);
+  };
+
   return (
     <main className="min-h-screen bg-background">
       <SEO 
@@ -25,6 +50,18 @@ const Index = () => {
         keywords="música personalizada, criar música com IA, presente criativo, música para aniversário, música para casamento, homenagem musical, música exclusiva"
       />
       <Hero />
+      
+      {/* Celebration Banner - after Hero for maximum visibility */}
+      {!isLoading && closestDate && !celebrationDismissed && (
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <CelebrationSuggestion
+            celebration={closestDate}
+            onAccept={handleCelebrationAccept}
+            onDismiss={handleCelebrationDismiss}
+          />
+        </div>
+      )}
+      
       <ProcessSteps />
       
       {/* Pinned Scroll Sections: AudioSamples, PricingPlans, CreatorSection */}
