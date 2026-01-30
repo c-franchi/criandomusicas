@@ -1,212 +1,201 @@
 
-# Correção Global de Pronúncia nas Letras Geradas
+# Sistema de Datas Comemorativas para Sugestões de Músicas
 
-## Problema Identificado
+## Visão Geral
 
-O sistema atual tem falhas na conversão fonética de:
+Implementar um sistema inteligente que detecta datas comemorativas próximas (Carnaval, Dia das Mães, Natal, etc.) e sugere ao usuário criar músicas temáticas para essas ocasiões.
 
 ```text
 ┌────────────────────────────────────────────────────────────┐
-│                    PROBLEMAS ATUAIS                        │
+│                    FLUXO DA FEATURE                        │
 ├────────────────────────────────────────────────────────────┤
 │                                                            │
-│  ❌ NÚMEROS: "16 997813038"                                │
-│     → IA gera formato numérico, Suno lê incorretamente     │
-│                                                            │
-│  ❌ SITES: "www.mecuidoperfumes.com.br"                    │
-│     → Não converte para leitura fonética                   │
-│                                                            │
-│  ❌ SIGLAS: "FME"                                          │
-│     → Não força soletração letra por letra                 │
-│                                                            │
-│  ❌ APLICAÇÃO PARCIAL                                      │
-│     → Pronúncias só aplicadas em algumas seções            │
-│     → [monologue] e [spoken word] não tratados             │
+│  1. Usuário acessa /briefing                               │
+│                          ↓                                  │
+│  2. Sistema verifica datas comemorativas próximas          │
+│     (próximos 30 dias)                                     │
+│                          ↓                                  │
+│  3. Se houver data próxima, exibir banner/sugestão:        │
+│     "🎭 Carnaval está chegando! Que tal criar uma          │
+│      música para essa data especial?"                      │
+│                          ↓                                  │
+│  4. Usuário pode:                                          │
+│     ✅ Aceitar → Pré-preenche tipo de música + atmosfera   │
+│     ❌ Ignorar → Continua fluxo normal                     │
 │                                                            │
 └────────────────────────────────────────────────────────────┘
 ```
 
-## Solução em 3 Frentes
+---
 
-### 1. Atualizar Prompts do Sistema (generate-lyrics)
+## Arquitetura
 
-Adicionar regras obrigatórias de conversão fonética diretamente no prompt da IA:
+### 1. Tabela no Banco de Dados
 
-```typescript
-// Novas regras a incluir no systemPrompt
-REGRAS OBRIGATÓRIAS DE PRONÚNCIA (aplicar em TODAS as seções):
+Criar tabela `commemorative_dates` para armazenar as datas comemorativas de forma dinâmica:
 
-1. TELEFONES E NÚMEROS:
-   - NUNCA gerar números em formato numérico
-   - Converter para leitura dígito por dígito com pausas
-   - Usar reticências (...) para separar grupos
-   - Exemplo: "16 99781-3038" → "dezesseis... nove nove sete oito um... três zero três oito"
-
-2. SITES E DOMÍNIOS:
-   - NUNCA escrever URLs técnicas (www.site.com.br)
-   - Converter para leitura verbal fonética
-   - Separar nome, extensão e país
-   - Exemplo: "www.mecuido.com.br" → "me-cuido, ponto com, ponto bê-érre"
-
-3. SIGLAS (3 letras ou menos):
-   - SEMPRE soletrar letra por letra
-   - Usar separação por ponto ou hífen
-   - Exemplo: "FME" → "éfe... ême... é" ou "F. M. E."
-
-4. SIGLAS CONHECIDAS (4+ letras):
-   - Verificar se é palavra pronunciável
-   - Se não, soletrar letra por letra
+```sql
+CREATE TABLE public.commemorative_dates (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,                    -- Nome: "Dia das Mães"
+  name_en TEXT,                          -- Nome em inglês
+  name_es TEXT,                          -- Nome em espanhol  
+  name_it TEXT,                          -- Nome em italiano
+  emoji TEXT DEFAULT '🎉',               -- Emoji representativo
+  month INTEGER NOT NULL,                -- Mês (1-12)
+  day INTEGER,                           -- Dia fixo (ou NULL se variável)
+  calculation_rule TEXT,                 -- Regra para datas variáveis (ex: "second_sunday_may")
+  suggested_music_type TEXT,             -- Tipo sugerido: "homenagem", "romantica", etc.
+  suggested_atmosphere TEXT,             -- Atmosfera sugerida: "festivo", "intimo", etc.
+  suggested_emotion TEXT,                -- Emoção sugerida
+  description TEXT,                      -- Descrição curta para o usuário
+  is_active BOOLEAN DEFAULT true,
+  sort_order INTEGER DEFAULT 0,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 ```
 
-### 2. Criar Função de Pós-Processamento
+### 2. Datas Comemorativas Iniciais
 
-Nova função que aplica conversões automáticas em toda a letra gerada:
+| Data | Nome | Tipo Sugerido | Atmosfera |
+|------|------|---------------|-----------|
+| Variável | Carnaval | parodia | festivo |
+| 08/03 | Dia da Mulher | homenagem | intimo |
+| Variável | Páscoa | religiosa | leve |
+| 2º dom maio | Dia das Mães | homenagem | intimo |
+| 12/06 | Dia dos Namorados | romantica | intimo |
+| 2º dom agosto | Dia dos Pais | homenagem | intimo |
+| 15/09 | Dia do Cliente | corporativa | festivo |
+| 12/10 | Dia das Crianças | infantil | festivo |
+| 31/10 | Halloween | parodia | misterioso |
+| 25/12 | Natal | religiosa/homenagem | festivo |
+| 31/12 | Réveillon | homenagem | festivo |
+
+### 3. Hook React: `useUpcomingCelebrations`
 
 ```typescript
-// Função para converter números para leitura verbal
-function convertPhoneToVerbal(text: string): string {
-  // Detecta padrões de telefone: (XX) XXXXX-XXXX, XX XXXXXXXXX, etc.
-  const phonePatterns = [
-    /\(?\d{2}\)?[\s-]?\d{4,5}[\s-]?\d{4}/g,
-    /\d{10,11}/g
-  ];
+// src/hooks/useUpcomingCelebrations.ts
+export const useUpcomingCelebrations = (daysAhead = 30) => {
+  // Busca datas comemorativas do banco
+  // Calcula datas variáveis (Carnaval, Páscoa, Dia das Mães)
+  // Retorna as que estão nos próximos X dias
+  // Ordena por proximidade
   
-  // Converte cada dígito para palavra com pausas
-  // 0→zero, 1→um, 2→dois, etc.
-}
-
-// Função para converter URLs para leitura fonética
-function convertUrlToVerbal(text: string): string {
-  // Detecta padrões: www.*, *.com.br, @*
-  // Converte para: "nome do site, ponto com, ponto bê-érre"
-}
-
-// Função para soletrar siglas
-function spellOutAcronyms(text: string): string {
-  // Detecta siglas de 2-4 letras maiúsculas
-  // Converte para soletração: "FME" → "éfe... ême... é"
-}
-
-// Aplicar todas as conversões
-function applyGlobalPronunciationRules(text: string): string {
-  let result = text;
-  result = convertPhoneToVerbal(result);
-  result = convertUrlToVerbal(result);
-  result = spellOutAcronyms(result);
-  return result;
-}
-```
-
-### 3. Adicionar Pergunta no Briefing
-
-Nova pergunta para músicas cantadas (especialmente corporativas/jingles):
-
-```typescript
-// Novo índice no chat do briefing (após contactInfo para jingles)
-{
-  type: 'bot',
-  content: '📞 Existe alguma sigla, número de telefone, site ou termo técnico que precisa de pronúncia especial?',
-  subtext: 'Exemplo: FME → "éfe-ême-é", 16997813038 → "dezesseis, nove nove sete..."',
-  inputType: 'textarea',
-  field: 'specialPronunciations'
-}
-```
-
----
-
-## Arquivos a Modificar
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `supabase/functions/generate-lyrics/index.ts` | Atualizar systemPrompt com regras de pronúncia + criar funções de pós-processamento |
-| `supabase/functions/generate-style-prompt/index.ts` | Aplicar funções de pós-processamento na letra final |
-| `src/pages/Briefing.tsx` | Adicionar pergunta sobre siglas/termos especiais |
-| `public/locales/*/briefing.json` | Adicionar traduções para nova pergunta |
-
----
-
-## Detalhes Técnicos
-
-### Dicionário de Conversão de Dígitos
-
-```typescript
-const DIGIT_TO_WORD: Record<string, string> = {
-  '0': 'zero',
-  '1': 'um',
-  '2': 'dois',
-  '3': 'três',
-  '4': 'quatro',
-  '5': 'cinco',
-  '6': 'seis',
-  '7': 'sete',
-  '8': 'oito',
-  '9': 'nove'
-};
-
-const LETTER_PRONUNCIATION: Record<string, string> = {
-  'A': 'á', 'B': 'bê', 'C': 'cê', 'D': 'dê', 'E': 'é',
-  'F': 'éfe', 'G': 'gê', 'H': 'agá', 'I': 'í', 'J': 'jota',
-  'K': 'cá', 'L': 'éle', 'M': 'ême', 'N': 'ene', 'O': 'ó',
-  'P': 'pê', 'Q': 'quê', 'R': 'érre', 'S': 'ésse', 'T': 'tê',
-  'U': 'u', 'V': 'vê', 'W': 'dáblio', 'X': 'xis', 'Y': 'ípsilon',
-  'Z': 'zê'
+  return {
+    upcomingDates: CelebrativeDate[],
+    closestDate: CelebrativeDate | null,
+    isLoading: boolean
+  };
 };
 ```
 
-### Exemplo de Conversão Completa
+### 4. Componente de Sugestão
 
-**Entrada (gerada pela IA):**
-```
-[monologue]
-"Ligue agora: 16 997813038! Acesse www.mecuidoperfumes.com.br. A FME te espera!"
-```
-
-**Saída (após pós-processamento):**
-```
-[monologue]
-"Ligue agora: dezesseis...
-nove nove sete oito um...
-três zero três oito!
-Acesse me-cuido-perfumes,
-ponto com,
-ponto bê-érre.
-A éfe... ême... é te espera!"
+```typescript
+// src/components/CelebrationSuggestion.tsx
+// Banner atrativo que aparece no topo do Briefing
+// Mostra a data comemorativa mais próxima
+// Botão "Criar música para [Data]" → pré-preenche campos
 ```
 
 ---
 
-## Fluxo Final
+## Integração no Briefing
+
+### Modificações no `Briefing.tsx`:
+
+1. **Adicionar hook de celebrações**:
+```typescript
+const { closestDate, upcomingDates } = useUpcomingCelebrations(30);
+```
+
+2. **Exibir banner de sugestão** antes da seleção de plano:
+```tsx
+{closestDate && (
+  <CelebrationSuggestion 
+    celebration={closestDate}
+    onAccept={() => {
+      setFormData(prev => ({
+        ...prev,
+        musicType: closestDate.suggested_music_type,
+        atmosphere: closestDate.suggested_atmosphere,
+        emotion: closestDate.suggested_emotion
+      }));
+    }}
+    onDismiss={() => setCelebrationDismissed(true)}
+  />
+)}
+```
+
+3. **Salvar preferência no briefing** se usuário aceitar sugestão:
+```typescript
+// Adicionar campo ao BriefingFormData
+celebrationType?: string; // "carnaval", "dia_das_maes", etc.
+```
+
+---
+
+## Cálculo de Datas Variáveis
+
+### Lógica para datas móveis:
+
+```typescript
+// Carnaval: 47 dias antes da Páscoa
+// Páscoa: Algoritmo de Gauss (baseado em ciclo lunar)
+// Dia das Mães: 2º domingo de maio
+// Dia dos Pais: 2º domingo de agosto
+
+function calculateEaster(year: number): Date {
+  // Algoritmo de Meeus/Jones/Butcher
+}
+
+function calculateCarnival(year: number): Date {
+  const easter = calculateEaster(year);
+  return subDays(easter, 47);
+}
+
+function getSecondSunday(year: number, month: number): Date {
+  const firstDay = new Date(year, month - 1, 1);
+  const firstSunday = addDays(firstDay, (7 - firstDay.getDay()) % 7);
+  return addDays(firstSunday, 7); // Segundo domingo
+}
+```
+
+---
+
+## Arquivos a Criar/Modificar
+
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `src/hooks/useUpcomingCelebrations.ts` | Criar | Hook para buscar e calcular datas |
+| `src/components/CelebrationSuggestion.tsx` | Criar | Componente visual do banner |
+| `src/pages/Briefing.tsx` | Modificar | Integrar banner de sugestão |
+| `src/hooks/useBriefingTranslations.ts` | Modificar | Adicionar traduções |
+| `public/locales/*/briefing.json` | Modificar | Traduções em 4 idiomas |
+| DB Migration | Criar | Tabela commemorative_dates + dados iniciais |
+
+---
+
+## Interface Visual
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│                      FLUXO CORRIGIDO                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  1. Briefing coleta informações + siglas/termos especiais   │
-│                          ↓                                  │
-│  2. generate-lyrics gera letra com regras de pronúncia      │
-│     no prompt do sistema (IA já tenta converter)            │
-│                          ↓                                  │
-│  3. Pós-processamento aplica conversões automáticas:        │
-│     - Telefones → verbal dígito por dígito                  │
-│     - URLs → fonético separado                              │
-│     - Siglas → soletração                                   │
-│                          ↓                                  │
-│  4. generate-style-prompt recebe letra já processada        │
-│     e aplica pronúncias customizadas do usuário             │
-│                          ↓                                  │
-│  5. final_prompt com letra 100% fonética para Suno          │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────┐
+│  🎭 Carnaval está chegando! (em 12 dias)                     │
+│                                                              │
+│  Que tal criar uma música especial para essa data?           │
+│  A IA pode criar uma paródia animada perfeita para a folia!  │
+│                                                              │
+│  [🎉 Criar música de Carnaval]    [❌ Não, obrigado]          │
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Resultado Esperado
 
-- Todos os números convertidos para leitura verbal
-- Todas as URLs convertidas para fonética
-- Todas as siglas soletradas corretamente
-- Conversões aplicadas em TODAS as seções ([Intro], [Verse], [Chorus], [Bridge], [Outro], [monologue], [spoken word])
-- Pausas naturais usando reticências (...) ou quebras de linha
-- Consistência mantida em toda a letra
+- Sistema detecta automaticamente datas comemorativas nos próximos 30 dias
+- Exibe sugestão atrativa no início do fluxo de briefing
+- Pré-preenche campos relevantes se usuário aceitar
+- Administradores podem gerenciar datas pelo banco de dados
+- Suporte completo a 4 idiomas (pt-BR, en, es, it)
+- Datas variáveis (Carnaval, Páscoa) calculadas corretamente
