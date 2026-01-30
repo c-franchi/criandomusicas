@@ -59,6 +59,72 @@ export type Database = {
         }
         Relationships: []
       }
+      commemorative_dates: {
+        Row: {
+          calculation_rule: string | null
+          created_at: string | null
+          day: number | null
+          description: string | null
+          description_en: string | null
+          description_es: string | null
+          description_it: string | null
+          emoji: string | null
+          id: string
+          is_active: boolean | null
+          month: number
+          name: string
+          name_en: string | null
+          name_es: string | null
+          name_it: string | null
+          sort_order: number | null
+          suggested_atmosphere: string | null
+          suggested_emotion: string | null
+          suggested_music_type: string | null
+        }
+        Insert: {
+          calculation_rule?: string | null
+          created_at?: string | null
+          day?: number | null
+          description?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          description_it?: string | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          month: number
+          name: string
+          name_en?: string | null
+          name_es?: string | null
+          name_it?: string | null
+          sort_order?: number | null
+          suggested_atmosphere?: string | null
+          suggested_emotion?: string | null
+          suggested_music_type?: string | null
+        }
+        Update: {
+          calculation_rule?: string | null
+          created_at?: string | null
+          day?: number | null
+          description?: string | null
+          description_en?: string | null
+          description_es?: string | null
+          description_it?: string | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          month?: number
+          name?: string
+          name_en?: string | null
+          name_es?: string | null
+          name_it?: string | null
+          sort_order?: number | null
+          suggested_atmosphere?: string | null
+          suggested_emotion?: string | null
+          suggested_music_type?: string | null
+        }
+        Relationships: []
+      }
       consents: {
         Row: {
           consent_type: Database["public"]["Enums"]["consent_type"]
