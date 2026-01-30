@@ -34,7 +34,27 @@ interface Pronunciation {
 // REGRA: Siglas → letras maiúsculas com hífen (F-M-E)
 // REGRA: NUNCA usar fonética explicativa (ésse, éfe, erre)
 
-// Converter telefone para formato com hífens entre dígitos
+// Mapa para converter DDD (2 dígitos) em texto por extenso
+const dddToText: Record<string, string> = {
+  '11': 'onze', '12': 'doze', '13': 'treze', '14': 'quatorze', '15': 'quinze',
+  '16': 'dezesseis', '17': 'dezessete', '18': 'dezoito', '19': 'dezenove',
+  '21': 'vinte e um', '22': 'vinte e dois', '24': 'vinte e quatro', '27': 'vinte e sete', '28': 'vinte e oito',
+  '31': 'trinta e um', '32': 'trinta e dois', '33': 'trinta e três', '34': 'trinta e quatro', '35': 'trinta e cinco',
+  '37': 'trinta e sete', '38': 'trinta e oito',
+  '41': 'quarenta e um', '42': 'quarenta e dois', '43': 'quarenta e três', '44': 'quarenta e quatro', '45': 'quarenta e cinco',
+  '46': 'quarenta e seis', '47': 'quarenta e sete', '48': 'quarenta e oito', '49': 'quarenta e nove',
+  '51': 'cinquenta e um', '53': 'cinquenta e três', '54': 'cinquenta e quatro', '55': 'cinquenta e cinco',
+  '61': 'sessenta e um', '62': 'sessenta e dois', '63': 'sessenta e três', '64': 'sessenta e quatro', '65': 'sessenta e cinco',
+  '66': 'sessenta e seis', '67': 'sessenta e sete', '68': 'sessenta e oito', '69': 'sessenta e nove',
+  '71': 'setenta e um', '73': 'setenta e três', '74': 'setenta e quatro', '75': 'setenta e cinco', '77': 'setenta e sete',
+  '79': 'setenta e nove',
+  '81': 'oitenta e um', '82': 'oitenta e dois', '83': 'oitenta e três', '84': 'oitenta e quatro', '85': 'oitenta e cinco',
+  '86': 'oitenta e seis', '87': 'oitenta e sete', '88': 'oitenta e oito', '89': 'oitenta e nove',
+  '91': 'noventa e um', '92': 'noventa e dois', '93': 'noventa e três', '94': 'noventa e quatro', '95': 'noventa e cinco',
+  '96': 'noventa e seis', '97': 'noventa e sete', '98': 'noventa e oito', '99': 'noventa e nove'
+};
+
+// Converter telefone: DDD por extenso + resto com hífens
 function convertPhoneToHyphens(text: string): string {
   // Padrões de telefone brasileiro
   const phonePatterns = [
@@ -49,8 +69,16 @@ function convertPhoneToHyphens(text: string): string {
     result = result.replace(pattern, (match) => {
       // Extrair apenas os dígitos
       const digits = match.replace(/\D/g, '');
-      // Separar todos os dígitos com hífen
-      return digits.split('').join('-');
+      
+      // Separar DDD (primeiros 2 dígitos) do resto
+      const ddd = digits.slice(0, 2);
+      const restDigits = digits.slice(2);
+      
+      // DDD por extenso, resto com hífen
+      const dddText = dddToText[ddd] || ddd.split('').join('-');
+      const restText = restDigits.split('').join('-');
+      
+      return `${dddText}, ${restText}`;
     });
   });
   
@@ -333,11 +361,11 @@ REGRAS OBRIGATÓRIAS:
 ⚠️⚠️⚠️ REGRAS OBRIGATÓRIAS DE FORMATAÇÃO (APLICAR EM TODAS AS SEÇÕES):
 
 🔒 REGRA 1 — TELEFONES E NÚMEROS:
-   - Separar TODOS os dígitos com hífen
-   - NUNCA escrever números por extenso
-   - NUNCA usar palavras como "três", "nove", "zero"
-   - Exemplo CORRETO: 1-6-9-9-7-8-1-3-0-3-8
-   - Exemplo ERRADO: "dezesseis... nove nove sete" ou "16 997813038"
+   - O DDD (prefixo de 2 dígitos) deve ser falado por extenso: 16 → "dezesseis", 54 → "cinquenta e quatro"
+   - Os demais dígitos separados com hífen: 9-9-7-8-1-3-0-3-8
+   - NUNCA escrever todos os números por extenso
+   - Exemplo CORRETO: dezesseis, 9-9-7-8-1-3-0-3-8
+   - Exemplo ERRADO: "um-seis-nove-nove..." ou "dezesseis... nove nove sete"
 
 🌐 REGRA 2 — SITES E URLs:
    - Usar formato soletrado com hífens
