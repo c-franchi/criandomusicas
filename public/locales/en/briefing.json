@@ -189,6 +189,74 @@
     "emotionIntensity": {
       "question": "What's the intensity of this emotion?"
     },
+    "motivational": {
+      "intro": "💪 Let's create your motivational song!\n\nThis type of music is perfect for overcoming challenges, workouts, focus, and achievements.",
+      "moment": {
+        "question": "What moment will this song be used for?",
+        "treino": "🏋️ Workout / Gym",
+        "treinoDesc": "Physical effort, repetition, persistence",
+        "superacao": "🏆 Personal Overcoming",
+        "superacaoDesc": "Overcoming life's obstacles",
+        "estudo": "📚 Study / Focus",
+        "estudoDesc": "Concentration, mental discipline",
+        "trabalho": "💼 Work / Productivity",
+        "trabalhoDesc": "Professional goals, performance",
+        "recomeco": "🌅 Fresh Start",
+        "recomecoDesc": "Rising after difficulties",
+        "disciplina": "⏰ Discipline / Consistency",
+        "disciplinaDesc": "Maintaining daily focus"
+      },
+      "emotion": {
+        "question": "What main emotion should it convey?",
+        "determinacao": "💪 Determination",
+        "confianca": "🎯 Confidence",
+        "forcaInterior": "🔥 Inner Strength",
+        "coragem": "🦁 Courage",
+        "foco": "🧘 Absolute Focus",
+        "vitoria": "🏆 Victory / Achievement",
+        "superacaoDor": "⚡ Overcoming Pain"
+      },
+      "intensity": {
+        "question": "What's the intensity of the song?",
+        "calma": "🌊 Calm and Inspiring",
+        "calmaDesc": "Long phrases, reflective tone",
+        "crescente": "📈 Building Up",
+        "crescenteDesc": "Starts calm, explodes in the chorus",
+        "intensa": "🔥 Intense",
+        "intensaDesc": "High energy from start to finish",
+        "agressiva": "⚡ Aggressive / Energetic",
+        "agressivaDesc": "Short phrases, strong vocabulary"
+      },
+      "style": {
+        "question": "Which musical style matches your motivation?",
+        "rock": "🎸 Motivational Rock",
+        "rap": "🎤 Motivational Rap",
+        "trap": "🔊 Motivational Trap",
+        "hiphop": "🎧 Classic Hip Hop",
+        "eletronica": "🎹 Epic Electronic",
+        "lofi": "🎵 Motivational Lo-fi",
+        "auto": "🤖 Let the System Choose"
+      },
+      "narrative": {
+        "question": "How do you want the message delivered?",
+        "cantada": "🎤 All Sung",
+        "cantadaMonologue": "🎤 Sung + Spoken Parts",
+        "maisFalada": "🗣️ More Spoken than Sung",
+        "narrador": "📢 Motivational Speech Style"
+      },
+      "perspective": {
+        "question": "What's the perspective of the lyrics?",
+        "primeiraPessoa": "👤 First Person (I)",
+        "primeiraPessoaDesc": "I am the protagonist",
+        "mentor": "🧠 Mentor (you)",
+        "mentorDesc": "Speaking to the listener",
+        "universal": "🌍 Universal",
+        "universalDesc": "Broad message for everyone"
+      },
+      "story": {
+        "question": "Tell me the context of your motivational song! 💪\n\nWho is it for? What situation of overcoming? What do you want to convey?\n\n(The more details, the more personalized the lyrics will be)"
+      }
+    },
     "mandatoryWords": {
       "question": "Are there any words, names, or phrases that MUST appear in the lyrics? (optional)\n\nSelect suggestions or type new ones:"
     },

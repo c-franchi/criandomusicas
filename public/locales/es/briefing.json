@@ -189,6 +189,74 @@
     "emotionIntensity": {
       "question": "¿Cuál es la intensidad de esta emoción?"
     },
+    "motivational": {
+      "intro": "💪 ¡Vamos a crear tu canción motivacional!\n\nEste tipo de música es perfecto para superación, entrenamiento, enfoque y logros.",
+      "moment": {
+        "question": "¿Para qué momento se usará esta canción?",
+        "treino": "🏋️ Entrenamiento / Gimnasio",
+        "treinoDesc": "Esfuerzo físico, repetición, persistencia",
+        "superacao": "🏆 Superación Personal",
+        "superacaoDesc": "Superar obstáculos de la vida",
+        "estudo": "📚 Estudio / Enfoque",
+        "estudoDesc": "Concentración, disciplina mental",
+        "trabalho": "💼 Trabajo / Productividad",
+        "trabalhoDesc": "Metas profesionales, rendimiento",
+        "recomeco": "🌅 Nuevo Comienzo",
+        "recomecoDesc": "Levantarse después de dificultades",
+        "disciplina": "⏰ Disciplina / Constancia",
+        "disciplinaDesc": "Mantener el enfoque diario"
+      },
+      "emotion": {
+        "question": "¿Qué emoción principal debe transmitir?",
+        "determinacao": "💪 Determinación",
+        "confianca": "🎯 Confianza",
+        "forcaInterior": "🔥 Fuerza Interior",
+        "coragem": "🦁 Coraje",
+        "foco": "🧘 Enfoque Absoluto",
+        "vitoria": "🏆 Victoria / Logro",
+        "superacaoDor": "⚡ Superación del Dolor"
+      },
+      "intensity": {
+        "question": "¿Cuál es la intensidad de la canción?",
+        "calma": "🌊 Calmada e Inspiradora",
+        "calmaDesc": "Frases largas, tono reflexivo",
+        "crescente": "📈 Creciente",
+        "crescenteDesc": "Empieza calmado, explota en el estribillo",
+        "intensa": "🔥 Intensa",
+        "intensaDesc": "Alta energía de principio a fin",
+        "agressiva": "⚡ Agresiva / Energética",
+        "agressivaDesc": "Frases cortas, vocabulario fuerte"
+      },
+      "style": {
+        "question": "¿Qué estilo musical combina con tu motivación?",
+        "rock": "🎸 Rock Motivacional",
+        "rap": "🎤 Rap Motivacional",
+        "trap": "🔊 Trap Motivacional",
+        "hiphop": "🎧 Hip Hop Clásico",
+        "eletronica": "🎹 Electrónica Épica",
+        "lofi": "🎵 Lo-fi Motivacional",
+        "auto": "🤖 Dejar que el Sistema Elija"
+      },
+      "narrative": {
+        "question": "¿Cómo quieres que se entregue el mensaje?",
+        "cantada": "🎤 Todo Cantado",
+        "cantadaMonologue": "🎤 Cantado + Partes Habladas",
+        "maisFalada": "🗣️ Más Hablado que Cantado",
+        "narrador": "📢 Estilo Discurso Motivacional"
+      },
+      "perspective": {
+        "question": "¿Cuál es la perspectiva de la letra?",
+        "primeiraPessoa": "👤 Primera Persona (yo)",
+        "primeiraPessoaDesc": "Yo soy el protagonista",
+        "mentor": "🧠 Mentor (tú)",
+        "mentorDesc": "Hablando al oyente",
+        "universal": "🌍 Universal",
+        "universalDesc": "Mensaje amplio para todos"
+      },
+      "story": {
+        "question": "¡Cuéntame el contexto de tu canción motivacional! 💪\n\n¿Para quién es? ¿Qué situación de superación? ¿Qué quieres transmitir?\n\n(Cuantos más detalles, más personalizada será la letra)"
+      }
+    },
     "mandatoryWords": {
       "question": "¿Hay alguna palabra, nombre o frase que DEBA aparecer en la letra? (opcional)\n\nSelecciona sugerencias o escribe nuevas:"
     },
