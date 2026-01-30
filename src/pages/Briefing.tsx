@@ -68,6 +68,11 @@ interface BriefingFormData {
   celebrationType?: string;
   celebrationName?: string;
   celebrationEmoji?: string;
+  // Campos para música motivacional
+  motivationalMoment?: string;
+  motivationalIntensity?: string;
+  motivationalNarrative?: string;
+  motivationalPerspective?: string;
 }
 
 const BRIEFING_STORAGE_KEY = 'briefing_autosave';
@@ -145,6 +150,13 @@ const Briefing = () => {
     customStylePromptOptions,
     isInstrumentalOptions,
     corporateFormatOptions,
+    // Motivational options
+    motivationalMomentOptions,
+    motivationalIntensityOptions,
+    motivationalNarrativeOptions,
+    motivationalPerspectiveOptions,
+    motivationalStyleOptions,
+    getMotivationalChatMessages,
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
@@ -165,6 +177,7 @@ const Briefing = () => {
   const toastMessages = getToastMessages();
   const intensityLabels = getIntensityLabels();
   const instrumentOptions = getInstrumentOptions();
+  const motivationalMessages = getMotivationalChatMessages();
   
   // Plan selection state
   const [showPlanSelection, setShowPlanSelection] = useState(false);
@@ -660,6 +673,86 @@ const Briefing = () => {
       content: chatMessages.callToAction,
       inputType: 'text',
       field: 'callToAction'
+    },
+    // FLUXO MOTIVACIONAL (índices 34-43)
+    // 34: moment, 35: emotion, 36: motivationalIntensity, 37: style, 38: narrative, 39: perspective, 40: story, 41: mandatoryWords, 42: voiceType, 43: autoGenerateName
+    // Índice 34: Momento de uso
+    {
+      type: 'bot',
+      content: motivationalMessages.moment,
+      inputType: 'options',
+      field: 'motivationalMoment',
+      options: motivationalMomentOptions
+    },
+    // Índice 35: Emoção motivacional
+    {
+      type: 'bot',
+      content: chatMessages.emotion, // Será substituído dinamicamente
+      inputType: 'options',
+      field: 'emotion',
+      options: [] // Preenchido dinamicamente
+    },
+    // Índice 36: Intensidade motivacional
+    {
+      type: 'bot',
+      content: motivationalMessages.intensity,
+      inputType: 'options',
+      field: 'motivationalIntensity',
+      options: motivationalIntensityOptions
+    },
+    // Índice 37: Estilo motivacional
+    {
+      type: 'bot',
+      content: motivationalMessages.style,
+      inputType: 'options',
+      field: 'style',
+      options: motivationalStyleOptions
+    },
+    // Índice 38: Narrativa (cantada, com monólogo, etc)
+    {
+      type: 'bot',
+      content: motivationalMessages.narrative,
+      inputType: 'options',
+      field: 'motivationalNarrative',
+      options: motivationalNarrativeOptions
+    },
+    // Índice 39: Perspectiva (eu, você, universal)
+    {
+      type: 'bot',
+      content: motivationalMessages.perspective,
+      inputType: 'options',
+      field: 'motivationalPerspective',
+      options: motivationalPerspectiveOptions
+    },
+    // Índice 40: História/contexto motivacional
+    {
+      type: 'bot',
+      content: motivationalMessages.story,
+      inputType: 'textarea',
+      field: 'story'
+    },
+    // Índice 41: Palavras-chave (optional)
+    {
+      type: 'bot',
+      content: chatMessages.mandatoryWords,
+      inputType: 'word-suggestions',
+      field: 'mandatoryWords'
+    },
+    // Índice 42: Tipo de voz
+    {
+      type: 'bot',
+      content: chatMessages.voiceType,
+      inputType: 'options',
+      field: 'voiceType',
+      options: voiceTypeOptions
+    },
+    // Índice 43: Nome automático? (motivacional)
+    {
+      type: 'bot',
+      content: chatMessages.songNameAuto,
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: nameOptions
     }
   ];
 
@@ -765,6 +858,10 @@ const Briefing = () => {
     
     // Step 1: musicType
     if (current === 1) {
+      // Se é motivacional e cantada, vai para fluxo motivacional
+      if (!data.isInstrumental && data.musicType === 'motivacional') {
+        return 34; // Vai para fluxo motivacional (momento de uso)
+      }
       // Se é corporativa e cantada, perguntar formato (institucional vs jingle)
       if (!data.isInstrumental && data.musicType === 'corporativa') {
         return 31; // Vai para formato corporativo
@@ -781,6 +878,29 @@ const Briefing = () => {
     }
     if (current === 32) return 33; // contactInfo -> callToAction
     if (current === 33) return 10; // callToAction -> emotion (continua fluxo)
+    
+    // FLUXO MOTIVACIONAL (34-49)
+    // 34: moment, 35: emotion, 36: motivationalIntensity, 37: style, 38: narrative, 39: perspective, 40: story, 41: mandatoryWords, 42: voiceType, 43: autoGenerateName
+    if (data.musicType === 'motivacional' && !data.isInstrumental) {
+      if (current === 34) return 35; // moment -> emotion
+      if (current === 35) return 36; // emotion -> motivationalIntensity
+      if (current === 36) return 37; // motivationalIntensity -> style
+      if (current === 37) return 38; // style -> narrative
+      if (current === 38) {
+        // Se narrativa inclui fala, forçar monólogo
+        if (['cantada_monologue', 'mais_falada', 'narrador'].includes(data.motivationalNarrative || '')) {
+          // Atualizar data com hasMonologue (será feito no handleOptionSelect)
+        }
+        return 39; // narrative -> perspective
+      }
+      if (current === 39) return 40; // perspective -> story
+      if (current === 40) return 41; // story -> mandatoryWords
+      if (current === 41) return 42; // mandatoryWords -> voiceType
+      if (current === 42) return 43; // voiceType -> autoGenerateName
+      if (current === 43) {
+        return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
+      }
+    }
     
     // FLUXO "JÁ TENHO A LETRA" (índices 22-30 do chatFlow)
     if (data.hasCustomLyric) {
@@ -958,6 +1078,40 @@ const Briefing = () => {
         corporateFormat: option.id as 'institucional' | 'jingle',
         hasMonologue: isJingle,
         monologuePosition: isJingle ? 'outro' : ''
+      };
+      
+      if (isEditingSingleField) {
+        setIsEditingSingleField(false);
+        setEditingFieldStep(null);
+        setTimeout(() => {
+          showConfirmationScreen(updatedFormData);
+        }, 500);
+        return;
+      }
+      
+      const nextStep = getNextStep(currentStep, updatedFormData);
+      setCurrentStep(nextStep);
+      setTimeout(() => addBotMessage(chatFlow[nextStep]), 500);
+      return;
+    }
+
+    // Handle motivationalNarrative - se incluir fala, ativar monólogo automaticamente
+    if (field === 'motivationalNarrative') {
+      const hasSpokenParts = ['cantada_monologue', 'mais_falada', 'narrador'].includes(option.id);
+      setFormData(prev => ({ 
+        ...prev, 
+        motivationalNarrative: option.id,
+        hasMonologue: hasSpokenParts,
+        monologuePosition: hasSpokenParts ? 'bridge' : ''
+      }));
+      addUserMessage(displayValue);
+      setStepHistory(prev => [...prev, currentStep]);
+      
+      const updatedFormData = { 
+        ...formData, 
+        motivationalNarrative: option.id,
+        hasMonologue: hasSpokenParts,
+        monologuePosition: hasSpokenParts ? 'bridge' : ''
       };
       
       if (isEditingSingleField) {

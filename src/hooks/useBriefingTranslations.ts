@@ -40,6 +40,17 @@ export const useBriefingTranslations = () => {
         { id: "absurdo", label: t('steps.emotion.absurdo') }
       ];
     }
+    if (musicType === 'motivacional') {
+      return [
+        { id: "determinacao", label: t('steps.motivational.emotion.determinacao') },
+        { id: "confianca", label: t('steps.motivational.emotion.confianca') },
+        { id: "forca_interior", label: t('steps.motivational.emotion.forcaInterior') },
+        { id: "coragem", label: t('steps.motivational.emotion.coragem') },
+        { id: "foco", label: t('steps.motivational.emotion.foco') },
+        { id: "vitoria", label: t('steps.motivational.emotion.vitoria') },
+        { id: "superacao_dor", label: t('steps.motivational.emotion.superacaoDor') }
+      ];
+    }
     return [
       { id: "alegria", label: t('steps.emotion.alegria') },
       { id: "saudade", label: t('steps.emotion.saudade') },
@@ -50,6 +61,57 @@ export const useBriefingTranslations = () => {
       { id: "superacao", label: t('steps.emotion.superacao') }
     ];
   };
+
+  // Motivational flow options
+  const motivationalMomentOptions = [
+    { id: "treino", label: t('steps.motivational.moment.treino'), description: t('steps.motivational.moment.treinoDesc') },
+    { id: "superacao", label: t('steps.motivational.moment.superacao'), description: t('steps.motivational.moment.superacaoDesc') },
+    { id: "estudo", label: t('steps.motivational.moment.estudo'), description: t('steps.motivational.moment.estudoDesc') },
+    { id: "trabalho", label: t('steps.motivational.moment.trabalho'), description: t('steps.motivational.moment.trabalhoDesc') },
+    { id: "recomeco", label: t('steps.motivational.moment.recomeco'), description: t('steps.motivational.moment.recomecoDesc') },
+    { id: "disciplina", label: t('steps.motivational.moment.disciplina'), description: t('steps.motivational.moment.disciplinaDesc') },
+  ];
+
+  const motivationalIntensityOptions = [
+    { id: "calma", label: t('steps.motivational.intensity.calma'), description: t('steps.motivational.intensity.calmaDesc') },
+    { id: "crescente", label: t('steps.motivational.intensity.crescente'), description: t('steps.motivational.intensity.crescenteDesc') },
+    { id: "intensa", label: t('steps.motivational.intensity.intensa'), description: t('steps.motivational.intensity.intensaDesc') },
+    { id: "agressiva", label: t('steps.motivational.intensity.agressiva'), description: t('steps.motivational.intensity.agressivaDesc') },
+  ];
+
+  const motivationalNarrativeOptions = [
+    { id: "cantada", label: t('steps.motivational.narrative.cantada') },
+    { id: "cantada_monologue", label: t('steps.motivational.narrative.cantadaMonologue') },
+    { id: "mais_falada", label: t('steps.motivational.narrative.maisFalada') },
+    { id: "narrador", label: t('steps.motivational.narrative.narrador') },
+  ];
+
+  const motivationalPerspectiveOptions = [
+    { id: "primeira_pessoa", label: t('steps.motivational.perspective.primeiraPessoa'), description: t('steps.motivational.perspective.primeiraPessoaDesc') },
+    { id: "mentor", label: t('steps.motivational.perspective.mentor'), description: t('steps.motivational.perspective.mentorDesc') },
+    { id: "universal", label: t('steps.motivational.perspective.universal'), description: t('steps.motivational.perspective.universalDesc') },
+  ];
+
+  const motivationalStyleOptions = [
+    { id: "rock_motivacional", label: t('steps.motivational.style.rock') },
+    { id: "rap_motivacional", label: t('steps.motivational.style.rap') },
+    { id: "trap_motivacional", label: t('steps.motivational.style.trap') },
+    { id: "hiphop_classico", label: t('steps.motivational.style.hiphop') },
+    { id: "eletronica_epica", label: t('steps.motivational.style.eletronica') },
+    { id: "lofi_motivacional", label: t('steps.motivational.style.lofi') },
+    { id: "auto", label: t('steps.motivational.style.auto') },
+  ];
+
+  // Get motivational chat messages
+  const getMotivationalChatMessages = () => ({
+    intro: t('steps.motivational.intro'),
+    moment: t('steps.motivational.moment.question'),
+    intensity: t('steps.motivational.intensity.question'),
+    style: t('steps.motivational.style.question'),
+    narrative: t('steps.motivational.narrative.question'),
+    perspective: t('steps.motivational.perspective.question'),
+    story: t('steps.motivational.story.question'),
+  });
 
   // Voice type options
   const voiceTypeOptions = [
@@ -360,6 +422,13 @@ export const useBriefingTranslations = () => {
     customStylePromptOptions,
     isInstrumentalOptions,
     corporateFormatOptions,
+    // Motivational options
+    motivationalMomentOptions,
+    motivationalIntensityOptions,
+    motivationalNarrativeOptions,
+    motivationalPerspectiveOptions,
+    motivationalStyleOptions,
+    getMotivationalChatMessages,
     // Labels
     getPlanLabels,
     getIntensityLabels,

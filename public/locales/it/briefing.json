@@ -189,6 +189,74 @@
     "emotionIntensity": {
       "question": "Qual è l'intensità di questa emozione?"
     },
+    "motivational": {
+      "intro": "💪 Creiamo la tua canzone motivazionale!\n\nQuesto tipo di musica è perfetto per superamento, allenamento, focus e conquiste.",
+      "moment": {
+        "question": "Per quale momento sarà usata questa canzone?",
+        "treino": "🏋️ Allenamento / Palestra",
+        "treinoDesc": "Sforzo fisico, ripetizione, persistenza",
+        "superacao": "🏆 Superamento Personale",
+        "superacaoDesc": "Superare gli ostacoli della vita",
+        "estudo": "📚 Studio / Focus",
+        "estudoDesc": "Concentrazione, disciplina mentale",
+        "trabalho": "💼 Lavoro / Produttività",
+        "trabalhoDesc": "Obiettivi professionali, performance",
+        "recomeco": "🌅 Nuovo Inizio",
+        "recomecoDesc": "Rialzarsi dopo le difficoltà",
+        "disciplina": "⏰ Disciplina / Costanza",
+        "disciplinaDesc": "Mantenere il focus quotidiano"
+      },
+      "emotion": {
+        "question": "Quale emozione principale deve trasmettere?",
+        "determinacao": "💪 Determinazione",
+        "confianca": "🎯 Fiducia",
+        "forcaInterior": "🔥 Forza Interiore",
+        "coragem": "🦁 Coraggio",
+        "foco": "🧘 Focus Assoluto",
+        "vitoria": "🏆 Vittoria / Conquista",
+        "superacaoDor": "⚡ Superamento del Dolore"
+      },
+      "intensity": {
+        "question": "Qual è l'intensità della canzone?",
+        "calma": "🌊 Calma e Ispiratrice",
+        "calmaDesc": "Frasi lunghe, tono riflessivo",
+        "crescente": "📈 Crescente",
+        "crescenteDesc": "Inizia calmo, esplode nel ritornello",
+        "intensa": "🔥 Intensa",
+        "intensaDesc": "Alta energia dall'inizio alla fine",
+        "agressiva": "⚡ Aggressiva / Energetica",
+        "agressivaDesc": "Frasi corte, vocabolario forte"
+      },
+      "style": {
+        "question": "Quale stile musicale si adatta alla tua motivazione?",
+        "rock": "🎸 Rock Motivazionale",
+        "rap": "🎤 Rap Motivazionale",
+        "trap": "🔊 Trap Motivazionale",
+        "hiphop": "🎧 Hip Hop Classico",
+        "eletronica": "🎹 Elettronica Epica",
+        "lofi": "🎵 Lo-fi Motivazionale",
+        "auto": "🤖 Lascia Scegliere il Sistema"
+      },
+      "narrative": {
+        "question": "Come vuoi che venga consegnato il messaggio?",
+        "cantada": "🎤 Tutto Cantato",
+        "cantadaMonologue": "🎤 Cantato + Parti Parlate",
+        "maisFalada": "🗣️ Più Parlato che Cantato",
+        "narrador": "📢 Stile Discorso Motivazionale"
+      },
+      "perspective": {
+        "question": "Qual è la prospettiva del testo?",
+        "primeiraPessoa": "👤 Prima Persona (io)",
+        "primeiraPessoaDesc": "Io sono il protagonista",
+        "mentor": "🧠 Mentore (tu)",
+        "mentorDesc": "Parlando all'ascoltatore",
+        "universal": "🌍 Universale",
+        "universalDesc": "Messaggio ampio per tutti"
+      },
+      "story": {
+        "question": "Raccontami il contesto della tua canzone motivazionale! 💪\n\nPer chi è? Quale situazione di superamento? Cosa vuoi trasmettere?\n\n(Più dettagli dai, più personalizzato sarà il testo)"
+      }
+    },
     "mandatoryWords": {
       "question": "Ci sono parole, nomi o frasi che DEVONO apparire nel testo? (opzionale)\n\nSeleziona suggerimenti o scrivi nuovi:"
     },
