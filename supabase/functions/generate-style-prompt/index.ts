@@ -28,90 +28,14 @@ interface Pronunciation {
   phonetic: string;
 }
 
-// Dicionário de pronúncias brasileiras comuns
-const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
-  // Siglas pronunciadas como palavras
-  'UTI': 'utei', 'ONU': 'onu', 'FIFA': 'fifa', 'NASA': 'nasa', 'PIX': 'pix',
-  'INSS': 'inésse', 'PIB': 'pib', 'FGTS': 'éfe gê tê ésse', 'SUS': 'sus',
-  'DETRAN': 'detrân', 'ENEM': 'enêm', 'SAMU': 'samu', 'PROUNI': 'prouni',
-  // Siglas soletradas
-  'CPF': 'cê pê éfe', 'RG': 'érre gê', 'CEO': 'ci-i-ôu', 'DJ': 'di-jêi',
-  'PT': 'pê tê', 'CNPJ': 'cê ene pê jota', 'OAB': 'ô á bê', 'CRM': 'cê érre ême',
-  'CREA': 'cê érre é á', 'TJ': 'tê jota', 'MP': 'ême pê', 'TSE': 'tê ésse é',
-  'STF': 'ésse tê éfe', 'STJ': 'ésse tê jota',
-  // Estados brasileiros (siglas)
-  'AC': 'a-cê', 'AL': 'a-éle', 'AP': 'a-pê', 'AM': 'a-ême',
-  'BA': 'bê-á', 'CE': 'cê-é', 'DF': 'dê-éfe', 'ES': 'é-ésse',
-  'GO': 'gê-ó', 'MA': 'ême-á', 'MT': 'ême-tê', 'MS': 'ême-ésse',
-  'MG': 'ême gê', 'PA': 'pê-á', 'PB': 'pê-bê', 'PE': 'pê-é',
-  'PI': 'pê-í', 'RJ': 'érre jota', 'RN': 'érre-ene', 'RS': 'érre ésse',
-  'RO': 'érre-ó', 'RR': 'érre-érre', 'SC': 'ésse-cê', 'SP': 'ésse pê',
-  'SE': 'ésse-é', 'TO': 'tê-ó', 'PR': 'pê érre',
-  // Times de futebol brasileiros
-  'Flamengo': 'flamêngo', 'Corinthians': 'coríntiâns', 'Palmeiras': 'paumêiras',
-  'São Paulo': 'são páulo', 'Santos': 'sântos', 'Grêmio': 'grêmio',
-  'Internacional': 'internacionau', 'Cruzeiro': 'cruzêiro', 'Atlético': 'atlético',
-  'Vasco': 'vásco', 'Botafogo': 'botafógo', 'Fluminense': 'fluminênse',
-  'Bahia': 'baía', 'Fortaleza': 'fortalêza', 'Ceará': 'ceará', 'Sport': 'espórt',
-  'Náutico': 'náutico', 'Santa Cruz': 'sânta cruz', 'Coritiba': 'coritíba',
-  'Athletico': 'atlétiko', 'Goiás': 'goiás', 'Vitória': 'vitória',
-  'Chapecoense': 'xapecoênse', 'Avaí': 'avaí', 'Figueirense': 'figuerênse',
-  'Ponte Preta': 'pônte préta', 'Guarani': 'guarâni', 'Bragantino': 'bragantíno',
-  'Cuiabá': 'cuiabá', 'América': 'amérika',
-  // Marcas e termos populares
-  'iPhone': 'aifón', 'WhatsApp': 'uóts-épi', 'Instagram': 'instágrém',
-  'TikTok': 'tíc-tóc', 'YouTube': 'iútubi', 'Netflix': 'nétflics',
-  'Spotify': 'espótifái', 'Uber': 'úber', 'iFood': 'ai-fúd',
-  'Nubank': 'nubânc', 'Itaú': 'itaú', 'Bradesco': 'bradésco',
-  'Santander': 'santânder', 'Petrobras': 'petrobrás',
-  'Volkswagen': 'fólcs-váguen', 'Samsung': 'sãmsung', 'Xiaomi': 'xiaômi',
-  'Havaianas': 'havaianás', 'Natura': 'natúra', 'Boticário': 'boticário',
-  'Magalu': 'magalú', 'Renner': 'rênner', 'Riachuelo': 'riachuêlo',
-  'Casas Bahia': 'cázas baía', 'Americanas': 'amerikânas',
-  'Coca-Cola': 'cóca-cóla', 'Guaraná': 'guaraná', 'Skol': 'escól',
-  'Brahma': 'bráma', 'Antarctica': 'antártika', 'Ambev': 'âmbev',
-  'JBS': 'jóta bê ésse', 'Globo': 'glôbo', 'Record': 'recórd', 'SBT': 'ésse bê tê',
-  'Band': 'bând', 'RedeTV': 'rêde tê-vê', 'Gol': 'gól', 'Azul': 'azúl',
-  'LATAM': 'latám', 'TAM': 'tám', 'Embraer': 'embraér', 'Vale': 'váli',
-  'Eletrobras': 'eletrobrás', 'Oi': 'ói', 'Vivo': 'vívo', 'Claro': 'cláro',
-  'TIM': 'tím', 'Porto Seguro': 'pôrto segúro', 'Unimed': 'uniméd',
-  'Hapvida': 'hapivída', 'Drogasil': 'drogasíl', 'Raia': 'ráia',
-  'Pão de Açúcar': 'pão di assúcar', 'Carrefour': 'carrefúr',
-  'Atacadão': 'atacadão', 'Assaí': 'assaí', 'Makro': 'mákro',
-  'Leroy Merlin': 'lerói merlín', 'Tok&Stok': 'tóc i stóc',
-  'Centauro': 'centáuro', 'Netshoes': 'nét-xúz', 'Mercado Livre': 'mercádo lívre',
-  'Amazon': 'amazón', 'AliExpress': 'áli-esprés', 'Shopee': 'xopí', 'Shein': 'xiín',
-  // Termos de internet/tech
-  'Wi-Fi': 'uái-fái', 'Bluetooth': 'blutúf', 'USB': 'u-ésse-bê',
-  'LED': 'léd', 'GPS': 'gê-pê-ésse', 'HD': 'agá-dê', 'SSD': 'ésse-ésse-dê',
-  'PC': 'pê-cê', 'TV': 'tê-vê', 'DVD': 'dê-vê-dê', 'CD': 'cê-dê',
-  'MP3': 'ême-pê-três', 'PDF': 'pê-dê-éfe', 'URL': 'u-érre-éle',
-  // Expressões comuns
-  'VIP': 'víp', 'PDV': 'pê-dê-vê', 'MEI': 'mêi', 'LTDA': 'limitáda',
-  'COVID': 'côvid', 'Uber Eats': 'úber íts', 'Rappi': 'rápi',
-  '99': 'novênta i nóvi', 'PicPay': 'píc-pêi', 'Mercado Pago': 'mercádo págo',
-};
+// ============ REGRAS DE FORMATAÇÃO PARA SUNO ============
+// REGRA: Telefones → números separados por hífen (1-6-9-9-7...)
+// REGRA: Sites → w-w-w-ponto-nome-ponto-com-ponto-b-r
+// REGRA: Siglas → letras maiúsculas com hífen (F-M-E)
+// REGRA: NUNCA usar fonética explicativa (ésse, éfe, erre)
 
-// ============ FUNÇÕES DE CONVERSÃO FONÉTICA GLOBAL ============
-
-// Dicionário de dígitos para palavras
-const DIGIT_TO_WORD: Record<string, string> = {
-  '0': 'zero', '1': 'um', '2': 'dois', '3': 'três', '4': 'quatro',
-  '5': 'cinco', '6': 'seis', '7': 'sete', '8': 'oito', '9': 'nove'
-};
-
-// Dicionário de letras para pronúncia
-const LETTER_PRONUNCIATION: Record<string, string> = {
-  'A': 'á', 'B': 'bê', 'C': 'cê', 'D': 'dê', 'E': 'é',
-  'F': 'éfe', 'G': 'gê', 'H': 'agá', 'I': 'í', 'J': 'jota',
-  'K': 'cá', 'L': 'éle', 'M': 'ême', 'N': 'ene', 'O': 'ó',
-  'P': 'pê', 'Q': 'quê', 'R': 'érre', 'S': 'ésse', 'T': 'tê',
-  'U': 'u', 'V': 'vê', 'W': 'dáblio', 'X': 'xis', 'Y': 'ípsilon',
-  'Z': 'zê'
-};
-
-// Converter telefone para leitura verbal dígito por dígito
-function convertPhoneToVerbal(text: string): string {
+// Converter telefone para formato com hífens entre dígitos
+function convertPhoneToHyphens(text: string): string {
   const phonePatterns = [
     /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,
     /\d{10,11}/g,
@@ -123,96 +47,73 @@ function convertPhoneToVerbal(text: string): string {
   phonePatterns.forEach(pattern => {
     result = result.replace(pattern, (match) => {
       const digits = match.replace(/\D/g, '');
-      
-      if (digits.length === 10 || digits.length === 11) {
-        const ddd = digits.substring(0, 2);
-        const rest = digits.substring(2);
-        
-        const dddWord = parseInt(ddd) < 20 
-          ? ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'][parseInt(ddd)]
-          : (parseInt(ddd) < 30 ? 'vinte' + (parseInt(ddd) % 10 > 0 ? ' e ' + DIGIT_TO_WORD[String(parseInt(ddd) % 10)] : '') : String(parseInt(ddd)));
-        
-        const groups: string[] = [];
-        for (let i = 0; i < rest.length; i += 3) {
-          const group = rest.substring(i, Math.min(i + 3, rest.length));
-          const words = group.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
-          groups.push(words);
-        }
-        
-        return `${dddWord}...\n${groups.join('...\n')}`;
-      }
-      
-      return digits.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
+      return digits.split('').join('-');
     });
   });
   
   return result;
 }
 
-// Converter URLs para leitura fonética
-function convertUrlToVerbal(text: string): string {
+// Converter URLs para formato soletrado com hífens
+function convertUrlToHyphens(text: string): string {
   let result = text;
   
-  result = result.replace(/(https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, (_match, _protocol, name, ext1, ext2) => {
-    const nameWords = name
-      .replace(/([a-z])([A-Z])/g, '$1-$2')
-      .replace(/[-_]/g, ' ')
-      .toLowerCase();
-    
-    const extMap: Record<string, string> = {
-      'com': 'ponto com', 'br': 'ponto bê-érre', 'org': 'ponto órg',
-      'net': 'ponto nét', 'gov': 'ponto gôv', 'edu': 'ponto edu',
-      'io': 'ponto ai-ó', 'co': 'ponto cê-ó'
-    };
-    
-    const ext1Verbal = extMap[ext1.toLowerCase()] || `ponto ${ext1}`;
-    const ext2Verbal = ext2 ? `, ${extMap[ext2.replace('.', '').toLowerCase()] || `ponto ${ext2.replace('.', '')}`}` : '';
-    
-    return `${nameWords},\n${ext1Verbal}${ext2Verbal}`;
-  });
+  result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, 
+    (_match, _protocol, hasWww, name, ext1, ext2) => {
+      const parts: string[] = [];
+      
+      if (hasWww) {
+        parts.push('w-w-w');
+      }
+      
+      parts.push(`ponto-${name.toLowerCase()}`);
+      
+      const extFormatted = ext1.toLowerCase() === 'br' ? 'b-r' : ext1.toLowerCase();
+      parts.push(`ponto-${extFormatted}`);
+      
+      if (ext2) {
+        const ext2Clean = ext2.replace('.', '').toLowerCase();
+        const ext2Formatted = ext2Clean === 'br' ? 'b-r' : ext2Clean;
+        parts.push(`ponto-${ext2Formatted}`);
+      }
+      
+      return parts.join('-');
+    }
+  );
   
   result = result.replace(/@([a-zA-Z0-9_]+)/g, (_match, handle) => {
-    return `arroba ${handle.toLowerCase()}`;
+    return `arroba-${handle.toLowerCase()}`;
   });
   
   return result;
 }
 
-// Soletrar siglas de 2-4 letras maiúsculas
-function spellOutAcronyms(text: string): string {
+// Soletrar siglas com hífens entre letras (sem fonética)
+function convertAcronymsToHyphens(text: string): string {
   const acronymPattern = /\b([A-Z]{2,4})\b/g;
+  const keepAsWord = ['FIFA', 'NASA', 'PIX', 'SUS', 'SAMU', 'ENEM', 'VIP', 'LED'];
   
   return text.replace(acronymPattern, (match) => {
-    if (BRAZILIAN_PRONUNCIATIONS[match]) {
-      return BRAZILIAN_PRONUNCIATIONS[match];
+    if (keepAsWord.includes(match)) {
+      return match;
     }
-    
-    return match.split('').map(letter => LETTER_PRONUNCIATION[letter] || letter).join('... ');
+    return match.split('').join('-');
   });
 }
 
-// Aplicar TODAS as regras de pronúncia globalmente
+// Aplicar TODAS as regras de formatação
 function applyGlobalPronunciationRules(text: string): string {
   let result = text;
   
-  result = convertPhoneToVerbal(result);
-  result = convertUrlToVerbal(result);
-  result = spellOutAcronyms(result);
-  
-  Object.entries(BRAZILIAN_PRONUNCIATIONS).forEach(([term, phonetic]) => {
-    const regex = new RegExp(`\\b${term}\\b`, 'gi');
-    result = result.replace(regex, phonetic);
-  });
+  result = convertPhoneToHyphens(result);
+  result = convertUrlToHyphens(result);
+  result = convertAcronymsToHyphens(result);
   
   return result;
 }
 
-// Aplicar pronúncias conhecidas automaticamente
-function applyKnownPronunciations(terms: string[]): Pronunciation[] {
-  return terms
-    .filter(term => BRAZILIAN_PRONUNCIATIONS[term])
-    .map(term => ({ term, phonetic: BRAZILIAN_PRONUNCIATIONS[term] }));
-}
+// Função removida - não usamos mais dicionário de pronúncias
+// As conversões são feitas por regras de formatação com hífens
 
 // Helper function to validate UUID format
 function isValidUuid(id: string | undefined | null): boolean {

@@ -28,95 +28,19 @@ interface Pronunciation {
   phonetic: string;
 }
 
-// Dicionário de pronúncias brasileiras comuns
-const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
-  // Siglas pronunciadas como palavras
-  'UTI': 'utei', 'ONU': 'onu', 'FIFA': 'fifa', 'NASA': 'nasa', 'PIX': 'pix',
-  'INSS': 'inésse', 'PIB': 'pib', 'FGTS': 'éfe gê tê ésse', 'SUS': 'sus',
-  'DETRAN': 'detrân', 'ENEM': 'enêm', 'SAMU': 'samu', 'PROUNI': 'prouni',
-  // Siglas soletradas
-  'CPF': 'cê pê éfe', 'RG': 'érre gê', 'CEO': 'ci-i-ôu', 'DJ': 'di-jêi',
-  'PT': 'pê tê', 'CNPJ': 'cê ene pê jota', 'OAB': 'ô á bê', 'CRM': 'cê érre ême',
-  'CREA': 'cê érre é á', 'TJ': 'tê jota', 'MP': 'ême pê', 'TSE': 'tê ésse é',
-  'STF': 'ésse tê éfe', 'STJ': 'ésse tê jota',
-  // Estados brasileiros (siglas)
-  'AC': 'a-cê', 'AL': 'a-éle', 'AP': 'a-pê', 'AM': 'a-ême',
-  'BA': 'bê-á', 'CE': 'cê-é', 'DF': 'dê-éfe', 'ES': 'é-ésse',
-  'GO': 'gê-ó', 'MA': 'ême-á', 'MT': 'ême-tê', 'MS': 'ême-ésse',
-  'MG': 'ême gê', 'PA': 'pê-á', 'PB': 'pê-bê', 'PE': 'pê-é',
-  'PI': 'pê-í', 'RJ': 'érre jota', 'RN': 'érre-ene', 'RS': 'érre ésse',
-  'RO': 'érre-ó', 'RR': 'érre-érre', 'SC': 'ésse-cê', 'SP': 'ésse pê',
-  'SE': 'ésse-é', 'TO': 'tê-ó', 'PR': 'pê érre',
-  // Times de futebol brasileiros
-  'Flamengo': 'flamêngo', 'Corinthians': 'coríntiâns', 'Palmeiras': 'paumêiras',
-  'São Paulo': 'são páulo', 'Santos': 'sântos', 'Grêmio': 'grêmio',
-  'Internacional': 'internacionau', 'Cruzeiro': 'cruzêiro', 'Atlético': 'atlético',
-  'Vasco': 'vásco', 'Botafogo': 'botafógo', 'Fluminense': 'fluminênse',
-  'Bahia': 'baía', 'Fortaleza': 'fortalêza', 'Ceará': 'ceará', 'Sport': 'espórt',
-  'Náutico': 'náutico', 'Santa Cruz': 'sânta cruz', 'Coritiba': 'coritíba',
-  'Athletico': 'atlétiko', 'Goiás': 'goiás', 'Vitória': 'vitória',
-  'Chapecoense': 'xapecoênse', 'Avaí': 'avaí', 'Figueirense': 'figuerênse',
-  'Ponte Preta': 'pônte préta', 'Guarani': 'guarâni', 'Bragantino': 'bragantíno',
-  'Cuiabá': 'cuiabá', 'América': 'amérika',
-  // Marcas e termos populares
-  'iPhone': 'aifón', 'WhatsApp': 'uóts-épi', 'Instagram': 'instágrém',
-  'TikTok': 'tíc-tóc', 'YouTube': 'iútubi', 'Netflix': 'nétflics',
-  'Spotify': 'espótifái', 'Uber': 'úber', 'iFood': 'ai-fúd',
-  'Nubank': 'nubânc', 'Itaú': 'itaú', 'Bradesco': 'bradésco',
-  'Santander': 'santânder', 'Petrobras': 'petrobrás',
-  'Volkswagen': 'fólcs-váguen', 'Samsung': 'sãmsung', 'Xiaomi': 'xiaômi',
-  'Havaianas': 'havaianás', 'Natura': 'natúra', 'Boticário': 'boticário',
-  'Magalu': 'magalú', 'Renner': 'rênner', 'Riachuelo': 'riachuêlo',
-  'Casas Bahia': 'cázas baía', 'Americanas': 'amerikânas',
-  'Coca-Cola': 'cóca-cóla', 'Guaraná': 'guaraná', 'Skol': 'escól',
-  'Brahma': 'bráma', 'Antarctica': 'antártika', 'Ambev': 'âmbev',
-  'JBS': 'jóta bê ésse', 'Globo': 'glôbo', 'Record': 'recórd', 'SBT': 'ésse bê tê',
-  'Band': 'bând', 'RedeTV': 'rêde tê-vê', 'Gol': 'gól', 'Azul': 'azúl',
-  'LATAM': 'latám', 'TAM': 'tám', 'Embraer': 'embraér', 'Vale': 'váli',
-  'Eletrobras': 'eletrobrás', 'Oi': 'ói', 'Vivo': 'vívo', 'Claro': 'cláro',
-  'TIM': 'tím', 'Porto Seguro': 'pôrto segúro', 'Unimed': 'uniméd',
-  'Hapvida': 'hapivída', 'Drogasil': 'drogasíl', 'Raia': 'ráia',
-  'Pão de Açúcar': 'pão di assúcar', 'Carrefour': 'carrefúr',
-  'Atacadão': 'atacadão', 'Assaí': 'assaí', 'Makro': 'mákro',
-  'Leroy Merlin': 'lerói merlín', 'Tok&Stok': 'tóc i stóc',
-  'Centauro': 'centáuro', 'Netshoes': 'nét-xúz', 'Mercado Livre': 'mercádo lívre',
-  'Amazon': 'amazón', 'AliExpress': 'áli-esprés', 'Shopee': 'xopí', 'Shein': 'xiín',
-  // Termos de internet/tech
-  'Wi-Fi': 'uái-fái', 'Bluetooth': 'blutúf', 'USB': 'u-ésse-bê',
-  'LED': 'léd', 'GPS': 'gê-pê-ésse', 'HD': 'agá-dê', 'SSD': 'ésse-ésse-dê',
-  'PC': 'pê-cê', 'TV': 'tê-vê', 'DVD': 'dê-vê-dê', 'CD': 'cê-dê',
-  'MP3': 'ême-pê-três', 'PDF': 'pê-dê-éfe', 'URL': 'u-érre-éle',
-  // Expressões comuns
-  'VIP': 'víp', 'PDV': 'pê-dê-vê', 'MEI': 'mêi', 'LTDA': 'limitáda',
-  'COVID': 'côvid', 'Uber Eats': 'úber íts', 'Rappi': 'rápi',
-  '99': 'novênta i nóvi', 'PicPay': 'píc-pêi', 'Mercado Pago': 'mercádo págo',
-};
+// ============ REGRAS DE FORMATAÇÃO PARA SUNO ============
+// REGRA: Telefones → números separados por hífen (1-6-9-9-7...)
+// REGRA: Sites → w-w-w-ponto-nome-ponto-com-ponto-b-r
+// REGRA: Siglas → letras maiúsculas com hífen (F-M-E)
+// REGRA: NUNCA usar fonética explicativa (ésse, éfe, erre)
 
-// ============ FUNÇÕES DE CONVERSÃO FONÉTICA GLOBAL ============
-
-// Dicionário de dígitos para palavras
-const DIGIT_TO_WORD: Record<string, string> = {
-  '0': 'zero', '1': 'um', '2': 'dois', '3': 'três', '4': 'quatro',
-  '5': 'cinco', '6': 'seis', '7': 'sete', '8': 'oito', '9': 'nove'
-};
-
-// Dicionário de letras para pronúncia
-const LETTER_PRONUNCIATION: Record<string, string> = {
-  'A': 'á', 'B': 'bê', 'C': 'cê', 'D': 'dê', 'E': 'é',
-  'F': 'éfe', 'G': 'gê', 'H': 'agá', 'I': 'í', 'J': 'jota',
-  'K': 'cá', 'L': 'éle', 'M': 'ême', 'N': 'ene', 'O': 'ó',
-  'P': 'pê', 'Q': 'quê', 'R': 'érre', 'S': 'ésse', 'T': 'tê',
-  'U': 'u', 'V': 'vê', 'W': 'dáblio', 'X': 'xis', 'Y': 'ípsilon',
-  'Z': 'zê'
-};
-
-// Converter telefone para leitura verbal dígito por dígito
-function convertPhoneToVerbal(text: string): string {
-  // Padrões de telefone brasileiro: (XX) XXXXX-XXXX, XX XXXXXXXXX, etc.
+// Converter telefone para formato com hífens entre dígitos
+function convertPhoneToHyphens(text: string): string {
+  // Padrões de telefone brasileiro
   const phonePatterns = [
-    /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,  // (11) 99999-9999
-    /\d{10,11}/g,                               // 11999999999
-    /\d{2}[\s.-]\d{4,5}[\s.-]\d{4}/g           // 11 99999-9999
+    /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,
+    /\d{10,11}/g,
+    /\d{2}[\s.-]\d{4,5}[\s.-]\d{4}/g
   ];
   
   let result = text;
@@ -125,119 +49,91 @@ function convertPhoneToVerbal(text: string): string {
     result = result.replace(pattern, (match) => {
       // Extrair apenas os dígitos
       const digits = match.replace(/\D/g, '');
-      
-      // Converter para leitura verbal com grupos e pausas
-      if (digits.length === 10 || digits.length === 11) {
-        const ddd = digits.substring(0, 2);
-        const rest = digits.substring(2);
-        
-        // DDD como número (não dígito por dígito)
-        const dddWord = parseInt(ddd) < 20 
-          ? ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'][parseInt(ddd)]
-          : (parseInt(ddd) < 30 ? 'vinte' + (parseInt(ddd) % 10 > 0 ? ' e ' + DIGIT_TO_WORD[String(parseInt(ddd) % 10)] : '') : String(parseInt(ddd)));
-        
-        // Resto dígito por dígito com pausas naturais
-        const groups: string[] = [];
-        for (let i = 0; i < rest.length; i += 3) {
-          const group = rest.substring(i, Math.min(i + 3, rest.length));
-          const words = group.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
-          groups.push(words);
-        }
-        
-        return `${dddWord}...\n${groups.join('...\n')}`;
-      }
-      
-      // Fallback: converter cada dígito
-      return digits.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
+      // Separar todos os dígitos com hífen
+      return digits.split('').join('-');
     });
   });
   
   return result;
 }
 
-// Converter URLs para leitura fonética
-function convertUrlToVerbal(text: string): string {
-  // Padrões de URL
-  const urlPatterns = [
-    /(https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi,
-    /@([a-zA-Z0-9_]+)/g  // @handles de redes sociais
-  ];
-  
+// Converter URLs para formato soletrado com hífens
+function convertUrlToHyphens(text: string): string {
   let result = text;
   
-  // URLs completas
-  result = result.replace(urlPatterns[0], (_match, _protocol, name, ext1, ext2) => {
-    // Converter nome do site (separar camelCase e hífens)
-    const nameWords = name
-      .replace(/([a-z])([A-Z])/g, '$1-$2')
-      .replace(/[-_]/g, ' ')
-      .toLowerCase();
-    
-    // Converter extensões
-    const extMap: Record<string, string> = {
-      'com': 'ponto com', 'br': 'ponto bê-érre', 'org': 'ponto órg',
-      'net': 'ponto nét', 'gov': 'ponto gôv', 'edu': 'ponto edu',
-      'io': 'ponto ai-ó', 'co': 'ponto cê-ó'
-    };
-    
-    const ext1Verbal = extMap[ext1.toLowerCase()] || `ponto ${ext1}`;
-    const ext2Verbal = ext2 ? `, ${extMap[ext2.replace('.', '').toLowerCase()] || `ponto ${ext2.replace('.', '')}`}` : '';
-    
-    return `${nameWords},\n${ext1Verbal}${ext2Verbal}`;
-  });
+  // URLs completas: www.nome.com.br
+  result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, 
+    (_match, _protocol, hasWww, name, ext1, ext2) => {
+      const parts: string[] = [];
+      
+      // www → w-w-w
+      if (hasWww) {
+        parts.push('w-w-w');
+      }
+      
+      // nome do site mantém junto (não soletrar palavras)
+      parts.push(`ponto-${name.toLowerCase()}`);
+      
+      // extensão: com → ponto-com, br → ponto-b-r
+      const extFormatted = ext1.toLowerCase() === 'br' ? 'b-r' : ext1.toLowerCase();
+      parts.push(`ponto-${extFormatted}`);
+      
+      // extensão secundária: .br → ponto-b-r
+      if (ext2) {
+        const ext2Clean = ext2.replace('.', '').toLowerCase();
+        const ext2Formatted = ext2Clean === 'br' ? 'b-r' : ext2Clean;
+        parts.push(`ponto-${ext2Formatted}`);
+      }
+      
+      return parts.join('-');
+    }
+  );
   
-  // @handles
-  result = result.replace(urlPatterns[1], (_match, handle) => {
-    return `arroba ${handle.toLowerCase()}`;
+  // @handles → arroba-nome
+  result = result.replace(/@([a-zA-Z0-9_]+)/g, (_match, handle) => {
+    return `arroba-${handle.toLowerCase()}`;
   });
   
   return result;
 }
 
-// Soletrar siglas de 2-4 letras maiúsculas
-function spellOutAcronyms(text: string): string {
-  // Detectar siglas (2-4 letras maiúsculas seguidas, não no dicionário)
+// Soletrar siglas com hífens entre letras (sem fonética)
+function convertAcronymsToHyphens(text: string): string {
+  // Detectar siglas (2-4 letras maiúsculas seguidas)
   const acronymPattern = /\b([A-Z]{2,4})\b/g;
   
+  // Lista de siglas que NÃO devem ser soletradas (pronunciadas como palavras)
+  const keepAsWord = ['FIFA', 'NASA', 'PIX', 'SUS', 'SAMU', 'ENEM', 'VIP', 'LED'];
+  
   return text.replace(acronymPattern, (match) => {
-    // Verificar se já está no dicionário
-    if (BRAZILIAN_PRONUNCIATIONS[match]) {
-      return BRAZILIAN_PRONUNCIATIONS[match];
+    // Se está na lista de palavras, manter como está
+    if (keepAsWord.includes(match)) {
+      return match;
     }
     
-    // Soletrar letra por letra com pausas
-    return match.split('').map(letter => LETTER_PRONUNCIATION[letter] || letter).join('... ');
+    // Soletrar letra por letra com hífen: FME → F-M-E
+    return match.split('').join('-');
   });
 }
 
-// Aplicar TODAS as regras de pronúncia globalmente
+// Aplicar TODAS as regras de formatação
 function applyGlobalPronunciationRules(text: string): string {
   let result = text;
   
-  // 1. Converter telefones para leitura verbal
-  result = convertPhoneToVerbal(result);
+  // 1. Converter telefones para formato com hífens
+  result = convertPhoneToHyphens(result);
   
-  // 2. Converter URLs para leitura fonética
-  result = convertUrlToVerbal(result);
+  // 2. Converter URLs para formato soletrado
+  result = convertUrlToHyphens(result);
   
-  // 3. Soletrar siglas não conhecidas
-  result = spellOutAcronyms(result);
-  
-  // 4. Aplicar pronúncias conhecidas do dicionário
-  Object.entries(BRAZILIAN_PRONUNCIATIONS).forEach(([term, phonetic]) => {
-    const regex = new RegExp(`\\b${term}\\b`, 'gi');
-    result = result.replace(regex, phonetic);
-  });
+  // 3. Converter siglas para letras com hífen
+  result = convertAcronymsToHyphens(result);
   
   return result;
 }
 
-// Aplicar pronúncias conhecidas automaticamente
-function applyKnownPronunciations(terms: string[]): Pronunciation[] {
-  return terms
-    .filter(term => BRAZILIAN_PRONUNCIATIONS[term])
-    .map(term => ({ term, phonetic: BRAZILIAN_PRONUNCIATIONS[term] }));
-}
+// Função removida - não usamos mais dicionário de pronúncias
+// As conversões são feitas por regras de formatação com hífens
 
 // Detectar termos que precisam de pronúncia fonética
 function detectCriticalTerms(text: string): string[] {
@@ -434,78 +330,69 @@ REGRAS OBRIGATÓRIAS:
     - Este título foi escolhido pelo usuário e DEVE ser respeitado`}
 11. A música será cantada por ${voiceDescription}. Adapte o tom e as referências de gênero adequadamente.
 
-⚠️⚠️⚠️ REGRAS CRÍTICAS DE PRONÚNCIA FONÉTICA (APLICAR EM TODAS AS SEÇÕES: [Intro], [Verse], [Chorus], [Bridge], [Outro], [monologue], [spoken word]):
+⚠️⚠️⚠️ REGRAS OBRIGATÓRIAS DE FORMATAÇÃO (APLICAR EM TODAS AS SEÇÕES):
 
-1. TELEFONES E NÚMEROS:
-   - NUNCA escreva números em formato numérico (ex: 16 997813038)
-   - SEMPRE converta para leitura verbal dígito por dígito com pausas naturais
-   - Use reticências (...) ou quebras de linha para separar grupos
-   - Exemplo CORRETO: "dezesseis... nove nove sete oito um... três zero três oito"
-   - Exemplo ERRADO: "16 997813038"
+🔒 REGRA 1 — TELEFONES E NÚMEROS:
+   - Separar TODOS os dígitos com hífen
+   - NUNCA escrever números por extenso
+   - NUNCA usar palavras como "três", "nove", "zero"
+   - Exemplo CORRETO: 1-6-9-9-7-8-1-3-0-3-8
+   - Exemplo ERRADO: "dezesseis... nove nove sete" ou "16 997813038"
 
-2. SITES, DOMÍNIOS E URLs:
-   - NUNCA escreva URLs técnicas (ex: www.site.com.br)
-   - SEMPRE converta para leitura fonética verbal separando nome e extensões
-   - Exemplo CORRETO: "me-cuido-perfumes, ponto com, ponto bê-érre"
-   - Exemplo ERRADO: "www.mecuidoperfumes.com.br"
+🌐 REGRA 2 — SITES E URLs:
+   - Usar formato soletrado com hífens
+   - www → w-w-w
+   - .com → ponto-com
+   - .br → ponto-b-r
+   - Exemplo CORRETO: w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r
+   - Exemplo ERRADO: "www.criandomusicas.com.br" ou "cri-an-do, ponto com"
 
-3. SIGLAS E ACRÔNIMOS (2-4 letras):
-   - SEMPRE soletra letra por letra com pausas
-   - Use pontos ou reticências para separar
-   - Exemplo CORRETO: "éfe... ême... é" ou "F. M. E."
-   - Exemplo ERRADO: "FME"
+🔠 REGRA 3 — SIGLAS (2-4 letras):
+   - Separar TODAS as letras com hífen
+   - Manter letras em MAIÚSCULO
+   - NUNCA usar fonética ("éfe", "ême", "ésse")
+   - Exemplo CORRETO: F-M-E, A-Q-A, I-A
+   - Exemplo ERRADO: "éfe-ême-é" ou "FME"
 
-4. REDES SOCIAIS (@handles):
-   - Converta @ para "arroba"
-   - Exemplo CORRETO: "arroba pizzariadojoao"
-   - Exemplo ERRADO: "@pizzariadojoao"
+🎤 REGRA 4 — REDES SOCIAIS:
+   - @ → arroba-
+   - Exemplo CORRETO: arroba-pizzariadojoao
+   - Exemplo ERRADO: "@pizzariadojoao" ou "arroba pizzaria do joão"
+
+🚫 REGRA 5 — O QUE NUNCA FAZER:
+   - NUNCA escrever "ésse", "éfe", "erre", "ême"
+   - NUNCA separar sílabas de palavras comuns
+   - NUNCA usar fonética explicativa
+   - NUNCA misturar formatos
 
 ${hasMonologue ? `
 ⚠️ REGRA CRÍTICA DE MONÓLOGO:
 - SEMPRE use a tag [monologue] ou [spoken word] para trechos declamados
 - TODO o texto falado DEVE estar DENTRO dessa tag
-- NUNCA trate declamação como verso cantado
-- NUNCA misture declamação com outras seções
-- APLIQUE TODAS AS REGRAS DE PRONÚNCIA FONÉTICA também no monólogo!
+- APLIQUE TODAS AS REGRAS DE FORMATAÇÃO também no monólogo!
 
 ✅ CORRETO:
 [monologue]
-"Ligue agora: dezesseis...
-nove nove sete oito um...
-três zero três oito!
-Acesse me-cuido-perfumes,
-ponto com, ponto bê-érre."
+"Ligue agora: 1-6-9-9-7-8-1-3-0-3-8!
+Acesse w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r.
+A F-M-E te espera!"
 
 ❌ ERRADO:
 [monologue]
-"Ligue agora: 16 997813038! Acesse www.mecuidoperfumes.com.br"
+"Ligue: dezesseis, nove nove sete... Acesse cri-an-do-mú-si-cas ponto bê-érre. A éfe-ême-é te espera!"
 ` : ''}
 
 ${musicType === 'corporativa' && hasMonologue ? `
 ⚠️ REGRAS ESPECIAIS PARA JINGLE/PROPAGANDA:
-- Esta é uma música PUBLICITÁRIA para marketing
-- O refrão deve ser MUITO simples, curto e fácil de memorizar (estilo "pegajoso")
-- Use frases diretas e marcantes para máximo impacto publicitário
-- O monólogo DEVE incluir TODAS as informações de contato fornecidas na história
-- CRÍTICO: Converta TODOS os telefones, sites e siglas para formato fonético!
-- O monólogo deve soar como um LOCUTOR DE RÁDIO/TV profissional
-- Inclua a chamada para ação de forma clara e convincente
-- Estrutura ideal para jingle:
-  [Intro] - gancho musical curto
-  [Chorus] - refrão memorável e repetitivo (2-4 linhas)
-  [Verse 1] - apresentação da empresa/serviço
-  [Chorus] - repetição do refrão
-  [monologue] - informações de contato (FONÉTICAS!) faladas pelo locutor
-  [Outro] - refrão final ou gancho
+- O refrão deve ser MUITO simples, curto e fácil de memorizar
+- O monólogo DEVE incluir TODAS as informações de contato
+- CRÍTICO: Aplique as regras de formatação com hífen!
 
 Exemplo de monólogo para jingle (CORRETO):
 [monologue]
-"Ligue agora mesmo: onze...
-nove nove nove nove nove...
-nove nove nove nove!
-Pizzaria do João, Rua das Flores, cento e vinte e três, Centro.
-Entrega grátis para toda a cidade!
-Siga no Instagram arroba pizzariadojoao!"
+"Ligue agora: 3-1-9-9-8-7-5-8-8-8-8!
+Pizzaria do João, Rua das Flores, 123, Centro.
+Siga no Instagram arroba-pizzariadojoao!"
 ` : ''}
 
 FORMATO DE SAÍDA OBRIGATÓRIO:
