@@ -1,79 +1,212 @@
 
-# Correção: Segunda Seção Não Aparecendo
+# Correção Global de Pronúncia nas Letras Geradas
 
 ## Problema Identificado
 
-O componente `PinnedScrollSections` tem dois problemas:
+O sistema atual tem falhas na conversão fonética de:
 
-1. **Uso incorreto de `useTransform` no style**: O `backdropFilter` está recebendo um `MotionValue` diretamente, mas deveria usar uma abordagem diferente para CSS custom properties.
+```text
+┌────────────────────────────────────────────────────────────┐
+│                    PROBLEMAS ATUAIS                        │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  ❌ NÚMEROS: "16 997813038"                                │
+│     → IA gera formato numérico, Suno lê incorretamente     │
+│                                                            │
+│  ❌ SITES: "www.mecuidoperfumes.com.br"                    │
+│     → Não converte para leitura fonética                   │
+│                                                            │
+│  ❌ SIGLAS: "FME"                                          │
+│     → Não força soletração letra por letra                 │
+│                                                            │
+│  ❌ APLICAÇÃO PARCIAL                                      │
+│     → Pronúncias só aplicadas em algumas seções            │
+│     → [monologue] e [spoken word] não tratados             │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+```
 
-2. **Opacidade inicial 0 na seção Creator**: A `creatorOpacity` começa em 0 e depende do scroll para aumentar, mas se houver qualquer problema no tracking do scroll, a seção permanece invisível.
+## Solução em 3 Frentes
 
-## Solução
+### 1. Atualizar Prompts do Sistema (generate-lyrics)
 
-Simplificar a implementação removendo o uso problemático de `useTransform` dentro do `style` inline e garantindo que as seções sejam visíveis.
-
-### Mudanças no `PinnedScrollSections.tsx`:
-
-1. **Remover blur overlay problemático** - Simplificar removendo o efeito de blur que está causando conflitos
-
-2. **Garantir visibilidade das seções** - Usar `whileInView` para todas as seções ao invés de depender de `scrollYProgress` para opacidade
-
-3. **Manter animações de entrada** - Preservar os efeitos de parallax e scale, mas com opacidade garantida
-
----
-
-## Código Corrigido
+Adicionar regras obrigatórias de conversão fonética diretamente no prompt da IA:
 
 ```typescript
-// Desktop: Seções com animações simples e confiáveis
-return (
-  <div ref={containerRef} className="relative">
-    {/* Section 1: AudioSamples - Estática */}
-    <div className="relative z-10">
-      <AudioSamples />
-    </div>
+// Novas regras a incluir no systemPrompt
+REGRAS OBRIGATÓRIAS DE PRONÚNCIA (aplicar em TODAS as seções):
 
-    {/* Section 2: PricingPlans - Fade in simples */}
-    <motion.div
-      className="relative z-20"
-      initial={{ opacity: 0, y: 40 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10%" }}
-      transition={{ duration: 0.5 }}
-    >
-      <PricingPlans />
-    </motion.div>
+1. TELEFONES E NÚMEROS:
+   - NUNCA gerar números em formato numérico
+   - Converter para leitura dígito por dígito com pausas
+   - Usar reticências (...) para separar grupos
+   - Exemplo: "16 99781-3038" → "dezesseis... nove nove sete oito um... três zero três oito"
 
-    {/* Section 3: CreatorSection - Entrada cinematográfica */}
-    <motion.div
-      ref={creatorSectionRef}
-      className="relative z-30"
-      initial={{ opacity: 0, y: 60, scale: 0.95 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
-      viewport={{ once: true, margin: "-5%" }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-    >
-      <CreatorSection />
-    </motion.div>
-  </div>
-);
+2. SITES E DOMÍNIOS:
+   - NUNCA escrever URLs técnicas (www.site.com.br)
+   - Converter para leitura verbal fonética
+   - Separar nome, extensão e país
+   - Exemplo: "www.mecuido.com.br" → "me-cuido, ponto com, ponto bê-érre"
+
+3. SIGLAS (3 letras ou menos):
+   - SEMPRE soletrar letra por letra
+   - Usar separação por ponto ou hífen
+   - Exemplo: "FME" → "éfe... ême... é" ou "F. M. E."
+
+4. SIGLAS CONHECIDAS (4+ letras):
+   - Verificar se é palavra pronunciável
+   - Se não, soletrar letra por letra
+```
+
+### 2. Criar Função de Pós-Processamento
+
+Nova função que aplica conversões automáticas em toda a letra gerada:
+
+```typescript
+// Função para converter números para leitura verbal
+function convertPhoneToVerbal(text: string): string {
+  // Detecta padrões de telefone: (XX) XXXXX-XXXX, XX XXXXXXXXX, etc.
+  const phonePatterns = [
+    /\(?\d{2}\)?[\s-]?\d{4,5}[\s-]?\d{4}/g,
+    /\d{10,11}/g
+  ];
+  
+  // Converte cada dígito para palavra com pausas
+  // 0→zero, 1→um, 2→dois, etc.
+}
+
+// Função para converter URLs para leitura fonética
+function convertUrlToVerbal(text: string): string {
+  // Detecta padrões: www.*, *.com.br, @*
+  // Converte para: "nome do site, ponto com, ponto bê-érre"
+}
+
+// Função para soletrar siglas
+function spellOutAcronyms(text: string): string {
+  // Detecta siglas de 2-4 letras maiúsculas
+  // Converte para soletração: "FME" → "éfe... ême... é"
+}
+
+// Aplicar todas as conversões
+function applyGlobalPronunciationRules(text: string): string {
+  let result = text;
+  result = convertPhoneToVerbal(result);
+  result = convertUrlToVerbal(result);
+  result = spellOutAcronyms(result);
+  return result;
+}
+```
+
+### 3. Adicionar Pergunta no Briefing
+
+Nova pergunta para músicas cantadas (especialmente corporativas/jingles):
+
+```typescript
+// Novo índice no chat do briefing (após contactInfo para jingles)
+{
+  type: 'bot',
+  content: '📞 Existe alguma sigla, número de telefone, site ou termo técnico que precisa de pronúncia especial?',
+  subtext: 'Exemplo: FME → "éfe-ême-é", 16997813038 → "dezesseis, nove nove sete..."',
+  inputType: 'textarea',
+  field: 'specialPronunciations'
+}
 ```
 
 ---
 
-## Arquivo a Ser Alterado
+## Arquivos a Modificar
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/components/PinnedScrollSections.tsx` | Simplificar lógica de animação para garantir visibilidade |
+| `supabase/functions/generate-lyrics/index.ts` | Atualizar systemPrompt com regras de pronúncia + criar funções de pós-processamento |
+| `supabase/functions/generate-style-prompt/index.ts` | Aplicar funções de pós-processamento na letra final |
+| `src/pages/Briefing.tsx` | Adicionar pergunta sobre siglas/termos especiais |
+| `public/locales/*/briefing.json` | Adicionar traduções para nova pergunta |
+
+---
+
+## Detalhes Técnicos
+
+### Dicionário de Conversão de Dígitos
+
+```typescript
+const DIGIT_TO_WORD: Record<string, string> = {
+  '0': 'zero',
+  '1': 'um',
+  '2': 'dois',
+  '3': 'três',
+  '4': 'quatro',
+  '5': 'cinco',
+  '6': 'seis',
+  '7': 'sete',
+  '8': 'oito',
+  '9': 'nove'
+};
+
+const LETTER_PRONUNCIATION: Record<string, string> = {
+  'A': 'á', 'B': 'bê', 'C': 'cê', 'D': 'dê', 'E': 'é',
+  'F': 'éfe', 'G': 'gê', 'H': 'agá', 'I': 'í', 'J': 'jota',
+  'K': 'cá', 'L': 'éle', 'M': 'ême', 'N': 'ene', 'O': 'ó',
+  'P': 'pê', 'Q': 'quê', 'R': 'érre', 'S': 'ésse', 'T': 'tê',
+  'U': 'u', 'V': 'vê', 'W': 'dáblio', 'X': 'xis', 'Y': 'ípsilon',
+  'Z': 'zê'
+};
+```
+
+### Exemplo de Conversão Completa
+
+**Entrada (gerada pela IA):**
+```
+[monologue]
+"Ligue agora: 16 997813038! Acesse www.mecuidoperfumes.com.br. A FME te espera!"
+```
+
+**Saída (após pós-processamento):**
+```
+[monologue]
+"Ligue agora: dezesseis...
+nove nove sete oito um...
+três zero três oito!
+Acesse me-cuido-perfumes,
+ponto com,
+ponto bê-érre.
+A éfe... ême... é te espera!"
+```
+
+---
+
+## Fluxo Final
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                      FLUXO CORRIGIDO                        │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  1. Briefing coleta informações + siglas/termos especiais   │
+│                          ↓                                  │
+│  2. generate-lyrics gera letra com regras de pronúncia      │
+│     no prompt do sistema (IA já tenta converter)            │
+│                          ↓                                  │
+│  3. Pós-processamento aplica conversões automáticas:        │
+│     - Telefones → verbal dígito por dígito                  │
+│     - URLs → fonético separado                              │
+│     - Siglas → soletração                                   │
+│                          ↓                                  │
+│  4. generate-style-prompt recebe letra já processada        │
+│     e aplica pronúncias customizadas do usuário             │
+│                          ↓                                  │
+│  5. final_prompt com letra 100% fonética para Suno          │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Resultado Esperado
 
-- ✅ AudioSamples aparece normalmente (sem animação)
-- ✅ PricingPlans aparece com fade-in ao scrollar
-- ✅ CreatorSection aparece com entrada cinematográfica (scale + fade + movimento)
-- ✅ Sem erros de renderização
-- ✅ Todas as seções visíveis e funcionais
+- Todos os números convertidos para leitura verbal
+- Todas as URLs convertidas para fonética
+- Todas as siglas soletradas corretamente
+- Conversões aplicadas em TODAS as seções ([Intro], [Verse], [Chorus], [Bridge], [Outro], [monologue], [spoken word])
+- Pausas naturais usando reticências (...) ou quebras de linha
+- Consistência mantida em toda a letra
