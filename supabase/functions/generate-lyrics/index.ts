@@ -92,6 +92,146 @@ const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
   '99': 'novênta i nóvi', 'PicPay': 'píc-pêi', 'Mercado Pago': 'mercádo págo',
 };
 
+// ============ FUNÇÕES DE CONVERSÃO FONÉTICA GLOBAL ============
+
+// Dicionário de dígitos para palavras
+const DIGIT_TO_WORD: Record<string, string> = {
+  '0': 'zero', '1': 'um', '2': 'dois', '3': 'três', '4': 'quatro',
+  '5': 'cinco', '6': 'seis', '7': 'sete', '8': 'oito', '9': 'nove'
+};
+
+// Dicionário de letras para pronúncia
+const LETTER_PRONUNCIATION: Record<string, string> = {
+  'A': 'á', 'B': 'bê', 'C': 'cê', 'D': 'dê', 'E': 'é',
+  'F': 'éfe', 'G': 'gê', 'H': 'agá', 'I': 'í', 'J': 'jota',
+  'K': 'cá', 'L': 'éle', 'M': 'ême', 'N': 'ene', 'O': 'ó',
+  'P': 'pê', 'Q': 'quê', 'R': 'érre', 'S': 'ésse', 'T': 'tê',
+  'U': 'u', 'V': 'vê', 'W': 'dáblio', 'X': 'xis', 'Y': 'ípsilon',
+  'Z': 'zê'
+};
+
+// Converter telefone para leitura verbal dígito por dígito
+function convertPhoneToVerbal(text: string): string {
+  // Padrões de telefone brasileiro: (XX) XXXXX-XXXX, XX XXXXXXXXX, etc.
+  const phonePatterns = [
+    /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,  // (11) 99999-9999
+    /\d{10,11}/g,                               // 11999999999
+    /\d{2}[\s.-]\d{4,5}[\s.-]\d{4}/g           // 11 99999-9999
+  ];
+  
+  let result = text;
+  
+  phonePatterns.forEach(pattern => {
+    result = result.replace(pattern, (match) => {
+      // Extrair apenas os dígitos
+      const digits = match.replace(/\D/g, '');
+      
+      // Converter para leitura verbal com grupos e pausas
+      if (digits.length === 10 || digits.length === 11) {
+        const ddd = digits.substring(0, 2);
+        const rest = digits.substring(2);
+        
+        // DDD como número (não dígito por dígito)
+        const dddWord = parseInt(ddd) < 20 
+          ? ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'][parseInt(ddd)]
+          : (parseInt(ddd) < 30 ? 'vinte' + (parseInt(ddd) % 10 > 0 ? ' e ' + DIGIT_TO_WORD[String(parseInt(ddd) % 10)] : '') : String(parseInt(ddd)));
+        
+        // Resto dígito por dígito com pausas naturais
+        const groups: string[] = [];
+        for (let i = 0; i < rest.length; i += 3) {
+          const group = rest.substring(i, Math.min(i + 3, rest.length));
+          const words = group.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
+          groups.push(words);
+        }
+        
+        return `${dddWord}...\n${groups.join('...\n')}`;
+      }
+      
+      // Fallback: converter cada dígito
+      return digits.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
+    });
+  });
+  
+  return result;
+}
+
+// Converter URLs para leitura fonética
+function convertUrlToVerbal(text: string): string {
+  // Padrões de URL
+  const urlPatterns = [
+    /(https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi,
+    /@([a-zA-Z0-9_]+)/g  // @handles de redes sociais
+  ];
+  
+  let result = text;
+  
+  // URLs completas
+  result = result.replace(urlPatterns[0], (_match, _protocol, name, ext1, ext2) => {
+    // Converter nome do site (separar camelCase e hífens)
+    const nameWords = name
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/[-_]/g, ' ')
+      .toLowerCase();
+    
+    // Converter extensões
+    const extMap: Record<string, string> = {
+      'com': 'ponto com', 'br': 'ponto bê-érre', 'org': 'ponto órg',
+      'net': 'ponto nét', 'gov': 'ponto gôv', 'edu': 'ponto edu',
+      'io': 'ponto ai-ó', 'co': 'ponto cê-ó'
+    };
+    
+    const ext1Verbal = extMap[ext1.toLowerCase()] || `ponto ${ext1}`;
+    const ext2Verbal = ext2 ? `, ${extMap[ext2.replace('.', '').toLowerCase()] || `ponto ${ext2.replace('.', '')}`}` : '';
+    
+    return `${nameWords},\n${ext1Verbal}${ext2Verbal}`;
+  });
+  
+  // @handles
+  result = result.replace(urlPatterns[1], (_match, handle) => {
+    return `arroba ${handle.toLowerCase()}`;
+  });
+  
+  return result;
+}
+
+// Soletrar siglas de 2-4 letras maiúsculas
+function spellOutAcronyms(text: string): string {
+  // Detectar siglas (2-4 letras maiúsculas seguidas, não no dicionário)
+  const acronymPattern = /\b([A-Z]{2,4})\b/g;
+  
+  return text.replace(acronymPattern, (match) => {
+    // Verificar se já está no dicionário
+    if (BRAZILIAN_PRONUNCIATIONS[match]) {
+      return BRAZILIAN_PRONUNCIATIONS[match];
+    }
+    
+    // Soletrar letra por letra com pausas
+    return match.split('').map(letter => LETTER_PRONUNCIATION[letter] || letter).join('... ');
+  });
+}
+
+// Aplicar TODAS as regras de pronúncia globalmente
+function applyGlobalPronunciationRules(text: string): string {
+  let result = text;
+  
+  // 1. Converter telefones para leitura verbal
+  result = convertPhoneToVerbal(result);
+  
+  // 2. Converter URLs para leitura fonética
+  result = convertUrlToVerbal(result);
+  
+  // 3. Soletrar siglas não conhecidas
+  result = spellOutAcronyms(result);
+  
+  // 4. Aplicar pronúncias conhecidas do dicionário
+  Object.entries(BRAZILIAN_PRONUNCIATIONS).forEach(([term, phonetic]) => {
+    const regex = new RegExp(`\\b${term}\\b`, 'gi');
+    result = result.replace(regex, phonetic);
+  });
+  
+  return result;
+}
+
 // Aplicar pronúncias conhecidas automaticamente
 function applyKnownPronunciations(terms: string[]): Pronunciation[] {
   return terms
@@ -124,7 +264,7 @@ function detectCriticalTerms(text: string): string[] {
   return Array.from(terms);
 }
 
-// Aplicar pronúncias ao texto
+// Aplicar pronúncias customizadas ao texto
 function applyPronunciations(text: string, pronunciations: Pronunciation[]): string {
   let result = text;
   pronunciations.forEach(({ term, phonetic }) => {
@@ -294,20 +434,51 @@ REGRAS OBRIGATÓRIAS:
     - Este título foi escolhido pelo usuário e DEVE ser respeitado`}
 11. A música será cantada por ${voiceDescription}. Adapte o tom e as referências de gênero adequadamente.
 
+⚠️⚠️⚠️ REGRAS CRÍTICAS DE PRONÚNCIA FONÉTICA (APLICAR EM TODAS AS SEÇÕES: [Intro], [Verse], [Chorus], [Bridge], [Outro], [monologue], [spoken word]):
+
+1. TELEFONES E NÚMEROS:
+   - NUNCA escreva números em formato numérico (ex: 16 997813038)
+   - SEMPRE converta para leitura verbal dígito por dígito com pausas naturais
+   - Use reticências (...) ou quebras de linha para separar grupos
+   - Exemplo CORRETO: "dezesseis... nove nove sete oito um... três zero três oito"
+   - Exemplo ERRADO: "16 997813038"
+
+2. SITES, DOMÍNIOS E URLs:
+   - NUNCA escreva URLs técnicas (ex: www.site.com.br)
+   - SEMPRE converta para leitura fonética verbal separando nome e extensões
+   - Exemplo CORRETO: "me-cuido-perfumes, ponto com, ponto bê-érre"
+   - Exemplo ERRADO: "www.mecuidoperfumes.com.br"
+
+3. SIGLAS E ACRÔNIMOS (2-4 letras):
+   - SEMPRE soletra letra por letra com pausas
+   - Use pontos ou reticências para separar
+   - Exemplo CORRETO: "éfe... ême... é" ou "F. M. E."
+   - Exemplo ERRADO: "FME"
+
+4. REDES SOCIAIS (@handles):
+   - Converta @ para "arroba"
+   - Exemplo CORRETO: "arroba pizzariadojoao"
+   - Exemplo ERRADO: "@pizzariadojoao"
+
 ${hasMonologue ? `
 ⚠️ REGRA CRÍTICA DE MONÓLOGO:
 - SEMPRE use a tag [monologue] ou [spoken word] para trechos declamados
 - TODO o texto falado DEVE estar DENTRO dessa tag
 - NUNCA trate declamação como verso cantado
 - NUNCA misture declamação com outras seções
+- APLIQUE TODAS AS REGRAS DE PRONÚNCIA FONÉTICA também no monólogo!
 
 ✅ CORRETO:
 [monologue]
-"Texto declamado aqui..."
+"Ligue agora: dezesseis...
+nove nove sete oito um...
+três zero três oito!
+Acesse me-cuido-perfumes,
+ponto com, ponto bê-érre."
 
 ❌ ERRADO:
-[Verse]
-Texto falado...
+[monologue]
+"Ligue agora: 16 997813038! Acesse www.mecuidoperfumes.com.br"
 ` : ''}
 
 ${musicType === 'corporativa' && hasMonologue ? `
@@ -315,7 +486,8 @@ ${musicType === 'corporativa' && hasMonologue ? `
 - Esta é uma música PUBLICITÁRIA para marketing
 - O refrão deve ser MUITO simples, curto e fácil de memorizar (estilo "pegajoso")
 - Use frases diretas e marcantes para máximo impacto publicitário
-- O monólogo DEVE incluir TODAS as informações de contato fornecidas na história (telefone, endereço, site, redes sociais)
+- O monólogo DEVE incluir TODAS as informações de contato fornecidas na história
+- CRÍTICO: Converta TODOS os telefones, sites e siglas para formato fonético!
 - O monólogo deve soar como um LOCUTOR DE RÁDIO/TV profissional
 - Inclua a chamada para ação de forma clara e convincente
 - Estrutura ideal para jingle:
@@ -323,13 +495,17 @@ ${musicType === 'corporativa' && hasMonologue ? `
   [Chorus] - refrão memorável e repetitivo (2-4 linhas)
   [Verse 1] - apresentação da empresa/serviço
   [Chorus] - repetição do refrão
-  [monologue] - informações de contato faladas pelo locutor
+  [monologue] - informações de contato (FONÉTICAS!) faladas pelo locutor
   [Outro] - refrão final ou gancho
 
-Exemplo de monólogo para jingle:
+Exemplo de monólogo para jingle (CORRETO):
 [monologue]
-"Ligue agora mesmo: (11) 99999-9999! Pizzaria do João, Rua das Flores, 123, Centro. 
-Entrega grátis para toda a cidade! Siga no Instagram @pizzariadojoao!"
+"Ligue agora mesmo: onze...
+nove nove nove nove nove...
+nove nove nove nove!
+Pizzaria do João, Rua das Flores, cento e vinte e três, Centro.
+Entrega grátis para toda a cidade!
+Siga no Instagram arroba pizzariadojoao!"
 ` : ''}
 
 FORMATO DE SAÍDA OBRIGATÓRIO:
@@ -349,7 +525,7 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 (4-6 versos desenvolvendo a história)
 
 `}${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
-(texto declamado/falado, NÃO cantado - 2-4 frases emocionais entre aspas)
+(texto declamado/falado COM PRONÚNCIAS FONÉTICAS - 2-4 frases entre aspas)
 
 ` : `[Bridge]
 (2-4 versos de transição emocional)
@@ -361,7 +537,7 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 (2-4 versos de encerramento)${hasMonologue && monologuePosition === 'outro' ? `
 
 [monologue]
-(texto declamado final entre aspas)` : ''}`;
+(texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`;
 
     const userPrompt = `Crie DUAS versões de letra completas para uma música personalizada.
 
@@ -451,13 +627,18 @@ INSTRUÇÕES FINAIS:
     const l1 = extractTitleAndBody(v1, autoGenerateName ? undefined : songName);
     const l2 = extractTitleAndBody(v2, autoGenerateName ? undefined : songName);
 
-    // Gerar versões fonéticas se houver pronúncias definidas
-    let phonetic1 = null;
-    let phonetic2 = null;
+    // APLICAR REGRAS GLOBAIS DE PRONÚNCIA em TODA a letra (todas as seções)
+    console.log("Applying global pronunciation rules to all lyrics sections...");
+    const processedBody1 = applyGlobalPronunciationRules(l1.body);
+    const processedBody2 = applyGlobalPronunciationRules(l2.body);
+
+    // Gerar versões fonéticas com pronúncias customizadas adicionais
+    let phonetic1 = processedBody1;
+    let phonetic2 = processedBody2;
     
     if (pronunciations.length > 0) {
-      phonetic1 = applyPronunciations(l1.body, pronunciations);
-      phonetic2 = applyPronunciations(l2.body, pronunciations);
+      phonetic1 = applyPronunciations(processedBody1, pronunciations);
+      phonetic2 = applyPronunciations(processedBody2, pronunciations);
     }
 
     // Save to Supabase
@@ -465,7 +646,7 @@ INSTRUÇÕES FINAIS:
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Insert lyrics with phonetic versions
+    // Insert lyrics with phonetic versions - use processedBody for display
     const { data: insertedLyrics, error: insertError } = await supabase
       .from('lyrics')
       .insert([
@@ -473,7 +654,7 @@ INSTRUÇÕES FINAIS:
           order_id: orderId, 
           version: 'A', 
           title: l1.title, 
-          body: l1.body, 
+          body: processedBody1, // Body já com pronúncias globais aplicadas
           phonetic_body: phonetic1,
           is_approved: false 
         },
@@ -481,7 +662,7 @@ INSTRUÇÕES FINAIS:
           order_id: orderId, 
           version: 'B', 
           title: l2.title, 
-          body: l2.body, 
+          body: processedBody2, // Body já com pronúncias globais aplicadas
           phonetic_body: phonetic2,
           is_approved: false 
         }
@@ -557,14 +738,14 @@ INSTRUÇÕES FINAIS:
             id: insertedLyrics?.[0]?.id || 'lyric-a', 
             version: 'A', 
             title: l1.title, 
-            text: l1.body,
+            text: processedBody1, // Retorna texto já processado
             phoneticText: phonetic1
           },
           { 
             id: insertedLyrics?.[1]?.id || 'lyric-b', 
             version: 'B', 
             title: l2.title, 
-            text: l2.body,
+            text: processedBody2, // Retorna texto já processado
             phoneticText: phonetic2
           }
         ],

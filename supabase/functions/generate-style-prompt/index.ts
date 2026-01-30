@@ -92,6 +92,121 @@ const BRAZILIAN_PRONUNCIATIONS: Record<string, string> = {
   '99': 'novênta i nóvi', 'PicPay': 'píc-pêi', 'Mercado Pago': 'mercádo págo',
 };
 
+// ============ FUNÇÕES DE CONVERSÃO FONÉTICA GLOBAL ============
+
+// Dicionário de dígitos para palavras
+const DIGIT_TO_WORD: Record<string, string> = {
+  '0': 'zero', '1': 'um', '2': 'dois', '3': 'três', '4': 'quatro',
+  '5': 'cinco', '6': 'seis', '7': 'sete', '8': 'oito', '9': 'nove'
+};
+
+// Dicionário de letras para pronúncia
+const LETTER_PRONUNCIATION: Record<string, string> = {
+  'A': 'á', 'B': 'bê', 'C': 'cê', 'D': 'dê', 'E': 'é',
+  'F': 'éfe', 'G': 'gê', 'H': 'agá', 'I': 'í', 'J': 'jota',
+  'K': 'cá', 'L': 'éle', 'M': 'ême', 'N': 'ene', 'O': 'ó',
+  'P': 'pê', 'Q': 'quê', 'R': 'érre', 'S': 'ésse', 'T': 'tê',
+  'U': 'u', 'V': 'vê', 'W': 'dáblio', 'X': 'xis', 'Y': 'ípsilon',
+  'Z': 'zê'
+};
+
+// Converter telefone para leitura verbal dígito por dígito
+function convertPhoneToVerbal(text: string): string {
+  const phonePatterns = [
+    /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,
+    /\d{10,11}/g,
+    /\d{2}[\s.-]\d{4,5}[\s.-]\d{4}/g
+  ];
+  
+  let result = text;
+  
+  phonePatterns.forEach(pattern => {
+    result = result.replace(pattern, (match) => {
+      const digits = match.replace(/\D/g, '');
+      
+      if (digits.length === 10 || digits.length === 11) {
+        const ddd = digits.substring(0, 2);
+        const rest = digits.substring(2);
+        
+        const dddWord = parseInt(ddd) < 20 
+          ? ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'][parseInt(ddd)]
+          : (parseInt(ddd) < 30 ? 'vinte' + (parseInt(ddd) % 10 > 0 ? ' e ' + DIGIT_TO_WORD[String(parseInt(ddd) % 10)] : '') : String(parseInt(ddd)));
+        
+        const groups: string[] = [];
+        for (let i = 0; i < rest.length; i += 3) {
+          const group = rest.substring(i, Math.min(i + 3, rest.length));
+          const words = group.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
+          groups.push(words);
+        }
+        
+        return `${dddWord}...\n${groups.join('...\n')}`;
+      }
+      
+      return digits.split('').map(d => DIGIT_TO_WORD[d]).join(' ');
+    });
+  });
+  
+  return result;
+}
+
+// Converter URLs para leitura fonética
+function convertUrlToVerbal(text: string): string {
+  let result = text;
+  
+  result = result.replace(/(https?:\/\/)?(?:www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, (_match, _protocol, name, ext1, ext2) => {
+    const nameWords = name
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/[-_]/g, ' ')
+      .toLowerCase();
+    
+    const extMap: Record<string, string> = {
+      'com': 'ponto com', 'br': 'ponto bê-érre', 'org': 'ponto órg',
+      'net': 'ponto nét', 'gov': 'ponto gôv', 'edu': 'ponto edu',
+      'io': 'ponto ai-ó', 'co': 'ponto cê-ó'
+    };
+    
+    const ext1Verbal = extMap[ext1.toLowerCase()] || `ponto ${ext1}`;
+    const ext2Verbal = ext2 ? `, ${extMap[ext2.replace('.', '').toLowerCase()] || `ponto ${ext2.replace('.', '')}`}` : '';
+    
+    return `${nameWords},\n${ext1Verbal}${ext2Verbal}`;
+  });
+  
+  result = result.replace(/@([a-zA-Z0-9_]+)/g, (_match, handle) => {
+    return `arroba ${handle.toLowerCase()}`;
+  });
+  
+  return result;
+}
+
+// Soletrar siglas de 2-4 letras maiúsculas
+function spellOutAcronyms(text: string): string {
+  const acronymPattern = /\b([A-Z]{2,4})\b/g;
+  
+  return text.replace(acronymPattern, (match) => {
+    if (BRAZILIAN_PRONUNCIATIONS[match]) {
+      return BRAZILIAN_PRONUNCIATIONS[match];
+    }
+    
+    return match.split('').map(letter => LETTER_PRONUNCIATION[letter] || letter).join('... ');
+  });
+}
+
+// Aplicar TODAS as regras de pronúncia globalmente
+function applyGlobalPronunciationRules(text: string): string {
+  let result = text;
+  
+  result = convertPhoneToVerbal(result);
+  result = convertUrlToVerbal(result);
+  result = spellOutAcronyms(result);
+  
+  Object.entries(BRAZILIAN_PRONUNCIATIONS).forEach(([term, phonetic]) => {
+    const regex = new RegExp(`\\b${term}\\b`, 'gi');
+    result = result.replace(regex, phonetic);
+  });
+  
+  return result;
+}
+
 // Aplicar pronúncias conhecidas automaticamente
 function applyKnownPronunciations(terms: string[]): Pronunciation[] {
   return terms
@@ -123,7 +238,7 @@ const instrumentNameMap: Record<string, string> = {
   harpa: 'Harp'
 };
 
-// Aplicar pronúncias ao texto
+// Aplicar pronúncias customizadas ao texto
 function applyPronunciations(text: string, pronunciations: Pronunciation[]): string {
   let result = text;
   pronunciations.forEach(({ term, phonetic }) => {
@@ -571,11 +686,19 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
       }
 
       // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
+      // Aplicar regras globais de pronúncia a TODA a letra
       let lyricsForGeneration2 = approvedLyrics || '';
+      
+      // 1. Aplicar regras globais de pronúncia (telefones, URLs, siglas)
+      lyricsForGeneration2 = applyGlobalPronunciationRules(lyricsForGeneration2);
+      console.log("Applied global pronunciation rules to final lyrics");
+      
+      // 2. Aplicar pronúncias customizadas do usuário
       if (pronunciations.length > 0 && !phoneticLyrics) {
         lyricsForGeneration2 = applyPronunciations(lyricsForGeneration2, pronunciations);
       } else if (phoneticLyrics) {
-        lyricsForGeneration2 = phoneticLyrics;
+        // Se já tem versão fonética, aplicar regras globais nela também
+        lyricsForGeneration2 = applyGlobalPronunciationRules(phoneticLyrics);
       }
 
       // Limpar duplicações na letra (remover [Intro] repetidos, etc.)
