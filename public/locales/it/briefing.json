@@ -39,6 +39,7 @@
     "packagesNote": "💡 I pacchetti permettono di creare più canzoni con risparmio. Usa quando vuoi!"
   },
   "chat": {
+    "subtitle": "Parla con me per creare la tua canzone",
     "typeMessage": "Scrivi il tuo messaggio...",
     "send": "Invia",
     "skip": "Salta",
@@ -301,6 +302,14 @@
     "question": "Che ne dici di creare una canzone speciale per questa data?",
     "createFor": "Crea canzone per",
     "noThanks": "No, grazie",
-    "dismiss": "Chiudi"
+    "dismiss": "Chiudi",
+    "selectType": "Canzone per",
+    "selectTypeDesc": "Scegli il tipo di canzone che vuoi creare",
+    "vocalFor": "Canzone Cantata",
+    "instrumentalFor": "Strumentale",
+    "customLyricFor": "Ho Già il Testo",
+    "intro": "{{emoji}} Creiamo la tua canzone per {{name}}!\n\nHo già selezionato le impostazioni ideali per questa data speciale.",
+    "letsCreate": "Creiamo la tua canzone per",
+    "preselected": "Ho già selezionato le impostazioni ideali per questa data speciale."
   }
 }

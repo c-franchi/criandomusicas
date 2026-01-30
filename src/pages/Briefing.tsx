@@ -64,6 +64,10 @@ interface BriefingFormData {
   corporateFormat: 'institucional' | 'jingle' | '';
   contactInfo: string;
   callToAction: string;
+  // Campos para data comemorativa
+  celebrationType?: string;
+  celebrationName?: string;
+  celebrationEmoji?: string;
 }
 
 const BRIEFING_STORAGE_KEY = 'briefing_autosave';
@@ -169,6 +173,8 @@ const Briefing = () => {
   // Celebration banner state
   const { closestDate, isLoading: isCelebrationLoading } = useUpcomingCelebrations(30);
   const [celebrationDismissed, setCelebrationDismissed] = useState(false);
+  const [showCelebrationTypeModal, setShowCelebrationTypeModal] = useState(false);
+  const [selectedCelebration, setSelectedCelebration] = useState<typeof closestDate>(null);
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -1748,15 +1754,72 @@ const Briefing = () => {
   const handleCelebrationAccept = () => {
     if (!closestDate) return;
     
-    setCelebrationDismissed(true);
+    // Guardar celebração selecionada e abrir modal de tipo
+    setSelectedCelebration(closestDate);
+    setShowCelebrationTypeModal(true);
+  };
+
+  // Handler para selecionar tipo de música da celebração
+  const handleCelebrationTypeSelect = (type: 'vocal' | 'instrumental' | 'custom_lyric') => {
+    if (!selectedCelebration) return;
     
-    // Pré-preencher formData com as sugestões da data comemorativa
-    setFormData(prev => ({
-      ...prev,
-      musicType: closestDate.suggested_music_type || prev.musicType,
-      atmosphere: closestDate.suggested_atmosphere || prev.atmosphere,
-      emotion: closestDate.suggested_emotion || prev.emotion,
-    }));
+    setCelebrationDismissed(true);
+    setShowCelebrationTypeModal(false);
+    setShowPlanSelection(false);
+    
+    // Pré-preencher formData com sugestões da celebração
+    const newFormData: BriefingFormData = {
+      ...formData,
+      musicType: selectedCelebration.suggested_music_type || 'parodia',
+      atmosphere: selectedCelebration.suggested_atmosphere || 'festivo',
+      emotion: selectedCelebration.suggested_emotion || 'alegria',
+      celebrationType: selectedCelebration.id,
+      celebrationName: selectedCelebration.localizedName,
+      celebrationEmoji: selectedCelebration.emoji,
+      isInstrumental: type === 'instrumental',
+      hasCustomLyric: type === 'custom_lyric',
+    };
+    
+    setFormData(newFormData);
+    
+    // Definir plano baseado no tipo
+    const planId = type === 'instrumental' ? 'single_instrumental' 
+                 : type === 'custom_lyric' ? 'single_custom_lyric' 
+                 : 'single';
+    setSelectedPlanId(planId);
+    
+    // Atualizar URL com o planId
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('planId', planId);
+    window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
+    
+    // Adicionar mensagem de introdução personalizada
+    const celebrationIntro: ChatMessage = {
+      id: `msg-celebration-${Date.now()}`,
+      type: 'bot',
+      content: t('celebration.intro', { 
+        name: selectedCelebration.localizedName,
+        emoji: selectedCelebration.emoji,
+        defaultValue: `${selectedCelebration.emoji} ${t('celebration.letsCreate', 'Vamos criar sua música de')} ${selectedCelebration.localizedName}!\n\n${t('celebration.preselected', 'Já selecionei as configurações ideais para essa data especial.')}`
+      }),
+    };
+    
+    setMessages([celebrationIntro]);
+    
+    // Determinar próximo step baseado no tipo
+    if (type === 'custom_lyric') {
+      // Letra própria: ir para colar letra (step 22)
+      setCurrentStep(22);
+      setTimeout(() => addBotMessage(chatFlow[22]), 1000);
+    } else if (type === 'instrumental') {
+      // Instrumental: pular musicType (já definido), ir para style (step 2)
+      setCurrentStep(2);
+      setTimeout(() => addBotMessage(chatFlow[2]), 1000);
+    } else {
+      // Vocal: pular musicType (já definido), ir para emotion (step 10)
+      setCurrentStep(10);
+      setTimeout(() => addBotMessage(chatFlow[10], 10), 1000);
+    }
   };
 
   // Tela de seleção de pacote
@@ -2271,11 +2334,17 @@ const Briefing = () => {
             <Music className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h1 className="font-semibold">Briefing Musical</h1>
-            <p className="text-sm text-muted-foreground">Converse comigo para criar sua música</p>
+            <h1 className="font-semibold">{t('title', 'Briefing Musical')}</h1>
+            <p className="text-sm text-muted-foreground">{t('chat.subtitle', 'Converse comigo para criar sua música')}</p>
           </div>
-          {/* Plan Badge */}
-          {currentPlanInfo && (
+          {/* Celebration Badge */}
+          {formData.celebrationName && (
+            <Badge variant="outline" className="text-sm px-3 py-1 border-primary/50 bg-primary/10">
+              {formData.celebrationEmoji} {formData.celebrationName}
+            </Badge>
+          )}
+          {/* Plan Badge - só mostra se não tiver celebration badge */}
+          {currentPlanInfo && !formData.celebrationName && (
             <Badge variant="outline" className="text-sm px-3 py-1 border-primary/50 bg-primary/10">
               {currentPlanInfo.icon} {currentPlanInfo.name}
               {currentPlanInfo.credits > 1 && (
@@ -2655,6 +2724,58 @@ const Briefing = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Seleção de Tipo de Celebração */}
+      <Dialog open={showCelebrationTypeModal} onOpenChange={setShowCelebrationTypeModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              {selectedCelebration?.emoji} {t('celebration.selectType', 'Música de')} {selectedCelebration?.localizedName}
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              {t('celebration.selectTypeDesc', 'Escolha o tipo de música que você quer criar')}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-3 py-4">
+            <Button 
+              variant="outline" 
+              className="w-full h-auto py-4 justify-start"
+              onClick={() => handleCelebrationTypeSelect('vocal')}
+            >
+              <span className="text-2xl mr-3">🎤</span>
+              <div className="text-left">
+                <p className="font-semibold">{t('celebration.vocalFor', 'Música Cantada')}</p>
+                <p className="text-sm text-muted-foreground">{t('planSelection.vocalSingleDesc', 'Com letra e vocal personalizados')}</p>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="w-full h-auto py-4 justify-start"
+              onClick={() => handleCelebrationTypeSelect('instrumental')}
+            >
+              <span className="text-2xl mr-3">🎹</span>
+              <div className="text-left">
+                <p className="font-semibold">{t('celebration.instrumentalFor', 'Instrumental')}</p>
+                <p className="text-sm text-muted-foreground">{t('planSelection.instrumentalSingleDesc', 'Trilha sem vocal')}</p>
+              </div>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="w-full h-auto py-4 justify-start"
+              onClick={() => handleCelebrationTypeSelect('custom_lyric')}
+            >
+              <span className="text-2xl mr-3">📝</span>
+              <div className="text-left">
+                <p className="font-semibold">{t('celebration.customLyricFor', 'Já Tenho a Letra')}</p>
+                <p className="text-sm text-muted-foreground">{t('planSelection.customLyricSingleDesc', 'Traga sua própria composição')}</p>
+              </div>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal de Confirmação de Créditos */}
       <Dialog open={showCreditModal} onOpenChange={setShowCreditModal}>
