@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { ImageCard } from "./ImageCard";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Option {
   id: string;
@@ -31,18 +32,23 @@ export const ImageCardGrid = ({
   showLessLabel = "Ver menos",
 }: ImageCardGridProps) => {
   const [showAll, setShowAll] = useState(false);
+  const isMobile = useIsMobile();
   
-  const visibleOptions = showAll ? options : options.slice(0, initialVisible);
-  const hasMore = options.length > initialVisible;
+  // On mobile, show fewer items initially
+  const mobileInitialVisible = Math.min(initialVisible, 6);
+  const effectiveInitialVisible = isMobile ? mobileInitialVisible : initialVisible;
+  
+  const visibleOptions = showAll ? options : options.slice(0, effectiveInitialVisible);
+  const hasMore = options.length > effectiveInitialVisible;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <motion.div
         className={cn(
-          "grid gap-2 sm:gap-3",
+          "grid gap-1.5 sm:gap-2",
           variant === 'circle'
             ? "grid-cols-4 sm:grid-cols-5 md:grid-cols-6"
-            : "grid-cols-3 sm:grid-cols-4 md:grid-cols-5"
+            : "grid-cols-4 sm:grid-cols-4 md:grid-cols-5"
         )}
         layout
       >
@@ -53,7 +59,7 @@ export const ImageCardGrid = ({
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ delay: index * 0.03, duration: 0.2 }}
+              transition={{ delay: index * 0.02, duration: 0.15 }}
               layout
             >
               <ImageCard
@@ -71,7 +77,7 @@ export const ImageCardGrid = ({
 
       {hasMore && (
         <motion.div 
-          className="flex justify-center pt-2"
+          className="flex justify-center pt-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
@@ -79,17 +85,17 @@ export const ImageCardGrid = ({
             variant="ghost"
             size="sm"
             onClick={() => setShowAll(!showAll)}
-            className="text-muted-foreground hover:text-primary"
+            className="text-xs sm:text-sm text-muted-foreground hover:text-primary h-8"
           >
             {showAll ? (
               <>
-                <ChevronUp className="w-4 h-4 mr-1" />
+                <ChevronUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                 {showLessLabel}
               </>
             ) : (
               <>
-                <ChevronDown className="w-4 h-4 mr-1" />
-                {showMoreLabel} ({options.length - initialVisible})
+                <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                {showMoreLabel} ({options.length - effectiveInitialVisible})
               </>
             )}
           </Button>
