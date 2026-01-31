@@ -94,6 +94,26 @@ import childStyleNinarImg from './children/styles/ninar.jpg';
 import childStyleDesenhoImg from './children/styles/desenho.jpg';
 import childStyleAutoImg from './children/styles/auto.jpg';
 
+// Soundtrack Usage Images
+import soundtrackVideoInstitucionalImg from './soundtrack/usage/video-institucional.jpg';
+import soundtrackFilmeImg from './soundtrack/usage/filme.jpg';
+import soundtrackTrailerImg from './soundtrack/usage/trailer.jpg';
+import soundtrackJogoImg from './soundtrack/usage/jogo.jpg';
+import soundtrackPodcastImg from './soundtrack/usage/podcast.jpg';
+import soundtrackRedesSociaisImg from './soundtrack/usage/redes-sociais.jpg';
+import soundtrackMeditacaoImg from './soundtrack/usage/meditacao.jpg';
+import soundtrackAmbienteImg from './soundtrack/usage/ambiente.jpg';
+
+// Soundtrack Emotion Images
+import soundtrackSuspenseImg from './soundtrack/emotions/suspense.jpg';
+import soundtrackDramaImg from './soundtrack/emotions/drama.jpg';
+import soundtrackInspiracaoImg from './soundtrack/emotions/inspiracao.jpg';
+import soundtrackTensaoImg from './soundtrack/emotions/tensao.jpg';
+import soundtrackAcaoImg from './soundtrack/emotions/acao.jpg';
+import soundtrackPazImg from './soundtrack/emotions/paz.jpg';
+import soundtrackMisterioImg from './soundtrack/emotions/misterio.jpg';
+import soundtrackAlegriaImg from './soundtrack/emotions/alegria.jpg';
+
 export const genreImages: Record<string, string> = {
   pop: popImg,
   rock: rockImg,
@@ -204,6 +224,29 @@ export const childStyleImages: Record<string, string> = {
   ninar: childStyleNinarImg,
   desenho: childStyleDesenhoImg,
   auto: childStyleAutoImg,
+};
+
+// Soundtrack images
+export const soundtrackUsageImages: Record<string, string> = {
+  video_institucional: soundtrackVideoInstitucionalImg,
+  filme: soundtrackFilmeImg,
+  trailer: soundtrackTrailerImg,
+  jogo: soundtrackJogoImg,
+  podcast: soundtrackPodcastImg,
+  redes_sociais: soundtrackRedesSociaisImg,
+  meditacao: soundtrackMeditacaoImg,
+  ambiente: soundtrackAmbienteImg,
+};
+
+export const soundtrackEmotionImages: Record<string, string> = {
+  suspense: soundtrackSuspenseImg,
+  drama: soundtrackDramaImg,
+  inspiracao: soundtrackInspiracaoImg,
+  tensao: soundtrackTensaoImg,
+  acao: soundtrackAcaoImg,
+  paz: soundtrackPazImg,
+  misterio: soundtrackMisterioImg,
+  alegria: soundtrackAlegriaImg,
 };
 
 export {

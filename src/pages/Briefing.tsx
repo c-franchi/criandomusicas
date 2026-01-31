@@ -93,6 +93,15 @@ interface BriefingFormData {
   childStyle?: string;
   childInteraction?: string;
   childNarrative?: string;
+  // Campos para trilha sonora
+  soundtrackUsage?: string;
+  soundtrackEmotion?: string;
+  soundtrackDynamics?: string;
+  soundtrackStyle?: string;
+  soundtrackRhythm?: string;
+  soundtrackVoice?: string;
+  soundtrackScene?: string;
+  soundtrackLanguage?: string;
 }
 
 const BRIEFING_STORAGE_KEY = 'briefing_autosave';
@@ -195,6 +204,15 @@ const Briefing = () => {
     childNarrativeOptions,
     childVoiceOptions,
     getChildrenChatMessages,
+    // Soundtrack options
+    soundtrackUsageOptions,
+    soundtrackEmotionOptions,
+    soundtrackDynamicsOptions,
+    soundtrackStyleOptions,
+    soundtrackRhythmOptions,
+    soundtrackVoiceOptions,
+    soundtrackLanguageOptions,
+    getSoundtrackChatMessages,
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
@@ -218,6 +236,7 @@ const Briefing = () => {
   const motivationalMessages = getMotivationalChatMessages();
   const gospelMessages = getGospelChatMessages();
   const childrenMessages = getChildrenChatMessages();
+  const soundtrackMessages = getSoundtrackChatMessages();
   
   // Plan selection state
   const [showPlanSelection, setShowPlanSelection] = useState(false);
@@ -1025,6 +1044,78 @@ const Briefing = () => {
       inputType: 'options',
       field: 'autoGenerateName',
       options: nameOptions
+    },
+    // FLUXO TRILHA SONORA (índices 70-78)
+    // Índice 70: Uso da trilha
+    {
+      type: 'bot',
+      content: soundtrackMessages.usage,
+      inputType: 'options',
+      field: 'soundtrackUsage',
+      options: soundtrackUsageOptions
+    },
+    // Índice 71: Emoção da trilha
+    {
+      type: 'bot',
+      content: soundtrackMessages.emotion,
+      inputType: 'options',
+      field: 'soundtrackEmotion',
+      options: soundtrackEmotionOptions
+    },
+    // Índice 72: Dinâmica/evolução
+    {
+      type: 'bot',
+      content: soundtrackMessages.dynamics,
+      inputType: 'options',
+      field: 'soundtrackDynamics',
+      options: soundtrackDynamicsOptions
+    },
+    // Índice 73: Estilo da trilha
+    {
+      type: 'bot',
+      content: soundtrackMessages.style,
+      inputType: 'options',
+      field: 'soundtrackStyle',
+      options: soundtrackStyleOptions
+    },
+    // Índice 74: Ritmo da trilha
+    {
+      type: 'bot',
+      content: soundtrackMessages.rhythm,
+      inputType: 'options',
+      field: 'soundtrackRhythm',
+      options: soundtrackRhythmOptions
+    },
+    // Índice 75: Presença de voz
+    {
+      type: 'bot',
+      content: soundtrackMessages.voice,
+      inputType: 'options',
+      field: 'soundtrackVoice',
+      options: soundtrackVoiceOptions
+    },
+    // Índice 76: Descrição da cena (opcional)
+    {
+      type: 'bot',
+      content: soundtrackMessages.scene,
+      inputType: 'textarea',
+      field: 'soundtrackScene'
+    },
+    // Índice 77: Idioma (para voz/monólogo)
+    {
+      type: 'bot',
+      content: soundtrackMessages.language,
+      inputType: 'options',
+      field: 'soundtrackLanguage',
+      options: soundtrackLanguageOptions
+    },
+    // Índice 78: Nome automático? (trilha sonora)
+    {
+      type: 'bot',
+      content: chatMessages.songNameAutoInstrumental,
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: nameOptions
     }
   ];
 
@@ -1146,6 +1237,10 @@ const Briefing = () => {
       if (!data.isInstrumental && data.musicType === 'corporativa') {
         return 31; // Vai para formato corporativo
       }
+      // Se é trilha sonora (instrumental ou vocal), vai para fluxo especializado
+      if (data.musicType === 'trilha') {
+        return 70; // Vai para fluxo trilha sonora
+      }
       return data.isInstrumental ? 2 : 10; // Instrumental vai para 2, Cantada vai para 10
     }
     
@@ -1217,6 +1312,28 @@ const Briefing = () => {
       if (current === 68) return 69; // voiceType -> autoGenerateName
       if (current === 69) {
         return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
+      }
+    }
+    
+    // FLUXO TRILHA SONORA (70-78)
+    // 70: usage, 71: emotion, 72: dynamics, 73: style, 74: rhythm, 75: voice, 76: scene, 77: language, 78: autoGenerateName
+    if (data.musicType === 'trilha') {
+      if (current === 70) return 71; // usage -> emotion
+      if (current === 71) return 72; // emotion -> dynamics
+      if (current === 72) return 73; // dynamics -> style
+      if (current === 73) return 74; // style -> rhythm
+      if (current === 74) return 75; // rhythm -> voice
+      if (current === 75) {
+        // Se tem voz falada ou etérea, perguntar idioma
+        if (['monologo_falado', 'voz_eterea'].includes(data.soundtrackVoice || '')) {
+          return 77; // voice -> language
+        }
+        return 76; // voice -> scene (descrição opcional)
+      }
+      if (current === 76) return 78; // scene -> autoGenerateName
+      if (current === 77) return 76; // language -> scene
+      if (current === 78) {
+        return data.autoGenerateName ? 100 : 21; // Se auto, vai para confirmação; senão pede nome
       }
     }
     

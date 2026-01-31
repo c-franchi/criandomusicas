@@ -372,6 +372,84 @@
       "noStyle": "🤖 No, generar automáticamente",
       "noStyleDesc": "La IA creará basándose en las siguientes preguntas",
       "pasteStyle": "Pega tu style/prompt técnico abajo: 🎵\n\nEjemplo: \"female vocal, pop ballad, piano, strings, 80bpm, emotional, intimate atmosphere\""
+    },
+    "soundtrack": {
+      "intro": "🎬 ¡Vamos a crear tu banda sonora!\n\nEste tipo de música es perfecto para videos, películas, juegos, podcasts y más.",
+      "usage": {
+        "question": "¿Dónde se usará esta banda sonora? 🎬",
+        "videoInstitucional": "Video Corporativo",
+        "filme": "Película / Cortometraje",
+        "trailer": "Trailer / Teaser",
+        "jogo": "Juego",
+        "podcast": "Podcast",
+        "redesSociais": "Video para Redes Sociales",
+        "meditacao": "Meditación / Relajación",
+        "ambiente": "Ambiente (tienda, evento, espera)"
+      },
+      "emotion": {
+        "question": "¿Qué emoción principal debe transmitir la banda sonora? 🎭",
+        "suspense": "Suspenso",
+        "drama": "Emoción / Drama",
+        "inspiracao": "Inspiración / Esperanza",
+        "tensao": "Tensión",
+        "acao": "Acción / Energía",
+        "paz": "Paz / Relajación",
+        "misterio": "Misterio",
+        "alegria": "Alegría"
+      },
+      "dynamics": {
+        "question": "¿Cómo debe evolucionar la banda sonora? 📊",
+        "constante": "Constante",
+        "constanteDesc": "Mismo clima de principio a fin",
+        "crescente": "Creciente (build-up)",
+        "crescenteDesc": "La intensidad aumenta gradualmente",
+        "crescenteClimax": "Creciente con Clímax",
+        "crescenteClimaxDesc": "Build-up + punto alto emocional",
+        "ondulada": "Ondulada",
+        "onduladaDesc": "Sube y baja en intensidad",
+        "minimalista": "Minimalista",
+        "minimalistaDesc": "Menos elementos, más espacio"
+      },
+      "style": {
+        "question": "¿Qué estilo prefieres? 🎼",
+        "epico": "Cinemática Épica",
+        "epicoDesc": "Grandioso, orquestal, impactante",
+        "emocional": "Cinemática Emocional",
+        "emocionalDesc": "Conmovedor, dramático, sensible",
+        "eletronicaAmbiente": "Electrónica Ambiente",
+        "orquestral": "Orquestal",
+        "pianoSolo": "Piano Solo",
+        "ambient": "Ambient / Drone",
+        "lofi": "Lo-fi Instrumental",
+        "auto": "Dejar que el Sistema Elija"
+      },
+      "rhythm": {
+        "question": "¿Cuál es el ritmo de la banda sonora? 🎵",
+        "lento": "Lento",
+        "medio": "Medio",
+        "rapido": "Rápido",
+        "variavel": "Variable"
+      },
+      "voice": {
+        "question": "¿La banda sonora debe tener voz? 🎤",
+        "instrumental": "No, totalmente instrumental",
+        "instrumentalDesc": "Solo instrumentos",
+        "vocalizacoes": "Solo vocalizaciones",
+        "vocalizacoesDesc": "Ahh, hum, pads vocales",
+        "monologoFalado": "Voz hablada / Monólogo",
+        "monologoFaladoDesc": "Narración o texto hablado",
+        "vozEterea": "Voz etérea sin palabras",
+        "vozEtereaDesc": "Vocal ambiente, sin letra definida"
+      },
+      "scene": {
+        "question": "Describe la escena o sensación deseada (opcional) 🎬\n\nEjemplos: \"héroe caminando solo\", \"paisaje al amanecer\", \"tensión antes de la decisión\""
+      },
+      "language": {
+        "question": "Idioma (para voz/monólogo): 🌍",
+        "pt": "Portugués",
+        "en": "Inglés",
+        "es": "Español"
+      }
     }
   },
   "confirmation": {
@@ -418,7 +496,16 @@
     "summary": "🎵 Resumen de tu música",
     "customLyricBadge": "📝 Letra Propia",
     "instrumentalBadge": "Instrumental",
-    "vocalBadge": "Canción Cantada"
+    "vocalBadge": "Canción Cantada",
+    "soundtrackBadge": "🎬 Banda Sonora",
+    "soundtrackUsage": "Uso",
+    "soundtrackEmotion": "Emoción",
+    "soundtrackDynamics": "Dinámica",
+    "soundtrackStyle": "Estilo",
+    "soundtrackRhythm": "Ritmo",
+    "soundtrackVoice": "Voz",
+    "soundtrackScene": "Escena",
+    "soundtrackLanguage": "Idioma"
   },
   "creditModal": {
     "title": "¿Usar Crédito?",
