@@ -64,6 +64,7 @@
     "install": "Instalar App",
     "profile": "Meu Perfil",
     "admin": "Painel Admin",
+    "quickCreate": "Criar Rápido",
     "createVocal": "Criar Música Vocal",
     "createInstrumental": "Criar Instrumental",
     "createCustomLyric": "Já Tenho a Letra"
