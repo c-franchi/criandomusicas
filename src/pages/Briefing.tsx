@@ -2656,45 +2656,51 @@ const Briefing = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-          {stepHistory.length > 0 ? (
-            <Button variant="ghost" size="icon" onClick={handleGoBack} className="mr-1">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          ) : (
-            <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="mr-1" title="Voltar à homepage">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-          )}
-          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-            <Music className="w-5 h-5 text-primary" />
+        <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
+          {/* Back button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={stepHistory.length > 0 ? handleGoBack : () => navigate('/')} 
+            className="h-9 w-9 shrink-0"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          
+          {/* Icon + Title */}
+          <div className="flex items-center gap-2.5 flex-1 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+              <Music className="w-4 h-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-semibold text-sm leading-tight truncate">
+                {t('chat.createTitle', 'Crie sua música')}
+              </h1>
+              <p className="text-xs text-muted-foreground truncate">
+                {t('chat.subtitle', 'Converse comigo para criar sua música')}
+              </p>
+            </div>
           </div>
-          <div className="flex-1">
-            <h1 className="font-semibold">{t('title', 'Briefing Musical')}</h1>
-            <p className="text-sm text-muted-foreground">{t('chat.subtitle', 'Converse comigo para criar sua música')}</p>
-          </div>
-          {/* Celebration Badge */}
-          {formData.celebrationName && (
-            <Badge variant="outline" className="text-sm px-3 py-1 border-primary/50 bg-primary/10">
+          
+          {/* Plan/Celebration Badge */}
+          {formData.celebrationName ? (
+            <Badge variant="outline" className="text-xs px-2 py-1 border-primary/50 bg-primary/10 shrink-0">
               {formData.celebrationEmoji} {formData.celebrationName}
             </Badge>
-          )}
-          {/* Plan Badge - só mostra se não tiver celebration badge */}
-          {currentPlanInfo && !formData.celebrationName && (
-            <Badge variant="outline" className="text-sm px-3 py-1 border-primary/50 bg-primary/10">
+          ) : currentPlanInfo && (
+            <Badge variant="outline" className="text-xs px-2 py-1 border-primary/50 bg-primary/10 shrink-0">
               {currentPlanInfo.icon} {currentPlanInfo.name}
-              {currentPlanInfo.credits > 1 && (
-                <span className="ml-1 text-muted-foreground">({currentPlanInfo.credits}x)</span>
-              )}
             </Badge>
           )}
         </div>
+        
+        {/* Credits row - inline with header */}
+        {hasCredits && (
+          <div className="max-w-3xl mx-auto px-4 pb-3">
+            <CreditsBanner showBuyButton={false} compact />
+          </div>
+        )}
       </header>
-
-      {/* Credits Banner */}
-      <div className="max-w-3xl mx-auto px-4 pt-4">
-        <CreditsBanner showBuyButton={false} />
-      </div>
 
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto">
@@ -2765,8 +2771,12 @@ const Briefing = () => {
                     variant="square"
                     title={t('briefing:musicTypes', 'Tipos de música')}
                     onSelect={(id) => {
-                      const option = currentBotMessage.options?.find(o => o.id === id);
-                      if (option) handleOptionSelect(option);
+                      if (id.startsWith('custom:')) {
+                        handleOptionSelect({ id, label: id.replace('custom:', '') });
+                      } else {
+                        const option = currentBotMessage.options?.find(o => o.id === id);
+                        if (option) handleOptionSelect(option);
+                      }
                     }}
                   />
                 )}
@@ -2783,8 +2793,12 @@ const Briefing = () => {
                     variant="circle"
                     title={t('briefing:emotions', 'Emoções')}
                     onSelect={(id) => {
-                      const option = currentBotMessage.options?.find(o => o.id === id);
-                      if (option) handleOptionSelect(option);
+                      if (id.startsWith('custom:')) {
+                        handleOptionSelect({ id, label: id.replace('custom:', '') });
+                      } else {
+                        const option = currentBotMessage.options?.find(o => o.id === id);
+                        if (option) handleOptionSelect(option);
+                      }
                     }}
                   />
                 )}
@@ -2801,8 +2815,23 @@ const Briefing = () => {
                     variant="square"
                     title={t('briefing:genres', 'Gêneros musicais')}
                     onSelect={(id) => {
-                      const option = currentBotMessage.options?.find(o => o.id === id);
-                      if (option) handleOptionSelect(option);
+                      if (id.startsWith('custom:')) {
+                        // Para estilo customizado, usar o fluxo existente
+                        setFormData(prev => ({ ...prev, style: 'outros', customStyle: id.replace('custom:', '') }));
+                        addUserMessage(`✨ ${id.replace('custom:', '')}`);
+                        setStepHistory(prev => [...prev, currentStep]);
+                        const updatedFormData = { ...formData, style: 'outros', customStyle: id.replace('custom:', '') };
+                        const nextStep = getNextStep(currentStep, updatedFormData);
+                        setCurrentStep(nextStep);
+                        if (nextStep < chatFlow.length) {
+                          setTimeout(() => addBotMessage(chatFlow[nextStep], nextStep), 500);
+                        } else {
+                          showConfirmationScreen(updatedFormData);
+                        }
+                      } else {
+                        const option = currentBotMessage.options?.find(o => o.id === id);
+                        if (option) handleOptionSelect(option);
+                      }
                     }}
                   />
                 )}
@@ -2819,8 +2848,12 @@ const Briefing = () => {
                     variant="square"
                     title={t('briefing:voiceTypes', 'Tipos de voz')}
                     onSelect={(id) => {
-                      const option = currentBotMessage.options?.find(o => o.id === id);
-                      if (option) handleOptionSelect(option);
+                      if (id.startsWith('custom:')) {
+                        handleOptionSelect({ id, label: id.replace('custom:', '') });
+                      } else {
+                        const option = currentBotMessage.options?.find(o => o.id === id);
+                        if (option) handleOptionSelect(option);
+                      }
                     }}
                   />
                 )}
