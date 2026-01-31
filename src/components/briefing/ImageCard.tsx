@@ -26,23 +26,23 @@ export const ImageCard = ({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative group flex flex-col items-center gap-2 p-2 rounded-xl transition-all duration-300",
+        "relative group flex flex-col items-center gap-1 p-1.5 sm:p-2 rounded-lg sm:rounded-xl transition-all duration-300",
         "hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         selected && "ring-2 ring-primary shadow-lg shadow-primary/20"
       )}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -2 }}
       whileTap={{ scale: 0.95 }}
     >
-      {/* Image container */}
+      {/* Image container - smaller on mobile */}
       <div
         className={cn(
           "relative overflow-hidden transition-all duration-300",
           isCircle 
-            ? "w-16 h-16 sm:w-20 sm:h-20 rounded-full" 
-            : "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
+            ? "w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full" 
+            : "w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 rounded-lg sm:rounded-xl",
           "bg-muted/50",
           selected 
-            ? "ring-2 ring-primary ring-offset-2 ring-offset-background" 
+            ? "ring-2 ring-primary ring-offset-1 ring-offset-background" 
             : "ring-1 ring-border/50 group-hover:ring-primary/50"
         )}
       >
@@ -60,17 +60,17 @@ export const ImageCard = ({
             animate={{ opacity: 1 }}
             className="absolute inset-0 bg-primary/30 flex items-center justify-center"
           >
-            <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
-              <Check className="w-4 h-4 text-primary-foreground" />
+            <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-primary flex items-center justify-center">
+              <Check className="w-3 h-3 sm:w-4 sm:h-4 text-primary-foreground" />
             </div>
           </motion.div>
         )}
       </div>
       
-      {/* Label */}
+      {/* Label - smaller text on mobile */}
       <span
         className={cn(
-          "text-xs sm:text-sm font-medium text-center transition-colors line-clamp-2",
+          "text-[10px] sm:text-xs font-medium text-center transition-colors line-clamp-2 leading-tight",
           selected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
         )}
       >

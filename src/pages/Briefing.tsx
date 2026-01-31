@@ -16,6 +16,8 @@ import { useBriefingTranslations, INSTRUMENT_OPTIONS } from "@/hooks/useBriefing
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
+import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
+import { genreImages, typeImages, emotionImages } from "@/assets/briefing";
 import {
   Dialog,
   DialogContent,
@@ -2748,20 +2750,87 @@ const Briefing = () => {
       {showInput && !isTyping && (
         <div className="border-t bg-card/50 backdrop-blur-sm sticky bottom-0">
           <div className="max-w-3xl mx-auto px-4 py-4">
-            {/* Options */}
+            {/* Options with Image Cards for musicType, emotion, style */}
             {currentBotMessage.inputType === 'options' && currentBotMessage.options && (
-              <div className="flex flex-wrap gap-2">
-                {currentBotMessage.options.map((option) => (
-                  <Button
-                    key={option.id}
-                    variant="outline"
-                    onClick={() => handleOptionSelect(option)}
-                    className="h-auto py-2 px-4"
-                  >
-                    <span>{option.label}</span>
-                  </Button>
-                ))}
-              </div>
+              <>
+                {/* Music Type - with image cards */}
+                {currentBotMessage.field === 'musicType' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: typeImages[opt.id] || typeImages.homenagem
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    initialVisible={8}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                    showMoreLabel={t('common:showMore', 'Ver mais')}
+                    showLessLabel={t('common:showLess', 'Ver menos')}
+                  />
+                )}
+
+                {/* Emotion - with circle image cards */}
+                {currentBotMessage.field === 'emotion' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: emotionImages[opt.id] || emotionImages.alegria
+                    }))}
+                    selectedId={undefined}
+                    variant="circle"
+                    initialVisible={6}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                    showMoreLabel={t('common:showMore', 'Ver mais')}
+                    showLessLabel={t('common:showLess', 'Ver menos')}
+                  />
+                )}
+
+                {/* Style/Genre - with image cards */}
+                {currentBotMessage.field === 'style' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: genreImages[opt.id] || genreImages.pop
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    initialVisible={8}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                    showMoreLabel={t('common:showMore', 'Ver mais')}
+                    showLessLabel={t('common:showLess', 'Ver menos')}
+                  />
+                )}
+
+                {/* Default options (buttons) for other fields */}
+                {currentBotMessage.field !== 'musicType' && 
+                 currentBotMessage.field !== 'emotion' && 
+                 currentBotMessage.field !== 'style' && (
+                  <div className="flex flex-wrap gap-2">
+                    {currentBotMessage.options.map((option) => (
+                      <Button
+                        key={option.id}
+                        variant="outline"
+                        onClick={() => handleOptionSelect(option)}
+                        className="h-auto py-2 px-4"
+                      >
+                        <span>{option.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Multi-select (instrumentos) */}
@@ -2848,20 +2917,58 @@ const Briefing = () => {
               </div>
             )}
 
-            {/* Options with Other */}
+            {/* Options with Other - with Image Cards for style */}
             {currentBotMessage.inputType === 'options-with-other' && currentBotMessage.options && !showCustomStyleInput && (
-              <div className="flex flex-wrap gap-2">
-                {currentBotMessage.options.map((option) => (
-                  <Button
-                    key={option.id}
-                    variant="outline"
-                    onClick={() => handleOptionSelect(option)}
-                    className="h-auto py-2 px-4"
-                  >
-                    <span>{option.label}</span>
-                  </Button>
-                ))}
-              </div>
+              <>
+                {currentBotMessage.field === 'style' ? (
+                  <div className="space-y-3">
+                    <ImageCardGrid
+                      options={currentBotMessage.options.filter(opt => opt.id !== 'outros').map(opt => ({
+                        id: opt.id,
+                        label: opt.label,
+                        imageSrc: genreImages[opt.id] || genreImages.pop
+                      }))}
+                      selectedId={undefined}
+                      variant="square"
+                      initialVisible={8}
+                      onSelect={(id) => {
+                        const option = currentBotMessage.options?.find(o => o.id === id);
+                        if (option) handleOptionSelect(option);
+                      }}
+                      showMoreLabel={t('common:showMore', 'Ver mais')}
+                      showLessLabel={t('common:showLess', 'Ver menos')}
+                    />
+                    {/* Botão "Outro estilo" */}
+                    <div className="flex justify-center pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const outros = currentBotMessage.options?.find(o => o.id === 'outros');
+                          if (outros) handleOptionSelect(outros);
+                        }}
+                        className="text-muted-foreground"
+                      >
+                        <Edit className="w-4 h-4 mr-2" />
+                        {t('briefing:otherStyle', 'Outro estilo...')}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {currentBotMessage.options.map((option) => (
+                      <Button
+                        key={option.id}
+                        variant="outline"
+                        onClick={() => handleOptionSelect(option)}
+                        className="h-auto py-2 px-4"
+                      >
+                        <span>{option.label}</span>
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
 
             {/* Custom style input */}
