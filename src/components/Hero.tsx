@@ -164,20 +164,14 @@ const Hero = () => {
                   {!isAdmin && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </Link>
-              <Link to="/briefing">
+              <Link to="/briefing?type=vocal">
                 <Button 
-                  variant={hasCredits ? "hero" : "glass"} 
+                  variant="hero" 
                   size="lg" 
-                  className={`text-lg px-8 py-7 rounded-xl group ${hasCredits ? 'bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400' : ''}`}
+                  className="text-lg px-8 py-7 rounded-xl group bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400"
                 >
-                  {hasCredits ? (
-                    <>
-                      <Zap className="w-5 h-5 mr-2" />
-                      {t('hero.ctaUseCredit')}
-                    </>
-                  ) : (
-                    t('hero.ctaNewSong')
-                  )}
+                  <Zap className="w-5 h-5 mr-2" />
+                  {t('hero.ctaQuickCreate')}
                 </Button>
               </Link>
             </>
