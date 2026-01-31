@@ -2,10 +2,22 @@
   "title": "My Orders",
   "subtitle": "Track your personalized songs",
   "loading": "Loading your orders...",
+  "tabs": {
+    "vocal": "Vocal Songs",
+    "instrumental": "Instrumentals",
+    "customLyric": "Own Lyrics",
+    "creditsAvailable": "credits"
+  },
   "empty": {
     "title": "No orders yet",
     "subtitle": "Create your first personalized song!",
-    "cta": "Create Song"
+    "cta": "Create Song",
+    "vocalTitle": "No vocal songs",
+    "vocalSubtitle": "Create your first song with AI-generated lyrics!",
+    "instrumentalTitle": "No instrumental tracks",
+    "instrumentalSubtitle": "Create your first instrumental track!",
+    "customTitle": "No songs with own lyrics",
+    "customSubtitle": "Submit your lyrics and turn them into music!"
   },
   "order": {
     "status": "Status",
@@ -51,7 +63,10 @@
     "home": "Back to Home",
     "install": "Install App",
     "profile": "My Profile",
-    "admin": "Admin Panel"
+    "admin": "Admin Panel",
+    "createVocal": "Create Vocal Song",
+    "createInstrumental": "Create Instrumental",
+    "createCustomLyric": "I Have the Lyrics"
   },
   "deleteDialog": {
     "title": "Delete order?",
