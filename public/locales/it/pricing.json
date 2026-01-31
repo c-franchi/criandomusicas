@@ -19,7 +19,7 @@
         "Ideale per occasioni speciali",
         "I crediti non scadono mai",
         "2 opzioni di testo tra cui scegliere",
-        "Consegna in massimo 48h",
+        "Consegna in massimo 24h",
         "Pacchetti da 1, 3 o 5 canzoni"
       ],
       "startingAt": "A partire da:",
@@ -33,9 +33,7 @@
       "description": "Ideale per YouTubers, TikTokers e podcasters che hanno bisogno di più canzoni originali ogni mese.",
       "features": [
         "Canzoni mensili per YouTube, TikTok, Podcasts",
-        "Prezzo unitario fino al 60% inferiore",
-        "Formati ottimizzati (30s, 60s)",
-        "Supporto prioritario"
+        "Prezzo unitario fino al 60% inferiore"
       ],
       "warning": "I crediti si rinnovano mensilmente",
       "startingAt": "A partire da:",
@@ -78,7 +76,7 @@
         "Testi curati professionalmente",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Consegna entro 48h",
+        "Consegna entro 24h",
         "Supporto via email"
       ]
     },
@@ -90,8 +88,7 @@
         "Testi curati professionalmente",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Formati ottimizzati (30s, 60s)",
-        "Consegna prioritaria",
+        "Consegna entro 24h",
         "Supporto VIP dedicato"
       ]
     },
@@ -103,10 +100,8 @@
         "Testi curati professionalmente",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Formati ottimizzati (30s, 60s)",
-        "Consegna express prioritaria",
-        "Account manager dedicato",
-        "Supporto prioritario 24/7"
+        "Consegna express entro 24h",
+        "Account manager dedicato"
       ]
     },
     "creator_start_instrumental": {
@@ -117,7 +112,7 @@
         "Arrangiamenti personalizzati",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Consegna entro 48h",
+        "Consegna entro 24h",
         "Supporto via email"
       ]
     },
@@ -129,8 +124,7 @@
         "Arrangiamenti personalizzati",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Formati ottimizzati (30s, 60s)",
-        "Consegna prioritaria",
+        "Consegna entro 24h",
         "Supporto VIP dedicato"
       ]
     },
@@ -142,10 +136,8 @@
         "Arrangiamenti personalizzati",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Formati ottimizzati (30s, 60s)",
-        "Consegna express prioritaria",
-        "Account manager dedicato",
-        "Supporto prioritario 24/7"
+        "Consegna express entro 24h",
+        "Account manager dedicato"
       ]
     }
   },
@@ -157,12 +149,12 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 canzone completa", "2 testi personalizzati tra cui scegliere", "Testo + audio professionale", "Alta qualità", "Consegna entro 48h"],
-    "package": ["3 canzoni complete", "2 testi personalizzati ciascuna", "16% di risparmio", "Testo + audio professionale", "Alta qualità", "Consegna entro 48h", "Supporto VIP"],
-    "subscription": ["Fino a 5 canzoni", "2 testi personalizzati ciascuna", "Testo + audio professionale", "Qualità premium", "Consegna entro 48h", "Priorità in coda"]
+    "single": ["1 canzone completa", "2 testi personalizzati tra cui scegliere", "Testo + audio professionale", "Alta qualità", "Consegna entro 24h"],
+    "package": ["3 canzoni complete", "2 testi personalizzati ciascuna", "16% di risparmio", "Testo + audio professionale", "Alta qualità", "Consegna entro 24h", "Supporto VIP"],
+    "subscription": ["Fino a 5 canzoni", "2 testi personalizzati ciascuna", "Testo + audio professionale", "Qualità premium", "Consegna entro 24h", "Priorità in coda"]
   },
   "instrumentalFeatures": {
-    "single": ["1 traccia strumentale completa", "Arrangiamento personalizzato", "Audio professionale", "Alta qualità", "Consegna entro 48h"],
+    "single": ["1 traccia strumentale completa", "Arrangiamento personalizzato", "Audio professionale", "Alta qualità", "Consegna entro 24h"],
     "package": ["3 tracce strumentali complete", "Arrangiamenti personalizzati", "16% di risparmio", "Audio professionale", "Supporto VIP"],
     "subscription": ["Fino a 5 tracce strumentali", "Arrangiamenti personalizzati", "Qualità premium", "Priorità in coda"]
   },
@@ -209,8 +201,6 @@
       "curatedLyricsDesc": "Identità musicale coerente per il tuo canale. Ogni testo è unico e personalizzato.",
       "readyCovers": "Copertine Pronte",
       "readyCoversDesc": "Thumbnail professionali incluse. Tutto pronto per pubblicare direttamente nei tuoi video.",
-      "shortFormats": "Formati Brevi",
-      "shortFormatsDesc": "Ottimizzato per 30s, 60s e formati Reels/Shorts. Perfetto per diventare virale.",
       "humanSupport": "Supporto Umano",
       "humanSupportDesc": "Approvazione testi e modifiche con il nostro team. Hai il controllo totale.",
       "readyToPost": "Pronto per Pubblicare",
@@ -221,7 +211,7 @@
     "whyDifferent": {
       "title": "Perché siamo diversi?",
       "youDescribe": "Tu descrivi cosa vuoi.",
-      "weTakeCare": "Noi ci occupiamo di tutto: composizione, produzione, mixaggio e consegna. Nessuna curva di apprendimento, nessuno strumento complesso. Musica professionale in massimo 48h."
+      "weTakeCare": "Noi ci occupiamo di tutto: composizione, produzione, mixaggio e consegna. Nessuna curva di apprendimento, nessuno strumento complesso. Musica professionale in massimo 24h."
     },
     "whyUs": {
       "title": "Perché i creatori ci scelgono?",
@@ -230,7 +220,7 @@
       "lyricsAndMusic": "Testo + Musica",
       "lyricsAndMusicDesc": "Ricevi testo curato e musica prodotta. Tutto pronto, senza lavoro extra.",
       "fastDelivery": "Consegna Veloce",
-      "fastDeliveryDesc": "Musica professionale in massimo 48h. Nessun ritardo nella tua produzione di contenuti."
+      "fastDeliveryDesc": "Musica professionale in massimo 24h. Nessun ritardo nella tua produzione di contenuti."
     },
     "badges": {
       "original": "100% Originale",
@@ -279,7 +269,7 @@
   },
   "footer": {
     "guarantee": "🎵 Garanzia di soddisfazione al 100%",
-    "delivery": "Tutti i piani includono consegna entro 48h direttamente sulla piattaforma e supporto tecnico specializzato",
+    "delivery": "Tutti i piani includono consegna entro 24h direttamente sulla piattaforma e supporto tecnico specializzato",
     "back": "← Torna alla home",
     "payment": "💳 Accettiamo Pix, carta di credito e debito",
     "satisfaction": "Garanzia di soddisfazione."
@@ -297,7 +287,7 @@
   },
   "seo": {
     "title": "Piani e Prezzi",
-    "description": "Scegli il piano ideale per creare la tua musica personalizzata. Opzioni da R$ 47,90 con consegna entro 48h. Pacchetti per canzoni vocali e strumentali."
+    "description": "Scegli il piano ideale per creare la tua musica personalizzata. Opzioni da R$ 47,90 con consegna entro 24h. Pacchetti per canzoni vocali e strumentali."
   },
   "noContract": "Senza contratto • Annulla quando vuoi",
   "choosePlan": "Scegli il piano ideale per te e inizia a creare la tua musica personalizzata ora."
