@@ -249,11 +249,36 @@ const Briefing = () => {
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
   
-  // Celebration banner state
+  // Celebration banner state - check localStorage for dismissed state
+  const CELEBRATION_DISMISS_KEY = 'celebration_dismissed_date';
   const { closestDate, isLoading: isCelebrationLoading } = useUpcomingCelebrations(30);
-  const [celebrationDismissed, setCelebrationDismissed] = useState(false);
+  const [celebrationDismissed, setCelebrationDismissed] = useState(() => {
+    // Check if celebration was dismissed today in localStorage
+    const dismissedData = localStorage.getItem(CELEBRATION_DISMISS_KEY);
+    if (dismissedData) {
+      try {
+        const { date } = JSON.parse(dismissedData);
+        const today = new Date().toDateString();
+        return date === today;
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
   const [showCelebrationTypeModal, setShowCelebrationTypeModal] = useState(false);
   const [selectedCelebration, setSelectedCelebration] = useState<typeof closestDate>(null);
+  
+  // Handle celebration dismiss with localStorage
+  const handleCelebrationDismiss = () => {
+    if (closestDate) {
+      localStorage.setItem(CELEBRATION_DISMISS_KEY, JSON.stringify({
+        date: new Date().toDateString(),
+        celebrationId: closestDate.id,
+      }));
+    }
+    setCelebrationDismissed(true);
+  };
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -2553,7 +2578,7 @@ const Briefing = () => {
               <CelebrationSuggestion
                 celebration={closestDate}
                 onAccept={handleCelebrationAccept}
-                onDismiss={() => setCelebrationDismissed(true)}
+                onDismiss={handleCelebrationDismiss}
               />
             )}
             
