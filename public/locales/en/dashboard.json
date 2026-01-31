@@ -64,6 +64,7 @@
     "install": "Install App",
     "profile": "My Profile",
     "admin": "Admin Panel",
+    "quickCreate": "Quick Create",
     "createVocal": "Create Vocal Song",
     "createInstrumental": "Create Instrumental",
     "createCustomLyric": "I Have the Lyrics"

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings, Download, Trash2, Home, Mic, Piano, Edit3 } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Download, Trash2, Home, Mic, Piano, Edit3, Zap } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
@@ -429,6 +429,18 @@ const Dashboard = () => {
             </p>
           </div>
           <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap shrink-0">
+            <Button 
+              variant="default" 
+              size="sm" 
+              asChild 
+              className="bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400 text-white h-8 sm:h-10 px-3 sm:px-4"
+            >
+              <Link to="/briefing?type=vocal">
+                <Zap className="w-4 h-4 mr-1.5" />
+                <span className="hidden sm:inline">{t('buttons.quickCreate')}</span>
+                <span className="sm:hidden">Criar</span>
+              </Link>
+            </Button>
             <Button variant="outline" size="icon" asChild title={t('buttons.home')} className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
               <Link to="/">
                 <Home className="w-4 h-4" />
