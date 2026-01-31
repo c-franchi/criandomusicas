@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
-import { genreImages, typeImages, emotionImages, voiceImages } from "@/assets/briefing";
+import { genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages } from "@/assets/briefing";
 import {
   Dialog,
   DialogContent,
@@ -2858,11 +2858,51 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Corporate Format - with image cards */}
+                {currentBotMessage.field === 'corporateFormat' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: corporateImages[opt.id] || corporateImages.institucional
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('briefing:corporateFormat', 'Formato corporativo')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Gospel Context - with image cards */}
+                {currentBotMessage.field === 'gospelContext' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: gospelContextImages[opt.id] || gospelContextImages.adoracao
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('briefing:gospelContext', 'Contexto espiritual')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
                  currentBotMessage.field !== 'style' &&
-                 currentBotMessage.field !== 'voiceType' && (
+                 currentBotMessage.field !== 'voiceType' &&
+                 currentBotMessage.field !== 'corporateFormat' &&
+                 currentBotMessage.field !== 'gospelContext' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button

@@ -43,6 +43,20 @@ import duplaMasculinaImg from './voices/dupla-masculina.jpg';
 import duplaFemininaImg from './voices/dupla-feminina.jpg';
 import coralImg from './voices/coral.jpg';
 
+// Corporate Format Images
+import institucionalImg from './corporate/institucional.jpg';
+import jingleImg from './corporate/jingle.jpg';
+
+// Gospel Context Images
+import adoracaoImg from './gospel/adoracao.jpg';
+import louvorImg from './gospel/louvor.jpg';
+import oracaoImg from './gospel/oracao.jpg';
+import confiancaGospelImg from './gospel/confianca.jpg';
+import esperancaGospelImg from './gospel/esperanca.jpg';
+import gratidaoGospelImg from './gospel/gratidao.jpg';
+import restauracaoImg from './gospel/restauracao.jpg';
+import consagracaoImg from './gospel/consagracao.jpg';
+
 export const genreImages: Record<string, string> = {
   pop: popImg,
   rock: rockImg,
@@ -86,10 +100,30 @@ export const voiceImages: Record<string, string> = {
   feminina: vozFemininaImg,
   'infantil-masculina': vozInfantilMasculinaImg,
   'infantil-feminina': vozInfantilFemininaImg,
+  'infantil_masc': vozInfantilMasculinaImg,
+  'infantil_fem': vozInfantilFemininaImg,
   dueto: duetoImg,
   'dupla-masculina': duplaMasculinaImg,
   'dupla-feminina': duplaFemininaImg,
+  'dupla_masc': duplaMasculinaImg,
+  'dupla_fem': duplaFemininaImg,
   coral: coralImg,
+};
+
+export const corporateImages: Record<string, string> = {
+  institucional: institucionalImg,
+  jingle: jingleImg,
+};
+
+export const gospelContextImages: Record<string, string> = {
+  adoracao: adoracaoImg,
+  louvor: louvorImg,
+  oracao: oracaoImg,
+  confianca: confiancaGospelImg,
+  esperanca: esperancaGospelImg,
+  gratidao: gratidaoGospelImg,
+  restauracao: restauracaoImg,
+  consagracao: consagracaoImg,
 };
 
 export {
@@ -134,4 +168,16 @@ export {
   duplaMasculinaImg,
   duplaFemininaImg,
   coralImg,
+  // Corporate
+  institucionalImg,
+  jingleImg,
+  // Gospel
+  adoracaoImg,
+  louvorImg,
+  oracaoImg,
+  confiancaGospelImg,
+  esperancaGospelImg,
+  gratidaoGospelImg,
+  restauracaoImg,
+  consagracaoImg,
 };
