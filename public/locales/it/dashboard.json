@@ -2,10 +2,22 @@
   "title": "I Miei Ordini",
   "subtitle": "Segui le tue canzoni personalizzate",
   "loading": "Caricamento dei tuoi ordini...",
+  "tabs": {
+    "vocal": "Canzoni Vocali",
+    "instrumental": "Strumentali",
+    "customLyric": "Testo Proprio",
+    "creditsAvailable": "crediti"
+  },
   "empty": {
     "title": "Nessun ordine ancora",
     "subtitle": "Crea la tua prima canzone personalizzata!",
-    "cta": "Crea Canzone"
+    "cta": "Crea Canzone",
+    "vocalTitle": "Nessuna canzone vocale",
+    "vocalSubtitle": "Crea la tua prima canzone con testo generato da IA!",
+    "instrumentalTitle": "Nessuna traccia strumentale",
+    "instrumentalSubtitle": "Crea la tua prima traccia strumentale!",
+    "customTitle": "Nessuna canzone con testo proprio",
+    "customSubtitle": "Invia il tuo testo e trasformalo in musica!"
   },
   "order": {
     "status": "Stato",
@@ -51,7 +63,10 @@
     "home": "Torna alla Home",
     "install": "Installa App",
     "profile": "Il Mio Profilo",
-    "admin": "Pannello Admin"
+    "admin": "Pannello Admin",
+    "createVocal": "Crea Canzone Vocale",
+    "createInstrumental": "Crea Strumentale",
+    "createCustomLyric": "Ho Già il Testo"
   },
   "deleteDialog": {
     "title": "Eliminare ordine?",

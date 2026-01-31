@@ -2,10 +2,22 @@
   "title": "Mis Pedidos",
   "subtitle": "Sigue tus canciones personalizadas",
   "loading": "Cargando tus pedidos...",
+  "tabs": {
+    "vocal": "Canciones Vocales",
+    "instrumental": "Instrumentales",
+    "customLyric": "Letra Propia",
+    "creditsAvailable": "créditos"
+  },
   "empty": {
     "title": "Aún no hay pedidos",
     "subtitle": "¡Crea tu primera canción personalizada!",
-    "cta": "Crear Canción"
+    "cta": "Crear Canción",
+    "vocalTitle": "Ninguna canción vocal",
+    "vocalSubtitle": "¡Crea tu primera canción con letra generada por IA!",
+    "instrumentalTitle": "Ninguna pista instrumental",
+    "instrumentalSubtitle": "¡Crea tu primera pista instrumental!",
+    "customTitle": "Ninguna canción con letra propia",
+    "customSubtitle": "¡Envía tu letra y conviértela en música!"
   },
   "order": {
     "status": "Estado",
@@ -51,7 +63,10 @@
     "home": "Volver al Inicio",
     "install": "Instalar App",
     "profile": "Mi Perfil",
-    "admin": "Panel Admin"
+    "admin": "Panel Admin",
+    "createVocal": "Crear Canción Vocal",
+    "createInstrumental": "Crear Instrumental",
+    "createCustomLyric": "Ya Tengo la Letra"
   },
   "deleteDialog": {
     "title": "¿Eliminar pedido?",

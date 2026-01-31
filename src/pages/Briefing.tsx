@@ -313,12 +313,37 @@ const Briefing = () => {
     }
   }, [transcript, resetTranscript]);
 
-  // Iniciar chat (verificar planId ou mostrar seleção de pacote)
+  // Iniciar chat (verificar planId ou type, ou mostrar seleção de pacote)
   useEffect(() => {
     const timer = setTimeout(() => {
       const urlParams = new URLSearchParams(window.location.search);
       const planIdFromUrl = urlParams.get('planId');
+      const typeFromUrl = urlParams.get('type'); // vocal, instrumental, custom_lyric
       const startAsInstrumental = urlParams.get('instrumental') === 'true';
+      
+      // Se tem type na URL, pular seleção de plano e ir direto
+      if (typeFromUrl) {
+        setShowPlanSelection(false);
+        
+        if (typeFromUrl === 'instrumental') {
+          setFormData(prev => ({ ...prev, isInstrumental: true, hasCustomLyric: false }));
+          setSelectedPlanId('single_instrumental');
+          setCurrentStep(1);
+          addBotMessage(chatFlow[1]); // musicType
+        } else if (typeFromUrl === 'custom_lyric') {
+          setFormData(prev => ({ ...prev, isInstrumental: false, hasCustomLyric: true }));
+          setSelectedPlanId('single_custom_lyric');
+          setCurrentStep(22);
+          addBotMessage(chatFlow[22]); // customLyricText
+        } else {
+          // vocal - ir direto para musicType, pulando isInstrumental
+          setFormData(prev => ({ ...prev, isInstrumental: false, hasCustomLyric: false }));
+          setSelectedPlanId('single');
+          setCurrentStep(1);
+          addBotMessage(chatFlow[1]); // musicType
+        }
+        return;
+      }
       
       // Se não tem planId na URL, mostrar seleção de pacote primeiro
       if (!planIdFromUrl) {

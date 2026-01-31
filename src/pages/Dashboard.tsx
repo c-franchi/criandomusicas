@@ -1,19 +1,21 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings, Bell, Download, RefreshCw, Trash2, Home } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Download, Trash2, Home, Mic, Piano, Edit3 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { NotificationBanner } from "@/components/PushNotificationPrompt";
-import CreditsBanner from "@/components/CreditsBanner";
+import { useCredits } from "@/hooks/useCredits";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "react-i18next";
 import RegionSelector from "@/components/RegionSelector";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OrderCard } from "@/components/dashboard/OrderCard";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,6 +53,15 @@ const Dashboard = () => {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const { totalVocal, totalInstrumental } = useCredits();
+
+  // Filter orders by type
+  const vocalOrders = useMemo(() => 
+    orders.filter(o => !o.is_instrumental && !o.has_custom_lyric), [orders]);
+  const instrumentalOrders = useMemo(() => 
+    orders.filter(o => o.is_instrumental), [orders]);
+  const customLyricOrders = useMemo(() => 
+    orders.filter(o => o.has_custom_lyric && !o.is_instrumental), [orders]);
 
   // Handle subscription success query param
   useEffect(() => {
@@ -444,136 +455,167 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
-        {/* Credits Banner */}
+        {/* Tabs for order types */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <CreditsBanner className="mb-6" />
-        </motion.div>
+          <Tabs defaultValue="vocal" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-6">
+              <TabsTrigger value="vocal" className="flex items-center gap-1.5 text-xs sm:text-sm">
+                <Mic className="w-4 h-4" />
+                <span className="hidden xs:inline">{t('tabs.vocal')}</span>
+                <span className="xs:hidden">Vocal</span>
+                <Badge variant="secondary" className="ml-1 text-xs px-1.5">
+                  {vocalOrders.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="instrumental" className="flex items-center gap-1.5 text-xs sm:text-sm">
+                <Piano className="w-4 h-4" />
+                <span className="hidden xs:inline">{t('tabs.instrumental')}</span>
+                <span className="xs:hidden">Instrum.</span>
+                <Badge variant="secondary" className="ml-1 text-xs px-1.5">
+                  {instrumentalOrders.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="custom" className="flex items-center gap-1.5 text-xs sm:text-sm">
+                <Edit3 className="w-4 h-4" />
+                <span className="hidden xs:inline">{t('tabs.customLyric')}</span>
+                <span className="xs:hidden">Própria</span>
+                <Badge variant="secondary" className="ml-1 text-xs px-1.5">
+                  {customLyricOrders.length}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
 
-        {/* New Order Button */}
-        <motion.div 
-          className="mb-8 text-center"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Button asChild size="lg" className="hover:scale-105 transition-transform shadow-lg hover:shadow-primary/25">
-            <Link to="/briefing">
-              <Music className="w-4 h-4 mr-2" />
-              {t('buttons.newSong')}
-            </Link>
-          </Button>
-        </motion.div>
-
-        {/* Orders List */}
-        <div className="space-y-6">
-          {orders.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-            >
-              <Card className="p-8 text-center premium-card">
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <Music className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                </motion.div>
-                <h3 className="text-xl font-semibold mb-2 text-foreground">{t('empty.title')}</h3>
-                <p className="text-muted-foreground mb-4">
-                  {t('empty.subtitle')}
-                </p>
-                <Button asChild className="hover:scale-105 transition-transform">
-                  <Link to="/briefing">{t('empty.cta')}</Link>
+            {/* Vocal Tab */}
+            <TabsContent value="vocal" className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/briefing?type=vocal">
+                    <Mic className="w-4 h-4 mr-2" />
+                    {t('buttons.createVocal')}
+                    {totalVocal > 0 && (
+                      <Badge className="ml-2 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                        {totalVocal} {t('tabs.creditsAvailable')}
+                      </Badge>
+                    )}
+                  </Link>
                 </Button>
-              </Card>
-            </motion.div>
-          ) : (
-            orders.map((order, index) => (
-              <motion.div
-                key={order.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.1 * index }}
-                whileHover={{ scale: 1.02, y: -2 }}
-              >
-                <Link to={`/pedido/${order.id}`} className="block group">
-                  <Card className="p-4 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
-                  {/* Mobile-first layout */}
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-lg mb-1 break-words text-foreground group-hover:text-primary transition-colors">
-                        {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
-                      </h3>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge className={getStatusColor(order.status || 'DRAFT')}>
-                          {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
-                        </Badge>
-                        {order.has_custom_lyric && (
-                          <Badge variant="outline" className="text-xs border-amber-600 dark:border-amber-500/30 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-transparent">
-                            {t('badges.customLyric')}
-                          </Badge>
-                        )}
-                        {order.is_instrumental && !order.has_custom_lyric && (
-                          <Badge variant="outline" className="text-xs border-purple-600 dark:border-purple-500/30 text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-transparent">
-                            {t('badges.instrumental')}
-                          </Badge>
-                        )}
-                        <span className="text-xs sm:text-sm text-muted-foreground">
-                          {t('order.createdAt', { date: order.created_at ? new Date(order.created_at).toLocaleDateString() : '' })}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Price and actions - stacks on mobile */}
-                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
-                      <div className="text-xl sm:text-2xl font-bold text-primary">
-                        R$ {((order.amount || 0) / 100).toFixed(2).replace('.', ',')}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" className="pointer-events-none">
-                          <span className="hidden xs:inline">{t('order.view').split(' ')[0]} </span>{t('order.view').split(' ').slice(1).join(' ') || t('order.view')}
-                          <ExternalLink className="w-4 h-4 ml-1 sm:ml-2" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setDeleteOrderId(order.id);
-                          }}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                          title={t('order.delete')}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {order.story && (
-                    <div className="border-t pt-4">
-                      <h4 className="font-medium mb-2 text-sm">{t('dashboard:orderDetails.briefingFields.story')}:</h4>
-                      <p className="text-sm text-muted-foreground break-words">
-                        {order.story.slice(0, 150)}
-                        {order.story.length > 150 ? '...' : ''}
-                      </p>
-                    </div>
-                  )}
+              </div>
+              
+              {vocalOrders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Mic className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">{t('empty.vocalTitle')}</h3>
+                  <p className="text-muted-foreground mb-4">{t('empty.vocalSubtitle')}</p>
+                  <Button asChild>
+                    <Link to="/briefing?type=vocal">{t('buttons.createVocal')}</Link>
+                  </Button>
                 </Card>
-              </Link>
-              </motion.div>
-            ))
-          )}
-        </div>
+              ) : (
+                <div className="space-y-4">
+                  {vocalOrders.map((order, index) => (
+                    <OrderCard 
+                      key={order.id} 
+                      order={order} 
+                      index={index}
+                      t={t}
+                      getStatusColor={getStatusColor}
+                      getStatusText={getStatusText}
+                      setDeleteOrderId={setDeleteOrderId}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Instrumental Tab */}
+            <TabsContent value="instrumental" className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/briefing?type=instrumental">
+                    <Piano className="w-4 h-4 mr-2" />
+                    {t('buttons.createInstrumental')}
+                    {totalInstrumental > 0 && (
+                      <Badge className="ml-2 bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                        {totalInstrumental} {t('tabs.creditsAvailable')}
+                      </Badge>
+                    )}
+                  </Link>
+                </Button>
+              </div>
+              
+              {instrumentalOrders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Piano className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">{t('empty.instrumentalTitle')}</h3>
+                  <p className="text-muted-foreground mb-4">{t('empty.instrumentalSubtitle')}</p>
+                  <Button asChild>
+                    <Link to="/briefing?type=instrumental">{t('buttons.createInstrumental')}</Link>
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {instrumentalOrders.map((order, index) => (
+                    <OrderCard 
+                      key={order.id} 
+                      order={order} 
+                      index={index}
+                      t={t}
+                      getStatusColor={getStatusColor}
+                      getStatusText={getStatusText}
+                      setDeleteOrderId={setDeleteOrderId}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Custom Lyric Tab */}
+            <TabsContent value="custom" className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                <Button asChild className="w-full sm:w-auto">
+                  <Link to="/briefing?type=custom_lyric">
+                    <Edit3 className="w-4 h-4 mr-2" />
+                    {t('buttons.createCustomLyric')}
+                    {totalVocal > 0 && (
+                      <Badge className="ml-2 bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/30">
+                        {totalVocal} {t('tabs.creditsAvailable')}
+                      </Badge>
+                    )}
+                  </Link>
+                </Button>
+              </div>
+              
+              {customLyricOrders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Edit3 className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">{t('empty.customTitle')}</h3>
+                  <p className="text-muted-foreground mb-4">{t('empty.customSubtitle')}</p>
+                  <Button asChild>
+                    <Link to="/briefing?type=custom_lyric">{t('buttons.createCustomLyric')}</Link>
+                  </Button>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {customLyricOrders.map((order, index) => (
+                    <OrderCard 
+                      key={order.id} 
+                      order={order} 
+                      index={index}
+                      t={t}
+                      getStatusColor={getStatusColor}
+                      getStatusText={getStatusText}
+                      setDeleteOrderId={setDeleteOrderId}
+                    />
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </motion.div>
 
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={!!deleteOrderId} onOpenChange={() => setDeleteOrderId(null)}>
