@@ -9,13 +9,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -54,7 +47,7 @@ interface CreditTransferProps {
 export function CreditTransfer({ className = '' }: CreditTransferProps) {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { totalAvailable, totalVocal, totalInstrumental, refresh: refreshCredits } = useCredits();
+  const { totalAvailable, refresh: refreshCredits } = useCredits();
   
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -66,8 +59,6 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
 
   // Form state
   const [email, setEmail] = useState('');
-  const [creditType, setCreditType] = useState<'vocal' | 'instrumental'>('vocal');
-  const [amount, setAmount] = useState(1);
   const [message, setMessage] = useState('');
   
   // Code sharing state
@@ -133,11 +124,10 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
     // Transferência sempre é de 1 crédito
     const transferAmount = 1;
 
-    const availableForType = creditType === 'vocal' ? totalVocal : totalInstrumental;
-    if (availableForType < 1) {
+    if (totalAvailable < 1) {
       toast({ 
         title: 'Créditos insuficientes', 
-        description: `Você não tem crédito(s) ${creditType === 'vocal' ? 'vocal' : 'instrumental'} disponível.`, 
+        description: 'Você não tem créditos disponíveis para transferir.', 
         variant: 'destructive' 
       });
       return;
@@ -149,7 +139,6 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         body: { 
           toEmail: shareMode === 'email' ? email : null, // null = código compartilhável
           amount: transferAmount, // Sempre 1
-          creditType,
           message: message.trim() || null
         },
       });
@@ -171,11 +160,10 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         // Modo email
         toast({ 
           title: 'Créditos enviados!', 
-          description: `${amount} crédito(s) enviado(s) para ${email}` 
+          description: `1 crédito enviado para ${email}` 
         });
         // Reset form
         setEmail('');
-        setAmount(1);
         setMessage('');
       }
       
@@ -285,8 +273,6 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-
-  const availableForType = creditType === 'vocal' ? totalVocal : totalInstrumental;
 
   if (loading) {
     return (
@@ -409,7 +395,6 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                   className="w-full"
                   onClick={() => {
                     setGeneratedCode(null);
-                    setAmount(1);
                     setMessage('');
                   }}
                 >
@@ -453,34 +438,23 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Tipo de crédito</Label>
-                    <Select value={creditType} onValueChange={(v) => setCreditType(v as 'vocal' | 'instrumental')}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="vocal" disabled={totalVocal === 0}>
-                          Vocal ({totalVocal} disp.)
-                        </SelectItem>
-                        <SelectItem value="instrumental" disabled={totalInstrumental === 0}>
-                          Instrumental ({totalInstrumental} disp.)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                <div className="space-y-2">
+                  <Label>Créditos disponíveis</Label>
+                  <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
+                    <p className="text-2xl font-bold text-primary">{totalAvailable}</p>
+                    <p className="text-xs text-muted-foreground">crédito(s) disponível(is)</p>
                   </div>
+                </div>
 
-                  <div className="space-y-2">
-                    <Label>Quantidade</Label>
-                    <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
-                      <p className="text-2xl font-bold text-primary">1</p>
-                      <p className="text-xs text-muted-foreground">crédito por transferência</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Cada código permite o resgate de 1 música.
-                    </p>
+                <div className="space-y-2">
+                  <Label>Quantidade a transferir</Label>
+                  <div className="text-center p-3 rounded-lg bg-muted/50 border">
+                    <p className="text-2xl font-bold">1</p>
+                    <p className="text-xs text-muted-foreground">crédito por transferência</p>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Cada código permite o resgate de 1 música.
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -497,7 +471,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
 
                 <Button 
                   onClick={handleSendCredits} 
-                  disabled={sending || (shareMode === 'email' && !email) || availableForType < 1}
+                  disabled={sending || (shareMode === 'email' && !email) || totalAvailable < 1}
                   className="w-full"
                 >
                   {sending ? (

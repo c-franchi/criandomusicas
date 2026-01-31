@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 interface ActionRequest {
@@ -133,7 +133,7 @@ serve(async (req) => {
       await supabaseAdmin
         .from('credit_transfers')
         .update({ status: 'expired' })
-        .eq('id', transferId);
+        .eq('id', transfer.id);
 
       return new Response(
         JSON.stringify({ success: false, error: 'Esta transferência expirou' }),
@@ -170,7 +170,7 @@ serve(async (req) => {
           to_user_id: userId,
           accepted_at: new Date().toISOString()
         })
-        .eq('id', transferId);
+        .eq('id', transfer.id);
 
       if (updateError) {
         console.error('[ACCEPT-CREDIT-TRANSFER] Error updating transfer:', updateError);
@@ -206,7 +206,7 @@ serve(async (req) => {
           status: 'rejected',
           to_user_id: userId,
         })
-        .eq('id', transferId);
+        .eq('id', transfer.id);
 
       if (updateError) {
         console.error('[ACCEPT-CREDIT-TRANSFER] Error updating transfer:', updateError);
