@@ -1,94 +1,52 @@
 
-# Plano: Corrigir Rota de Criação Rápida + Redesign da Interface
+# Plano: Consumo Automático de Créditos + Fluxo Rápido Direto para Produção
 
-## Problema Identificado
+## Problema Atual
 
-Quando o usuário clica em "Criar Rápido" (que navega para `/briefing?type=vocal`), o código atual:
+1. **Modal de confirmação desnecessário**: Quando o usuário tem créditos, aparece modal perguntando se quer usar o crédito ou ir para checkout
+2. **Modo rápido mostra letras**: No fluxo rápido, o usuário é redirecionado para `/criar-musica` onde precisa aprovar a letra manualmente
 
-```javascript
-// Linha 427-441 do Briefing.tsx
-} else {
-  // vocal - ir direto para musicType, pulando isInstrumental
-  setFormData(prev => ({ ... }));
-  setSelectedPlanId('single');
-  setCurrentStep(1);
-  addBotMessage(chatFlow[1]); // ❌ PROBLEMA: Inicia o chat ao invés do modo rápido!
-}
-```
+## Comportamento Desejado
 
-**Deveria:** Setar `creationMode = 'quick'` para exibir a tela de criação rápida.
+1. **Com créditos**: Consumir automaticamente SEM modal, processar direto
+2. **Sem créditos**: Mostrar modal informando que precisa adquirir um plano
+3. **Modo rápido**: Gerar letra via IA e enviar direto para produção (sem aprovação manual)
 
 ---
 
-## Solução
-
-### 1. Corrigir Inicialização por URL (Briefing.tsx)
-
-Modificar o bloco `else` (linhas 427-441) para ir ao modo rápido:
-
-```javascript
-} else {
-  // vocal - ir direto para criação rápida
-  setFormData(prev => ({ 
-    ...prev, 
-    isInstrumental: false, 
-    hasCustomLyric: false,
-    celebrationType: undefined,
-    celebrationName: undefined,
-    celebrationEmoji: undefined,
-  }));
-  setSelectedPlanId('single');
-  setCreationMode('quick'); // ✅ Ativar modo rápido
-  // NÃO chamar addBotMessage - deixar QuickCreation renderizar
-}
-```
-
-### 2. Redesign do QuickCreation.tsx (Baseado na Imagem de Referência)
-
-**Layout Atualizado:**
+## Fluxo Atualizado
 
 ```text
-┌────────────────────────────────────────────────────┐
-│  Crie música com IA              [créditos] [Pro]  │
-├────────────────────────────────────────────────────┤
-│                                                    │
-│  ┌──────────────────────────────────────────────┐ │
-│  │                                              │ │
-│  │  Escreva seu prompt ou letra...             │ │
-│  │                                              │ │
-│  │                                              │ │
-│  └──────────────────────────────────────────────┘ │
-│  [🔄 Reiniciar]  0/350          Instrumental [○]  │
-│                                                    │
-│  Gêneros musicais                          [📊]   │
-│  ┌───────┐ ┌───────┐ ┌───────┐ ┌───────┐         │
-│  │  Pop  │ │ Rock  │ │ Rap   │ │ R&B   │ →       │
-│  └───────┘ └───────┘ └───────┘ └───────┘         │
-│                                                    │
-│  [➕ Adicionar mais gênero                    0]  │
-│                                                    │
-│  Gênero vocal                                     │
-│    (○)      (○)      (○)                         │
-│   Masc.   Femin.   Dueto                         │
-│                                                    │
-│  ┌──────────────────────────────────────────────┐ │
-│  │           ✨ Criar Música                    │ │
-│  └──────────────────────────────────────────────┘ │
-│                                                    │
-│     Prefere criar com mais detalhes? →           │
-└────────────────────────────────────────────────────┘
+Usuário clica "Criar Música"
+        │
+        ▼
+   Verifica créditos
+        │
+   ┌────┴────┐
+   │         │
+TEM          NÃO TEM
+   │         │
+   ▼         ▼
+Consumir  Modal "Sem créditos"
+autom.    → Ir para checkout
+   │
+   ▼
+É modo rápido?
+   │
+┌──┴──┐
+│     │
+SIM   NÃO
+│     │
+▼     ▼
+Gerar  Ir para
+letra  /criar-musica
++ aprovar  (revisão)
+autom.
+│
+▼
+Dashboard
+(produção)
 ```
-
-**Mudanças no Componente:**
-
-| Elemento | Antes | Depois |
-|----------|-------|--------|
-| Header | "Criação Rápida" simples | "Crie música com IA" + badges de créditos |
-| Textarea | Fundo padrão | Fundo escuro (bg-card/80), rounded-xl |
-| Contador | 0/500 | 0/350 (mais conciso) |
-| Botão Reset | Texto simples | Estilizado como chip |
-| Gêneros | Sem opção "adicionar" | Adicionar campo "Adicionar mais gênero" |
-| Seções | Sem separação | Título "Gêneros musicais" e "Gênero vocal" |
 
 ---
 
@@ -96,105 +54,170 @@ Modificar o bloco `else` (linhas 427-441) para ir ao modo rápido:
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/Briefing.tsx` | Corrigir inicialização por URL (linhas 427-441) |
-| `src/components/briefing/QuickCreation.tsx` | Redesign completo do layout |
-| `public/locales/*/briefing.json` | Novas traduções para labels |
+| `src/pages/Briefing.tsx` | Lógica de consumo automático + identificar modo rápido |
+| `src/components/briefing/QuickCreation.tsx` | Passar flag `isQuickMode` no submit |
 
 ---
 
 ## Detalhes Técnicos
 
-### QuickCreation.tsx - Estrutura Atualizada
+### 1. Modificar `finishBriefing` (Briefing.tsx)
 
-```typescript
-export const QuickCreation = ({ ... }) => {
-  const [prompt, setPrompt] = useState("");
-  const [isInstrumental, setIsInstrumental] = useState(false);
-  const [style, setStyle] = useState("");
-  const [additionalGenre, setAdditionalGenre] = useState(""); // Novo
-  const [voiceType, setVoiceType] = useState("");
+Alterar a lógica de verificação de créditos (linhas 2152-2164):
 
-  return (
-    <div className="flex flex-col min-h-screen bg-background">
-      {/* Header com título e badges */}
-      <header className="p-4 border-b border-border/30">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">Crie música com IA</h1>
-          <div className="flex items-center gap-2">
-            {/* Badge de créditos */}
-            <Badge variant="outline">🎵 1</Badge>
-          </div>
-        </div>
-      </header>
+**Antes:**
+```javascript
+if (creditsData?.has_credits && creditsData?.total_available > 0) {
+  // Mostrar modal de confirmação
+  setPendingOrderId(orderData.id);
+  setShowCreditModal(true);
+  return;
+}
+```
 
-      {/* Content area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {/* Textarea escuro */}
-        <div className="bg-card/80 rounded-xl p-4">
-          <Textarea
-            className="bg-transparent border-none min-h-[100px] resize-none"
-            placeholder="Escreva seu prompt ou letra..."
-            maxLength={350}
-          />
-          <div className="flex items-center justify-between mt-2">
-            <button className="flex items-center gap-1 text-xs text-muted-foreground">
-              <RotateCcw className="w-3 h-3" />
-              Reiniciar
-            </button>
-            <span className="text-xs text-muted-foreground">{prompt.length}/350</span>
-            <div className="flex items-center gap-2">
-              <span className="text-sm">Instrumental</span>
-              <Switch />
-            </div>
-          </div>
-        </div>
+**Depois:**
+```javascript
+if (creditsData?.has_credits && creditsData?.total_available > 0) {
+  // Consumir crédito automaticamente SEM modal
+  const result = await supabase.functions.invoke('use-credit', {
+    body: { orderId: orderData.id }
+  });
+  
+  if (result.error || !result.data?.success) {
+    // Erro ao usar crédito, ir para checkout
+    navigate(`/checkout/${orderData.id}?planId=${planId}`);
+    return;
+  }
+  
+  // Crédito consumido! Agora processar baseado no modo
+  await processOrderAfterCredit(orderData.id, briefingData, isQuickMode);
+  return;
+}
 
-        {/* Gêneros musicais */}
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium">Gêneros musicais</h3>
-            <LayoutGrid className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <ImageCardGrid options={styleOptions} selectedId={style} onSelect={setStyle} />
-        </section>
+// Sem créditos - mostrar modal para ir ao checkout
+setPendingOrderId(orderData.id);
+setShowNoCreditModal(true); // Novo modal
+return;
+```
 
-        {/* Adicionar mais gênero (input opcional) */}
-        <button className="w-full flex items-center justify-between p-3 rounded-lg bg-card/50 border border-border/30">
-          <span className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Plus className="w-4 h-4" />
-            Adicionar mais gênero
-          </span>
-          <span className="text-xs text-muted-foreground">0</span>
-        </button>
+### 2. Nova Função: `processOrderAfterCredit`
 
-        {/* Gênero vocal (se não instrumental) */}
-        {!isInstrumental && (
-          <section>
-            <h3 className="text-sm font-medium mb-3">Gênero vocal</h3>
-            <ImageCardGrid 
-              options={voiceOptions} 
-              selectedId={voiceType} 
-              onSelect={setVoiceType}
-              variant="circle"
-            />
-          </section>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="p-4 border-t space-y-3">
-        <Button className="w-full" variant="hero" size="lg">
-          <Sparkles className="w-5 h-5 mr-2" />
-          Criar Música
-        </Button>
-        <button className="w-full text-center text-sm text-muted-foreground">
-          Prefere criar com mais detalhes? →
-        </button>
-      </div>
-    </div>
-  );
+```javascript
+const processOrderAfterCredit = async (
+  orderId: string, 
+  briefingData: any, 
+  isQuickMode: boolean
+) => {
+  if (briefingData.isInstrumental) {
+    // Instrumental: gerar style prompt e ir para dashboard
+    await supabase.functions.invoke('generate-style-prompt', {...});
+    toast.success('🎹 Música instrumental em produção!');
+    clearSavedBriefing();
+    navigate('/dashboard');
+  } else if (isQuickMode) {
+    // MODO RÁPIDO: gerar letra + aprovar automaticamente
+    toast.info('✨ Gerando sua música...');
+    
+    // 1. Gerar letras
+    const lyricsResult = await supabase.functions.invoke('generate-lyrics', {
+      body: { orderId, story: briefingData.story, briefing: briefingData }
+    });
+    
+    // 2. Pegar primeira letra gerada
+    const { data: lyricsData } = await supabase
+      .from('lyrics')
+      .select('*')
+      .eq('order_id', orderId)
+      .order('created_at', { ascending: true })
+      .limit(1);
+    
+    if (lyricsData?.[0]) {
+      // 3. Aprovar automaticamente
+      await supabase.functions.invoke('generate-style-prompt', {
+        body: {
+          orderId,
+          lyricId: lyricsData[0].id,
+          approvedLyrics: lyricsData[0].text,
+          songTitle: lyricsData[0].title,
+          briefing: briefingData
+        }
+      });
+    }
+    
+    toast.success('🎵 Música em produção!');
+    clearSavedBriefing();
+    navigate('/dashboard');
+  } else {
+    // Modo detalhado: ir para página de revisão de letras
+    await supabase.functions.invoke('generate-lyrics', {...});
+    clearSavedBriefing();
+    navigate(`/criar-musica?orderId=${orderId}`);
+  }
 };
 ```
+
+### 3. Novo Modal: "Sem Créditos Disponíveis"
+
+Substituir o modal atual por um que apenas informa que o usuário precisa comprar:
+
+```jsx
+<Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
+  <DialogContent className="sm:max-w-md">
+    <DialogHeader>
+      <DialogTitle className="flex items-center gap-2 text-xl">
+        <AlertCircle className="w-5 h-5 text-amber-500" />
+        Créditos insuficientes
+      </DialogTitle>
+      <DialogDescription className="pt-2">
+        Você não possui créditos disponíveis para criar esta música.
+      </DialogDescription>
+    </DialogHeader>
+    
+    <div className="space-y-4 py-4">
+      <p className="text-sm text-muted-foreground">
+        Adquira um pacote ou assinatura para continuar criando músicas.
+      </p>
+      
+      <Button onClick={handleGoToCheckout} className="w-full">
+        <CreditCard className="w-5 h-5 mr-2" />
+        Ver opções de compra
+      </Button>
+    </div>
+  </DialogContent>
+</Dialog>
+```
+
+### 4. Identificar Modo Rápido
+
+Adicionar estado para rastrear se é modo rápido:
+
+```javascript
+// Estado
+const [isQuickMode, setIsQuickMode] = useState(false);
+
+// No handleQuickCreationSubmit:
+const handleQuickCreationSubmit = (data: QuickCreationData) => {
+  // ... converter dados ...
+  setIsQuickMode(true); // Marcar como modo rápido
+  showConfirmationScreen(newFormData);
+};
+
+// No handlePlanSelection (modo detalhado):
+const handlePlanSelection = (planId: string) => {
+  setIsQuickMode(false); // Modo detalhado
+  // ...
+};
+```
+
+---
+
+## Estados a Adicionar/Modificar
+
+| Estado | Antes | Depois |
+|--------|-------|--------|
+| `showCreditModal` | Modal de confirmação | Remover |
+| `showNoCreditModal` | N/A | Modal "sem créditos" |
+| `isQuickMode` | N/A | Boolean para identificar fluxo |
 
 ---
 
@@ -202,16 +225,11 @@ export const QuickCreation = ({ ... }) => {
 
 ```json
 {
-  "quickCreation": {
-    "pageTitle": "Crie música com IA",
-    "promptPlaceholder": "Escreva seu prompt ou letra...",
-    "reset": "Reiniciar",
-    "instrumental": "Instrumental",
-    "genreTitle": "Gêneros musicais",
-    "addGenre": "Adicionar mais gênero",
-    "voiceTitle": "Gênero vocal",
-    "createButton": "Criar Música",
-    "switchToDetailed": "Prefere criar com mais detalhes?"
+  "noCreditModal": {
+    "title": "Créditos insuficientes",
+    "description": "Você não possui créditos disponíveis para criar esta música.",
+    "message": "Adquira um pacote ou assinatura para continuar criando músicas.",
+    "buyButton": "Ver opções de compra"
   }
 }
 ```
@@ -220,9 +238,34 @@ export const QuickCreation = ({ ... }) => {
 
 ## Resultado Esperado
 
-1. **Clique em "Criar Rápido"** → Navega para `/briefing?type=vocal`
-2. **Briefing.tsx detecta** `type=vocal` → Seta `creationMode = 'quick'`
-3. **QuickCreation renderiza** com o novo layout idêntico à referência
-4. **Usuário preenche** → Prompt + Gênero + Voz (se vocal)
-5. **Clique em "Criar Música"** → Converte para FormData e vai para confirmação
-6. **Ou clique em "Prefere criar com mais detalhes?"** → Muda para chat detalhado
+1. **Com créditos + modo rápido**: Clicar em "Criar" → Consumir crédito → Gerar letra automaticamente → Aprovar automaticamente → Dashboard (produção)
+
+2. **Com créditos + modo detalhado**: Clicar em "Criar" → Consumir crédito → Ir para `/criar-musica` para revisar letras
+
+3. **Sem créditos**: Clicar em "Criar" → Modal informando que precisa comprar → Ir para checkout
+
+---
+
+## Fluxo Simplificado do Modo Rápido
+
+```text
+Prompt: "Uma música romântica para minha esposa"
+Gênero: Pop
+Voz: Feminina
+        │
+        ▼
+  [Criar Música]
+        │
+        ▼
+Crédito consumido automaticamente
+        │
+        ▼
+IA gera letra (aguarde ~5s)
+        │
+        ▼
+Letra aprovada automaticamente
+        │
+        ▼
+  → Dashboard
+    (acompanhe produção)
+```
