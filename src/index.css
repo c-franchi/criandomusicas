@@ -12,8 +12,12 @@
 
     /* Premium purple palette */
     --primary: 259 94% 51%;
+    --primary-rgb: 124 58 237;
     --primary-glow: 280 100% 65%;
     --primary-foreground: 0 0% 100%;
+    
+    /* Accent RGB for neon effects */
+    --accent-rgb: 236 72 153;
     
     --secondary: 240 10% 94%;
     --secondary-foreground: 240 10% 10%;
@@ -87,8 +91,12 @@
 
     /* Premium purple palette - more vibrant for dark */
     --primary: 259 100% 65%;
+    --primary-rgb: 147 51 234;
     --primary-glow: 280 100% 75%;
     --primary-foreground: 240 20% 4%;
+    
+    /* Accent RGB for neon effects */
+    --accent-rgb: 244 114 182;
     
     --secondary: 240 15% 12%;
     --secondary-foreground: 0 0% 98%;
