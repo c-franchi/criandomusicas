@@ -188,6 +188,79 @@ export const useBriefingTranslations = () => {
     story: t('steps.gospel.story.question'),
   });
 
+  // Children's music flow options
+  const childAgeGroupOptions = [
+    { id: "0-3", label: t('steps.children.ageGroup.0-3'), description: t('steps.children.ageGroup.0-3Desc') },
+    { id: "4-6", label: t('steps.children.ageGroup.4-6'), description: t('steps.children.ageGroup.4-6Desc') },
+    { id: "7-9", label: t('steps.children.ageGroup.7-9'), description: t('steps.children.ageGroup.7-9Desc') },
+    { id: "10-12", label: t('steps.children.ageGroup.10-12'), description: t('steps.children.ageGroup.10-12Desc') },
+  ];
+
+  const childObjectiveOptions = [
+    { id: "diversao", label: t('steps.children.objective.diversao'), description: t('steps.children.objective.diversaoDesc') },
+    { id: "valores", label: t('steps.children.objective.valores'), description: t('steps.children.objective.valoresDesc') },
+    { id: "rotina", label: t('steps.children.objective.rotina'), description: t('steps.children.objective.rotinaDesc') },
+    { id: "educacao", label: t('steps.children.objective.educacao'), description: t('steps.children.objective.educacaoDesc') },
+    { id: "emocoes", label: t('steps.children.objective.emocoes'), description: t('steps.children.objective.emocoesDesc') },
+    { id: "aventura", label: t('steps.children.objective.aventura'), description: t('steps.children.objective.aventuraDesc') },
+  ];
+
+  const childThemeOptions = [
+    { id: "animais", label: t('steps.children.theme.animais') },
+    { id: "natureza", label: t('steps.children.theme.natureza') },
+    { id: "familia", label: t('steps.children.theme.familia') },
+    { id: "escola", label: t('steps.children.theme.escola') },
+    { id: "fantasia", label: t('steps.children.theme.fantasia'), description: t('steps.children.theme.fantasiaDesc') },
+    { id: "profissoes", label: t('steps.children.theme.profissoes') },
+    { id: "superacao", label: t('steps.children.theme.superacao'), description: t('steps.children.theme.superacaoDesc') },
+  ];
+
+  const childMoodOptions = [
+    { id: "alegre", label: t('steps.children.mood.alegre') },
+    { id: "calma", label: t('steps.children.mood.calma') },
+    { id: "animada", label: t('steps.children.mood.animada') },
+    { id: "suave", label: t('steps.children.mood.suave') },
+  ];
+
+  const childStyleOptions = [
+    { id: "cantiga", label: t('steps.children.style.cantiga'), description: t('steps.children.style.cantigaDesc') },
+    { id: "pop", label: t('steps.children.style.pop'), description: t('steps.children.style.popDesc') },
+    { id: "educativo", label: t('steps.children.style.educativo'), description: t('steps.children.style.educativoDesc') },
+    { id: "ninar", label: t('steps.children.style.ninar'), description: t('steps.children.style.ninarDesc') },
+    { id: "desenho", label: t('steps.children.style.desenho'), description: t('steps.children.style.desenhoDesc') },
+    { id: "auto", label: t('steps.children.style.auto'), description: t('steps.children.style.autoDesc') },
+  ];
+
+  const childInteractionOptions = [
+    { id: "sim", label: t('steps.children.interaction.yes'), description: t('steps.children.interaction.yesDesc') },
+    { id: "nao", label: t('steps.children.interaction.no'), description: t('steps.children.interaction.noDesc') },
+  ];
+
+  const childNarrativeOptions = [
+    { id: "cantada", label: t('steps.children.narrative.cantada') },
+    { id: "cantada_falas", label: t('steps.children.narrative.cantadaFalas') },
+    { id: "narrador", label: t('steps.children.narrative.narrador') },
+    { id: "historia", label: t('steps.children.narrative.historia') },
+  ];
+
+  const childVoiceOptions = [
+    { id: "infantil_masc", label: t('steps.voiceType.infantilMasc'), description: t('steps.voiceType.infantilMascDesc') },
+    { id: "infantil_fem", label: t('steps.voiceType.infantilFem'), description: t('steps.voiceType.infantilFemDesc') },
+  ];
+
+  // Get children's chat messages
+  const getChildrenChatMessages = () => ({
+    intro: t('steps.children.intro'),
+    ageGroup: t('steps.children.ageGroup.question'),
+    objective: t('steps.children.objective.question'),
+    theme: t('steps.children.theme.question'),
+    mood: t('steps.children.mood.question'),
+    style: t('steps.children.style.question'),
+    interaction: t('steps.children.interaction.question'),
+    narrative: t('steps.children.narrative.question'),
+    story: t('steps.children.story.question'),
+  });
+
   // Voice type options
   const voiceTypeOptions = [
     { id: "masculina", label: t('steps.voiceType.masculina'), description: t('steps.voiceType.masculinaDesc') },
@@ -512,6 +585,16 @@ export const useBriefingTranslations = () => {
     gospelNarrativeOptions,
     gospelPerspectiveOptions,
     getGospelChatMessages,
+    // Children's music options
+    childAgeGroupOptions,
+    childObjectiveOptions,
+    childThemeOptions,
+    childMoodOptions,
+    childStyleOptions,
+    childInteractionOptions,
+    childNarrativeOptions,
+    childVoiceOptions,
+    getChildrenChatMessages,
     // Labels
     getPlanLabels,
     getIntensityLabels,
