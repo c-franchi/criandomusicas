@@ -84,10 +84,30 @@
     "title": "Install the App",
     "subtitle": "Get quick access to Criando Músicas right from your home screen",
     "installButton": "Install Now",
-    "iosInstructions": "On iPhone/iPad:",
-    "iosStep1": "Tap the share button",
-    "iosStep2": "Scroll down and tap \"Add to Home Screen\"",
-    "iosStep3": "Tap \"Add\"",
+    "addToHome": "Add to Home Screen",
+    "addToHomeDesc": "Install the app for quick access",
+    "browserHint": "Open your browser menu and select \"Install\" or \"Add to Home Screen\"",
+    "installed": "App Installed!",
+    "installedDesc": "The app is installed on your home screen",
+    "installNow": "Install Now",
+    "ios": {
+      "title": "On iPhone/iPad:",
+      "step1": "Tap the share button (square with arrow)",
+      "step2": "Scroll down and tap \"Add to Home Screen\"",
+      "step3": "Tap \"Add\" in the top right corner"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "description": "Get alerts when your song is ready"
+    },
+    "features": {
+      "quickAccess": "Quick Access",
+      "quickAccessDesc": "Right from your home screen",
+      "notifications": "Notifications",
+      "notificationsDesc": "Know when your song is ready",
+      "offline": "Works Offline",
+      "offlineDesc": "Access even without internet"
+    },
     "benefits": {
       "title": "App benefits:",
       "fast": "Quick access from home screen",
@@ -137,5 +157,6 @@
   },
   "loading": "Loading...",
   "and": "and",
-  "backToHome": "Back to home"
+  "backToHome": "Back to home",
+  "backHome": "Back to Home"
 }
