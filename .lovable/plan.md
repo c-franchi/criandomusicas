@@ -1,252 +1,207 @@
 
-
-# Sistema Especializado de Briefing para Músicas Motivacionais
+# Sistema Especializado de Briefing para Músicas Religiosas/Gospel
 
 ## Visão Geral
 
-Criar um fluxo dedicado e otimizado para músicas motivacionais que captura informações específicas desse gênero, com perguntas personalizadas, fallbacks inteligentes e geração de letras focadas em superação, disciplina e vitória.
+Criar um fluxo dedicado e respeitoso para músicas religiosas/gospel que captura informações específicas desse nicho espiritual, com perguntas personalizadas sobre contexto de adoração, emoções espirituais, e estrutura com monólogos reverentes.
 
 ```text
 ┌────────────────────────────────────────────────────────────────────┐
-│                 FLUXO MOTIVACIONAL ESPECIALIZADO                   │
+│                 FLUXO RELIGIOSO/GOSPEL ESPECIALIZADO               │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                    │
-│  Usuário seleciona "💪 Motivacional" no musicType                  │
-│                          ↓                                          │
-│  Sistema detecta e ATIVA fluxo motivacional específico:            │
+│  Usuário seleciona "✝️ Religiosa" no musicType                     │
+│                          ↓                                         │
+│  Sistema detecta e ATIVA fluxo gospel específico:                  │
 │                                                                    │
-│  1️⃣ MOMENTO DE USO                                                 │
-│     Treino | Superação | Estudo | Trabalho | Recomeço | Disciplina │
-│                          ↓                                          │
-│  2️⃣ EMOÇÃO PRINCIPAL (motivacional)                                │
-│     Determinação | Confiança | Força Interior | Coragem | Foco     │
-│                          ↓                                          │
-│  3️⃣ INTENSIDADE                                                    │
-│     Calma e inspiradora | Crescente | Intensa | Agressiva          │
-│                          ↓                                          │
-│  4️⃣ ESTILO MUSICAL (fallback inteligente)                          │
-│     Rock | Rap | Trap | Hip Hop | Eletrônica Épica | Lo-fi         │
-│                          ↓                                          │
+│  1️⃣ CONTEXTO ESPIRITUAL                                           │
+│     Adoração | Louvor | Oração | Confiança | Esperança | Gratidão  │
+│                          ↓                                         │
+│  2️⃣ EMOÇÃO ESPIRITUAL                                             │
+│     Paz | Fé | Esperança | Quebrantamento | Confiança | Alegria    │
+│                          ↓                                         │
+│  3️⃣ INTENSIDADE DO CANTO                                          │
+│     Suave e contemplativa | Crescente | Congregacional | Profética │
+│                          ↓                                         │
+│  4️⃣ ESTILO GOSPEL                                                  │
+│     Worship | Congregacional | Tradicional | Acústico | Auto       │
+│                          ↓                                         │
 │  5️⃣ FORMA DE ENTREGA                                               │
-│     Cantada | Cantada + Monólogos | Mais falada | Narrador         │
-│     → Se inclui fala: força hasMonologue = true                    │
-│                          ↓                                          │
+│     Cantada | Com leituras | Com monólogos espirituais | Narrador  │
+│     → REGRA: Sempre inicia com monólogo reverente                  │
+│                          ↓                                         │
 │  6️⃣ PERSPECTIVA                                                    │
-│     Primeira pessoa (eu) | Mentor (você) | Universal               │
-│                          ↓                                          │
-│  7️⃣ CONTEXTO/HISTÓRIA                                              │
-│     Descreva para quem é, ocasião, objetivo...                     │
-│                          ↓                                          │
-│  8️⃣ PALAVRAS-CHAVE (opcional)                                      │
-│     disciplina, foco, vencer, honra, dor, vitória...               │
+│     Primeira pessoa (eu+Deus) | Congregacional (nós) | Profética   │
+│                          ↓                                         │
+│  7️⃣ REFERÊNCIA BÍBLICA (opcional)                                  │
+│     Salmos | Versículos de fé | Texto inspirado                    │
+│                          ↓                                         │
+│  8️⃣ HISTÓRIA/CONTEXTO → VOICE TYPE → NOME                          │
 │                                                                    │
 └────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Arquitetura
+## Arquitetura Técnica
 
-### 1. Novos Campos no BriefingFormData
+### 1. Novos Campos no BriefingFormData (src/pages/Briefing.tsx)
 
 ```typescript
 interface BriefingFormData {
   // ... campos existentes
   
-  // Novos campos EXCLUSIVOS para fluxo motivacional
-  motivationalMoment?: string;      // treino, superacao, estudo, trabalho, recomeco, disciplina
-  motivationalIntensity?: string;   // calma, crescente, intensa, agressiva
-  motivationalNarrative?: string;   // cantada, cantada_monologue, mais_falada, narrador
-  motivationalPerspective?: string; // primeira_pessoa, mentor, universal
+  // Novos campos EXCLUSIVOS para fluxo religioso/gospel
+  gospelContext?: string;       // adoracao, louvor, oracao, confianca, esperanca, gratidao, restauracao, consagracao
+  gospelIntensity?: string;     // suave, crescente, congregacional, profetica
+  gospelStyle?: string;         // worship, congregacional, tradicional, acustico, instrumental_canto
+  gospelNarrative?: string;     // cantada, leituras, monologos, narrador
+  gospelPerspective?: string;   // primeira_pessoa, congregacional, profetica
+  biblicalReference?: string;   // texto opcional de referência bíblica
 }
 ```
 
 ### 2. Novas Opções Traduzidas (useBriefingTranslations.ts)
 
 ```typescript
-// Momento de uso da música motivacional
-const motivationalMomentOptions = [
-  { id: "treino", label: t('steps.motivational.moment.treino'), description: t('steps.motivational.moment.treinoDesc') },
-  { id: "superacao", label: t('steps.motivational.moment.superacao'), description: t('steps.motivational.moment.superacaoDesc') },
-  { id: "estudo", label: t('steps.motivational.moment.estudo'), description: t('steps.motivational.moment.estudoDesc') },
-  { id: "trabalho", label: t('steps.motivational.moment.trabalho'), description: t('steps.motivational.moment.trabalhoDesc') },
-  { id: "recomeco", label: t('steps.motivational.moment.recomeco'), description: t('steps.motivational.moment.recomecoDesc') },
-  { id: "disciplina", label: t('steps.motivational.moment.disciplina'), description: t('steps.motivational.moment.disciplinaDesc') },
+// Contexto espiritual da música
+const gospelContextOptions = [
+  { id: "adoracao", label: t('steps.gospel.context.adoracao'), description: t('steps.gospel.context.adoracaoDesc') },
+  { id: "louvor", label: t('steps.gospel.context.louvor'), description: t('steps.gospel.context.louvorDesc') },
+  { id: "oracao", label: t('steps.gospel.context.oracao'), description: t('steps.gospel.context.oracaoDesc') },
+  { id: "confianca", label: t('steps.gospel.context.confianca'), description: t('steps.gospel.context.confiancaDesc') },
+  { id: "esperanca", label: t('steps.gospel.context.esperanca'), description: t('steps.gospel.context.esperancaDesc') },
+  { id: "gratidao", label: t('steps.gospel.context.gratidao'), description: t('steps.gospel.context.gratidaoDesc') },
+  { id: "restauracao", label: t('steps.gospel.context.restauracao'), description: t('steps.gospel.context.restauracaoDesc') },
+  { id: "consagracao", label: t('steps.gospel.context.consagracao'), description: t('steps.gospel.context.consagracaoDesc') },
 ];
 
-// Emoções específicas motivacionais
-const motivationalEmotionOptions = [
-  { id: "determinacao", label: t('steps.motivational.emotion.determinacao') },
-  { id: "confianca", label: t('steps.motivational.emotion.confianca') },
-  { id: "forca_interior", label: t('steps.motivational.emotion.forcaInterior') },
-  { id: "coragem", label: t('steps.motivational.emotion.coragem') },
-  { id: "foco", label: t('steps.motivational.emotion.foco') },
-  { id: "vitoria", label: t('steps.motivational.emotion.vitoria') },
-  { id: "superacao_dor", label: t('steps.motivational.emotion.superacaoDor') },
+// Emoções espirituais
+const gospelEmotionOptions = [
+  { id: "paz", label: t('steps.gospel.emotion.paz') },
+  { id: "fe", label: t('steps.gospel.emotion.fe') },
+  { id: "esperanca", label: t('steps.gospel.emotion.esperanca') },
+  { id: "quebrantamento", label: t('steps.gospel.emotion.quebrantamento') },
+  { id: "confianca", label: t('steps.gospel.emotion.confianca') },
+  { id: "alegria", label: t('steps.gospel.emotion.alegria') },
+  { id: "reverencia", label: t('steps.gospel.emotion.reverencia') },
 ];
 
-// Intensidade da música
-const motivationalIntensityOptions = [
-  { id: "calma", label: t('steps.motivational.intensity.calma'), description: t('steps.motivational.intensity.calmaDesc') },
-  { id: "crescente", label: t('steps.motivational.intensity.crescente'), description: t('steps.motivational.intensity.crescenteDesc') },
-  { id: "intensa", label: t('steps.motivational.intensity.intensa'), description: t('steps.motivational.intensity.intensaDesc') },
-  { id: "agressiva", label: t('steps.motivational.intensity.agressiva'), description: t('steps.motivational.intensity.agressivaDesc') },
+// Intensidade do canto
+const gospelIntensityOptions = [
+  { id: "suave", label: t('steps.gospel.intensity.suave'), description: t('steps.gospel.intensity.suaveDesc') },
+  { id: "crescente", label: t('steps.gospel.intensity.crescente'), description: t('steps.gospel.intensity.crescenteDesc') },
+  { id: "congregacional", label: t('steps.gospel.intensity.congregacional'), description: t('steps.gospel.intensity.congregacionalDesc') },
+  { id: "profetica", label: t('steps.gospel.intensity.profetica'), description: t('steps.gospel.intensity.profeticaDesc') },
 ];
 
-// Forma de entrega
-const motivationalNarrativeOptions = [
-  { id: "cantada", label: t('steps.motivational.narrative.cantada') },
-  { id: "cantada_monologue", label: t('steps.motivational.narrative.cantadaMonologue') },
-  { id: "mais_falada", label: t('steps.motivational.narrative.maisFalada') },
-  { id: "narrador", label: t('steps.motivational.narrative.narrador') },
+// Estilo gospel
+const gospelStyleOptions = [
+  { id: "worship", label: t('steps.gospel.style.worship') },
+  { id: "congregacional", label: t('steps.gospel.style.congregacional') },
+  { id: "tradicional", label: t('steps.gospel.style.tradicional') },
+  { id: "acustico", label: t('steps.gospel.style.acustico') },
+  { id: "instrumental_canto", label: t('steps.gospel.style.instrumentalCanto') },
+  { id: "auto", label: t('steps.gospel.style.auto') },
+];
+
+// Narrativa gospel
+const gospelNarrativeOptions = [
+  { id: "cantada", label: t('steps.gospel.narrative.cantada') },
+  { id: "leituras", label: t('steps.gospel.narrative.leituras') },
+  { id: "monologos", label: t('steps.gospel.narrative.monologos') },
+  { id: "narrador", label: t('steps.gospel.narrative.narrador') },
 ];
 
 // Perspectiva
-const motivationalPerspectiveOptions = [
-  { id: "primeira_pessoa", label: t('steps.motivational.perspective.primeiraPessoa'), description: t('steps.motivational.perspective.primeiraPessoaDesc') },
-  { id: "mentor", label: t('steps.motivational.perspective.mentor'), description: t('steps.motivational.perspective.mentorDesc') },
-  { id: "universal", label: t('steps.motivational.perspective.universal'), description: t('steps.motivational.perspective.universalDesc') },
-];
-
-// Estilos musicais motivacionais (com fallback inteligente)
-const motivationalStyleOptions = [
-  { id: "rock_motivacional", label: t('steps.motivational.style.rock') },
-  { id: "rap_motivacional", label: t('steps.motivational.style.rap') },
-  { id: "trap_motivacional", label: t('steps.motivational.style.trap') },
-  { id: "hiphop_classico", label: t('steps.motivational.style.hiphop') },
-  { id: "eletronica_epica", label: t('steps.motivational.style.eletronica') },
-  { id: "lofi_motivacional", label: t('steps.motivational.style.lofi') },
-  { id: "auto", label: t('steps.motivational.style.auto') },
+const gospelPerspectiveOptions = [
+  { id: "primeira_pessoa", label: t('steps.gospel.perspective.primeiraPessoa'), description: t('steps.gospel.perspective.primeiraPessoaDesc') },
+  { id: "congregacional", label: t('steps.gospel.perspective.congregacional'), description: t('steps.gospel.perspective.congregacionalDesc') },
+  { id: "profetica", label: t('steps.gospel.perspective.profetica'), description: t('steps.gospel.perspective.profeticaDesc') },
 ];
 ```
 
-### 3. Novo Fluxo no chatFlow (Briefing.tsx)
-
-Adicionar steps 40-49 para o fluxo motivacional:
+### 3. Novo Fluxo no chatFlow (índices 44-53)
 
 | Index | Campo | Descrição |
 |-------|-------|-----------|
-| 40 | motivationalMoment | Momento de uso (treino, estudo, etc.) |
-| 41 | emotion (motivacional) | Emoção específica motivacional |
-| 42 | motivationalIntensity | Intensidade (calma → agressiva) |
-| 43 | style (motivacional) | Estilo musical com fallback |
-| 44 | motivationalNarrative | Forma de entrega (cantada, monólogo) |
-| 45 | motivationalPerspective | Perspectiva (eu, você, universal) |
-| 46 | story | Contexto/história |
-| 47 | mandatoryWords | Palavras-chave (opcional) |
-| 48 | voiceType | Tipo de voz |
-| 49 | autoGenerateName | Nome automático ou manual |
+| 44 | gospelContext | Contexto espiritual (adoração, louvor, etc.) |
+| 45 | emotion | Emoção espiritual (paz, fé, esperança) |
+| 46 | gospelIntensity | Intensidade (suave → profética) |
+| 47 | gospelStyle | Estilo gospel com fallback inteligente |
+| 48 | gospelNarrative | Forma de entrega (cantada, monólogos) |
+| 49 | gospelPerspective | Perspectiva (eu, nós, voz profética) |
+| 50 | biblicalReference | Referência bíblica (opcional) |
+| 51 | story | Contexto/história da música |
+| 52 | voiceType | Tipo de voz |
+| 53 | autoGenerateName | Nome automático ou manual |
 
-### 4. Fallback Inteligente para Estilo Musical
-
-```typescript
-// Se usuário escolher "auto" para estilo, aplicar lógica:
-const getMotivationalStyleFallback = (moment: string, intensity: string): string => {
-  // Treino + agressiva → Rock ou Trap
-  if ((moment === 'treino' && (intensity === 'intensa' || intensity === 'agressiva'))) {
-    return Math.random() > 0.5 ? 'rock_motivacional' : 'trap_motivacional';
-  }
-  
-  // Estudo + calma → Lo-fi
-  if (moment === 'estudo' && intensity === 'calma') {
-    return 'lofi_motivacional';
-  }
-  
-  // Superação + crescente → Rap ou Eletrônica Épica
-  if (moment === 'superacao' && intensity === 'crescente') {
-    return Math.random() > 0.5 ? 'rap_motivacional' : 'eletronica_epica';
-  }
-  
-  // Default: Rap motivacional (mais versátil)
-  return 'rap_motivacional';
-};
-```
-
-### 5. Lógica de Navegação (getNextStep)
+### 4. Lógica de Navegação (getNextStep)
 
 ```typescript
 // Após Step 1 (musicType)
-if (current === 1 && data.musicType === 'motivacional') {
-  return 40; // Vai para fluxo motivacional
+if (current === 1 && data.musicType === 'religiosa') {
+  return 44; // Vai para fluxo gospel
 }
 
-// Fluxo motivacional (40-49)
-if (data.musicType === 'motivacional') {
-  if (current === 40) return 41; // moment → emotion
-  if (current === 41) return 42; // emotion → intensity
-  if (current === 42) return 43; // intensity → style
-  if (current === 43) return 44; // style → narrative
-  if (current === 44) {
-    // Se narrativa inclui fala, forçar monólogo
-    if (['cantada_monologue', 'mais_falada', 'narrador'].includes(data.motivationalNarrative)) {
-      data.hasMonologue = true;
-      data.monologuePosition = 'bridge'; // ou 'outro'
-    }
-    return 45; // narrative → perspective
+// FLUXO GOSPEL (44-53)
+if (data.musicType === 'religiosa' && !data.isInstrumental) {
+  if (current === 44) return 45; // context → emotion
+  if (current === 45) return 46; // emotion → gospelIntensity
+  if (current === 46) return 47; // gospelIntensity → gospelStyle
+  if (current === 47) return 48; // gospelStyle → gospelNarrative
+  if (current === 48) {
+    // REGRA: Todas as músicas gospel começam com monólogo
+    // Marcar hasMonologue = true SEMPRE
+    return 49; // gospelNarrative → gospelPerspective
   }
-  if (current === 45) return 46; // perspective → story
-  if (current === 46) return 47; // story → mandatoryWords
-  if (current === 47) return 48; // mandatoryWords → voiceType
-  if (current === 48) return 49; // voiceType → autoGenerateName
-  if (current === 49) {
-    return data.autoGenerateName ? 100 : 19; // confirmação ou nome manual
+  if (current === 49) return 50; // gospelPerspective → biblicalReference
+  if (current === 50) return 51; // biblicalReference → story
+  if (current === 51) return 52; // story → voiceType
+  if (current === 52) return 53; // voiceType → autoGenerateName
+  if (current === 53) {
+    return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação
   }
 }
 ```
 
----
-
-## Modificações na Edge Function generate-lyrics
-
-### System Prompt Especializado para Motivacional
-
-Quando `musicType === 'motivacional'`, injetar prompt especializado:
+### 5. Fallback Inteligente para Estilo Gospel
 
 ```typescript
-const motivationalSystemPrompt = `
-Você é um letrista profissional especializado em músicas motivacionais para superação, 
-disciplina, foco, performance, evolução pessoal e vitória.
+const getGospelStyleFallback = (context: string, intensity: string): string => {
+  // Adoração / Oração → Worship contemporâneo
+  if (['adoracao', 'oracao'].includes(context)) {
+    return 'worship';
+  }
+  
+  // Louvor + congregacional → Gospel congregacional
+  if (context === 'louvor' && intensity === 'congregacional') {
+    return 'congregacional';
+  }
+  
+  // Restauração / Cura → Acústico suave
+  if (['restauracao', 'esperanca'].includes(context) && intensity === 'suave') {
+    return 'acustico';
+  }
+  
+  // Default: Worship (mais versátil)
+  return 'worship';
+};
+```
 
-🧠 CONTEXTO DA MÚSICA:
-- Momento de uso: ${briefing.motivationalMoment || 'superacao'}
-- Emoção principal: ${briefing.emotion}
-- Intensidade: ${briefing.motivationalIntensity || 'crescente'}
-- Perspectiva: ${briefing.motivationalPerspective || 'primeira_pessoa'}
+### 6. Regra Obrigatória: Monólogo Inicial
 
-🎼 ESTRUTURA OBRIGATÓRIA:
-[Intro] - Instrumental ou ambientação
-[Verse 1] - Narrativa inicial
-[Chorus] - Refrão impactante e memorável
-[Verse 2] - Desenvolvimento
-${briefing.hasMonologue ? `[monologue] - Texto FALADO entre aspas (2-5 frases curtas, tom de mentor/treinador)` : '[Bridge] - Transição emocional'}
-[Chorus] - Repetição do refrão
-[Outro] - Encerramento épico
-${briefing.hasMonologue && briefing.monologuePosition === 'outro' ? `[monologue] - Mensagem final motivacional FALADA` : ''}
-[End]
+A música gospel SEMPRE começa com um monólogo espiritual no início do Verse 1. Isso será forçado no código:
 
-🔥 REGRAS DOS MONÓLOGOS MOTIVACIONAIS:
-- Entre 2 e 5 frases CURTAS
-- Linguagem DIRETA e FORTE
-- Tom de treinador, mentor ou voz interior
-- Incentivar: disciplina, continuidade, foco
-- EVITAR frases filosóficas vagas
-
-Exemplo de tom (NÃO copiar literalmente):
-"Continua.
-Mesmo cansado.
-É aqui que a força nasce."
-
-⚠️ REGRAS DE INTENSIDADE:
-${briefing.motivationalIntensity === 'calma' ? '- Frases LONGAS, tom INSPIRADOR, ritmo LENTO' : ''}
-${briefing.motivationalIntensity === 'crescente' ? '- Intro REFLEXIVA, refrão EXPLOSIVO, crescendo gradual' : ''}
-${briefing.motivationalIntensity === 'intensa' ? '- Alta energia do início ao fim' : ''}
-${briefing.motivationalIntensity === 'agressiva' ? '- Frases CURTAS, vocabulário FORTE, ritmo ACELERADO' : ''}
-
-⚠️ PERSPECTIVA:
-${briefing.motivationalPerspective === 'primeira_pessoa' ? '- Use "eu", "minha", "meu" - protagonista da própria história' : ''}
-${briefing.motivationalPerspective === 'mentor' ? '- Use "você", "sua", "seu" - como mentor falando com o ouvinte' : ''}
-${briefing.motivationalPerspective === 'universal' ? '- Mensagem ampla, aplicável a qualquer pessoa' : ''}
-`;
+```typescript
+// No handleOptionSelect, quando musicType === 'religiosa'
+if (field === 'musicType' && option.id === 'religiosa') {
+  setFormData(prev => ({
+    ...prev,
+    hasMonologue: true,
+    monologuePosition: 'intro' // Monólogo no início
+  }));
+}
 ```
 
 ---
@@ -255,14 +210,12 @@ ${briefing.motivationalPerspective === 'universal' ? '- Mensagem ampla, aplicáv
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/Briefing.tsx` | Adicionar steps 40-49, lógica de navegação motivacional, fallback de estilo |
-| `src/hooks/useBriefingTranslations.ts` | Adicionar todas as novas opções motivacionais |
-| `public/locales/pt-BR/briefing.json` | Traduções em português |
+| `src/pages/Briefing.tsx` | Adicionar steps 44-53, lógica de navegação, novos campos no formData |
+| `src/hooks/useBriefingTranslations.ts` | Adicionar todas as novas opções gospel |
+| `public/locales/pt-BR/briefing.json` | Traduções completas em português |
 | `public/locales/en/briefing.json` | Traduções em inglês |
 | `public/locales/es/briefing.json` | Traduções em espanhol |
 | `public/locales/it/briefing.json` | Traduções em italiano |
-| `supabase/functions/generate-lyrics/index.ts` | Prompt especializado para motivacional |
-| `supabase/functions/generate-style-prompt/index.ts` | Style prompt para estilos motivacionais |
 
 ---
 
@@ -271,72 +224,78 @@ ${briefing.motivationalPerspective === 'universal' ? '- Mensagem ampla, aplicáv
 ```json
 {
   "steps": {
-    "motivational": {
-      "intro": "💪 Vamos criar sua música motivacional!\n\nEsse tipo de música é perfeito para superação, treino, foco e conquistas.",
-      "moment": {
-        "question": "Para qual momento essa música será usada?",
-        "treino": "🏋️ Treino / Academia",
-        "treinoDesc": "Esforço físico, repetição, persistência",
-        "superacao": "🏆 Superação Pessoal",
-        "superacaoDesc": "Vencer obstáculos da vida",
-        "estudo": "📚 Estudo / Foco",
-        "estudoDesc": "Concentração, disciplina mental",
-        "trabalho": "💼 Trabalho / Produtividade",
-        "trabalhoDesc": "Metas profissionais, performance",
-        "recomeco": "🌅 Recomeço",
-        "recomecoDesc": "Levantar após dificuldades",
-        "disciplina": "⏰ Disciplina / Constância",
-        "disciplinaDesc": "Manter o foco diário"
+    "gospel": {
+      "intro": "✝️ Vamos criar sua música religiosa/gospel!\n\nEsse tipo de música é especial para adoração, louvor, oração e momentos de fé.",
+      "context": {
+        "question": "Qual é o contexto espiritual da sua música? 🙏",
+        "adoracao": "🙌 Adoração",
+        "adoracaoDesc": "Louvor íntimo a Deus",
+        "louvor": "🎶 Louvor",
+        "louvorDesc": "Celebração alegre",
+        "oracao": "🤲 Oração",
+        "oracaoDesc": "Conversa com Deus",
+        "confianca": "🛡️ Confiança em Deus",
+        "confiancaDesc": "Descanso na providência",
+        "esperanca": "🌅 Esperança",
+        "esperancaDesc": "Em tempos difíceis",
+        "gratidao": "💝 Gratidão",
+        "gratidaoDesc": "Agradecer bênçãos",
+        "restauracao": "💚 Restauração/Cura",
+        "restauracaoDesc": "Cura e renovação",
+        "consagracao": "🔥 Consagração",
+        "consagracaoDesc": "Entrega total"
       },
       "emotion": {
-        "question": "Qual emoção principal deve transmitir?",
-        "determinacao": "💪 Determinação",
-        "confianca": "🎯 Confiança",
-        "forcaInterior": "🔥 Força Interior",
-        "coragem": "🦁 Coragem",
-        "foco": "🧘 Foco Absoluto",
-        "vitoria": "🏆 Vitória / Conquista",
-        "superacaoDor": "⚡ Superação da Dor"
+        "question": "Qual emoção espiritual principal deve transmitir?",
+        "paz": "☮️ Paz",
+        "fe": "✝️ Fé",
+        "esperanca": "🌈 Esperança",
+        "quebrantamento": "💧 Quebrantamento",
+        "confianca": "🛡️ Confiança",
+        "alegria": "😊 Alegria Espiritual",
+        "reverencia": "🙇 Reverência"
       },
       "intensity": {
-        "question": "Qual a intensidade da música?",
-        "calma": "🌊 Calma e Inspiradora",
-        "calmaDesc": "Frases longas, tom reflexivo",
+        "question": "Qual a intensidade do canto?",
+        "suave": "🕯️ Suave e Contemplativa",
+        "suaveDesc": "Momento íntimo com Deus",
         "crescente": "📈 Crescente",
-        "crescenteDesc": "Começa calmo, explode no refrão",
-        "intensa": "🔥 Intensa",
-        "intensaDesc": "Alta energia do início ao fim",
-        "agressiva": "⚡ Agressiva / Energética",
-        "agressivaDesc": "Frases curtas, vocabulário forte"
+        "crescenteDesc": "Oração → Louvor → Adoração",
+        "congregacional": "🏛️ Intensa e Congregacional",
+        "congregacionalDesc": "Para cantar em comunidade",
+        "profetica": "🔥 Profética/Declarativa",
+        "profeticaDesc": "Declarações de fé e promessas"
       },
       "style": {
-        "question": "Qual estilo musical combina com sua motivação?",
-        "rock": "🎸 Rock Motivacional",
-        "rap": "🎤 Rap Motivacional",
-        "trap": "🔊 Trap Motivacional",
-        "hiphop": "🎧 Hip Hop Clássico",
-        "eletronica": "🎹 Eletrônica Épica",
-        "lofi": "🎵 Lo-fi Motivacional",
+        "question": "Qual estilo gospel combina com sua música?",
+        "worship": "🎹 Worship Contemporâneo",
+        "congregacional": "🏛️ Gospel Congregacional",
+        "tradicional": "📖 Gospel Tradicional",
+        "acustico": "🎸 Gospel Acústico",
+        "instrumentalCanto": "🎵 Adoração com Canto Instrumental",
         "auto": "🤖 Deixar o Sistema Escolher"
       },
       "narrative": {
-        "question": "Como você quer que a mensagem seja entregue?",
+        "question": "Como a mensagem deve ser entregue?",
         "cantada": "🎤 Toda Cantada",
-        "cantadaMonologue": "🎤 Cantada + Partes Faladas",
-        "maisFalada": "🗣️ Mais Falada que Cantada",
-        "narrador": "📢 Estilo Discurso Motivacional"
+        "leituras": "📖 Cantada com Leituras Bíblicas",
+        "monologos": "🙏 Cantada com Monólogos Espirituais",
+        "narrador": "📢 Narrador Reverente + Canto"
       },
       "perspective": {
         "question": "Qual a perspectiva da letra?",
-        "primeiraPessoa": "👤 Primeira Pessoa (eu)",
-        "primeiraPessoaDesc": "Eu sou o protagonista",
-        "mentor": "🧠 Mentor (você)",
-        "mentorDesc": "Falando com o ouvinte",
-        "universal": "🌍 Universal",
-        "universalDesc": "Mensagem ampla para todos"
+        "primeiraPessoa": "🙏 Primeira Pessoa",
+        "primeiraPessoaDesc": "Eu falo com Deus",
+        "congregacional": "🏛️ Congregacional",
+        "congregacionalDesc": "Nós (comunidade)",
+        "profetica": "🔥 Voz Profética",
+        "profeticaDesc": "Deus falando ao homem"
+      },
+      "biblicalReference": {
+        "question": "Tem alguma referência bíblica que gostaria de inspirar a letra? (opcional)\n\nExemplo: Salmo 23, versículos sobre fé, esperança...\n\n💡 A IA vai usar como inspiração poética, não citação literal."
       },
       "story": {
-        "question": "Conte o contexto da sua música motivacional! 💪\n\nPara quem é? Qual situação de superação? O que você quer transmitir?\n\n(Quanto mais detalhes, mais personalizada será a letra)"
+        "question": "Conte o contexto da sua música religiosa! 🙏\n\nPara quem é? Qual momento de fé? O que você quer transmitir?\n\n(Quanto mais detalhes, mais personalizada será a letra)"
       }
     }
   }
@@ -345,13 +304,33 @@ ${briefing.motivationalPerspective === 'universal' ? '- Mensagem ampla, aplicáv
 
 ---
 
+## Regras dos Monólogos Espirituais
+
+Cada `[monologue]` em músicas gospel deve:
+
+- Ter tom de **oração, leitura ou declaração bíblica**
+- Usar frases **curtas ou médias**
+- Transmitir **paz, fé, confiança e reverência**
+- **Nunca** soar como discurso motivacional comum
+- **Evitar** linguagem agressiva ou secular
+- Sempre começar a música (no Verse 1)
+
+Exemplo de tom esperado:
+```
+"O Senhor é minha força quando o medo chega.
+Nele descanso, mesmo em meio ao silêncio."
+```
+
+---
+
 ## Resultado Esperado
 
-1. Quando usuário seleciona "💪 Motivacional", ativa fluxo especializado
-2. Perguntas específicas para contexto motivacional (momento, intensidade, perspectiva)
-3. Fallback inteligente para estilo baseado em momento + intensidade
-4. Monólogos obrigatórios quando narrativa inclui fala
-5. Letras geradas com estrutura otimizada para Suno AI
-6. Monólogos com tom de mentor/treinador (frases curtas e diretas)
-7. Suporte completo a 4 idiomas
-
+1. Quando usuário seleciona "✝️ Religiosa", ativa fluxo gospel especializado
+2. Perguntas específicas para contexto espiritual (adoração, louvor, oração)
+3. Emoções espirituais únicas (paz, fé, quebrantamento, reverência)
+4. Fallback inteligente para estilo baseado em contexto + intensidade
+5. Monólogo inicial OBRIGATÓRIO com tom reverente
+6. Letras geradas com estrutura otimizada para Suno AI
+7. Perspectiva adequada (eu+Deus, nós, voz profética)
+8. Suporte completo a 4 idiomas
+9. Separação clara desse nicho para evitar conflitos de linguagem
