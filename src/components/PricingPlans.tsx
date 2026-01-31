@@ -23,7 +23,7 @@ interface PricingPlan {
 
 const PricingPlans = () => {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation('pricing');
+  const { t, i18n, ready } = useTranslation('pricing');
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -34,15 +34,18 @@ const PricingPlans = () => {
 
   // Get translated features for universal plans
   const getUniversalFeatures = (planId: string): string[] => {
-    const features = t(`universalFeatures.${planId}`, { returnObjects: true }) as string[];
-    if (Array.isArray(features)) return features;
+    const features = t(`vocalFeatures.${planId}`, { returnObjects: true });
+    if (Array.isArray(features) && features.length > 0 && typeof features[0] === 'string') {
+      return features as string[];
+    }
+    // Fallback with 24h delivery
     switch (planId) {
       case "single":
-        return ["1 universal credit", "Use for vocal, instrumental or custom lyrics", "Professional audio", "High quality", "Delivery within 48h"];
+        return ["1 universal credit", "Use for vocal, instrumental or custom lyrics", "Professional audio", "High quality", "Delivery within 24h"];
       case "package":
-        return ["3 universal credits", "Use for any type of music", "16% savings", "Professional audio", "VIP support"];
+        return ["3 universal credits", "Use for any type of music", "16% savings", "Professional audio", "Delivery within 24h", "VIP support"];
       case "subscription":
-        return ["5 universal credits", "Best value", "Premium quality", "Priority queue"];
+        return ["5 universal credits", "Best value", "Premium quality", "Delivery within 24h", "Priority queue"];
       default:
         return [];
     }
@@ -112,7 +115,7 @@ const PricingPlans = () => {
     navigate(`/briefing?${params.toString()}`);
   };
 
-  if (loading) {
+  if (loading || !ready) {
     return (
       <div className="section-spacing gradient-section" id="planos">
         <div className="max-w-7xl mx-auto text-center">

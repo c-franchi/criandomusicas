@@ -102,7 +102,7 @@ const Index = () => {
       <SEO 
         canonical="/"
         title="Músicas Personalizadas com IA"
-        description="Crie músicas personalizadas com inteligência artificial. Transforme sua história em uma canção única e emocionante. Presente perfeito para aniversário, casamento e datas especiais. Entrega em até 48h."
+        description="Crie músicas personalizadas com inteligência artificial. Transforme sua história em uma canção única e emocionante. Presente perfeito para aniversário, casamento e datas especiais. Entrega em até 24h."
         keywords="música personalizada, criar música com IA, presente criativo, música para aniversário, música para casamento, homenagem musical, música exclusiva"
       />
       <Hero />

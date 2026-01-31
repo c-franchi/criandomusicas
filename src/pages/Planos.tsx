@@ -192,6 +192,21 @@ const Planos = () => {
     return dbFeatures.length > 0 ? dbFeatures : [];
   };
 
+  // Get translated features for universal plans (single, package, subscription)
+  const getTranslatedFeatures = (planId: string): string[] => {
+    const translatedFeatures = t(`vocalFeatures.${planId}`, { returnObjects: true, defaultValue: [] });
+    if (Array.isArray(translatedFeatures) && translatedFeatures.length > 0 && typeof translatedFeatures[0] === 'string') {
+      return translatedFeatures as string[];
+    }
+    // Fallback to default features
+    const defaults: Record<string, string[]> = {
+      single: ['1 música completa', '2 letras personalizadas para escolher', 'Letra + áudio profissional', 'Alta qualidade', 'Entrega em até 24h'],
+      package: ['3 músicas completas', '2 letras personalizadas cada', 'Economia de 16%', 'Letra + áudio profissional', 'Alta qualidade', 'Entrega em até 24h', 'Suporte VIP'],
+      subscription: ['Até 5 músicas', '2 letras personalizadas cada', 'Letra + áudio profissional', 'Qualidade premium', 'Entrega em até 24h', 'Prioridade na fila']
+    };
+    return defaults[planId] || [];
+  };
+
   const getButtonText = (planId: string) => {
     const credits = getCreditsForPlan(planId);
     if (credits === 1) return t('cta');
@@ -385,7 +400,7 @@ const Planos = () => {
 
                   <CardContent className="flex-1 flex flex-col">
                     <ul className="space-y-4 mb-8 flex-1">
-                      {plan.features.map((feature, index) => (
+                      {getTranslatedFeatures(plan.id).map((feature, index) => (
                         <li key={index} className="flex items-start gap-3">
                           <div className="p-1 rounded-full bg-primary/20 mt-0.5">
                             <Check className="w-3 h-3 text-primary flex-shrink-0" />

@@ -88,6 +88,15 @@ const CreateSong = () => {
   // Auto-redirect to dashboard after complete
   useAutoRedirect(step, navigate);
 
+  // Back to home handler
+  const handleBackToHome = () => {
+    if (step === 'generating' || step === 'approved') {
+      // Don't allow leaving during generation
+      return;
+    }
+    navigate('/');
+  };
+
 
   // Carregar dados do briefing OU order existente (voucher flow)
   useEffect(() => {
@@ -649,9 +658,17 @@ const CreateSong = () => {
   // Loading state
   if (step === "loading" || step === "generating") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        {step === "loading" && (
+          <div className="absolute top-4 left-4">
+            <Button variant="ghost" onClick={handleBackToHome} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              {tc('backToHome')}
+            </Button>
+          </div>
+        )}
         <Card className="max-w-md w-full text-center p-8">
-          <MusicLoadingSpinner 
+          <MusicLoadingSpinner
             size="lg" 
             message={step === "generating" ? t('createSong.generatingLyrics') : tc('loading')}
             description={step === "generating" 
@@ -669,6 +686,14 @@ const CreateSong = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-6xl mx-auto">
+          {/* Back to home button */}
+          <div className="mb-6">
+            <Button variant="ghost" onClick={handleBackToHome} className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              {tc('backToHome')}
+            </Button>
+          </div>
+          
           {/* Header */}
           <div className="text-center mb-8">
             <Badge className="mb-4">{t('createSong.step1of2')}</Badge>
