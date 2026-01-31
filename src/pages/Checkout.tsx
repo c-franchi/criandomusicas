@@ -664,12 +664,66 @@ export default function Checkout() {
       }
 
       toast.success(t('toast.creditUsed'));
-      
-      // Trigger generation and redirect based on order type
+
+      // CRITICAL: Fetch full order data for generation
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('*')
+        .eq('id', order.id)
+        .single();
+
       const isInstrumental = order.is_instrumental === true;
-      
+      const hasCustomLyric = order.has_custom_lyric === true;
+
+      // Build briefing and trigger generation (same logic as Briefing.tsx and VIP flow)
+      if (orderData) {
+        const briefing = {
+          musicType: orderData.music_type || 'homenagem',
+          emotion: orderData.emotion || 'alegria',
+          emotionIntensity: orderData.emotion_intensity || 3,
+          style: orderData.music_style || 'pop',
+          rhythm: orderData.rhythm || 'moderado',
+          atmosphere: orderData.atmosphere || 'festivo',
+          structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+          hasMonologue: orderData.has_monologue || false,
+          monologuePosition: orderData.monologue_position || 'bridge',
+          mandatoryWords: orderData.mandatory_words || '',
+          restrictedWords: orderData.restricted_words || '',
+          voiceType: orderData.voice_type || 'feminina',
+          instruments: orderData.instruments || [],
+          soloInstrument: orderData.solo_instrument || null,
+          soloMoment: orderData.solo_moment || null,
+          instrumentationNotes: orderData.instrumentation_notes || ''
+        };
+
+        try {
+          if (isInstrumental) {
+            // Instrumental: generate style prompt directly
+            toast.info(t('toast.preparingInstrumental'));
+            await supabase.functions.invoke('generate-style-prompt', {
+              body: { orderId: order.id, isInstrumental: true, briefing }
+            });
+            navigate('/dashboard');
+            return;
+          } else if (hasCustomLyric) {
+            // Custom lyric: already has text, go to approval
+            navigate(`/criar-musica?orderId=${order.id}`);
+            return;
+          } else {
+            // Vocal: GENERATE LYRICS VIA AI
+            toast.info(t('toast.generatingLyrics'));
+            await supabase.functions.invoke('generate-lyrics', {
+              body: { orderId: order.id, story: orderData.story, briefing }
+            });
+          }
+        } catch (genError) {
+          console.error('Credit generation error:', genError);
+          // Continue to redirect even if generation fails
+        }
+      }
+
+      // Redirect based on order type
       if (isInstrumental) {
-        toast.info(t('toast.preparingInstrumental'));
         navigate('/dashboard');
       } else {
         navigate(`/criar-musica?orderId=${order.id}`);
@@ -688,16 +742,18 @@ export default function Checkout() {
     return 'vocal';
   };
 
-  // Check if active package is compatible with order type
+  // Check if credits are compatible with order type
+  // Uses totalVocal/totalInstrumental to support both packages AND subscriptions
   const isCreditsCompatible = (): boolean => {
-    if (!activePackage || !order) return false;
-    const creditType = activePackage.plan_id.includes('instrumental') ? 'instrumental' : 'vocal';
+    if (!order) return false;
     const orderType = getOrderType();
     
-    if (creditType === 'instrumental') {
-      return orderType === 'instrumental';
+    // Check by available credit type (works for packages AND subscriptions)
+    if (orderType === 'instrumental') {
+      return totalInstrumental > 0;
     }
-    return orderType === 'vocal' || orderType === 'custom_lyric';
+    // Vocal and custom_lyric use vocal credits
+    return totalVocal > 0;
   };
 
   if (authLoading || vipLoading || loading || processingVIP) {
