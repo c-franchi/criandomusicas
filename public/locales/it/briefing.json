@@ -624,12 +624,17 @@
   },
   "quickCreation": {
     "title": "Creazione Rapida",
+    "pageTitle": "Crea musica con IA",
     "promptLabel": "Descrivi la tua musica",
-    "promptPlaceholder": "Racconta la storia, i personaggi, i momenti speciali... o incolla il tuo testo qui!",
+    "promptPlaceholder": "Scrivi il tuo prompt o testo...",
     "reset": "Ricomincia",
     "instrumental": "Strumentale",
     "genreLabel": "Genere Musicale",
+    "genreTitle": "Generi musicali",
+    "addGenre": "Aggiungi altro genere",
+    "addGenrePlaceholder": "Es: Lo-fi, Funk, K-pop...",
     "voiceLabel": "Tipo di Voce",
+    "voiceTitle": "Tipo vocale",
     "createButton": "Crea Musica",
     "hint": "L'IA completerà i dettagli automaticamente",
     "switchToDetailed": "Preferisci creare con più dettagli?"
