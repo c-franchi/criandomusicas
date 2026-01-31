@@ -290,13 +290,12 @@ const Briefing = () => {
   const [stepHistory, setStepHistory] = useState<number[]>([]);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [pendingFinish, setPendingFinish] = useState(false);
-  const [showCreditModal, setShowCreditModal] = useState(false);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
-  const [availableCredits, setAvailableCredits] = useState(0);
-  const [isUsingCredit, setIsUsingCredit] = useState(false);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isEditingSingleField, setIsEditingSingleField] = useState(false);
   const [editingFieldStep, setEditingFieldStep] = useState<number | null>(null);
+  const [isQuickMode, setIsQuickMode] = useState(false);
+  const [showNoCreditModal, setShowNoCreditModal] = useState(false);
   
   const initialFormData: BriefingFormData = {
     isInstrumental: false,
@@ -2155,19 +2154,35 @@ const Briefing = () => {
       });
       
       if (creditsData?.has_credits && creditsData?.total_available > 0) {
-        // Mostrar modal de confirmação ao invés de usar automaticamente
-        setPendingOrderId(orderData.id);
-        setAvailableCredits(creditsData.total_available);
+        // Consumir crédito automaticamente SEM modal
+        const result = await supabase.functions.invoke('use-credit', {
+          body: { orderId: orderData.id }
+        });
+        
+        if (result.error || !result.data?.success) {
+          // Erro ao usar crédito, ir para checkout
+          console.error('Error using credit:', result.error || result.data?.error);
+          const planId = selectedPlanId || 'single';
+          navigate(`/checkout/${orderData.id}?planId=${planId}`);
+          setIsCreatingOrder(false);
+          return;
+        }
+        
+        // Crédito consumido! Processar baseado no modo
+        toast({
+          title: '✨ Crédito utilizado!',
+          description: 'Gerando sua música...',
+        });
+        
+        await processOrderAfterCredit(orderData.id, briefingData);
         setIsCreatingOrder(false);
-        setShowCreditModal(true);
         return;
       }
 
-      // Sem créditos compatíveis, ir para checkout com planId correto
-      const planId = selectedPlanId || 'single';
-      
-      // Redirecionar para checkout com planId
-      navigate(`/checkout/${orderData.id}?planId=${planId}`);
+      // Sem créditos - mostrar modal para ir ao checkout
+      setPendingOrderId(orderData.id);
+      setIsCreatingOrder(false);
+      setShowNoCreditModal(true);
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
@@ -2179,143 +2194,119 @@ const Briefing = () => {
     }
   };
 
-  // Handler para usar crédito do modal
-  const handleUseCredit = async () => {
-    if (!pendingOrderId) return;
-    
-    setIsUsingCredit(true);
+  // Função para processar ordem após consumo do crédito
+  const processOrderAfterCredit = async (orderId: string, briefing: {
+    isInstrumental: boolean;
+    hasCustomLyric?: boolean;
+    story?: string;
+    musicType?: string;
+    emotion?: string;
+    emotionIntensity?: number;
+    style?: string;
+    rhythm?: string;
+    atmosphere?: string;
+    voiceType?: string;
+    hasMonologue?: boolean;
+    monologuePosition?: string;
+    mandatoryWords?: string;
+    restrictedWords?: string;
+    structure?: string[];
+    [key: string]: any;
+  }) => {
     try {
-      const { data: useCreditResult, error: useCreditError } = await supabase.functions.invoke('use-credit', {
-        body: { orderId: pendingOrderId }
-      });
-
-      if (useCreditError || !useCreditResult?.success) {
-        console.error('Error using credit:', useCreditError || useCreditResult?.error);
-        toast({
-          title: 'Erro ao usar crédito',
-          description: 'Ocorreu um erro. Você será redirecionado para o checkout.',
-          variant: 'destructive'
+      if (briefing.isInstrumental) {
+        // Instrumental: gerar style prompt e ir para dashboard
+        console.log('Generating style prompt for instrumental order...');
+        await supabase.functions.invoke('generate-style-prompt', {
+          body: {
+            orderId,
+            isInstrumental: true,
+            briefing: {
+              ...briefing,
+              instruments: formData.instruments || [],
+              soloInstrument: formData.soloInstrument || null,
+              soloMoment: formData.soloMoment || null,
+              instrumentationNotes: formData.instrumentationNotes || ''
+            }
+          }
         });
-        // Se falhar, ir para checkout
-        const planId = selectedPlanId || 'single';
-        navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
-        return;
-      }
-
-      // Crédito usado com sucesso! Agora gerar conteúdo
-      toast({
-        title: '✨ Crédito utilizado!',
-        description: 'Gerando sua música...',
-      });
-
-      // Buscar dados do pedido para gerar conteúdo
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', pendingOrderId)
-        .single();
-
-      if (orderError || !orderData) {
-        console.error('Error fetching order:', orderError);
-        // Ainda redireciona, CreateSong vai fazer polling
+        toast({
+          title: '🎹 Música instrumental em produção!',
+          description: 'Você pode acompanhar o progresso no dashboard.',
+        });
         clearSavedBriefing();
-        navigate(`/criar-musica?orderId=${pendingOrderId}`);
-        return;
-      }
-
-      // Construir briefing a partir dos dados do pedido
-      const briefingData = {
-        musicType: orderData.music_type || 'homenagem',
-        emotion: orderData.emotion || 'alegria',
-        emotionIntensity: orderData.emotion_intensity || 3,
-        style: orderData.music_style || 'pop',
-        rhythm: orderData.rhythm || 'moderado',
-        atmosphere: orderData.atmosphere || 'festivo',
-        structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
-        hasMonologue: orderData.has_monologue || false,
-        monologuePosition: orderData.monologue_position || 'bridge',
-        mandatoryWords: orderData.mandatory_words || '',
-        restrictedWords: orderData.restricted_words || '',
-        voiceType: orderData.voice_type || 'feminina',
-        songName: orderData.song_title || '',
-        autoGenerateName: !orderData.song_title
-      };
-
-      try {
-        if (orderData.is_instrumental) {
-          // Instrumental: gerar style prompt diretamente
-          console.log('Generating style prompt for instrumental order...');
+        navigate('/dashboard');
+      } else if (isQuickMode) {
+        // MODO RÁPIDO: gerar letra + aprovar automaticamente
+        toast({
+          title: '✨ Gerando sua música...',
+          description: 'Isso pode levar alguns segundos.',
+        });
+        
+        // 1. Gerar letras
+        console.log('Generating lyrics for quick mode...');
+        await supabase.functions.invoke('generate-lyrics', {
+          body: {
+            orderId,
+            story: briefing.story,
+            briefing
+          }
+        });
+        
+        // 2. Aguardar um pouco e pegar primeira letra gerada
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const { data: lyricsData } = await supabase
+          .from('lyrics')
+          .select('*')
+          .eq('order_id', orderId)
+          .order('created_at', { ascending: true })
+          .limit(1);
+        
+        if (lyricsData?.[0]) {
+          // 3. Aprovar automaticamente
+          console.log('Auto-approving first lyric...');
           await supabase.functions.invoke('generate-style-prompt', {
             body: {
-              orderId: pendingOrderId,
-              isInstrumental: true,
-              briefing: {
-                ...briefingData,
-                instruments: orderData.instruments || [],
-                soloInstrument: orderData.solo_instrument || null,
-                soloMoment: orderData.solo_moment || null,
-                instrumentationNotes: orderData.instrumentation_notes || ''
-              }
+              orderId,
+              lyricId: lyricsData[0].id,
+              approvedLyrics: lyricsData[0].body,
+              songTitle: lyricsData[0].title || 'Música Personalizada',
+              briefing
             }
           });
-          toast({
-            title: '🎹 Música instrumental em produção!',
-            description: 'Você pode acompanhar o progresso no dashboard.',
-          });
-          clearSavedBriefing();
-          navigate('/dashboard');
-        } else if (orderData.has_custom_lyric) {
-          // Letra própria: verificar se já tem style_prompt customizado
-          if (orderData.style_prompt) {
-            // Tem style pronto, redirecionar direto para aprovação
-            console.log('Custom lyric order with style prompt - redirecting to approval...');
-            toast({
-              title: '📝 Letra pronta para revisão!',
-              description: 'Revise e aprove sua letra para continuar.',
-            });
-          } else {
-            // Não tem style pronto, precisa gerar
-            console.log('Custom lyric order without style prompt - redirecting to approval...');
-            toast({
-              title: '📝 Letra pronta para revisão!',
-              description: 'Revise e aprove sua letra para continuar.',
-            });
-          }
-          clearSavedBriefing();
-          navigate(`/criar-musica?orderId=${pendingOrderId}`);
         } else {
-          // Vocal: gerar letras via IA
-          console.log('Generating lyrics for vocal order...');
-          await supabase.functions.invoke('generate-lyrics', {
-            body: {
-              orderId: pendingOrderId,
-              story: orderData.story,
-              briefing: briefingData
-            }
-          });
-          clearSavedBriefing();
-          navigate(`/criar-musica?orderId=${pendingOrderId}`);
+          console.log('No lyrics found yet, redirecting to dashboard anyway...');
         }
-      } catch (genError) {
-        console.error('Generation error:', genError);
-        // Ainda redireciona, CreateSong vai fazer polling
+        
+        toast({
+          title: '🎵 Música em produção!',
+          description: 'Acompanhe o progresso no dashboard.',
+        });
         clearSavedBriefing();
-        if (orderData.is_instrumental) {
-          navigate('/dashboard');
-        } else {
-          navigate(`/criar-musica?orderId=${pendingOrderId}`);
-        }
+        navigate('/dashboard');
+      } else {
+        // Modo detalhado: gerar letras e ir para página de revisão
+        console.log('Generating lyrics for detailed mode...');
+        await supabase.functions.invoke('generate-lyrics', {
+          body: {
+            orderId,
+            story: briefing.story,
+            briefing
+          }
+        });
+        clearSavedBriefing();
+        navigate(`/criar-musica?orderId=${orderId}`);
       }
     } catch (error) {
-      console.error('Error using credit:', error);
-      toast({
-        title: 'Erro ao usar crédito',
-        description: 'Tente novamente.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsUsingCredit(false);
-      setShowCreditModal(false);
+      console.error('Error processing order after credit:', error);
+      // Em caso de erro, redirecionar para dashboard ou criar-musica
+      clearSavedBriefing();
+      if (briefing.isInstrumental || isQuickMode) {
+        navigate('/dashboard');
+      } else {
+        navigate(`/criar-musica?orderId=${orderId}`);
+      }
     }
   };
 
@@ -2324,7 +2315,7 @@ const Briefing = () => {
     if (!pendingOrderId) return;
     
     const planId = selectedPlanId || 'single';
-    setShowCreditModal(false);
+    setShowNoCreditModal(false);
     navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
   };
 
@@ -2415,12 +2406,14 @@ const Briefing = () => {
     if (planId.includes('instrumental')) {
       setSelectedPlanId(planId);
       setShowPlanSelection(false);
+      setIsQuickMode(false); // Modo detalhado
       setFormData(prev => ({ ...prev, isInstrumental: true }));
       setCurrentStep(1);
       addBotMessage(chatFlow[1]);
     } else if (planId.includes('custom_lyric')) {
       setSelectedPlanId(planId);
       setShowPlanSelection(false);
+      setIsQuickMode(false); // Modo detalhado
       setFormData(prev => ({ ...prev, hasCustomLyric: true }));
       setCurrentStep(22);
       addBotMessage(chatFlow[22]);
@@ -2435,6 +2428,7 @@ const Briefing = () => {
   // Handler para ir para modo detalhado
   const handleSwitchToDetailed = () => {
     setCreationMode('detailed');
+    setIsQuickMode(false); // Modo detalhado
     // Iniciar chat normal
     addBotMessage(chatFlow[0]);
   };
@@ -2447,6 +2441,7 @@ const Briefing = () => {
       story: data.prompt,
       isInstrumental: data.isInstrumental,
       style: data.style,
+      customStyle: data.additionalGenre || '',
       voiceType: data.voiceType || '',
       musicType: 'homenagem', // Default para criação rápida
       emotion: 'amor',        // Default para criação rápida
@@ -2457,6 +2452,7 @@ const Briefing = () => {
     };
     
     setFormData(newFormData);
+    setIsQuickMode(true); // Marcar como modo rápido
     setCreationMode(null);
     
     // Ir direto para confirmação
@@ -3812,75 +3808,28 @@ const Briefing = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal de Confirmação de Créditos */}
-      <Dialog open={showCreditModal} onOpenChange={setShowCreditModal}>
+      {/* Modal de Créditos Insuficientes */}
+      <Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
-              <Sparkles className="w-5 h-5 text-primary" />
-              Você tem créditos disponíveis!
+              <AlertCircle className="w-5 h-5 text-amber-500" />
+              {t('noCreditModal.title', 'Créditos insuficientes')}
             </DialogTitle>
             <DialogDescription className="pt-2">
-              {/* Show credit type info */}
-              {formData.isInstrumental ? (
-                <span>
-                  Você possui <span className="font-bold text-purple-500 inline-flex items-center gap-1">
-                    <Piano className="w-4 h-4" />{availableCredits} instrumental{availableCredits !== 1 ? 'is' : ''}
-                  </span> disponível{availableCredits !== 1 ? 'is' : ''} no seu pacote.
-                </span>
-              ) : (
-                <span>
-                  Você possui <span className="font-bold text-primary inline-flex items-center gap-1">
-                    <Mic className="w-4 h-4" />{availableCredits} vocal{availableCredits !== 1 ? 'is' : ''}
-                  </span> disponível{availableCredits !== 1 ? 'is' : ''} no seu pacote.
-                </span>
-              )}
+              {t('noCreditModal.description', 'Você não possui créditos disponíveis para criar esta música.')}
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">
-              Deseja usar um crédito {formData.isInstrumental ? 'instrumental' : 'vocal'} para criar esta música ou prefere comprar um novo pacote?
+              {t('noCreditModal.message', 'Adquira um pacote ou assinatura para continuar criando músicas.')}
             </p>
             
-            <div className="grid gap-3">
-              <Button 
-                onClick={handleUseCredit} 
-                disabled={isUsingCredit}
-                className={`w-full h-auto py-4 flex flex-col items-start gap-1 ${
-                  formData.isInstrumental ? 'bg-purple-600 hover:bg-purple-500' : ''
-                }`}
-              >
-                <div className="flex items-center gap-2 w-full">
-                  {isUsingCredit ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : formData.isInstrumental ? (
-                    <Piano className="w-5 h-5" />
-                  ) : (
-                    <Mic className="w-5 h-5" />
-                  )}
-                  <span className="font-semibold">Usar 1 crédito {formData.isInstrumental ? 'instrumental' : 'vocal'}</span>
-                </div>
-                <span className="text-xs opacity-80 ml-7">
-                  Restará {availableCredits - 1} {formData.isInstrumental ? 'instrumental' : 'vocal'}{availableCredits - 1 !== 1 ? 'is' : ''} no pacote
-                </span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={handleGoToCheckout}
-                disabled={isUsingCredit}
-                className="w-full h-auto py-4 flex flex-col items-start gap-1"
-              >
-                <div className="flex items-center gap-2 w-full">
-                  <CreditCard className="w-5 h-5" />
-                  <span className="font-semibold">Ir para checkout</span>
-                </div>
-                <span className="text-xs opacity-80 ml-7">
-                  Comprar novo pacote ou música avulsa
-                </span>
-              </Button>
-            </div>
+            <Button onClick={handleGoToCheckout} className="w-full">
+              <CreditCard className="w-5 h-5 mr-2" />
+              {t('noCreditModal.buyButton', 'Ver opções de compra')}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

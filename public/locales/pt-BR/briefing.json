@@ -658,5 +658,11 @@
     "createButton": "Criar Música",
     "hint": "A IA vai completar os detalhes automaticamente",
     "switchToDetailed": "Prefere criar com mais detalhes?"
+  },
+  "noCreditModal": {
+    "title": "Créditos insuficientes",
+    "description": "Você não possui créditos disponíveis para criar esta música.",
+    "message": "Adquira um pacote ou assinatura para continuar criando músicas.",
+    "buyButton": "Ver opções de compra"
   }
 }
