@@ -1,11 +1,24 @@
 import { useTranslation } from "react-i18next";
-import { Music } from "lucide-react";
+import { Music, Sparkles } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { APP_VERSION } from "@/lib/version";
+import { useState, useEffect } from "react";
 
 const Footer = () => {
   const { t } = useTranslation('home');
   const navigate = useNavigate();
+  const [hasCelebration, setHasCelebration] = useState(false);
+
+  // Check if there's a celebration available
+  useEffect(() => {
+    const checkCelebration = () => {
+      setHasCelebration(!!(window as any).__hasCelebration);
+    };
+    checkCelebration();
+    // Re-check periodically in case Index.tsx loads after Footer
+    const interval = setInterval(checkCelebration, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     if (window.location.pathname === '/') {
@@ -15,6 +28,12 @@ const Footer = () => {
       setTimeout(() => {
         document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
+    }
+  };
+
+  const handleOpenCelebration = () => {
+    if ((window as any).__reopenCelebration) {
+      (window as any).__reopenCelebration();
     }
   };
 
@@ -60,6 +79,18 @@ const Footer = () => {
                   {t('footer.pricing')}
                 </Link>
               </li>
+              {/* Discreet celebration link - only show on homepage with active celebration */}
+              {hasCelebration && window.location.pathname === '/' && (
+                <li>
+                  <button 
+                    onClick={handleOpenCelebration}
+                    className="hover:text-primary transition-colors text-left inline-flex items-center gap-1.5 text-sm"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    {t('footer.specialDates', 'Datas especiais')}
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
           
