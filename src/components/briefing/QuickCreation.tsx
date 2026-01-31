@@ -20,6 +20,7 @@ export interface QuickCreationData {
 interface QuickCreationProps {
   onSubmit: (data: QuickCreationData) => void;
   onBack: () => void;
+  onSwitchToDetailed: () => void;
   styleOptions: { id: string; label: string }[];
   voiceOptions: { id: string; label: string }[];
 }
@@ -27,6 +28,7 @@ interface QuickCreationProps {
 export const QuickCreation = ({ 
   onSubmit, 
   onBack,
+  onSwitchToDetailed,
   styleOptions,
   voiceOptions 
 }: QuickCreationProps) => {
@@ -177,7 +179,7 @@ export const QuickCreation = ({
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-border/50 bg-background/80 backdrop-blur-sm">
+      <div className="p-4 border-t border-border/50 bg-background/80 backdrop-blur-sm space-y-3">
         <Button
           onClick={handleSubmit}
           disabled={!isValid}
@@ -189,9 +191,12 @@ export const QuickCreation = ({
           {t('quickCreation.createButton')}
         </Button>
         
-        <p className="text-xs text-center text-muted-foreground mt-2">
-          {t('quickCreation.hint')}
-        </p>
+        <button
+          onClick={onSwitchToDetailed}
+          className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+        >
+          {t('quickCreation.switchToDetailed', 'Prefere criar com mais detalhes?')}
+        </button>
       </div>
     </div>
   );

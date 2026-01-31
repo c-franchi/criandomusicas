@@ -17,7 +17,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
-import { ModeSelector } from "@/components/briefing/ModeSelector";
 import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
@@ -246,8 +245,6 @@ const Briefing = () => {
   
   // Creation mode state (quick vs detailed)
   const [creationMode, setCreationMode] = useState<'quick' | 'detailed' | null>(null);
-  const [showModeSelector, setShowModeSelector] = useState(false);
-  const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
   
   // Celebration banner state - check localStorage for dismissed state
   const CELEBRATION_DISMISS_KEY = 'celebration_dismissed_date';
@@ -2429,24 +2426,18 @@ const Briefing = () => {
       setCurrentStep(22);
       addBotMessage(chatFlow[22]);
     } else {
-      // Para músicas vocais, mostrar seletor de modo (rápido vs detalhado)
-      setPendingPlanId(planId);
-      setShowModeSelector(true);
+      // Para músicas vocais, ir direto para criação rápida
+      setSelectedPlanId(planId);
+      setCreationMode('quick');
       setShowPlanSelection(false);
     }
   };
 
-  // Handler para selecionar modo de criação
-  const handleModeSelection = (mode: 'quick' | 'detailed') => {
-    setCreationMode(mode);
-    setShowModeSelector(false);
-    setSelectedPlanId(pendingPlanId);
-    
-    if (mode === 'detailed') {
-      // Modo detalhado - iniciar chat normal
-      addBotMessage(chatFlow[0]);
-    }
-    // Modo rápido - renderiza QuickCreation
+  // Handler para ir para modo detalhado
+  const handleSwitchToDetailed = () => {
+    setCreationMode('detailed');
+    // Iniciar chat normal
+    addBotMessage(chatFlow[0]);
   };
 
   // Handler para criação rápida
@@ -2476,7 +2467,7 @@ const Briefing = () => {
   // Handler para voltar do modo rápido
   const handleQuickCreationBack = () => {
     setCreationMode(null);
-    setShowModeSelector(true);
+    setShowPlanSelection(true);
     setSelectedPlanId(null);
   };
 
@@ -2790,38 +2781,6 @@ const Briefing = () => {
     );
   }
 
-  // Tela de seleção de modo (Rápido vs Detalhado)
-  if (showModeSelector) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
-        <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
-          <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => {
-              setShowModeSelector(false);
-              setShowPlanSelection(true);
-              setPendingPlanId(null);
-            }} className="mr-1">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <Music className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="font-semibold">{t('title')}</h1>
-              <p className="text-sm text-muted-foreground">🎤 {t('confirmation.vocalBadge')}</p>
-            </div>
-          </div>
-        </header>
-
-        <div className="flex-1 overflow-y-auto">
-          <div className="max-w-lg mx-auto px-4 py-6">
-            <ModeSelector onSelectMode={handleModeSelection} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Tela de Criação Rápida
   if (creationMode === 'quick') {
     return (
@@ -2829,6 +2788,7 @@ const Briefing = () => {
         <QuickCreation
           onSubmit={handleQuickCreationSubmit}
           onBack={handleQuickCreationBack}
+          onSwitchToDetailed={handleSwitchToDetailed}
           styleOptions={styleOptions}
           voiceOptions={voiceTypeOptions}
         />
