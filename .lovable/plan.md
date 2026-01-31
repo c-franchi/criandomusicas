@@ -1,105 +1,351 @@
 
-# Plano: Corrigir Fluxo de Eventos/Celebrações
+# Plano: Fluxo Completo de Trilha Sonora / Instrumental Cinematográfico
 
-## Problema Identificado
-Quando o usuário clica no banner de celebração na homepage (ex: Carnaval), o sistema navega para `/briefing?celebration=...&celebrationName=...&celebrationEmoji=...`, mas a lógica de inicialização do Briefing não detecta esses parâmetros e exibe a tela de seleção de pacotes em vez de ir direto para o modal de tipo de música da celebração.
+## Visão Geral
 
-## Solução
+Criar um fluxo especializado para **Trilha Sonora** (índices 70-79 no chatFlow) que é totalmente separado do instrumental genérico. Este fluxo é otimizado para produção de música para vídeos, filmes, jogos, podcasts e outros usos profissionais.
 
-### Alteração Principal
-**Arquivo:** `src/pages/Briefing.tsx`
+## Escopo das Mudanças
 
-Modificar o `useEffect` de inicialização (linhas ~342-407) para detectar parâmetros de celebração e pular a seleção de pacotes:
+### 1. Novas Propriedades no BriefingFormData
 
-```text
-ANTES:
-  1. Verifica 'type' → Pula seleção de plano
-  2. Verifica 'planId' → Usa plano definido
-  3. Se nenhum → Mostra seleção de pacotes ❌
-
-DEPOIS:
-  1. Verifica 'type' → Pula seleção de plano
-  2. Verifica 'celebration' → Abre modal de tipo direto ✅
-  3. Verifica 'planId' → Usa plano definido  
-  4. Se nenhum → Mostra seleção de pacotes
+```typescript
+// Campos para Trilha Sonora/Cinematográfico
+soundtrackUsage?: string;        // video_institucional, filme, trailer, jogo, podcast, redes_sociais, meditacao, ambiente
+soundtrackEmotion?: string;      // suspense, drama, inspiracao, tensao, acao, paz, misterio, alegria
+soundtrackDynamics?: string;     // constante, crescente, crescente_climax, ondulada, minimalista
+soundtrackStyle?: string;        // epico, emocional, eletronica_ambiente, orquestral, piano_solo, ambient, lofi, auto
+soundtrackRhythm?: string;       // lento, medio, rapido, variavel
+soundtrackVoice?: string;        // instrumental, vocalizacoes, monologoFalado, voz_eterea
+soundtrackScene?: string;        // descrição da cena (opcional)
+soundtrackLanguage?: string;     // pt, en, es (se houver voz)
 ```
 
-### Fluxo Atualizado
+### 2. Estrutura do Fluxo (8 Camadas)
 
 ```text
-[Homepage] 
-    ↓ Clique no banner "Criar música de Carnaval"
+[Step 1] Tipo de Uso (obrigatório)
     ↓
-[/briefing?celebration=xxx&celebrationName=Carnaval&celebrationEmoji=🎭]
+[Step 70] soundtrackUsage
+    - 📹 Vídeo Institucional
+    - 🎬 Filme / Curta
+    - 🎭 Trailer / Teaser
+    - 🎮 Jogo
+    - 🎙️ Podcast
+    - 📱 Vídeo Redes Sociais
+    - 🧘 Meditação / Relaxamento
+    - 🏢 Ambiente (loja, evento)
+
+[Step 2] Emoção Principal (obrigatório)
     ↓
-[Detectar parâmetros de celebração]
+[Step 71] soundtrackEmotion
+    - 😰 Suspense
+    - 🎭 Drama / Emoção
+    - ✨ Inspiração / Esperança
+    - ⚡ Tensão
+    - 🔥 Ação / Energia
+    - 🕊️ Paz / Relaxamento
+    - 🌙 Mistério
+    - 😊 Alegria
+
+[Step 3] Dinâmica/Evolução
     ↓
-[Abrir Modal: Vocal | Instrumental | Letra Própria]
-    ↓ Seleção do tipo
-[Pré-preencher dados da celebração]
+[Step 72] soundtrackDynamics
+    - ➡️ Constante (mesmo clima)
+    - 📈 Crescente (build-up)
+    - 🎯 Crescente com Clímax
+    - 🌊 Ondulada (sobe e desce)
+    - 🍃 Minimalista
+
+[Step 4] Estilo Musical
     ↓
-[Iniciar chat no step correto (10, 2, ou 22)]
+[Step 73] soundtrackStyle
+    - 🏔️ Cinemática Épica
+    - 💔 Cinemática Emocional
+    - 🎹 Eletrônica Ambiente
+    - 🎻 Orquestral
+    - 🎹 Piano Solo
+    - 🌌 Ambient / Drone
+    - 🎧 Lo-fi Instrumental
+    - 🤖 Deixar Sistema Escolher
+
+[Step 5] Ritmo/Velocidade
+    ↓
+[Step 74] soundtrackRhythm
+    - 🐢 Lento
+    - 🚶 Médio
+    - 🏃 Rápido
+    - 🔄 Variável
+
+[Step 6] Presença de Voz
+    ↓
+[Step 75] soundtrackVoice
+    - 🎵 Totalmente Instrumental
+    - 🎤 Apenas Vocalizações (ahh, hum)
+    - 🗣️ Voz Falada / Monólogo
+    - ✨ Voz Etérea (sem palavras)
+
+[Step 7] Descrição da Cena (opcional)
+    ↓
+[Step 76] soundtrackScene (textarea)
+    - "herói caminhando sozinho"
+    - "paisagem ao amanhecer"
+    - "tensão antes da decisão"
+
+[Step 8] Idioma (se houver voz)
+    ↓
+[Step 77] soundtrackLanguage (condicional)
+    - 🇧🇷 Português
+    - 🇺🇸 Inglês
+    - 🇪🇸 Espanhol
+
+[Step 9] Nome Automático?
+    ↓
+[Step 78] autoGenerateName
+    - 🤖 Deixar a IA criar
+    - ✍️ Eu quero escolher
 ```
 
-### Implementação Detalhada
+### 3. Arquivos a Criar/Modificar
 
-1. **Buscar celebração pelo ID** (já existente na base):
-   - Usar o ID da URL para buscar dados completos da celebração
-   - Preencher `selectedCelebration` com dados do banco
+| Arquivo | Ação | Descrição |
+|---------|------|-----------|
+| `src/pages/Briefing.tsx` | Modificar | Adicionar campos no BriefingFormData, steps 70-78 no chatFlow, lógica getNextStep |
+| `src/hooks/useBriefingTranslations.ts` | Modificar | Adicionar opções e mensagens traduzidas para trilha sonora |
+| `public/locales/pt-BR/briefing.json` | Modificar | Traduções PT-BR completas |
+| `public/locales/en/briefing.json` | Modificar | Traduções EN completas |
+| `public/locales/es/briefing.json` | Modificar | Traduções ES completas |
+| `public/locales/it/briefing.json` | Modificar | Traduções IT completas |
+| `src/assets/briefing/soundtrack/` | Criar | Pasta com imagens para os cards visuais |
+| `src/assets/briefing/index.ts` | Modificar | Exportar novas imagens de trilha sonora |
 
-2. **Mostrar modal de tipo diretamente**:
-   - Definir `showCelebrationTypeModal = true`
-   - Não mostrar `showPlanSelection`
-   - O modal já existe e funciona (`handleCelebrationTypeSelect`)
+### 4. Assets Visuais Necessários
 
-3. **Manter dados da URL para contexto**:
-   - O `celebrationName` e `celebrationEmoji` da URL podem ser usados como fallback
+```text
+src/assets/briefing/soundtrack/
+├── usage/
+│   ├── video-institucional.jpg
+│   ├── filme.jpg
+│   ├── trailer.jpg
+│   ├── jogo.jpg
+│   ├── podcast.jpg
+│   ├── redes-sociais.jpg
+│   ├── meditacao.jpg
+│   └── ambiente.jpg
+├── emotions/
+│   ├── suspense.jpg
+│   ├── drama.jpg
+│   ├── inspiracao.jpg
+│   ├── tensao.jpg
+│   ├── acao.jpg
+│   ├── paz.jpg
+│   ├── misterio.jpg
+│   └── alegria.jpg
+├── dynamics/
+│   ├── constante.jpg
+│   ├── crescente.jpg
+│   ├── crescente-climax.jpg
+│   ├── ondulada.jpg
+│   └── minimalista.jpg
+├── styles/
+│   ├── epico.jpg
+│   ├── emocional.jpg
+│   ├── eletronica-ambiente.jpg
+│   ├── orquestral.jpg
+│   ├── piano-solo.jpg
+│   ├── ambient.jpg
+│   ├── lofi.jpg
+│   └── auto.jpg
+└── voice/
+    ├── instrumental.jpg
+    ├── vocalizacoes.jpg
+    ├── monologoFalado.jpg
+    └── voz-eterea.jpg
+```
 
-### Código a Modificar
+### 5. Estrutura de Traduções
 
-```javascript
-// Dentro do useEffect de inicialização (~linha 342)
-
-// NOVO: Verificar se tem celebração na URL
-const celebrationFromUrl = urlParams.get('celebration');
-const celebrationNameFromUrl = urlParams.get('celebrationName');
-const celebrationEmojiFromUrl = urlParams.get('celebrationEmoji');
-
-if (celebrationFromUrl) {
-  // Criar objeto de celebração a partir dos params da URL
-  const urlCelebration = {
-    id: celebrationFromUrl,
-    localizedName: celebrationNameFromUrl || 'Celebração',
-    emoji: decodeURIComponent(celebrationEmojiFromUrl || '🎉'),
-    // ... outros campos com defaults seguros
-  };
-  
-  setSelectedCelebration(urlCelebration);
-  setShowCelebrationTypeModal(true);
-  setShowPlanSelection(false);
-  return;
+```json
+{
+  "steps": {
+    "soundtrack": {
+      "intro": "🎬 Vamos criar sua trilha sonora!\n\nEsse tipo de música é perfeito para vídeos, filmes, jogos, podcasts e mais.",
+      "usage": {
+        "question": "Onde essa trilha será usada? 🎬",
+        "videoInstitucional": "📹 Vídeo Institucional",
+        "filme": "🎬 Filme / Curta-metragem",
+        "trailer": "🎭 Trailer / Teaser",
+        "jogo": "🎮 Jogo",
+        "podcast": "🎙️ Podcast",
+        "redesSociais": "📱 Vídeo para Redes Sociais",
+        "meditacao": "🧘 Meditação / Relaxamento",
+        "ambiente": "🏢 Ambiente (loja, evento, espera)"
+      },
+      "emotion": {
+        "question": "Qual emoção principal a trilha deve transmitir? 🎭",
+        "suspense": "😰 Suspense",
+        "drama": "🎭 Emoção / Drama",
+        "inspiracao": "✨ Inspiração / Esperança",
+        "tensao": "⚡ Tensão",
+        "acao": "🔥 Ação / Energia",
+        "paz": "🕊️ Paz / Relaxamento",
+        "misterio": "🌙 Mistério",
+        "alegria": "😊 Alegria"
+      },
+      "dynamics": {
+        "question": "Como a trilha deve evoluir? 📊",
+        "constante": "➡️ Constante",
+        "constanteDesc": "Mesmo clima do início ao fim",
+        "crescente": "📈 Crescente (build-up)",
+        "crescenteDesc": "Intensidade aumenta gradualmente",
+        "crescenteClimax": "🎯 Crescente com Clímax",
+        "crescenteClimaxDesc": "Build-up + ponto alto emocional",
+        "ondulada": "🌊 Ondulada",
+        "onduladaDesc": "Sobe e desce em intensidade",
+        "minimalista": "🍃 Minimalista",
+        "minimalistaDesc": "Menos elementos, mais espaço"
+      },
+      "style": {
+        "question": "Qual estilo você prefere? 🎼",
+        "epico": "🏔️ Cinemática Épica",
+        "epicoDesc": "Grandioso, orquestral, impactante",
+        "emocional": "💔 Cinemática Emocional",
+        "emocionalDesc": "Tocante, dramático, sensível",
+        "eletronicaAmbiente": "🎹 Eletrônica Ambiente",
+        "orquestral": "🎻 Orquestral",
+        "pianoSolo": "🎹 Piano Solo",
+        "ambient": "🌌 Ambient / Drone",
+        "lofi": "🎧 Lo-fi Instrumental",
+        "auto": "🤖 Deixar o Sistema Escolher"
+      },
+      "rhythm": {
+        "question": "Qual o ritmo da trilha? 🎵",
+        "lento": "🐢 Lento",
+        "medio": "🚶 Médio",
+        "rapido": "🏃 Rápido",
+        "variavel": "🔄 Variável"
+      },
+      "voice": {
+        "question": "A trilha deve ter voz? 🎤",
+        "instrumental": "🎵 Não, totalmente instrumental",
+        "instrumentalDesc": "Apenas instrumentos",
+        "vocalizacoes": "🎤 Apenas vocalizações",
+        "vocalizacoesDesc": "Ahh, hum, pads vocais",
+        "monologoFalado": "🗣️ Voz falada / Monólogo",
+        "monologoFaladoDesc": "Narração ou texto falado",
+        "vozEterea": "✨ Voz etérea sem palavras",
+        "vozEtereaDesc": "Vocal ambiente, sem letra definida"
+      },
+      "scene": {
+        "question": "Descreva a cena ou sensação desejada (opcional) 🎬\n\nExemplos: \"herói caminhando sozinho\", \"paisagem ao amanhecer\", \"tensão antes da decisão\""
+      },
+      "language": {
+        "question": "Idioma (para voz/monólogo): 🌍",
+        "pt": "🇧🇷 Português",
+        "en": "🇺🇸 Inglês",
+        "es": "🇪🇸 Espanhol"
+      }
+    }
+  },
+  "confirmation": {
+    "soundtrackUsage": "Uso",
+    "soundtrackEmotion": "Emoção",
+    "soundtrackDynamics": "Dinâmica",
+    "soundtrackStyle": "Estilo",
+    "soundtrackRhythm": "Ritmo",
+    "soundtrackVoice": "Voz",
+    "soundtrackScene": "Cena",
+    "soundtrackLanguage": "Idioma",
+    "soundtrackBadge": "🎬 Trilha Sonora"
+  }
 }
 ```
 
-## Sobre a Tela de Seleção de Pacotes
+### 6. Lógica de Navegação
 
-A tela de seleção de pacotes (`showPlanSelection`) **ainda é necessária** para:
-- Usuários que acessam `/briefing` diretamente (sem params)
-- Usuários que clicam em "Nova Música" no dashboard
-- Links de marketing sem contexto específico
+```javascript
+// Em getNextStep()
+if (current === 1) {
+  // Se é trilha sonora, vai para fluxo especializado
+  if (data.musicType === 'trilha') {
+    return 70; // Vai para soundtrackUsage
+  }
+  // ... resto da lógica existente
+}
 
-Porém, ela é **pulada automaticamente** quando:
-- Tem `type` na URL (vocal/instrumental/custom_lyric)
-- Tem `planId` na URL  
-- Tem `celebration` na URL (após esta correção)
+// FLUXO TRILHA SONORA (70-78)
+if (data.musicType === 'trilha') {
+  if (current === 70) return 71; // usage -> emotion
+  if (current === 71) return 72; // emotion -> dynamics
+  if (current === 72) return 73; // dynamics -> style
+  if (current === 73) return 74; // style -> rhythm
+  if (current === 74) return 75; // rhythm -> voice
+  if (current === 75) {
+    // Se tem voz (não é totalmente instrumental), perguntar idioma
+    if (['monologoFalado', 'voz_eterea'].includes(data.soundtrackVoice || '')) {
+      return 77; // voice -> language
+    }
+    return 76; // voice -> scene (opcional)
+  }
+  if (current === 76) return 78; // scene -> autoGenerateName
+  if (current === 77) return 76; // language -> scene
+  if (current === 78) {
+    return data.autoGenerateName ? 100 : 21; // confirmação ou nome manual
+  }
+}
+```
 
-## Resultado Esperado
+### 7. Prompt Mestre para SUNO
 
-| Ação | Antes | Depois |
-|------|-------|--------|
-| Clicar banner Carnaval | Mostra seleção de pacotes | Abre modal tipo direto |
-| Selecionar "Vocal" no modal | - | Inicia chat com tema Carnaval |
-| Badge no header | Mostra plano | Mostra "🎭 Carnaval" |
+O sistema de geração de style prompt será atualizado para incluir lógica específica para trilhas sonoras:
 
-## Arquivos a Modificar
-- `src/pages/Briefing.tsx` - useEffect de inicialização (1 arquivo, ~20 linhas)
+```text
+[Style]
+Genre: {soundtrackStyle} soundtrack
+Mood/Atmosphere: {soundtrackEmotion}, {soundtrackDynamics}
+Instrumentation: Based on {soundtrackStyle}
+(optional) BPM: Based on {soundtrackRhythm}
+
+[Lyrics]
+[Intro]
+(descrição instrumental / ambientação baseada em {soundtrackScene})
+
+[Section A]
+(desenvolvimento inicial - {soundtrackDynamics})
+
+[Section B]
+(variação ou crescimento)
+
+[Climax] (se dynamics = crescente_climax)
+(ponto alto emocional)
+
+[Outro]
+(encerramento ou dissolução)
+
+[End]
+```
+
+## Sequência de Implementação
+
+1. **Etapa 1**: Adicionar campos no `BriefingFormData` e criar placeholders no `chatFlow` (índices 70-78)
+2. **Etapa 2**: Criar estrutura de traduções no `public/locales/pt-BR/briefing.json`
+3. **Etapa 3**: Replicar traduções para EN, ES, IT
+4. **Etapa 4**: Adicionar opções no `useBriefingTranslations.ts`
+5. **Etapa 5**: Implementar lógica `getNextStep` para trilha sonora
+6. **Etapa 6**: Criar assets visuais (imagens) para os cards
+7. **Etapa 7**: Atualizar tela de confirmação para exibir campos de trilha sonora
+8. **Etapa 8**: Atualizar edge function `generate-style-prompt` para gerar prompts cinematográficos
+
+## Benefícios
+
+- Trilhas sonoras terão prompts otimizados para SUNO
+- Fluxo especializado aumenta qualidade e precisão
+- Separação clara facilita uso profissional (vídeo, cinema, jogos)
+- UX específica para criadores de conteúdo
+
+## Estimativa
+
+- **Arquivos modificados**: 7
+- **Linhas de código**: ~500
+- **Traduções**: ~200 chaves por idioma
+- **Assets visuais**: ~25 imagens
