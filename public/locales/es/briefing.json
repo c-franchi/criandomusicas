@@ -606,5 +606,31 @@
     "story": {
       "question": "¡Cuéntanos sobre el niño y la ocasión! 🧸"
     }
+  },
+  "modeSelector": {
+    "title": "¿Cómo quieres crear tu música?",
+    "subtitle": "Elige el modo que mejor se adapte a tus necesidades",
+    "quickTitle": "🚀 Creación Rápida",
+    "quickDescription": "Completa todo en una sola pantalla",
+    "quickFeature1": "Listo en 30 segundos",
+    "quickFeature2": "Solo campos esenciales",
+    "quickFeature3": "Ideal para quienes tienen prisa",
+    "detailedTitle": "🎨 Creación Detallada",
+    "detailedDescription": "Chat personalizado con todas las opciones",
+    "detailedFeature1": "Máxima personalización",
+    "detailedFeature2": "Guía paso a paso",
+    "detailedFeature3": "Ideal para canciones especiales",
+    "recommended": "Recomendado"
+  },
+  "quickCreation": {
+    "title": "Creación Rápida",
+    "promptLabel": "Describe tu música",
+    "promptPlaceholder": "Cuenta la historia, personajes, momentos especiales... ¡o pega tu letra aquí!",
+    "reset": "Reiniciar",
+    "instrumental": "Instrumental",
+    "genreLabel": "Género Musical",
+    "voiceLabel": "Tipo de Voz",
+    "createButton": "Crear Música",
+    "hint": "La IA completará los detalles automáticamente"
   }
 }

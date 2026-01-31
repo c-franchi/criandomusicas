@@ -626,5 +626,31 @@
     "story": {
       "question": "Conte sobre a criança e a ocasião! 🧸\n\nNome, idade, personalidade, momento especial... Quanto mais detalhes, mais personalizada será a música!"
     }
+  },
+  "modeSelector": {
+    "title": "Como você quer criar sua música?",
+    "subtitle": "Escolha o modo que melhor se adapta às suas necessidades",
+    "quickTitle": "🚀 Criação Rápida",
+    "quickDescription": "Preencha tudo em uma única tela",
+    "quickFeature1": "Pronto em 30 segundos",
+    "quickFeature2": "Campos essenciais apenas",
+    "quickFeature3": "Ideal para quem tem pressa",
+    "detailedTitle": "🎨 Criação Detalhada",
+    "detailedDescription": "Chat personalizado com todas as opções",
+    "detailedFeature1": "Máxima personalização",
+    "detailedFeature2": "Guia passo a passo",
+    "detailedFeature3": "Ideal para músicas especiais",
+    "recommended": "Recomendado"
+  },
+  "quickCreation": {
+    "title": "Criação Rápida",
+    "promptLabel": "Descreva sua música",
+    "promptPlaceholder": "Conte a história, personagens, momentos especiais... ou cole sua letra aqui!",
+    "reset": "Reiniciar",
+    "instrumental": "Instrumental",
+    "genreLabel": "Gênero Musical",
+    "voiceLabel": "Tipo de Voz",
+    "createButton": "Criar Música",
+    "hint": "A IA vai completar os detalhes automaticamente"
   }
 }

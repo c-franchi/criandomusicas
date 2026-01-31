@@ -17,6 +17,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
+import { ModeSelector } from "@/components/briefing/ModeSelector";
+import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages
@@ -242,6 +244,11 @@ const Briefing = () => {
   const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   
+  // Creation mode state (quick vs detailed)
+  const [creationMode, setCreationMode] = useState<'quick' | 'detailed' | null>(null);
+  const [showModeSelector, setShowModeSelector] = useState(false);
+  const [pendingPlanId, setPendingPlanId] = useState<string | null>(null);
+  
   // Celebration banner state
   const { closestDate, isLoading: isCelebrationLoading } = useUpcomingCelebrations(30);
   const [celebrationDismissed, setCelebrationDismissed] = useState(false);
@@ -370,18 +377,42 @@ const Briefing = () => {
         setShowPlanSelection(false);
         
         if (typeFromUrl === 'instrumental') {
-          setFormData(prev => ({ ...prev, isInstrumental: true, hasCustomLyric: false }));
+          setFormData(prev => ({ 
+            ...prev, 
+            isInstrumental: true, 
+            hasCustomLyric: false,
+            // Limpar campos de celebração de sessões anteriores
+            celebrationType: undefined,
+            celebrationName: undefined,
+            celebrationEmoji: undefined,
+          }));
           setSelectedPlanId('single_instrumental');
           setCurrentStep(1);
           addBotMessage(chatFlow[1]); // musicType
         } else if (typeFromUrl === 'custom_lyric') {
-          setFormData(prev => ({ ...prev, isInstrumental: false, hasCustomLyric: true }));
+          setFormData(prev => ({ 
+            ...prev, 
+            isInstrumental: false, 
+            hasCustomLyric: true,
+            // Limpar campos de celebração de sessões anteriores
+            celebrationType: undefined,
+            celebrationName: undefined,
+            celebrationEmoji: undefined,
+          }));
           setSelectedPlanId('single_custom_lyric');
           setCurrentStep(22);
           addBotMessage(chatFlow[22]); // customLyricText
         } else {
           // vocal - ir direto para musicType, pulando isInstrumental
-          setFormData(prev => ({ ...prev, isInstrumental: false, hasCustomLyric: false }));
+          setFormData(prev => ({ 
+            ...prev, 
+            isInstrumental: false, 
+            hasCustomLyric: false,
+            // Limpar campos de celebração de sessões anteriores
+            celebrationType: undefined,
+            celebrationName: undefined,
+            celebrationEmoji: undefined,
+          }));
           setSelectedPlanId('single');
           setCurrentStep(1);
           addBotMessage(chatFlow[1]); // musicType
@@ -2354,26 +2385,74 @@ const Briefing = () => {
 
   // Handler para selecionar plano
   const handlePlanSelection = (planId: string) => {
-    setSelectedPlanId(planId);
-    setShowPlanSelection(false);
-    
     // Atualizar URL com o planId
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('planId', planId);
     window.history.replaceState({}, '', `${window.location.pathname}?${urlParams.toString()}`);
     
-    // Se for instrumental, configurar formData
+    // Se for instrumental ou custom_lyric, ir direto para o chat
     if (planId.includes('instrumental')) {
+      setSelectedPlanId(planId);
+      setShowPlanSelection(false);
       setFormData(prev => ({ ...prev, isInstrumental: true }));
       setCurrentStep(1);
       addBotMessage(chatFlow[1]);
     } else if (planId.includes('custom_lyric')) {
+      setSelectedPlanId(planId);
+      setShowPlanSelection(false);
       setFormData(prev => ({ ...prev, hasCustomLyric: true }));
       setCurrentStep(22);
       addBotMessage(chatFlow[22]);
     } else {
+      // Para músicas vocais, mostrar seletor de modo (rápido vs detalhado)
+      setPendingPlanId(planId);
+      setShowModeSelector(true);
+      setShowPlanSelection(false);
+    }
+  };
+
+  // Handler para selecionar modo de criação
+  const handleModeSelection = (mode: 'quick' | 'detailed') => {
+    setCreationMode(mode);
+    setShowModeSelector(false);
+    setSelectedPlanId(pendingPlanId);
+    
+    if (mode === 'detailed') {
+      // Modo detalhado - iniciar chat normal
       addBotMessage(chatFlow[0]);
     }
+    // Modo rápido - renderiza QuickCreation
+  };
+
+  // Handler para criação rápida
+  const handleQuickCreationSubmit = (data: QuickCreationData) => {
+    // Converter QuickCreationData para BriefingFormData
+    const newFormData: BriefingFormData = {
+      ...initialFormData,
+      story: data.prompt,
+      isInstrumental: data.isInstrumental,
+      style: data.style,
+      voiceType: data.voiceType || '',
+      musicType: 'homenagem', // Default para criação rápida
+      emotion: 'amor',        // Default para criação rápida
+      rhythm: 'medio',        // Default
+      atmosphere: 'alegre',   // Default
+      autoGenerateName: true, // Sempre automático na rápida
+      emotionIntensity: 3,    // Default
+    };
+    
+    setFormData(newFormData);
+    setCreationMode(null);
+    
+    // Ir direto para confirmação
+    showConfirmationScreen(newFormData);
+  };
+
+  // Handler para voltar do modo rápido
+  const handleQuickCreationBack = () => {
+    setCreationMode(null);
+    setShowModeSelector(true);
+    setSelectedPlanId(null);
   };
 
   // Handler para aceitar sugestão de data comemorativa
@@ -2682,6 +2761,52 @@ const Briefing = () => {
             </p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Tela de seleção de modo (Rápido vs Detalhado)
+  if (showModeSelector) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+        <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
+          <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => {
+              setShowModeSelector(false);
+              setShowPlanSelection(true);
+              setPendingPlanId(null);
+            }} className="mr-1">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+              <Music className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h1 className="font-semibold">{t('title')}</h1>
+              <p className="text-sm text-muted-foreground">🎤 {t('confirmation.vocalBadge')}</p>
+            </div>
+          </div>
+        </header>
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="max-w-lg mx-auto px-4 py-6">
+            <ModeSelector onSelectMode={handleModeSelection} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Tela de Criação Rápida
+  if (creationMode === 'quick') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+        <QuickCreation
+          onSubmit={handleQuickCreationSubmit}
+          onBack={handleQuickCreationBack}
+          styleOptions={styleOptions}
+          voiceOptions={voiceTypeOptions}
+        />
       </div>
     );
   }
