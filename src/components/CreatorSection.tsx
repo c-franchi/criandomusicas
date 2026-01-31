@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Image, Clock, Users, Sparkles, Headphones, Crown, Check } from "lucide-react";
+import { FileText, Image, Users, Sparkles, Headphones, Crown, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -131,7 +131,7 @@ const CreatorSection = () => {
         'Créditos universais (vocal, instrumental, letra)',
         'Letras curadas por humanos',
         'Capas prontas para thumbnail',
-        'Suporte prioritário',
+        'Entrega em até 24h',
         '100% original e monetizável',
       ];
     }
@@ -140,7 +140,7 @@ const CreatorSection = () => {
         'Créditos universales (vocal, instrumental, letra)',
         'Letras curadas por humanos',
         'Portadas listas para miniatura',
-        'Soporte prioritario',
+        'Entrega en hasta 24h',
         '100% original y monetizable',
       ];
     }
@@ -149,7 +149,7 @@ const CreatorSection = () => {
         'Crediti universali (vocale, strumentale, testo)',
         'Testi curati da umani',
         'Copertine pronte per miniatura',
-        'Supporto prioritario',
+        'Consegna entro 24h',
         '100% originale e monetizzabile',
       ];
     }
@@ -157,7 +157,7 @@ const CreatorSection = () => {
       'Universal credits (vocal, instrumental, lyrics)',
       'Human-curated lyrics',
       'Thumbnail-ready covers',
-      'Priority support',
+      'Delivery within 24h',
       '100% original & monetizable',
     ];
   };
@@ -340,8 +340,8 @@ const CreatorSection = () => {
           {[
             { icon: FileText, titleKey: 'curatedLyrics', descKey: 'curatedLyricsDesc' },
             { icon: Image, titleKey: 'readyCovers', descKey: 'readyCoversDesc' },
-            { icon: Clock, titleKey: 'shortFormats', descKey: 'shortFormatsDesc' },
             { icon: Users, titleKey: 'humanSupport', descKey: 'humanSupportDesc' },
+            { icon: Sparkles, titleKey: 'commercialUse', descKey: 'commercialUseDesc' },
           ].map((item, index) => (
             <motion.div key={item.titleKey} variants={itemVariants}>
               <motion.div
