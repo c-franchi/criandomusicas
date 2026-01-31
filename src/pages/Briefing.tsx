@@ -1987,9 +1987,28 @@ const Briefing = () => {
     }
   };
 
-  const showConfirmationScreen = (data: BriefingFormData) => {
+  const showConfirmationScreen = async (data: BriefingFormData) => {
     setFormData(data);
     setIsTyping(true);
+    
+    // Check credits immediately and show modal if none available
+    try {
+      const { data: creditsData } = await supabase.functions.invoke('check-credits');
+      if (!creditsData?.has_credits || creditsData?.total_available <= 0) {
+        // No credits - show modal immediately with confirmation screen
+        setIsTyping(false);
+        setShowConfirmation(true);
+        // Small delay to ensure confirmation screen renders first
+        setTimeout(() => {
+          setShowNoCreditModal(true);
+        }, 100);
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking credits:', error);
+      // Continue to confirmation even if check fails
+    }
+    
     setTimeout(() => {
       setIsTyping(false);
       setShowConfirmation(true);
@@ -2313,11 +2332,17 @@ const Briefing = () => {
 
   // Handler para ir ao checkout ao invés de usar crédito
   const handleGoToCheckout = () => {
-    if (!pendingOrderId) return;
-    
-    const planId = selectedPlanId || 'single';
     setShowNoCreditModal(false);
-    navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
+    
+    // If we have a pending order, go to checkout with that order
+    if (pendingOrderId) {
+      const planId = selectedPlanId || 'single';
+      navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
+      return;
+    }
+    
+    // Otherwise, go to plans page to buy credits
+    navigate('/planos');
   };
 
   const getFieldLabel = (field: string, value: string | boolean | number | string[]): string => {
