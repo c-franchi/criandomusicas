@@ -17,7 +17,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
-import { genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages } from "@/assets/briefing";
+import { 
+  genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
+  childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages
+} from "@/assets/briefing";
 import {
   Dialog,
   DialogContent,
@@ -82,6 +85,14 @@ interface BriefingFormData {
   gospelNarrative?: string;
   gospelPerspective?: string;
   biblicalReference?: string;
+  // Campos para música infantil
+  childAgeGroup?: string;
+  childObjective?: string;
+  childTheme?: string;
+  childMood?: string;
+  childStyle?: string;
+  childInteraction?: string;
+  childNarrative?: string;
 }
 
 const BRIEFING_STORAGE_KEY = 'briefing_autosave';
@@ -174,6 +185,16 @@ const Briefing = () => {
     gospelNarrativeOptions,
     gospelPerspectiveOptions,
     getGospelChatMessages,
+    // Children options
+    childAgeGroupOptions,
+    childObjectiveOptions,
+    childThemeOptions,
+    childMoodOptions,
+    childStyleOptions,
+    childInteractionOptions,
+    childNarrativeOptions,
+    childVoiceOptions,
+    getChildrenChatMessages,
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
@@ -196,6 +217,7 @@ const Briefing = () => {
   const instrumentOptions = getInstrumentOptions();
   const motivationalMessages = getMotivationalChatMessages();
   const gospelMessages = getGospelChatMessages();
+  const childrenMessages = getChildrenChatMessages();
   
   // Plan selection state
   const [showPlanSelection, setShowPlanSelection] = useState(false);
@@ -876,6 +898,87 @@ const Briefing = () => {
       inputType: 'options',
       field: 'autoGenerateName',
       options: nameOptions
+    },
+    // FLUXO INFANTIL (índices 60-70)
+    // Índice 54-59: Reservados para expansões
+    // Índice 60: Faixa etária
+    {
+      type: 'bot',
+      content: childrenMessages.ageGroup,
+      inputType: 'options',
+      field: 'childAgeGroup',
+      options: childAgeGroupOptions
+    },
+    // Índice 61: Objetivo da música
+    {
+      type: 'bot',
+      content: childrenMessages.objective,
+      inputType: 'options',
+      field: 'childObjective',
+      options: childObjectiveOptions
+    },
+    // Índice 62: Tema central
+    {
+      type: 'bot',
+      content: childrenMessages.theme,
+      inputType: 'options',
+      field: 'childTheme',
+      options: childThemeOptions
+    },
+    // Índice 63: Tom emocional / Clima
+    {
+      type: 'bot',
+      content: childrenMessages.mood,
+      inputType: 'options',
+      field: 'childMood',
+      options: childMoodOptions
+    },
+    // Índice 64: Estilo musical infantil
+    {
+      type: 'bot',
+      content: childrenMessages.style,
+      inputType: 'options',
+      field: 'childStyle',
+      options: childStyleOptions
+    },
+    // Índice 65: Interação (palmas, repetir, etc)
+    {
+      type: 'bot',
+      content: childrenMessages.interaction,
+      inputType: 'options',
+      field: 'childInteraction',
+      options: childInteractionOptions
+    },
+    // Índice 66: Narrativa (cantada, com falas, etc)
+    {
+      type: 'bot',
+      content: childrenMessages.narrative,
+      inputType: 'options',
+      field: 'childNarrative',
+      options: childNarrativeOptions
+    },
+    // Índice 67: História/contexto infantil
+    {
+      type: 'bot',
+      content: childrenMessages.story,
+      inputType: 'textarea',
+      field: 'story'
+    },
+    // Índice 68: Tipo de voz infantil
+    {
+      type: 'bot',
+      content: chatMessages.voiceType,
+      inputType: 'options',
+      field: 'voiceType',
+      options: childVoiceOptions
+    },
+    // Índice 69: Nome automático? (infantil)
+    {
+      type: 'bot',
+      content: chatMessages.songNameAuto,
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: nameOptions
     }
   ];
 
@@ -989,6 +1092,10 @@ const Briefing = () => {
       if (!data.isInstrumental && data.musicType === 'religiosa') {
         return 44; // Vai para fluxo gospel (contexto espiritual)
       }
+      // Se é infantil e cantada, vai para fluxo infantil
+      if (!data.isInstrumental && data.musicType === 'infantil') {
+        return 60; // Vai para fluxo infantil (faixa etária)
+      }
       // Se é corporativa e cantada, perguntar formato (institucional vs jingle)
       if (!data.isInstrumental && data.musicType === 'corporativa') {
         return 31; // Vai para formato corporativo
@@ -1046,6 +1153,23 @@ const Briefing = () => {
       if (current === 51) return 52; // story -> voiceType
       if (current === 52) return 53; // voiceType -> autoGenerateName
       if (current === 53) {
+        return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
+      }
+    }
+    
+    // FLUXO INFANTIL (60-69)
+    // 60: ageGroup, 61: objective, 62: theme, 63: mood, 64: style, 65: interaction, 66: narrative, 67: story, 68: voiceType, 69: autoGenerateName
+    if (data.musicType === 'infantil' && !data.isInstrumental) {
+      if (current === 60) return 61; // ageGroup -> objective
+      if (current === 61) return 62; // objective -> theme
+      if (current === 62) return 63; // theme -> mood
+      if (current === 63) return 64; // mood -> style
+      if (current === 64) return 65; // style -> interaction
+      if (current === 65) return 66; // interaction -> narrative
+      if (current === 66) return 67; // narrative -> story
+      if (current === 67) return 68; // story -> voiceType
+      if (current === 68) return 69; // voiceType -> autoGenerateName
+      if (current === 69) {
         return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
       }
     }
@@ -2896,13 +3020,113 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Children Age Group - with image cards */}
+                {currentBotMessage.field === 'childAgeGroup' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: childAgeImages[opt.id] || childAgeImages['0-3']
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.children.ageGroup.question', 'Faixa etária')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Children Objective - with image cards */}
+                {currentBotMessage.field === 'childObjective' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: childObjectiveImages[opt.id] || childObjectiveImages.diversao
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.children.objective.question', 'Objetivo')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Children Theme - with image cards */}
+                {currentBotMessage.field === 'childTheme' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: childThemeImages[opt.id] || childThemeImages.animais
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.children.theme.question', 'Tema')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Children Mood - with image cards */}
+                {currentBotMessage.field === 'childMood' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: childMoodImages[opt.id] || childMoodImages.alegre
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.children.mood.question', 'Clima')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Children Style - with image cards */}
+                {currentBotMessage.field === 'childStyle' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: childStyleImages[opt.id] || childStyleImages.cantiga
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.children.style.question', 'Estilo')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
                  currentBotMessage.field !== 'style' &&
                  currentBotMessage.field !== 'voiceType' &&
                  currentBotMessage.field !== 'corporateFormat' &&
-                 currentBotMessage.field !== 'gospelContext' && (
+                 currentBotMessage.field !== 'gospelContext' &&
+                 currentBotMessage.field !== 'childAgeGroup' &&
+                 currentBotMessage.field !== 'childObjective' &&
+                 currentBotMessage.field !== 'childTheme' &&
+                 currentBotMessage.field !== 'childMood' &&
+                 currentBotMessage.field !== 'childStyle' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button
