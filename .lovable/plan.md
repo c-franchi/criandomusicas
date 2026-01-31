@@ -1,176 +1,115 @@
 
-# Correção: Sistema de Créditos Creator não Gera Letras
 
-## Problema Identificado
+# Simplificação do Fluxo de Criação com Abas
 
-O usuário com assinatura Creator (ex: Creator Start com 50 créditos) consegue usar créditos, mas **a música fica presa em "Aguardando Pagamento"** e as letras nunca são geradas.
+## Problema Atual
 
-### Causa Raiz
-
-Existem **DOIS fluxos** para usar créditos que funcionam de forma diferente:
+O fluxo atual obriga o usuário a escolher o tipo de música/plano TODA VEZ que vai criar, mesmo quando já tem créditos específicos:
 
 ```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     FLUXO VIA BRIEFING (FUNCIONA)                   │
+│                     FLUXO ATUAL (CONFUSO)                           │
 ├─────────────────────────────────────────────────────────────────────┤
-│  1. Completa briefing                                               │
-│  2. Modal de créditos aparece                                       │
-│  3. Usuário clica "Usar crédito"                                    │
-│  4. ✅ Chama use-credit (marca como PAID)                           │
-│  5. ✅ Chama generate-lyrics (gera as letras)                       │
-│  6. ✅ Redireciona para /criar-musica                               │
+│                                                                     │
+│  Dashboard → Clicar "Criar Música"                                  │
+│                          ↓                                          │
+│  Briefing → Tela de Seleção com 8+ opções misturadas:               │
+│     • Música Vocal        • Trilha Instrumental                     │
+│     • Já tenho a letra    • Pacote 3x Vocal                         │
+│     • Pacote 3x Instrum.  • Pacote 5x Vocal                         │
+│     • Pacote 5x Instrum.  • etc...                                  │
+│                          ↓                                          │
+│  Usuário seleciona → Pergunta "Cantada ou Instrumental?"            │
+│  (redundante se já escolheu!)                                       │
+│                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
+```
 
+## Solução: Abas no Dashboard + Navegação Direta
+
+```text
 ┌─────────────────────────────────────────────────────────────────────┐
-│                   FLUXO VIA CHECKOUT (QUEBRADO)                     │
+│                     NOVO FLUXO (SIMPLIFICADO)                       │
 ├─────────────────────────────────────────────────────────────────────┤
-│  1. Usuário chega no checkout (modal não apareceu ou fechou)        │
-│  2. Vê que tem créditos disponíveis                                 │
-│  3. Clica "Usar crédito"                                            │
-│  4. ✅ Chama use-credit (marca como PAID)                           │
-│  5. ❌ NÃO chama generate-lyrics (letras NUNCA geradas)             │
-│  6. Redireciona para /criar-musica                                  │
-│  7. Página fica esperando letras eternamente                        │
+│                                                                     │
+│  Dashboard com 3 Abas:                                              │
+│  ┌─────────────────────────────────────────────────────────────┐   │
+│  │ 🎤 Vocais (12) │ 🎹 Instrumentais (5) │ 📝 Letra Própria (2)│   │
+│  └─────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+│  Cada aba mostra:                                                   │
+│  • Lista de pedidos daquele tipo                                    │
+│  • CTA específico: "Criar Vocal", "Criar Instrumental", etc.        │
+│  • Badge de créditos disponíveis daquele tipo                       │
+│                          ↓                                          │
+│  Clicar em "Criar Vocal" → /briefing?type=vocal                     │
+│  → PULA seleção de plano                                            │
+│  → PULA pergunta "cantada/instrumental" (já sabe que é vocal)       │
+│  → Vai DIRETO para pergunta de tipo de música                       │
+│                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
 ```
-
-### Evidência nos Logs
-
-Os logs mostram que `check-credits` está funcionando e detectando os créditos Creator:
-```
-[CHECK-CREDITS] Creator subscription credits calculated - {"planId":"creator_start","creditsTotal":50,"creditsUsed":0}
-[CHECK-CREDITS] Credits calculated - {"totalAvailable":50,"totalVocal":50}
-```
-
-Porém, **NÃO há logs de `use-credit`** - confirmando que ou a função não está sendo chamada, ou está falhando antes de logar.
 
 ---
 
-## Solução
+## Arquitetura Técnica
 
-### 1. Corrigir handleUseCredit no Checkout.tsx
+### 1. Dashboard com Abas (src/pages/Dashboard.tsx)
 
-Adicionar a lógica de geração automática de letras igual ao Briefing:
-
-**Arquivo:** `src/pages/Checkout.tsx`
-**Linhas:** 641-682
+Adicionar componente de Tabs que filtra os pedidos por tipo:
 
 ```typescript
-const handleUseCredit = async () => {
-  if (!order) return;
-
-  setProcessingCredit(true);
-
-  try {
-    const { data, error } = await supabase.functions.invoke('use-credit', {
-      body: { orderId: order.id },
-    });
-
-    if (error) throw error;
-
-    if (!data.success) {
-      if (data.wrong_type) {
-        toast.error(data.error);
-      } else if (data.needs_purchase) {
-        toast.error(t('errors.incompatibleCredits'));
-      } else {
-        toast.error(data.error || t('errors.creditUse'));
-      }
-      setProcessingCredit(false);
-      return;
-    }
-
-    toast.success(t('toast.creditUsed'));
-
-    // NOVO: Buscar dados completos do pedido para geração
-    const { data: orderData } = await supabase
-      .from('orders')
-      .select('*')
-      .eq('id', order.id)
-      .single();
-
-    const isInstrumental = order.is_instrumental === true;
-    const hasCustomLyric = order.has_custom_lyric === true;
-
-    // NOVO: Gerar conteúdo baseado no tipo de pedido
-    if (orderData) {
-      const briefing = {
-        musicType: orderData.music_type || 'homenagem',
-        emotion: orderData.emotion || 'alegria',
-        emotionIntensity: orderData.emotion_intensity || 3,
-        style: orderData.music_style || 'pop',
-        rhythm: orderData.rhythm || 'moderado',
-        atmosphere: orderData.atmosphere || 'festivo',
-        hasMonologue: orderData.has_monologue || false,
-        monologuePosition: orderData.monologue_position || 'bridge',
-        mandatoryWords: orderData.mandatory_words || '',
-        restrictedWords: orderData.restricted_words || '',
-        voiceType: orderData.voice_type || 'feminina',
-        instruments: orderData.instruments || [],
-        soloInstrument: orderData.solo_instrument || null,
-        soloMoment: orderData.solo_moment || null,
-        instrumentationNotes: orderData.instrumentation_notes || ''
-      };
-
-      try {
-        if (isInstrumental) {
-          // Instrumental: gerar style prompt diretamente
-          toast.info(t('toast.preparingInstrumental'));
-          await supabase.functions.invoke('generate-style-prompt', {
-            body: { orderId: order.id, isInstrumental: true, briefing }
-          });
-          navigate('/dashboard');
-          return;
-        } else if (hasCustomLyric) {
-          // Letra própria: já tem texto, vai para aprovação
-          navigate(`/criar-musica?orderId=${order.id}`);
-          return;
-        } else {
-          // Vocal: GERAR LETRAS VIA IA
-          toast.info(t('toast.generatingLyrics'));
-          await supabase.functions.invoke('generate-lyrics', {
-            body: { orderId: order.id, story: orderData.story, briefing }
-          });
-        }
-      } catch (genError) {
-        console.error('Generation error:', genError);
-        // Continua para redirect mesmo se falhar
-      }
-    }
-
-    // Redirect
-    if (isInstrumental) {
-      navigate('/dashboard');
-    } else {
-      navigate(`/criar-musica?orderId=${order.id}`);
-    }
-  } catch (error) {
-    console.error('Error using credit:', error);
-    toast.error(t('errors.creditUse'));
-    setProcessingCredit(false);
-  }
-};
+// Filtros de pedidos
+const vocalOrders = orders.filter(o => !o.is_instrumental && !o.has_custom_lyric);
+const instrumentalOrders = orders.filter(o => o.is_instrumental);
+const customLyricOrders = orders.filter(o => o.has_custom_lyric);
 ```
 
-### 2. Melhorar Verificação de Compatibilidade de Créditos
+Layout das abas:
+- Aba 1: "Vocais" - ícone Mic, contador, CTA "Criar Vocal"
+- Aba 2: "Instrumentais" - ícone Piano, contador, CTA "Criar Instrumental"  
+- Aba 3: "Letra Própria" - ícone Edit, contador, CTA "Já Tenho a Letra"
 
-A função `isCreditsCompatible()` pode falhar se `activePackage` for nulo (mesmo com créditos de assinatura). Ajustar para usar `totalVocal` e `totalInstrumental` também:
+### 2. Novos Parâmetros de URL no Briefing
 
-**Arquivo:** `src/pages/Checkout.tsx`
-**Linhas:** 692-701
+O Briefing aceitará um novo parâmetro `type`:
+- `/briefing?type=vocal` → Música cantada com IA gerando letra
+- `/briefing?type=instrumental` → Trilha instrumental
+- `/briefing?type=custom_lyric` → Usuário já tem a letra
 
+Comportamento:
 ```typescript
-const isCreditsCompatible = (): boolean => {
-  if (!order) return false;
-  const orderType = getOrderType();
-  
-  // Verificar por tipo de crédito disponível (não apenas activePackage)
-  if (orderType === 'instrumental') {
-    return totalInstrumental > 0;
-  }
-  // Vocal e custom_lyric usam créditos vocais
-  return totalVocal > 0;
-};
+// Em Briefing.tsx
+const urlParams = new URLSearchParams(window.location.search);
+const typeFromUrl = urlParams.get('type'); // vocal, instrumental, custom_lyric
+
+// Se type vier na URL, PULAR seleção de planos
+if (typeFromUrl === 'vocal') {
+  setFormData(prev => ({ ...prev, isInstrumental: false, hasCustomLyric: false }));
+  setShowPlanSelection(false);
+  setCurrentStep(1); // Vai direto para musicType
+  addBotMessage(chatFlow[1]);
+}
+```
+
+### 3. Lógica de Navegação Simplificada
+
+Quando vem da aba específica:
+```text
+type=vocal       → Pula step 0 (isInstrumental) → Vai para step 1 (musicType)
+type=instrumental → Pula step 0 → Vai para step 2 (style instrumental)
+type=custom_lyric → Pula step 0 → Vai para step 22 (customLyricText)
+```
+
+### 4. CreditsBanner Atualizado
+
+Modificar para mostrar CTAs separados por tipo de crédito:
+```typescript
+// Se tem créditos vocais
+<Button to="/briefing?type=vocal">Criar Vocal ({totalVocal})</Button>
+
+// Se tem créditos instrumentais  
+<Button to="/briefing?type=instrumental">Criar Instrumental ({totalInstrumental})</Button>
 ```
 
 ---
@@ -179,15 +118,147 @@ const isCreditsCompatible = (): boolean => {
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/Checkout.tsx` | Corrigir `handleUseCredit` para gerar letras e melhorar `isCreditsCompatible` |
+| `src/pages/Dashboard.tsx` | Adicionar Tabs com filtro de pedidos por tipo, CTAs específicos |
+| `src/pages/Briefing.tsx` | Aceitar parâmetro `type` na URL, pular seleção de planos quando vier |
+| `src/components/CreditsBanner.tsx` | CTAs separados por tipo de crédito |
+| `public/locales/*/dashboard.json` | Traduções para as novas abas |
+
+---
+
+## Detalhamento do Dashboard
+
+### Estrutura das Abas
+
+```typescript
+<Tabs defaultValue="vocal" className="w-full">
+  <TabsList className="grid w-full grid-cols-3 mb-6">
+    <TabsTrigger value="vocal" className="flex items-center gap-2">
+      <Mic className="w-4 h-4" />
+      {t('tabs.vocal')} ({vocalOrders.length})
+    </TabsTrigger>
+    <TabsTrigger value="instrumental" className="flex items-center gap-2">
+      <Piano className="w-4 h-4" />
+      {t('tabs.instrumental')} ({instrumentalOrders.length})
+    </TabsTrigger>
+    <TabsTrigger value="custom" className="flex items-center gap-2">
+      <Edit className="w-4 h-4" />
+      {t('tabs.customLyric')} ({customLyricOrders.length})
+    </TabsTrigger>
+  </TabsList>
+
+  <TabsContent value="vocal">
+    {/* CTA específico */}
+    <Button asChild>
+      <Link to="/briefing?type=vocal">
+        <Mic className="w-4 h-4 mr-2" />
+        {t('buttons.createVocal')}
+        {totalVocal > 0 && <Badge>Usar Crédito</Badge>}
+      </Link>
+    </Button>
+    
+    {/* Lista de pedidos vocais */}
+    {vocalOrders.map(order => <OrderCard key={order.id} order={order} />)}
+  </TabsContent>
+
+  <TabsContent value="instrumental">
+    <Button asChild>
+      <Link to="/briefing?type=instrumental">
+        <Piano className="w-4 h-4 mr-2" />
+        {t('buttons.createInstrumental')}
+        {totalInstrumental > 0 && <Badge>Usar Crédito</Badge>}
+      </Link>
+    </Button>
+    
+    {instrumentalOrders.map(order => <OrderCard key={order.id} order={order} />)}
+  </TabsContent>
+
+  <TabsContent value="custom">
+    <Button asChild>
+      <Link to="/briefing?type=custom_lyric">
+        <Edit className="w-4 h-4 mr-2" />
+        {t('buttons.createCustomLyric')}
+        {totalVocal > 0 && <Badge>Usar Crédito</Badge>}
+      </Link>
+    </Button>
+    
+    {customLyricOrders.map(order => <OrderCard key={order.id} order={order} />)}
+  </TabsContent>
+</Tabs>
+```
+
+---
+
+## Traduções Necessárias
+
+```json
+{
+  "tabs": {
+    "vocal": "Músicas Vocais",
+    "instrumental": "Instrumentais",
+    "customLyric": "Letra Própria"
+  },
+  "buttons": {
+    "createVocal": "Criar Música Vocal",
+    "createInstrumental": "Criar Instrumental",
+    "createCustomLyric": "Já Tenho a Letra"
+  },
+  "empty": {
+    "vocalTitle": "Nenhuma música vocal",
+    "vocalSubtitle": "Crie sua primeira música com letra!",
+    "instrumentalTitle": "Nenhuma trilha instrumental",
+    "instrumentalSubtitle": "Crie sua primeira trilha!",
+    "customTitle": "Nenhuma música com letra própria",
+    "customSubtitle": "Envie sua letra e transforme em música!"
+  }
+}
+```
+
+---
+
+## Fluxo Visual
+
+```text
+┌────────────────── DASHBOARD ──────────────────┐
+│                                                │
+│  ┌──────────┐ ┌──────────────┐ ┌───────────┐  │
+│  │ 🎤 Vocais│ │🎹 Instrumentais│ │📝 Própria │  │
+│  │   (12)   │ │     (5)       │ │    (2)    │  │
+│  └──────────┘ └──────────────┘ └───────────┘  │
+│       ↓              ↓               ↓        │
+│  [Criar Vocal] [Criar Instrum.] [Enviar Letra]│
+│       ↓              ↓               ↓        │
+│  Lista pedidos  Lista pedidos   Lista pedidos │
+│    vocais      instrumentais   letra própria  │
+│                                                │
+└────────────────────────────────────────────────┘
+                     │
+                     ↓
+┌─────────────── BRIEFING ───────────────────────┐
+│                                                 │
+│  Se veio com ?type=vocal:                       │
+│  → PULA seleção de plano                        │
+│  → PULA "Cantada ou Instrumental?"              │
+│  → Vai DIRETO para "Qual tipo de música?"       │
+│                                                 │
+│  Se veio com ?type=instrumental:                │
+│  → PULA seleção de plano                        │
+│  → PULA "Cantada ou Instrumental?"              │
+│  → Vai DIRETO para "Qual estilo instrumental?"  │
+│                                                 │
+│  Se veio SEM parâmetro (link externo):          │
+│  → Mostra tela de seleção normal                │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Resultado Esperado
 
-Após a correção:
-1. Usuário Creator completa briefing
-2. Se modal aparecer no Briefing → funciona como antes
-3. Se for para Checkout e usar crédito lá → **agora também gera letras**
-4. Ordem é marcada como PAID + letras geradas
-5. Usuário é redirecionado e vê suas letras normalmente
+1. Dashboard organizado por tipo em abas claras
+2. CTAs específicos que levam direto ao fluxo correto
+3. Sem necessidade de escolher plano quando já tem créditos
+4. Sem pergunta redundante "Cantada ou Instrumental?"
+5. Experiência muito mais rápida e intuitiva
+6. Mantém compatibilidade com links externos (sem parâmetro mostra seleção)
+
