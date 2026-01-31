@@ -26,7 +26,7 @@ export const ImageCard = ({
       onClick={onClick}
       className={cn(
         "relative group flex flex-col items-center gap-1.5 p-1 rounded-xl transition-all duration-300",
-        "hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
       )}
       whileTap={{ scale: 0.95 }}
     >
@@ -40,7 +40,7 @@ export const ImageCard = ({
           "bg-muted/50",
           selected 
             ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/30" 
-            : "ring-1 ring-border/30 group-hover:ring-primary/50"
+            : "ring-1 ring-border/30"
         )}
       >
         <img
@@ -48,30 +48,18 @@ export const ImageCard = ({
           alt={label}
           className={cn(
             "w-full h-full object-cover transition-all duration-300",
-            selected ? "brightness-100" : "brightness-90 group-hover:brightness-100"
+            selected ? "brightness-100" : "brightness-75"
           )}
           loading="lazy"
         />
         
-        {/* Selected gradient overlay */}
-        {selected && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent"
-          />
-        )}
+        {/* Label overlay at bottom */}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent px-1 py-1.5">
+          <span className="text-[10px] sm:text-xs font-medium text-white text-center block truncate">
+            {label}
+          </span>
+        </div>
       </div>
-      
-      {/* Label */}
-      <span
-        className={cn(
-          "text-xs sm:text-sm font-medium text-center transition-colors leading-tight max-w-[80px] sm:max-w-[96px] truncate",
-          selected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
-        )}
-      >
-        {label}
-      </span>
     </motion.button>
   );
 };
