@@ -53,11 +53,11 @@ export const QuickCreation = ({
     }));
   }, [styleOptions]);
 
-  // Map voice options with images (only simple options)
+  // Map voice options with images (expanded options)
   const voiceOptionsWithImages = useMemo(() => {
-    const simpleVoiceIds = ['masculina', 'feminina', 'dueto'];
+    const expandedVoiceIds = ['masculina', 'feminina', 'dueto', 'coral', 'infantil-masculina', 'infantil-feminina'];
     return voiceOptions
-      .filter(v => simpleVoiceIds.includes(v.id))
+      .filter(v => expandedVoiceIds.includes(v.id))
       .map(opt => ({
         id: opt.id,
         label: opt.label,
@@ -226,7 +226,7 @@ export const QuickCreation = ({
                   options={voiceOptionsWithImages}
                   selectedId={voiceType}
                   onSelect={setVoiceType}
-                  variant="circle"
+                  variant="square"
                   showOther={false}
                 />
               </motion.section>
@@ -257,7 +257,7 @@ export const QuickCreation = ({
             <span className="text-sm font-medium text-foreground">
               {t('quickCreation.switchToDetailed', 'Prefere criar com mais detalhes?')}
             </span>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-primary/50 text-primary">
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-primary/50 text-primary animate-pulse">
               {t('quickCreation.recommended', 'Recomendado')}
             </Badge>
             <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
