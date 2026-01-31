@@ -9,7 +9,6 @@ import Testimonials from "@/components/Testimonials";
 import VideoServiceSection from "@/components/VideoServiceSection";
 import ReactionVideosShowcase from "@/components/ReactionVideosShowcase";
 import FAQ from "@/components/FAQ";
-import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
@@ -130,7 +129,6 @@ const Index = () => {
       <Testimonials />
       <ReactionVideosShowcase />
       <FAQ />
-      <CTA />
       <Footer />
       <CookieConsent />
       <ScrollToTop />

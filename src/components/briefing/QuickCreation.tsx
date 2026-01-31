@@ -270,16 +270,36 @@ const QuickCreationComponent = ({
           
           <button
             onClick={onSwitchToDetailed}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/30 hover:border-primary/50 hover:from-primary/20 hover:via-accent/20 hover:to-primary/20 transition-all duration-300 group"
+            className={cn(
+              "w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl",
+              "bg-gradient-to-r from-primary/15 via-accent/20 to-primary/15",
+              "border border-primary/40",
+              "shadow-[0_0_15px_rgba(var(--primary-rgb),0.3),inset_0_0_10px_rgba(var(--primary-rgb),0.1)]",
+              "hover:shadow-[0_0_25px_rgba(var(--primary-rgb),0.5),0_0_40px_rgba(var(--accent-rgb),0.3),inset_0_0_15px_rgba(var(--primary-rgb),0.2)]",
+              "hover:border-primary/70 hover:from-primary/25 hover:via-accent/30 hover:to-primary/25",
+              "transition-all duration-500 group",
+              "relative overflow-hidden"
+            )}
           >
-            <Palette className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium text-foreground">
+            {/* Neon glow background effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent animate-[shimmer_3s_ease-in-out_infinite] pointer-events-none" />
+            
+            <Palette className="w-4 h-4 text-primary drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)] group-hover:scale-110 transition-transform relative z-10" />
+            <span className="text-sm font-medium text-foreground drop-shadow-[0_0_4px_rgba(var(--primary-rgb),0.3)] relative z-10">
               {t('quickCreation.switchToDetailed', 'Prefere criar com mais detalhes?')}
             </span>
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-primary/50 text-primary animate-pulse">
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "text-[10px] px-1.5 py-0.5",
+                "border-primary/60 text-primary",
+                "shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]",
+                "animate-pulse relative z-10"
+              )}
+            >
               {t('quickCreation.recommended', 'Recomendado')}
             </Badge>
-            <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
+            <ChevronRight className="w-4 h-4 text-primary drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)] group-hover:translate-x-1 transition-transform relative z-10" />
           </button>
         </div>
       </div>
