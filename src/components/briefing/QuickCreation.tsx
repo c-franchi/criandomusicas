@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,25 @@ import { Input } from "@/components/ui/input";
 import { ImageCardGrid } from "./ImageCardGrid";
 import { genreImages, voiceImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
+
+// Preload critical images on module load
+const preloadImages = () => {
+  const criticalImages = [
+    genreImages.pop, genreImages.rock, genreImages.sertanejo,
+    genreImages.mpb, genreImages.gospel, genreImages.pagode,
+    voiceImages.masculina, voiceImages.feminina, voiceImages.dueto
+  ].filter(Boolean);
+  
+  criticalImages.forEach(src => {
+    if (src) {
+      const img = new Image();
+      img.src = src;
+    }
+  });
+};
+
+// Call preload immediately
+preloadImages();
 
 export interface QuickCreationData {
   prompt: string;
@@ -28,7 +47,7 @@ interface QuickCreationProps {
   credits?: number;
 }
 
-export const QuickCreation = ({ 
+const QuickCreationComponent = ({ 
   onSubmit, 
   onBack,
   onSwitchToDetailed,
@@ -267,5 +286,9 @@ export const QuickCreation = ({
     </div>
   );
 };
+
+// Memoize to prevent unnecessary re-renders
+export const QuickCreation = memo(QuickCreationComponent);
+QuickCreation.displayName = 'QuickCreation';
 
 export default QuickCreation;
