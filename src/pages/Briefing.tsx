@@ -2790,6 +2790,7 @@ const Briefing = () => {
           onSwitchToDetailed={handleSwitchToDetailed}
           styleOptions={styleOptions}
           voiceOptions={voiceTypeOptions}
+          credits={totalVocal}
         />
       </div>
     );
