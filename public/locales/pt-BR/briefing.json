@@ -453,5 +453,91 @@
     "intro": "{{emoji}} Vamos criar sua música de {{name}}!\n\nJá selecionei as configurações ideais para essa data especial.",
     "letsCreate": "Vamos criar sua música de",
     "preselected": "Já selecionei as configurações ideais para essa data especial."
+  },
+  "children": {
+    "intro": "🧸 Vamos criar uma música infantil especial!\n\nEsse tipo de música é perfeito para crianças, com letras seguras, educativas e divertidas.",
+    "ageGroup": {
+      "question": "Para qual faixa etária a música é destinada? 👶",
+      "0-3": "👶 0–3 anos (bebês)",
+      "0-3Desc": "Sons suaves, melodias simples",
+      "4-6": "🎨 4–6 anos (pré-escolar)",
+      "4-6Desc": "Diversão e aprendizado",
+      "7-9": "📚 7–9 anos (alfabetização)",
+      "7-9Desc": "Músicas interativas",
+      "10-12": "🎧 10–12 anos (infantil avançado)",
+      "10-12Desc": "Temas mais complexos"
+    },
+    "objective": {
+      "question": "Qual o objetivo da música? 🎯",
+      "diversao": "🎉 Diversão / Brincar",
+      "diversaoDesc": "Para se divertir e dançar",
+      "valores": "💝 Ensinar Valores",
+      "valoresDesc": "Amizade, respeito, bondade",
+      "rotina": "🌙 Rotina",
+      "rotinaDesc": "Dormir, banho, escola",
+      "educacao": "📖 Educação",
+      "educacaoDesc": "Cores, números, letras",
+      "emocoes": "💗 Emoções",
+      "emocoesDesc": "Amizade, coragem, empatia",
+      "aventura": "🚀 História / Aventura",
+      "aventuraDesc": "Narrativas e imaginação"
+    },
+    "theme": {
+      "question": "Qual o tema principal? 🎨",
+      "animais": "🐾 Animais",
+      "natureza": "🌳 Natureza",
+      "familia": "👨‍👩‍👧‍👦 Família",
+      "escola": "🏫 Escola",
+      "fantasia": "🧚 Fantasia",
+      "fantasiaDesc": "Fadas, dragões, robôs",
+      "profissoes": "👨‍🚒 Profissões",
+      "superacao": "💪 Superação Infantil",
+      "superacaoDesc": "Vencer medos, aprender"
+    },
+    "mood": {
+      "question": "Qual o clima da música? 🎵",
+      "alegre": "🎊 Alegre e Divertida",
+      "calma": "☁️ Calma e Aconchegante",
+      "animada": "🎤 Animada para Cantar Junto",
+      "suave": "🌙 Suave para Relaxar/Dormir"
+    },
+    "style": {
+      "question": "Qual estilo musical você prefere? 🎶",
+      "cantiga": "🎠 Cantiga Infantil",
+      "cantigaDesc": "Tradicional e conhecida",
+      "pop": "⭐ Pop Infantil",
+      "popDesc": "Moderna e animada",
+      "educativo": "📚 Educativo Rítmico",
+      "educativoDesc": "Aprender cantando",
+      "ninar": "🌙 Canção de Ninar",
+      "ninarDesc": "Suave para dormir",
+      "desenho": "📺 Música de Desenho",
+      "desenhoDesc": "Estilo cartoon",
+      "auto": "🤖 Deixar o Sistema Escolher",
+      "autoDesc": "IA escolhe o melhor"
+    },
+    "interaction": {
+      "question": "A música deve convidar a criança a participar? 👏",
+      "yes": "👏 Sim, com interação!",
+      "yesDesc": "Palmas, repetir palavras, responder",
+      "no": "🎧 Não, só ouvir",
+      "noDesc": "Apenas escutar e apreciar"
+    },
+    "narrative": {
+      "question": "Como a história deve ser contada? 📖",
+      "cantada": "🎤 Toda Cantada",
+      "cantadaFalas": "💬 Cantada com Falas Curtas",
+      "narrador": "📢 Narrador + Canto",
+      "historia": "📚 História Musicada"
+    },
+    "language": {
+      "question": "Idioma da música? 🌍",
+      "pt": "🇧🇷 Português",
+      "en": "🇺🇸 Inglês",
+      "es": "🇪🇸 Espanhol"
+    },
+    "story": {
+      "question": "Conte sobre a criança e a ocasião! 🧸\n\nNome, idade, personalidade, momento especial... Quanto mais detalhes, mais personalizada será a música!"
+    }
   }
 }

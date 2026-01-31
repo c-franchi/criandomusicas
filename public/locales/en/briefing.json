@@ -453,5 +453,91 @@
     "intro": "{{emoji}} Let's create your {{name}} song!\n\nI've already selected the ideal settings for this special date.",
     "letsCreate": "Let's create your song for",
     "preselected": "I've already selected the ideal settings for this special date."
+  },
+  "children": {
+    "intro": "🧸 Let's create a special children's song!\n\nThis type of music is perfect for kids, with safe, educational and fun lyrics.",
+    "ageGroup": {
+      "question": "What age group is the music for? 👶",
+      "0-3": "👶 0–3 years (babies)",
+      "0-3Desc": "Soft sounds, simple melodies",
+      "4-6": "🎨 4–6 years (preschool)",
+      "4-6Desc": "Fun and learning",
+      "7-9": "📚 7–9 years (early school)",
+      "7-9Desc": "Interactive songs",
+      "10-12": "🎧 10–12 years (advanced)",
+      "10-12Desc": "More complex themes"
+    },
+    "objective": {
+      "question": "What's the music's objective? 🎯",
+      "diversao": "🎉 Fun / Play",
+      "diversaoDesc": "For dancing and having fun",
+      "valores": "💝 Teach Values",
+      "valoresDesc": "Friendship, respect, kindness",
+      "rotina": "🌙 Routine",
+      "rotinaDesc": "Sleep, bath, school",
+      "educacao": "📖 Education",
+      "educacaoDesc": "Colors, numbers, letters",
+      "emocoes": "💗 Emotions",
+      "emocoesDesc": "Friendship, courage, empathy",
+      "aventura": "🚀 Story / Adventure",
+      "aventuraDesc": "Narratives and imagination"
+    },
+    "theme": {
+      "question": "What's the main theme? 🎨",
+      "animais": "🐾 Animals",
+      "natureza": "🌳 Nature",
+      "familia": "👨‍👩‍👧‍👦 Family",
+      "escola": "🏫 School",
+      "fantasia": "🧚 Fantasy",
+      "fantasiaDesc": "Fairies, dragons, robots",
+      "profissoes": "👨‍🚒 Professions",
+      "superacao": "💪 Overcoming Challenges",
+      "superacaoDesc": "Conquering fears, learning"
+    },
+    "mood": {
+      "question": "What's the music's mood? 🎵",
+      "alegre": "🎊 Happy and Fun",
+      "calma": "☁️ Calm and Cozy",
+      "animada": "🎤 Upbeat Sing-along",
+      "suave": "🌙 Soft for Sleep/Relax"
+    },
+    "style": {
+      "question": "Which musical style do you prefer? 🎶",
+      "cantiga": "🎠 Nursery Rhyme",
+      "cantigaDesc": "Traditional and familiar",
+      "pop": "⭐ Kids Pop",
+      "popDesc": "Modern and upbeat",
+      "educativo": "📚 Educational Rhythm",
+      "educativoDesc": "Learning through song",
+      "ninar": "🌙 Lullaby",
+      "ninarDesc": "Soft for sleeping",
+      "desenho": "📺 Cartoon Music",
+      "desenhoDesc": "Cartoon style",
+      "auto": "🤖 Let the System Choose",
+      "autoDesc": "AI picks the best"
+    },
+    "interaction": {
+      "question": "Should the music invite the child to participate? 👏",
+      "yes": "👏 Yes, with interaction!",
+      "yesDesc": "Clapping, repeating words, answering",
+      "no": "🎧 No, just listen",
+      "noDesc": "Just listen and enjoy"
+    },
+    "narrative": {
+      "question": "How should the story be told? 📖",
+      "cantada": "🎤 All Sung",
+      "cantadaFalas": "💬 Sung with Short Lines",
+      "narrador": "📢 Narrator + Singing",
+      "historia": "📚 Musical Story"
+    },
+    "language": {
+      "question": "Music language? 🌍",
+      "pt": "🇧🇷 Portuguese",
+      "en": "🇺🇸 English",
+      "es": "🇪🇸 Spanish"
+    },
+    "story": {
+      "question": "Tell us about the child and the occasion! 🧸\n\nName, age, personality, special moment... The more details, the more personalized the music will be!"
+    }
   }
 }

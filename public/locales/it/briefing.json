@@ -453,5 +453,71 @@
     "intro": "{{emoji}} Creiamo la tua canzone per {{name}}!\n\nHo già selezionato le impostazioni ideali per questa data speciale.",
     "letsCreate": "Creiamo la tua canzone per",
     "preselected": "Ho già selezionato le impostazioni ideali per questa data speciale."
+  },
+  "children": {
+    "intro": "🧸 Creiamo una canzone per bambini speciale!\n\nQuesto tipo di musica è perfetto per i bambini, con testi sicuri, educativi e divertenti.",
+    "ageGroup": {
+      "question": "Per quale età è la musica? 👶",
+      "0-3": "👶 0–3 anni (neonati)",
+      "4-6": "🎨 4–6 anni (prescolare)",
+      "7-9": "📚 7–9 anni (elementare)",
+      "10-12": "🎧 10–12 anni (avanzato)"
+    },
+    "objective": {
+      "question": "Qual è l'obiettivo? 🎯",
+      "diversao": "🎉 Divertimento / Giocare",
+      "valores": "💝 Insegnare Valori",
+      "rotina": "🌙 Routine",
+      "educacao": "📖 Educazione",
+      "emocoes": "💗 Emozioni",
+      "aventura": "🚀 Storia / Avventura"
+    },
+    "theme": {
+      "question": "Qual è il tema principale? 🎨",
+      "animais": "🐾 Animali",
+      "natureza": "🌳 Natura",
+      "familia": "👨‍👩‍👧‍👦 Famiglia",
+      "escola": "🏫 Scuola",
+      "fantasia": "🧚 Fantasia",
+      "profissoes": "👨‍🚒 Professioni",
+      "superacao": "💪 Superamento"
+    },
+    "mood": {
+      "question": "Qual è l'atmosfera della musica? 🎵",
+      "alegre": "🎊 Allegra e Divertente",
+      "calma": "☁️ Tranquilla",
+      "animada": "🎤 Animata",
+      "suave": "🌙 Soft per Dormire"
+    },
+    "style": {
+      "question": "Quale stile musicale preferisci? 🎶",
+      "cantiga": "🎠 Filastrocca",
+      "pop": "⭐ Pop per Bambini",
+      "educativo": "📚 Educativo",
+      "ninar": "🌙 Ninnananna",
+      "desenho": "📺 Musica da Cartoon",
+      "auto": "🤖 Lascia Scegliere al Sistema"
+    },
+    "interaction": {
+      "question": "La musica deve invitare il bambino a partecipare? 👏",
+      "yes": "👏 Sì, con interazione!",
+      "no": "🎧 No, solo ascoltare"
+    },
+    "narrative": {
+      "question": "Come deve essere raccontata la storia? 📖",
+      "cantada": "🎤 Tutta Cantata",
+      "cantadaFalas": "💬 Cantata con Frasi",
+      "narrador": "📢 Narratore + Canto",
+      "historia": "📚 Storia Musicale"
+    },
+    "language": {
+      "question": "Lingua della musica? 🌍",
+      "pt": "🇧🇷 Portoghese",
+      "en": "🇺🇸 Inglese",
+      "es": "🇪🇸 Spagnolo"
+    },
+    "story": {
+      "question": "Raccontaci del bambino e dell'occasione! 🧸"
+    }
   }
 }
