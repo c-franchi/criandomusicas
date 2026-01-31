@@ -710,16 +710,10 @@ const AdminSettings = () => {
                             { id: 'single', label: 'Música Única' },
                             { id: 'package', label: 'Pacote 3 Músicas' },
                             { id: 'subscription', label: 'Pacote 5 Músicas' },
-                            { id: 'single_instrumental', label: 'Música Única (Instrumental)' },
-                            { id: 'package_instrumental', label: 'Pacote 3 Músicas (Instrumental)' },
-                            { id: 'subscription_instrumental', label: 'Pacote 5 Músicas (Instrumental)' },
                             { id: 'single_custom_lyric', label: 'Letra Própria' },
                             { id: 'creator_start', label: 'Creator Start' },
                             { id: 'creator_pro', label: 'Creator Pro' },
                             { id: 'creator_studio', label: 'Creator Studio' },
-                            { id: 'creator_start_instrumental', label: 'Creator Start (Instrumental)' },
-                            { id: 'creator_pro_instrumental', label: 'Creator Pro (Instrumental)' },
-                            { id: 'creator_studio_instrumental', label: 'Creator Studio (Instrumental)' },
                           ].map((plan) => {
                             const currentPlanIds = (editingVoucher || newVoucher).plan_ids || [];
                             const isChecked = currentPlanIds.includes(plan.id);
