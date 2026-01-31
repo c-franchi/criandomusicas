@@ -257,6 +257,80 @@
         "question": "Raccontami il contesto della tua canzone motivazionale! 💪\n\nPer chi è? Quale situazione di superamento? Cosa vuoi trasmettere?\n\n(Più dettagli dai, più personalizzato sarà il testo)"
       }
     },
+    "gospel": {
+      "intro": "✝️ Creiamo la tua canzone religiosa/gospel!\n\nQuesto tipo di musica è speciale per adorazione, lode, preghiera e momenti di fede.",
+      "context": {
+        "question": "Qual è il contesto spirituale della tua canzone? 🙏",
+        "adoracao": "🙌 Adorazione",
+        "adoracaoDesc": "Lode intima a Dio",
+        "louvor": "🎶 Lode",
+        "louvorDesc": "Celebrazione gioiosa",
+        "oracao": "🤲 Preghiera",
+        "oracaoDesc": "Conversazione con Dio",
+        "confianca": "🛡️ Fiducia in Dio",
+        "confiancaDesc": "Riposo nella provvidenza",
+        "esperanca": "🌅 Speranza",
+        "esperancaDesc": "Nei momenti difficili",
+        "gratidao": "💝 Gratitudine",
+        "gratidaoDesc": "Ringraziare le benedizioni",
+        "restauracao": "💚 Restaurazione/Guarigione",
+        "restauracaoDesc": "Guarigione e rinnovamento",
+        "consagracao": "🔥 Consacrazione",
+        "consagracaoDesc": "Resa totale"
+      },
+      "emotion": {
+        "question": "Quale emozione spirituale principale deve trasmettere?",
+        "paz": "☮️ Pace",
+        "fe": "✝️ Fede",
+        "esperanca": "🌈 Speranza",
+        "quebrantamento": "💧 Contrizione",
+        "confianca": "🛡️ Fiducia",
+        "alegria": "😊 Gioia Spirituale",
+        "reverencia": "🙇 Riverenza"
+      },
+      "intensity": {
+        "question": "Qual è l'intensità del canto?",
+        "suave": "🕯️ Dolce e Contemplativa",
+        "suaveDesc": "Momento intimo con Dio",
+        "crescente": "📈 Crescente",
+        "crescenteDesc": "Preghiera → Lode → Adorazione",
+        "congregacional": "🏛️ Intensa e Congregazionale",
+        "congregacionalDesc": "Per cantare in comunità",
+        "profetica": "🔥 Profetica/Dichiarativa",
+        "profeticaDesc": "Dichiarazioni di fede e promesse"
+      },
+      "style": {
+        "question": "Quale stile gospel si adatta alla tua canzone?",
+        "worship": "🎹 Worship Contemporaneo",
+        "congregacional": "🏛️ Gospel Congregazionale",
+        "tradicional": "📖 Gospel Tradizionale",
+        "acustico": "🎸 Gospel Acustico",
+        "instrumentalCanto": "🎵 Adorazione con Canto Strumentale",
+        "auto": "🤖 Lascia Scegliere il Sistema"
+      },
+      "narrative": {
+        "question": "Come deve essere consegnato il messaggio?",
+        "cantada": "🎤 Tutto Cantato",
+        "leituras": "📖 Cantato con Letture Bibliche",
+        "monologos": "🙏 Cantato con Monologhi Spirituali",
+        "narrador": "📢 Narratore Riverente + Canto"
+      },
+      "perspective": {
+        "question": "Qual è la prospettiva del testo?",
+        "primeiraPessoa": "🙏 Prima Persona",
+        "primeiraPessoaDesc": "Io parlo con Dio",
+        "congregacional": "🏛️ Congregazionale",
+        "congregacionalDesc": "Noi (comunità)",
+        "profetica": "🔥 Voce Profetica",
+        "profeticaDesc": "Dio che parla all'uomo"
+      },
+      "biblicalReference": {
+        "question": "C'è un riferimento biblico che vorresti ispirasse il testo? (opzionale)\n\nEsempio: Salmo 23, versetti sulla fede, speranza...\n\n💡 L'IA lo userà come ispirazione poetica, non come citazione letterale."
+      },
+      "story": {
+        "question": "Raccontami il contesto della tua canzone religiosa! 🙏\n\nPer chi è? Quale momento di fede? Cosa vuoi trasmettere?\n\n(Più dettagli dai, più personalizzato sarà il testo)"
+      }
+    },
     "mandatoryWords": {
       "question": "Ci sono parole, nomi o frasi che DEVONO apparire nel testo? (opzionale)\n\nSeleziona suggerimenti o scrivi nuovi:"
     },

@@ -73,6 +73,13 @@ interface BriefingFormData {
   motivationalIntensity?: string;
   motivationalNarrative?: string;
   motivationalPerspective?: string;
+  // Campos para música religiosa/gospel
+  gospelContext?: string;
+  gospelIntensity?: string;
+  gospelStyle?: string;
+  gospelNarrative?: string;
+  gospelPerspective?: string;
+  biblicalReference?: string;
 }
 
 const BRIEFING_STORAGE_KEY = 'briefing_autosave';
@@ -157,6 +164,14 @@ const Briefing = () => {
     motivationalPerspectiveOptions,
     motivationalStyleOptions,
     getMotivationalChatMessages,
+    // Gospel options
+    gospelContextOptions,
+    gospelEmotionOptions,
+    gospelIntensityOptions,
+    gospelStyleOptions,
+    gospelNarrativeOptions,
+    gospelPerspectiveOptions,
+    getGospelChatMessages,
     getPlanLabels,
     getIntensityLabels,
     getChatMessages,
@@ -178,6 +193,7 @@ const Briefing = () => {
   const intensityLabels = getIntensityLabels();
   const instrumentOptions = getInstrumentOptions();
   const motivationalMessages = getMotivationalChatMessages();
+  const gospelMessages = getGospelChatMessages();
   
   // Plan selection state
   const [showPlanSelection, setShowPlanSelection] = useState(false);
@@ -753,6 +769,86 @@ const Briefing = () => {
       inputType: 'options',
       field: 'autoGenerateName',
       options: nameOptions
+    },
+    // FLUXO GOSPEL/RELIGIOSO (índices 44-53)
+    // 44: gospelContext, 45: emotion, 46: gospelIntensity, 47: gospelStyle, 48: gospelNarrative, 49: gospelPerspective, 50: biblicalReference, 51: story, 52: voiceType, 53: autoGenerateName
+    // Índice 44: Contexto espiritual
+    {
+      type: 'bot',
+      content: gospelMessages.context,
+      inputType: 'options',
+      field: 'gospelContext',
+      options: gospelContextOptions
+    },
+    // Índice 45: Emoção espiritual
+    {
+      type: 'bot',
+      content: gospelMessages.emotion,
+      inputType: 'options',
+      field: 'emotion',
+      options: gospelEmotionOptions
+    },
+    // Índice 46: Intensidade do canto
+    {
+      type: 'bot',
+      content: gospelMessages.intensity,
+      inputType: 'options',
+      field: 'gospelIntensity',
+      options: gospelIntensityOptions
+    },
+    // Índice 47: Estilo gospel
+    {
+      type: 'bot',
+      content: gospelMessages.style,
+      inputType: 'options',
+      field: 'style',
+      options: gospelStyleOptions
+    },
+    // Índice 48: Narrativa (cantada, com leituras, etc)
+    {
+      type: 'bot',
+      content: gospelMessages.narrative,
+      inputType: 'options',
+      field: 'gospelNarrative',
+      options: gospelNarrativeOptions
+    },
+    // Índice 49: Perspectiva (eu, nós, profética)
+    {
+      type: 'bot',
+      content: gospelMessages.perspective,
+      inputType: 'options',
+      field: 'gospelPerspective',
+      options: gospelPerspectiveOptions
+    },
+    // Índice 50: Referência bíblica (opcional)
+    {
+      type: 'bot',
+      content: gospelMessages.biblicalReference,
+      inputType: 'textarea',
+      field: 'biblicalReference'
+    },
+    // Índice 51: História/contexto
+    {
+      type: 'bot',
+      content: gospelMessages.story,
+      inputType: 'textarea',
+      field: 'story'
+    },
+    // Índice 52: Tipo de voz
+    {
+      type: 'bot',
+      content: chatMessages.voiceType,
+      inputType: 'options',
+      field: 'voiceType',
+      options: voiceTypeOptions
+    },
+    // Índice 53: Nome automático? (gospel)
+    {
+      type: 'bot',
+      content: chatMessages.songNameAuto,
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: nameOptions
     }
   ];
 
@@ -862,6 +958,10 @@ const Briefing = () => {
       if (!data.isInstrumental && data.musicType === 'motivacional') {
         return 34; // Vai para fluxo motivacional (momento de uso)
       }
+      // Se é religiosa e cantada, vai para fluxo gospel
+      if (!data.isInstrumental && data.musicType === 'religiosa') {
+        return 44; // Vai para fluxo gospel (contexto espiritual)
+      }
       // Se é corporativa e cantada, perguntar formato (institucional vs jingle)
       if (!data.isInstrumental && data.musicType === 'corporativa') {
         return 31; // Vai para formato corporativo
@@ -879,7 +979,7 @@ const Briefing = () => {
     if (current === 32) return 33; // contactInfo -> callToAction
     if (current === 33) return 10; // callToAction -> emotion (continua fluxo)
     
-    // FLUXO MOTIVACIONAL (34-49)
+    // FLUXO MOTIVACIONAL (34-43)
     // 34: moment, 35: emotion, 36: motivationalIntensity, 37: style, 38: narrative, 39: perspective, 40: story, 41: mandatoryWords, 42: voiceType, 43: autoGenerateName
     if (data.musicType === 'motivacional' && !data.isInstrumental) {
       if (current === 34) return 35; // moment -> emotion
@@ -898,6 +998,27 @@ const Briefing = () => {
       if (current === 41) return 42; // mandatoryWords -> voiceType
       if (current === 42) return 43; // voiceType -> autoGenerateName
       if (current === 43) {
+        return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
+      }
+    }
+    
+    // FLUXO GOSPEL/RELIGIOSO (44-53)
+    // 44: context, 45: emotion, 46: intensity, 47: style, 48: narrative, 49: perspective, 50: biblicalReference, 51: story, 52: voiceType, 53: autoGenerateName
+    if (data.musicType === 'religiosa' && !data.isInstrumental) {
+      if (current === 44) return 45; // context -> emotion
+      if (current === 45) return 46; // emotion -> intensity
+      if (current === 46) return 47; // intensity -> style
+      if (current === 47) return 48; // style -> narrative
+      if (current === 48) {
+        // Músicas gospel SEMPRE começam com monólogo espiritual
+        // (será setado no handleOptionSelect quando selecionar qualquer narrativa)
+        return 49; // narrative -> perspective
+      }
+      if (current === 49) return 50; // perspective -> biblicalReference
+      if (current === 50) return 51; // biblicalReference -> story
+      if (current === 51) return 52; // story -> voiceType
+      if (current === 52) return 53; // voiceType -> autoGenerateName
+      if (current === 53) {
         return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
       }
     }
@@ -1112,6 +1233,40 @@ const Briefing = () => {
         motivationalNarrative: option.id,
         hasMonologue: hasSpokenParts,
         monologuePosition: hasSpokenParts ? 'bridge' : ''
+      };
+      
+      if (isEditingSingleField) {
+        setIsEditingSingleField(false);
+        setEditingFieldStep(null);
+        setTimeout(() => {
+          showConfirmationScreen(updatedFormData);
+        }, 500);
+        return;
+      }
+      
+      const nextStep = getNextStep(currentStep, updatedFormData);
+      setCurrentStep(nextStep);
+      setTimeout(() => addBotMessage(chatFlow[nextStep]), 500);
+      return;
+    }
+
+    // Handle gospelNarrative - músicas gospel SEMPRE começam com monólogo espiritual
+    if (field === 'gospelNarrative') {
+      // Gospel music always has a spiritual monologue at the beginning
+      setFormData(prev => ({ 
+        ...prev, 
+        gospelNarrative: option.id,
+        hasMonologue: true, // Gospel always has monologue
+        monologuePosition: 'intro' // Monologue at the start for reverent opening
+      }));
+      addUserMessage(displayValue);
+      setStepHistory(prev => [...prev, currentStep]);
+      
+      const updatedFormData = { 
+        ...formData, 
+        gospelNarrative: option.id,
+        hasMonologue: true,
+        monologuePosition: 'intro'
       };
       
       if (isEditingSingleField) {
