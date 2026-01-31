@@ -21,7 +21,7 @@ import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCre
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
-  soundtrackUsageImages, soundtrackEmotionImages
+  soundtrackUsageImages, soundtrackEmotionImages, creationModeImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -2580,85 +2580,110 @@ const Briefing = () => {
               <p className="text-muted-foreground">{t('planSelection.choosePackage')}</p>
             </div>
 
-            {/* Single Music Options */}
+            {/* Single Music Options - Visual Cards */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Zap className="w-5 h-5 text-primary" />
                 {t('planSelection.singleMusic')}
               </h3>
               
-              <div className="grid gap-3">
-                <Button
-                  variant="outline"
-                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary ${
-                    hasVocalCredits ? 'border-green-500/50 bg-green-500/5' : ''
-                  }`}
+              {/* Visual Cards Grid */}
+              <div className="grid grid-cols-3 gap-3">
+                {/* Vocal Card */}
+                <button
                   onClick={() => handlePlanSelection('single')}
-                >
-                  <div className="flex items-center gap-3 w-full">
-                    <span className="text-2xl">🎤</span>
-                    <div className="flex-1">
-                      <p className="font-semibold">{t('planSelection.vocalSingle')}</p>
-                      <p className="text-sm text-muted-foreground">{t('planSelection.vocalSingleDesc')}</p>
-                    </div>
-                    {hasVocalCredits ? (
-                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
-                        <Check className="w-3 h-3 mr-1" />
-                        {t('planSelection.useCredit')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">1 {t('planSelection.single').toLowerCase()}</Badge>
-                    )}
-                  </div>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary ${
-                    hasInstrumentalCredits ? 'border-purple-500/50 bg-purple-500/5' : ''
+                  className={`relative group rounded-xl overflow-hidden aspect-square transition-all duration-300 ${
+                    hasVocalCredits 
+                      ? 'ring-2 ring-green-500 ring-offset-2 ring-offset-background' 
+                      : 'hover:ring-2 hover:ring-primary hover:ring-offset-2 hover:ring-offset-background'
                   }`}
-                  onClick={() => handlePlanSelection('single_instrumental')}
                 >
-                  <div className="flex items-center gap-3 w-full">
-                    <span className="text-2xl">🎹</span>
-                    <div className="flex-1">
-                      <p className="font-semibold">{t('planSelection.instrumentalSingle')}</p>
-                      <p className="text-sm text-muted-foreground">{t('planSelection.instrumentalSingleDesc')}</p>
-                    </div>
-                    {hasInstrumentalCredits ? (
-                      <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
-                        <Check className="w-3 h-3 mr-1" />
-                        {t('planSelection.useCredit')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">1 {t('planSelection.single').toLowerCase()}</Badge>
-                    )}
+                  <img 
+                    src={creationModeImages.vocal} 
+                    alt={t('planSelection.vocalSingle')}
+                    className="w-full h-full object-cover brightness-75 group-hover:brightness-90 transition-all"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3">
+                    <p className="text-white font-semibold text-xs sm:text-sm text-center">
+                      {t('planSelection.vocalSingle')}
+                    </p>
+                    <p className="text-white/70 text-[10px] sm:text-xs text-center hidden sm:block">
+                      {t('planSelection.vocalSingleDesc')}
+                    </p>
                   </div>
-                </Button>
+                  {hasVocalCredits && (
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-green-500/90 text-white text-[10px] px-1.5 py-0.5">
+                        <Check className="w-3 h-3" />
+                      </Badge>
+                    </div>
+                  )}
+                </button>
 
-                <Button
-                  variant="outline"
-                  className={`h-auto py-4 px-4 justify-start text-left hover:border-primary ${
-                    hasVocalCredits ? 'border-green-500/50 bg-green-500/5' : ''
-                  }`}
+                {/* Custom Lyric Card */}
+                <button
                   onClick={() => handlePlanSelection('single_custom_lyric')}
+                  className={`relative group rounded-xl overflow-hidden aspect-square transition-all duration-300 ${
+                    hasVocalCredits 
+                      ? 'ring-2 ring-green-500 ring-offset-2 ring-offset-background' 
+                      : 'hover:ring-2 hover:ring-primary hover:ring-offset-2 hover:ring-offset-background'
+                  }`}
                 >
-                  <div className="flex items-center gap-3 w-full">
-                    <span className="text-2xl">📝</span>
-                    <div className="flex-1">
-                      <p className="font-semibold">{t('planSelection.customLyricSingle')}</p>
-                      <p className="text-sm text-muted-foreground">{t('planSelection.customLyricSingleDesc')}</p>
-                    </div>
-                    {hasVocalCredits ? (
-                      <Badge className="bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
-                        <Check className="w-3 h-3 mr-1" />
-                        {t('planSelection.useCredit')}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary">1 {t('planSelection.single').toLowerCase()}</Badge>
-                    )}
+                  <img 
+                    src={creationModeImages.custom_lyric} 
+                    alt={t('planSelection.customLyricSingle')}
+                    className="w-full h-full object-cover brightness-75 group-hover:brightness-90 transition-all"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3">
+                    <p className="text-white font-semibold text-xs sm:text-sm text-center">
+                      {t('planSelection.customLyricSingle')}
+                    </p>
+                    <p className="text-white/70 text-[10px] sm:text-xs text-center hidden sm:block">
+                      {t('planSelection.customLyricSingleDesc')}
+                    </p>
                   </div>
-                </Button>
+                  {hasVocalCredits && (
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-green-500/90 text-white text-[10px] px-1.5 py-0.5">
+                        <Check className="w-3 h-3" />
+                      </Badge>
+                    </div>
+                  )}
+                </button>
+
+                {/* Instrumental Card */}
+                <button
+                  onClick={() => handlePlanSelection('single_instrumental')}
+                  className={`relative group rounded-xl overflow-hidden aspect-square transition-all duration-300 ${
+                    hasInstrumentalCredits 
+                      ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-background' 
+                      : 'hover:ring-2 hover:ring-accent hover:ring-offset-2 hover:ring-offset-background'
+                  }`}
+                >
+                  <img 
+                    src={creationModeImages.instrumental} 
+                    alt={t('planSelection.instrumentalSingle')}
+                    className="w-full h-full object-cover brightness-75 group-hover:brightness-90 transition-all"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                  <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3">
+                    <p className="text-white font-semibold text-xs sm:text-sm text-center">
+                      {t('planSelection.instrumentalSingle')}
+                    </p>
+                    <p className="text-white/70 text-[10px] sm:text-xs text-center hidden sm:block">
+                      {t('planSelection.instrumentalSingleDesc')}
+                    </p>
+                  </div>
+                  {hasInstrumentalCredits && (
+                    <div className="absolute top-2 right-2">
+                      <Badge className="bg-purple-500/90 text-white text-[10px] px-1.5 py-0.5">
+                        <Check className="w-3 h-3" />
+                      </Badge>
+                    </div>
+                  )}
+                </button>
               </div>
             </div>
 
