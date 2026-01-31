@@ -408,37 +408,38 @@ const Dashboard = () => {
 
         {/* Header */}
         <motion.div 
-          className="flex items-center justify-between mb-8"
+          className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         >
-          <div className="text-center flex-1">
-            <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
               <motion.div
                 animate={{ rotate: [0, 10, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                className="shrink-0"
               >
-                <Music className="w-8 h-8 text-primary" />
+                <Music className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </motion.div>
-              <h1 className="text-3xl font-bold gradient-text">{t('title')}</h1>
+              <h1 className="text-xl sm:text-3xl font-bold gradient-text truncate">{t('title')}</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {t('subtitle')}
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" asChild title={t('buttons.home')} className="hover:scale-105 transition-transform">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap shrink-0">
+            <Button variant="outline" size="icon" asChild title={t('buttons.home')} className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
               <Link to="/">
                 <Home className="w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild title={t('buttons.install')} className="hover:scale-105 transition-transform">
+            <Button variant="outline" size="icon" asChild title={t('buttons.install')} className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
               <Link to="/install">
                 <Download className="w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
+            <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
               <Link to="/perfil" title={t('buttons.profile')}>
                 <User className="w-4 h-4" />
               </Link>
@@ -446,7 +447,7 @@ const Dashboard = () => {
             <RegionSelector variant="compact" />
             <ThemeToggle />
             {isAdmin && (
-              <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform">
+              <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
                 <Link to="/admin" title={t('buttons.admin')}>
                   <Settings className="w-4 h-4" />
                 </Link>
