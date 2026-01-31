@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, Home, ArrowLeft } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, ArrowLeft } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,7 +13,7 @@ import CreditsBanner from "@/components/CreditsBanner";
 import { useTranslation } from "react-i18next";
 import RegionSelector from "@/components/RegionSelector";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { formatCurrency, getLocalizedPrice } from "@/lib/i18n-format";
+import { formatCurrency } from "@/lib/i18n-format";
 import {
   Accordion,
   AccordionContent,
@@ -56,14 +56,10 @@ const Planos = () => {
   const { user, profile } = useAuth();
   const { toast } = useToast();
   const { t, i18n } = useTranslation('pricing');
-  const [isInstrumental, setIsInstrumental] = useState(false);
-  const [vocalPlans, setVocalPlans] = useState<PricingPlan[]>([]);
-  const [instrumentalPlans, setInstrumentalPlans] = useState<PricingPlan[]>([]);
+  const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [creatorPlans, setCreatorPlans] = useState<PricingPlan[]>([]);
-  const [creatorInstrumentalPlans, setCreatorInstrumentalPlans] = useState<PricingPlan[]>([]);
   const [customLyricPlan, setCustomLyricPlan] = useState<PricingPlan | null>(null);
   const [loading, setLoading] = useState(true);
-  const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   
   // Helper to format prices with currency conversion based on current language
@@ -96,17 +92,17 @@ const Planos = () => {
         if (error) throw error;
 
         if (data) {
-          // Separate vocal, instrumental, creator, and custom lyric plans
-          const vocal = data.filter(p => ['single', 'package', 'subscription'].includes(p.id));
-          const instrumental = data.filter(p => ['single_instrumental', 'package_instrumental', 'subscription_instrumental'].includes(p.id));
-          const creator = data.filter(p => ['creator_start', 'creator_pro', 'creator_studio'].includes(p.id));
-          const creatorInst = data.filter(p => p.id.startsWith('creator_') && p.id.includes('instrumental'));
+          // Filter universal plans (excluding instrumental variants)
+          const universalPlans = data.filter(p => 
+            ['single', 'package', 'subscription'].includes(p.id)
+          );
+          const creator = data.filter(p => 
+            ['creator_start', 'creator_pro', 'creator_studio'].includes(p.id)
+          );
           const customLyric = data.find(p => p.id === 'single_custom_lyric');
           
-          setVocalPlans(vocal.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
-          setInstrumentalPlans(instrumental.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
+          setPlans(universalPlans.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
           setCreatorPlans(creator.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
-          setCreatorInstrumentalPlans(creatorInst.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
           if (customLyric) {
             setCustomLyricPlan({ ...customLyric, features: Array.isArray(customLyric.features) ? customLyric.features as string[] : [] });
           }
@@ -120,8 +116,6 @@ const Planos = () => {
     fetchPlans();
   }, []);
 
-  const currentPlans = isInstrumental ? instrumentalPlans : vocalPlans;
-
   const getPlanIcon = (planId: string) => {
     if (planId.includes('single')) return <Zap className="w-6 h-6" />;
     if (planId.includes('package')) return <Check className="w-6 h-6" />;
@@ -132,9 +126,9 @@ const Planos = () => {
   // Translate plan names based on plan ID
   const getPlanName = (planId: string, dbName: string): string => {
     // For creator plans, keep English names
-    if (planId.includes('creator_start')) return planId.includes('instrumental') ? 'Creator Start Instrumental' : 'Creator Start';
-    if (planId.includes('creator_pro')) return planId.includes('instrumental') ? 'Creator Pro Instrumental' : 'Creator Pro';
-    if (planId.includes('creator_studio')) return planId.includes('instrumental') ? 'Creator Studio Instrumental' : 'Creator Studio';
+    if (planId.includes('creator_start')) return 'Creator Start';
+    if (planId.includes('creator_pro')) return 'Creator Pro';
+    if (planId.includes('creator_studio')) return 'Creator Studio';
     
     // Try to get translated name from pricing.plans
     const translatedName = t(`plans.${planId}.name`, { defaultValue: '' });
@@ -150,10 +144,7 @@ const Planos = () => {
     
     // Fallback descriptions for Creator plans
     const credits = getCreditsForPlan(planId);
-    const isInstrumentalPlan = planId.includes('instrumental');
-    const songWord = isInstrumentalPlan 
-      ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
-      : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
+    const songWord = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
     
     return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
   };
@@ -161,13 +152,10 @@ const Planos = () => {
   // Get description for Creator plans with credits
   const getCreatorPlanDescription = (planId: string): string => {
     const credits = getCreditsForPlan(planId);
-    const isInstrumentalPlan = planId.includes('instrumental');
+    const songType = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
     
     // Define descriptions for each plan tier
     if (planId.includes('creator_start')) {
-      const songType = isInstrumentalPlan 
-        ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
-        : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
       const desc = i18n.language === 'pt-BR' ? 'Ideal para criadores que estão começando' 
         : i18n.language === 'es' ? 'Ideal para creadores que están comenzando' 
         : i18n.language === 'it' ? 'Ideale per creator che stanno iniziando' 
@@ -176,9 +164,6 @@ const Planos = () => {
     }
     
     if (planId.includes('creator_pro')) {
-      const songType = isInstrumentalPlan 
-        ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
-        : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
       const desc = i18n.language === 'pt-BR' ? 'Para criadores de conteúdo frequentes' 
         : i18n.language === 'es' ? 'Para creadores de contenido frecuentes' 
         : i18n.language === 'it' ? 'Per creator di contenuti frequenti' 
@@ -187,9 +172,6 @@ const Planos = () => {
     }
     
     if (planId.includes('creator_studio')) {
-      const songType = isInstrumentalPlan 
-        ? (i18n.language === 'pt-BR' ? 'instrumentais' : i18n.language === 'es' ? 'instrumentales' : i18n.language === 'it' ? 'strumentali' : 'instrumentals')
-        : (i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs');
       const desc = i18n.language === 'pt-BR' ? 'Produção em escala para profissionais' 
         : i18n.language === 'es' ? 'Producción a escala para profesionales' 
         : i18n.language === 'it' ? 'Produzione su larga scala per professionisti' 
@@ -227,7 +209,7 @@ const Planos = () => {
     }
 
     try {
-      const basePlanId = planId.replace('_instrumental', '') as Plan;
+      const basePlanId = planId as Plan;
       const { error } = await supabase
         .from('profiles')
         .update({ plan: basePlanId })
@@ -242,9 +224,6 @@ const Planos = () => {
 
       // Navigate to briefing with plan info
       const params = new URLSearchParams();
-      if (isInstrumental) {
-        params.set('instrumental', 'true');
-      }
       params.set('planId', planId);
       
       navigate(`/briefing?${params.toString()}`);
@@ -258,7 +237,7 @@ const Planos = () => {
   };
 
   // Find single plan for savings calculation
-  const singlePlan = currentPlans.find(p => p.id.includes('single'));
+  const singlePlan = plans.find(p => p.id === 'single');
   const singlePrice = singlePlan ? (singlePlan.price_promo_cents || singlePlan.price_cents) : 990;
 
   return (
@@ -322,7 +301,7 @@ const Planos = () => {
           </div>
         ) : (
           <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 pt-4 mb-16">
-            {currentPlans.map((plan) => {
+            {plans.map((plan) => {
               const hasPromo = plan.price_promo_cents !== null;
               const displayPrice = hasPromo ? formatPrice(plan.price_promo_cents!) : formatPrice(plan.price_cents);
               const originalPrice = hasPromo ? formatPrice(plan.price_cents) : null;
@@ -361,11 +340,9 @@ const Planos = () => {
                   <CardHeader className="text-center pb-4">
                     <div className="flex justify-center mb-4">
                       <div className={`p-4 rounded-2xl ${
-                        isInstrumental 
-                          ? "bg-gradient-to-r from-accent to-primary music-glow"
-                          : plan.id === "single" ? "bg-gradient-to-r from-primary to-accent music-glow" :
-                            plan.is_popular ? "bg-gradient-to-r from-primary to-accent music-glow" :
-                            "bg-gradient-to-r from-accent to-primary music-glow"
+                        plan.id === "single" ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                          plan.is_popular ? "bg-gradient-to-r from-primary to-accent music-glow" :
+                          "bg-gradient-to-r from-accent to-primary music-glow"
                       }`}>
                         {React.cloneElement(getPlanIcon(plan.id), {
                           className: "w-8 h-8 text-white"
@@ -381,12 +358,12 @@ const Planos = () => {
                         <CardDescription className="text-xl line-through text-muted-foreground">
                           {originalPrice}
                         </CardDescription>
-                        <CardDescription className={`text-4xl font-bold ${isInstrumental ? 'text-accent' : 'text-green-500'}`}>
+                        <CardDescription className="text-4xl font-bold text-green-500">
                           {displayPrice}
                         </CardDescription>
                       </div>
                     ) : (
-                      <CardDescription className={`text-4xl font-bold ${isInstrumental ? 'text-accent' : 'gradient-text'}`}>
+                      <CardDescription className="text-4xl font-bold gradient-text">
                         {displayPrice}
                       </CardDescription>
                     )}
@@ -416,6 +393,15 @@ const Planos = () => {
                           <span className="text-card-foreground leading-relaxed font-medium">{feature}</span>
                         </li>
                       ))}
+                      {/* Universal credit benefit */}
+                      <li className="flex items-start gap-3">
+                        <div className="p-1 rounded-full bg-primary/20 mt-0.5">
+                          <Music className="w-3 h-3 text-primary flex-shrink-0" />
+                        </div>
+                        <span className="text-primary leading-relaxed font-medium">
+                          {t('universal.usageHint', { defaultValue: 'Use para vocal, instrumental ou letra própria' })}
+                        </span>
+                      </li>
                       {credits > 1 && (
                         <li className="flex items-start gap-3">
                           <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
@@ -497,7 +483,7 @@ const Planos = () => {
             </div>
           ) : (
             <div className="grid lg:grid-cols-3 gap-8 mb-12 pt-4">
-              {(isInstrumental ? creatorInstrumentalPlans : creatorPlans).map((plan) => {
+              {creatorPlans.map((plan) => {
                 const credits = getCreditsForPlan(plan.id);
                 const pricePerMusic = Math.round((plan.price_promo_cents || plan.price_cents) / credits);
                 const isPopular = plan.is_popular || plan.id.includes('creator_pro');
@@ -540,7 +526,7 @@ const Planos = () => {
                         {getPlanName(plan.id, plan.name)}
                       </CardTitle>
                       
-                      {/* ✅ DESCRIPTION - forced visibility with min-height */}
+                      {/* Description with min-height for alignment */}
                       <div className="mb-4 min-h-[52px] flex items-center justify-center">
                         <p className="text-sm text-muted-foreground leading-relaxed text-center px-2">
                           {getCreatorPlanDescription(plan.id) || `${credits} músicas/mês`}
@@ -574,6 +560,15 @@ const Planos = () => {
                             <span className="text-card-foreground leading-relaxed text-sm">{feature}</span>
                           </li>
                         ))}
+                        {/* Universal credit benefit */}
+                        <li className="flex items-start gap-3">
+                          <div className="p-1 rounded-full bg-purple-500/20 mt-0.5">
+                            <Music className="w-3 h-3 text-purple-400 flex-shrink-0" />
+                          </div>
+                          <span className="text-purple-400 leading-relaxed text-sm">
+                            {t('universal.usageHint', { defaultValue: 'Use para vocal, instrumental ou letra própria' })}
+                          </span>
+                        </li>
                       </ul>
 
                       <div className="mt-auto">
@@ -598,7 +593,7 @@ const Planos = () => {
                               : "bg-purple-600 hover:bg-purple-500 text-white"
                           }`}
                         >
-                          {t('creator.subscribe', { plan: getPlanName(plan.id, plan.name).replace(' Instrumental', '') })}
+                          {t('creator.subscribe', { plan: getPlanName(plan.id, plan.name) })}
                         </Button>
                       </div>
                     </CardContent>
@@ -624,7 +619,7 @@ const Planos = () => {
           </div>
 
           {/* Why Choose Us Section */}
-          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5">
+          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 mt-8">
             <CardHeader className="text-center">
               <CardTitle className="text-xl text-purple-400">
                 {t('creator.whyUs.title')}
@@ -737,8 +732,8 @@ const Planos = () => {
                 </ul>
 
                 <Button
-                  onClick={() => navigate("/briefing?custom_lyric=true")}
-                  className="w-full py-4 font-semibold text-lg bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-lg shadow-green-500/30 transition-all duration-300"
+                  onClick={() => navigate('/briefing?type=custom_lyric')}
+                  className="w-full py-4 font-semibold bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white shadow-lg shadow-green-500/30"
                 >
                   <FileText className="w-5 h-5 mr-2" />
                   {t('customLyric.cta')}
@@ -749,21 +744,13 @@ const Planos = () => {
         )}
 
         {/* Footer */}
-        <div className="text-center space-y-6">
-          <div className="p-6 rounded-2xl glass-card border border-border/50">
-            <p className="text-foreground font-medium mb-2">
-              {t('footer.guarantee')}
-            </p>
-            <p className="text-muted-foreground">
-              {t('footer.delivery')}
-            </p>
-          </div>
-          
-          <div className="flex gap-4 justify-center">
-            <Button variant="ghost" onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground">
-              {t('footer.back')}
-            </Button>
-          </div>
+        <div className="text-center pt-6">
+          <p className="text-muted-foreground text-sm mb-2">
+            {t('footer.payment')} • {t('footer.satisfaction')}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {t('footer.delivery')}
+          </p>
         </div>
       </div>
     </div>

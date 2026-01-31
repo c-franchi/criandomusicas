@@ -175,6 +175,11 @@
     "priority": "Entrega prioritária",
     "instrumentalVersion": "Versão instrumental"
   },
+  "universal": {
+    "badge": "Créditos universais - use para qualquer tipo de música",
+    "creatorBadge": "Créditos universais - crie vocal, instrumental ou com sua letra",
+    "usageHint": "Use para vocal, instrumental ou letra própria"
+  },
   "toggle": {
     "vocal": "Com Voz",
     "instrumental": "Instrumental"

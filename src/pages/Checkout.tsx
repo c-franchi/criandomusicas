@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2, Zap, AlertTriangle, Mic, Piano } from 'lucide-react';
+import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { useCredits, getPlanLabel } from '@/hooks/useCredits';
@@ -64,7 +64,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isVIP, loading: vipLoading } = useVIPAccess(user?.id, user?.email || undefined);
-  const { hasCredits, totalAvailable, totalVocal, totalInstrumental, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
+  const { hasCredits, totalCredits, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
 
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -735,25 +735,9 @@ export default function Checkout() {
     }
   };
 
-  // Determine if credits are compatible with this order type
-  const getOrderType = (): 'vocal' | 'instrumental' | 'custom_lyric' => {
-    if (order?.is_instrumental) return 'instrumental';
-    if (order?.has_custom_lyric) return 'custom_lyric';
-    return 'vocal';
-  };
-
-  // Check if credits are compatible with order type
-  // Uses totalVocal/totalInstrumental to support both packages AND subscriptions
+  // Universal credits - always compatible
   const isCreditsCompatible = (): boolean => {
-    if (!order) return false;
-    const orderType = getOrderType();
-    
-    // Check by available credit type (works for packages AND subscriptions)
-    if (orderType === 'instrumental') {
-      return totalInstrumental > 0;
-    }
-    // Vocal and custom_lyric use vocal credits
-    return totalVocal > 0;
+    return hasCredits;
   };
 
   if (authLoading || vipLoading || loading || processingVIP) {
@@ -935,15 +919,15 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
-        {/* Credits Payment Option - Show if user has compatible credits */}
-        {!showPixSection && hasCredits && isCreditsCompatible() && !creditsLoading && (
+        {/* Credits Payment Option - Show if user has credits */}
+        {!showPixSection && hasCredits && !creditsLoading && (
           <Card className="border-2 border-green-500/50 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <Zap className="h-5 w-5 text-green-400" />
                 {t('credits.title')}
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30 ml-2">
-                  {t('credits.available', { count: totalAvailable })}
+                  {t('credits.available', { count: totalCredits })}
                 </Badge>
               </CardTitle>
               <CardDescription>
@@ -989,41 +973,6 @@ export default function Checkout() {
           </Card>
         )}
 
-        {/* Incompatible Credits Warning */}
-        {!showPixSection && hasCredits && !isCreditsCompatible() && !creditsLoading && (
-          <Card className="border-amber-500/50 bg-amber-500/10">
-            <CardContent className="p-4">
-              <div className="flex items-start gap-3">
-                <AlertTriangle className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                <div>
-                  <p className="font-medium text-amber-600 dark:text-amber-400">{t('credits.incompatible.title')}</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {totalInstrumental > 0 && (
-                      <span className="inline-flex items-center gap-1">
-                        <Piano className="w-3 h-3" />
-                        <strong>{totalInstrumental} {totalInstrumental !== 1 ? t('credits.incompatible.instrumentals') : t('credits.incompatible.instrumental')}</strong>
-                      </span>
-                    )}
-                    {totalVocal > 0 && totalInstrumental > 0 && ` ${t('common:and')} `}
-                    {totalVocal > 0 && (
-                      <span className="inline-flex items-center gap-1">
-                        <Mic className="w-3 h-3" />
-                        <strong>{totalVocal} {totalVocal !== 1 ? t('credits.incompatible.vocals') : t('credits.incompatible.vocal')}</strong>
-                      </span>
-                    )}
-                    {' '}{t('credits.incompatible.requiresType', { type: order?.is_instrumental ? t('credits.incompatible.instrumental') : t('credits.incompatible.vocal') })}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    💡 {t('credits.incompatible.tip', { 
-                      creditType: totalInstrumental > 0 ? t('credits.incompatible.instrumentals') : t('credits.incompatible.vocals'),
-                      musicType: totalInstrumental > 0 ? t('credits.incompatible.instrumentalMusic') : t('credits.incompatible.vocalMusic')
-                    })}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Voucher Section - Only show if not in PIX mode */}
         {!showPixSection && (
