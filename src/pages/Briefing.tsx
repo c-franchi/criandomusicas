@@ -2763,13 +2763,11 @@ const Briefing = () => {
                     }))}
                     selectedId={undefined}
                     variant="square"
-                    initialVisible={8}
+                    title={t('briefing:musicTypes', 'Tipos de música')}
                     onSelect={(id) => {
                       const option = currentBotMessage.options?.find(o => o.id === id);
                       if (option) handleOptionSelect(option);
                     }}
-                    showMoreLabel={t('common:showMore', 'Ver mais')}
-                    showLessLabel={t('common:showLess', 'Ver menos')}
                   />
                 )}
 
@@ -2783,13 +2781,11 @@ const Briefing = () => {
                     }))}
                     selectedId={undefined}
                     variant="circle"
-                    initialVisible={6}
+                    title={t('briefing:emotions', 'Emoções')}
                     onSelect={(id) => {
                       const option = currentBotMessage.options?.find(o => o.id === id);
                       if (option) handleOptionSelect(option);
                     }}
-                    showMoreLabel={t('common:showMore', 'Ver mais')}
-                    showLessLabel={t('common:showLess', 'Ver menos')}
                   />
                 )}
 
@@ -2803,13 +2799,11 @@ const Briefing = () => {
                     }))}
                     selectedId={undefined}
                     variant="square"
-                    initialVisible={8}
+                    title={t('briefing:genres', 'Gêneros musicais')}
                     onSelect={(id) => {
                       const option = currentBotMessage.options?.find(o => o.id === id);
                       if (option) handleOptionSelect(option);
                     }}
-                    showMoreLabel={t('common:showMore', 'Ver mais')}
-                    showLessLabel={t('common:showLess', 'Ver menos')}
                   />
                 )}
 
@@ -2930,13 +2924,11 @@ const Briefing = () => {
                       }))}
                       selectedId={undefined}
                       variant="square"
-                      initialVisible={8}
+                      title={t('briefing:genres', 'Gêneros musicais')}
                       onSelect={(id) => {
                         const option = currentBotMessage.options?.find(o => o.id === id);
                         if (option) handleOptionSelect(option);
                       }}
-                      showMoreLabel={t('common:showMore', 'Ver mais')}
-                      showLessLabel={t('common:showLess', 'Ver menos')}
                     />
                     {/* Botão "Outro estilo" */}
                     <div className="flex justify-center pt-2">
