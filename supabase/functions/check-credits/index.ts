@@ -12,7 +12,7 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-CREDITS] ${step}${detailsStr}`);
 };
 
-// Map plan IDs to credit amounts
+// Map plan IDs to credit amounts (universal credits)
 const PLAN_CREDITS: Record<string, number> = {
   'single': 1,
   'single_instrumental': 1,
@@ -21,26 +21,6 @@ const PLAN_CREDITS: Record<string, number> = {
   'package_instrumental': 3,
   'subscription': 5,
   'subscription_instrumental': 5,
-};
-
-// Credit type compatibility:
-// - 'vocal' credits can be used for: vocal songs, custom lyric songs
-// - 'instrumental' credits can be used for: instrumental songs only
-const getCreditType = (planId: string): 'vocal' | 'instrumental' => {
-  return planId.includes('instrumental') ? 'instrumental' : 'vocal';
-};
-
-// Check if a credit can be used for a specific order type
-const isCreditCompatible = (planId: string, orderType: 'vocal' | 'instrumental' | 'custom_lyric'): boolean => {
-  const creditType = getCreditType(planId);
-  
-  if (creditType === 'instrumental') {
-    // Instrumental credits only work for instrumental orders
-    return orderType === 'instrumental';
-  }
-  
-  // Vocal credits work for vocal and custom lyric orders
-  return orderType === 'vocal' || orderType === 'custom_lyric';
 };
 
 serve(async (req) => {
@@ -56,15 +36,6 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    // Parse optional orderType from body
-    let orderType: 'vocal' | 'instrumental' | 'custom_lyric' | null = null;
-    try {
-      const body = await req.json();
-      orderType = body?.orderType || null;
-    } catch {
-      // No body or invalid JSON is fine
-    }
-
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
@@ -72,9 +43,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         success: false,
         has_credits: false,
-        total_available: 0,
-        total_vocal: 0,
-        total_instrumental: 0,
+        total_credits: 0,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -89,9 +58,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({
         success: false,
         has_credits: false,
-        total_available: 0,
-        total_vocal: 0,
-        total_instrumental: 0,
+        total_credits: 0,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -100,7 +67,7 @@ serve(async (req) => {
     
     const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string | undefined;
-    logStep("User authenticated", { userId, orderType });
+    logStep("User authenticated", { userId });
 
     // Fetch active credits for this user from user_credits table
     const { data: credits, error: creditsError } = await supabaseClient
@@ -117,42 +84,27 @@ serve(async (req) => {
 
     logStep("Package credits fetched", { count: credits?.length || 0 });
 
-    // Calculate available credits from packages
-    let totalAvailable = 0;
-    let totalVocal = 0;
-    let totalInstrumental = 0;
+    // Calculate available credits from packages (universal - no type distinction)
+    let totalCredits = 0;
     let activePackage = null;
 
     if (credits && credits.length > 0) {
       for (const credit of credits) {
         const available = credit.total_credits - credit.used_credits;
         if (available > 0) {
-          const creditType = getCreditType(credit.plan_id);
+          totalCredits += available;
           
-          if (creditType === 'vocal') {
-            totalVocal += available;
-          } else {
-            totalInstrumental += available;
-          }
-          
-          // If orderType specified, only count compatible credits
-          const isCompatible = orderType ? isCreditCompatible(credit.plan_id, orderType) : true;
-          
-          if (isCompatible) {
-            totalAvailable += available;
-            if (!activePackage) {
-              activePackage = {
-                id: credit.id,
-                plan_id: credit.plan_id,
-                total_credits: credit.total_credits,
-                used_credits: credit.used_credits,
-                available_credits: available,
-                purchased_at: credit.purchased_at,
-                expires_at: credit.expires_at,
-                credit_type: creditType,
-                source: 'package',
-              };
-            }
+          if (!activePackage) {
+            activePackage = {
+              id: credit.id,
+              plan_id: credit.plan_id,
+              total_credits: credit.total_credits,
+              used_credits: credit.used_credits,
+              available_credits: available,
+              purchased_at: credit.purchased_at,
+              expires_at: credit.expires_at,
+              source: 'package',
+            };
           }
         }
       }
@@ -166,7 +118,6 @@ serve(async (req) => {
       credits_total: number;
       credits_used: number;
       credits_remaining: number;
-      is_instrumental: boolean;
       subscription_end: string | null;
       current_period_start: string | null;
     } | null = null;
@@ -227,7 +178,6 @@ serve(async (req) => {
               const periodEnd = new Date(currentPeriodEndTs * 1000).toISOString();
               
               // Count orders created in current period that use subscription credits
-              // Orders with plan_id starting with 'creator_' are subscription-based
               const { count: usedCount, error: countError } = await supabaseClient
                 .from('orders')
                 .select('*', { count: 'exact', head: true })
@@ -243,16 +193,14 @@ serve(async (req) => {
               const creditsUsed = usedCount || 0;
               subscriptionCredits = Math.max(0, creditsTotal - creditsUsed);
               
-              const isInstrumental = planId?.includes('instrumental') || false;
-              
-              // Plan name mapping
+              // Plan name mapping (universal - no instrumental distinction)
               const planNames: Record<string, string> = {
                 'creator_start': 'Creator Start',
                 'creator_pro': 'Creator Pro',
                 'creator_studio': 'Creator Studio',
-                'creator_start_instrumental': 'Creator Start Instrumental',
-                'creator_pro_instrumental': 'Creator Pro Instrumental',
-                'creator_studio_instrumental': 'Creator Studio Instrumental',
+                'creator_start_instrumental': 'Creator Start',
+                'creator_pro_instrumental': 'Creator Pro',
+                'creator_studio_instrumental': 'Creator Studio',
               };
               
               subscriptionInfo = {
@@ -261,40 +209,25 @@ serve(async (req) => {
                 credits_total: creditsTotal,
                 credits_used: creditsUsed,
                 credits_remaining: subscriptionCredits,
-                is_instrumental: isInstrumental,
                 subscription_end: periodEnd,
                 current_period_start: periodStart,
               };
 
-              // Add subscription credits to totals
-              if (isInstrumental) {
-                totalInstrumental += subscriptionCredits;
-              } else {
-                totalVocal += subscriptionCredits;
-              }
+              // Add subscription credits to total (universal)
+              totalCredits += subscriptionCredits;
               
-              // Check compatibility with order type
-              const subIsCompatible = orderType 
-                ? (isInstrumental ? orderType === 'instrumental' : orderType !== 'instrumental')
-                : true;
-              
-              if (subIsCompatible) {
-                totalAvailable += subscriptionCredits;
-                
-                // If no active package, subscription becomes the active source
-                if (!activePackage && subscriptionCredits > 0) {
-                  activePackage = {
-                    id: creatorSub.id,
-                    plan_id: planId,
-                    total_credits: creditsTotal,
-                    used_credits: creditsUsed,
-                    available_credits: subscriptionCredits,
-                    purchased_at: periodStart,
-                    expires_at: periodEnd,
-                    credit_type: isInstrumental ? 'instrumental' : 'vocal',
-                    source: 'subscription',
-                  };
-                }
+              // If no active package, subscription becomes the active source
+              if (!activePackage && subscriptionCredits > 0) {
+                activePackage = {
+                  id: creatorSub.id,
+                  plan_id: planId,
+                  total_credits: creditsTotal,
+                  used_credits: creditsUsed,
+                  available_credits: subscriptionCredits,
+                  purchased_at: periodStart,
+                  expires_at: periodEnd,
+                  source: 'subscription',
+                };
               }
 
               logStep("Creator subscription credits calculated", { 
@@ -302,7 +235,6 @@ serve(async (req) => {
                 creditsTotal, 
                 creditsUsed, 
                 subscriptionCredits,
-                isInstrumental 
               });
             }
           }
@@ -314,20 +246,19 @@ serve(async (req) => {
     }
 
     logStep("Credits calculated", { 
-      totalAvailable, 
-      totalVocal, 
-      totalInstrumental, 
+      totalCredits, 
       hasActivePackage: !!activePackage,
       hasSubscription: !!subscriptionInfo,
-      orderType 
     });
 
     return new Response(JSON.stringify({
       success: true,
-      has_credits: totalAvailable > 0,
-      total_available: totalAvailable,
-      total_vocal: totalVocal,
-      total_instrumental: totalInstrumental,
+      has_credits: totalCredits > 0,
+      total_credits: totalCredits,
+      // Backwards compatibility - all credits are now universal
+      total_available: totalCredits,
+      total_vocal: totalCredits,
+      total_instrumental: totalCredits,
       active_package: activePackage,
       subscription_info: subscriptionInfo,
       all_packages: credits?.map(c => ({
@@ -338,7 +269,6 @@ serve(async (req) => {
         available_credits: c.total_credits - c.used_credits,
         purchased_at: c.purchased_at,
         is_active: c.is_active,
-        credit_type: getCreditType(c.plan_id),
         source: 'package',
       })) || [],
     }), {
@@ -352,6 +282,7 @@ serve(async (req) => {
       success: false, 
       error: errorMessage,
       has_credits: false,
+      total_credits: 0,
       total_available: 0,
       total_vocal: 0,
       total_instrumental: 0,

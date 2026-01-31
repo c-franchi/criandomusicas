@@ -30,7 +30,6 @@ interface SubscriptionInfo {
   credits_total: number;
   credits_used: number;
   credits_remaining: number;
-  is_instrumental: boolean;
   subscription_end: string | null;
   current_period_start: string | null;
 }
@@ -38,6 +37,8 @@ interface SubscriptionInfo {
 interface CreditsState {
   loading: boolean;
   hasCredits: boolean;
+  totalCredits: number;
+  // Backwards compatibility (all credits are now universal)
   totalAvailable: number;
   totalVocal: number;
   totalInstrumental: number;
@@ -52,6 +53,7 @@ export function useCredits() {
   const [state, setState] = useState<CreditsState>({
     loading: true,
     hasCredits: false,
+    totalCredits: 0,
     totalAvailable: 0,
     totalVocal: 0,
     totalInstrumental: 0,
@@ -66,6 +68,7 @@ export function useCredits() {
       setState({
         loading: false,
         hasCredits: false,
+        totalCredits: 0,
         totalAvailable: 0,
         totalVocal: 0,
         totalInstrumental: 0,
@@ -92,12 +95,17 @@ export function useCredits() {
         return;
       }
 
+      // Universal credits - total_credits is the unified count
+      const totalCredits = data.total_credits || 0;
+
       setState({
         loading: false,
-        hasCredits: data.has_credits || false,
-        totalAvailable: data.total_available || 0,
-        totalVocal: data.total_vocal || 0,
-        totalInstrumental: data.total_instrumental || 0,
+        hasCredits: totalCredits > 0,
+        totalCredits: totalCredits,
+        // Backwards compatibility - all fields show the same universal total
+        totalAvailable: totalCredits,
+        totalVocal: totalCredits,
+        totalInstrumental: totalCredits,
         activePackage: data.active_package || null,
         allPackages: data.all_packages || [],
         subscriptionInfo: data.subscription_info || null,
@@ -154,37 +162,35 @@ export function useCredits() {
   };
 }
 
-// Plan labels for display
+// Plan labels for display (simplified - no type distinction)
 export const PLAN_LABELS: Record<string, string> = {
   'single': 'Música Única',
-  'single_instrumental': 'Instrumental Única',
+  'single_instrumental': 'Música Única',
   'single_custom_lyric': 'Letra Própria',
   'package': 'Pacote 3 Músicas',
-  'package_instrumental': 'Pacote 3 Instrumentais',
+  'package_instrumental': 'Pacote 3 Músicas',
   'subscription': 'Pacote 5 Músicas',
-  'subscription_instrumental': 'Pacote 5 Instrumentais',
+  'subscription_instrumental': 'Pacote 5 Músicas',
   // Creator subscription plans
   'creator_start': 'Creator Start',
   'creator_pro': 'Creator Pro',
   'creator_studio': 'Creator Studio',
-  'creator_start_instrumental': 'Creator Start Instrumental',
-  'creator_pro_instrumental': 'Creator Pro Instrumental',
-  'creator_studio_instrumental': 'Creator Studio Instrumental',
+  'creator_start_instrumental': 'Creator Start',
+  'creator_pro_instrumental': 'Creator Pro',
+  'creator_studio_instrumental': 'Creator Studio',
 };
 
 export const getPlanLabel = (planId: string): string => {
   return PLAN_LABELS[planId] || planId;
 };
 
-// Get credit type from plan ID
-export const getCreditType = (planId: string): 'vocal' | 'instrumental' => {
-  return planId.includes('instrumental') ? 'instrumental' : 'vocal';
-};
-
 // Get number of credits for a plan
 export const getCreditsForPlan = (planId: string): number => {
-  if (planId.includes('subscription')) return 5;
+  if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
+  if (planId.includes('creator_studio')) return 300;
+  if (planId.includes('creator_pro')) return 150;
+  if (planId.includes('creator_start')) return 50;
   return 1;
 };
 

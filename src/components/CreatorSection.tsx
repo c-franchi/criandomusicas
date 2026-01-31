@@ -1,11 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Image, Clock, Users, ArrowRight, Sparkles, Video, Headphones, Crown, Check, AlertTriangle } from "lucide-react";
+import { FileText, Image, Clock, Users, Sparkles, Headphones, Crown, Check } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
-import PlanTypeToggle from "@/components/PlanTypeToggle";
 import { motion } from "framer-motion";
 
 // Animation variants for staggered children
@@ -50,7 +48,7 @@ const cardHoverVariants = {
   },
 };
 
-// Creator plan data with credits and descriptions
+// Creator plan data with universal credits
 const CREATOR_PLANS = [
   {
     id: 'creator_start',
@@ -77,7 +75,6 @@ const CREATOR_PLANS = [
 
 const CreatorSection = () => {
   const { t, i18n } = useTranslation('pricing');
-  const [isInstrumental, setIsInstrumental] = useState(false);
 
   // Format price based on language
   const formatPrice = (cents: number): string => {
@@ -88,12 +85,12 @@ const CreatorSection = () => {
     return `R$ ${value.toFixed(2)}`;
   };
 
-  // Get plan description with credits
+  // Get plan description with universal credits
   const getPlanDescription = (planId: string, credits: number): string => {
-    const songWord = i18n.language === 'pt-BR' ? 'músicas' 
-      : i18n.language === 'es' ? 'canciones' 
-      : i18n.language === 'it' ? 'canzoni' 
-      : 'songs';
+    const songWord = i18n.language === 'pt-BR' ? 'créditos' 
+      : i18n.language === 'es' ? 'créditos' 
+      : i18n.language === 'it' ? 'crediti' 
+      : 'credits';
     
     const monthWord = i18n.language === 'pt-BR' ? 'mês' 
       : i18n.language === 'es' ? 'mes' 
@@ -131,35 +128,35 @@ const CreatorSection = () => {
   const getCreatorFeatures = (): string[] => {
     if (i18n.language === 'pt-BR') {
       return [
+        'Créditos universais (vocal, instrumental, letra)',
         'Letras curadas por humanos',
         'Capas prontas para thumbnail',
-        'Formatos curtos (30s/60s)',
         'Suporte prioritário',
         '100% original e monetizável',
       ];
     }
     if (i18n.language === 'es') {
       return [
+        'Créditos universales (vocal, instrumental, letra)',
         'Letras curadas por humanos',
         'Portadas listas para miniatura',
-        'Formatos cortos (30s/60s)',
         'Soporte prioritario',
         '100% original y monetizable',
       ];
     }
     if (i18n.language === 'it') {
       return [
+        'Crediti universali (vocale, strumentale, testo)',
         'Testi curati da umani',
         'Copertine pronte per miniatura',
-        'Formati brevi (30s/60s)',
         'Supporto prioritario',
         '100% originale e monetizzabile',
       ];
     }
     return [
+      'Universal credits (vocal, instrumental, lyrics)',
       'Human-curated lyrics',
       'Thumbnail-ready covers',
-      'Short formats (30s/60s)',
       'Priority support',
       '100% original & monetizable',
     ];
@@ -219,31 +216,17 @@ const CreatorSection = () => {
             {t('creator.subdescription')}
           </motion.p>
           
-          {/* Toggle Vocal/Instrumental */}
+          {/* Universal credits badge */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.5 }}
           >
-            <PlanTypeToggle 
-              isInstrumental={isInstrumental} 
-              onToggle={setIsInstrumental}
-              className="mb-4"
-            />
+            <Badge className="bg-primary/20 text-primary border-primary/30">
+              🎵 {i18n.language === 'pt-BR' ? 'Créditos universais - use para qualquer tipo de música' : 'Universal credits - use for any type of music'}
+            </Badge>
           </motion.div>
-          
-          {isInstrumental && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse">
-                {t('section.instrumentalCreatorDiscount')}
-              </Badge>
-            </motion.div>
-          )}
         </motion.div>
         
         {/* Creator Plan Cards */}
@@ -346,31 +329,6 @@ const CreatorSection = () => {
           ))}
         </motion.div>
         
-        {/* Credit Type Warning */}
-        <motion.div 
-          className="mb-16 mt-8 p-5 rounded-xl bg-amber-500/10 border border-amber-500/30 max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-        >
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
-            </div>
-            <div>
-              <p className="font-semibold text-amber-400 mb-1.5">
-                {t('creator.creditTypeWarning.title')}
-              </p>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {isInstrumental 
-                  ? t('creator.creditTypeWarning.instrumental')
-                  : t('creator.creditTypeWarning.vocal')}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-        
         {/* Diferenciais Grid */}
         <motion.div 
           className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
@@ -460,42 +418,12 @@ const CreatorSection = () => {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  <Video className="w-4 h-4 text-blue-400" />
+                  <Sparkles className="w-4 h-4 text-blue-400" />
                   <span className="text-sm font-medium text-blue-400">{t('creator.badges.monetizable')}</span>
                 </motion.div>
               </div>
             </div>
           </Card>
-        </motion.div>
-        
-        {/* CTA */}
-        <motion.div 
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-        >
-          <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Button size="lg" asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-primary/30">
-              <Link to="/planos#creator">
-                {t('creator.cta')}
-                <motion.div
-                  className="ml-2"
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <ArrowRight className="w-5 h-5" />
-                </motion.div>
-              </Link>
-            </Button>
-          </motion.div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            {t('creator.pricing')}
-          </p>
         </motion.div>
       </div>
     </section>

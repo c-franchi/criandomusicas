@@ -1,4 +1,4 @@
-import { ChevronRight, Crown, Mic, Piano } from 'lucide-react';
+import { ChevronRight, Crown, Music } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -14,12 +14,11 @@ interface CreditsBannerProps {
 
 export function CreditsBanner({ className = '', showBuyButton = true, compact = false }: CreditsBannerProps) {
   const { t } = useTranslation('common');
-  const { loading, hasCredits, totalVocal, totalInstrumental, subscriptionInfo } = useCredits();
+  const { loading, hasCredits, totalCredits, subscriptionInfo } = useCredits();
 
   if (loading) {
     return (
       <div className={`flex items-center gap-3 ${className}`}>
-        <Skeleton className="h-8 w-24 rounded-full" />
         <Skeleton className="h-8 w-24 rounded-full" />
       </div>
     );
@@ -50,18 +49,10 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
   if (compact) {
     return (
       <div className={`flex gap-2 flex-wrap items-center ${className}`}>
-        {totalVocal > 0 && (
-          <Badge className="gap-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
-            <Mic className="w-3 h-3" />
-            {totalVocal}
-          </Badge>
-        )}
-        {totalInstrumental > 0 && (
-          <Badge className="gap-1.5 bg-purple-500/20 text-purple-400 border-purple-500/30 hover:bg-purple-500/30">
-            <Piano className="w-3 h-3" />
-            {totalInstrumental}
-          </Badge>
-        )}
+        <Badge className="gap-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
+          <Music className="w-3 h-3" />
+          {totalCredits} {totalCredits === 1 ? 'crédito' : 'créditos'}
+        </Badge>
         {isFromSubscription && (
           <Badge variant="outline" className="gap-1 text-amber-500 border-amber-500/30">
             <Crown className="w-3 h-3" />
@@ -82,21 +73,11 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
         </Badge>
       )}
       
-      {totalVocal > 0 && (
-        <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
-          <Mic className="w-3.5 h-3.5" />
-          <span className="font-semibold">{totalVocal}</span>
-          <span className="text-xs opacity-80">vocal{totalVocal !== 1 ? 'is' : ''}</span>
-        </Badge>
-      )}
-      
-      {totalInstrumental > 0 && (
-        <Badge className="gap-1.5 px-3 py-1.5 bg-purple-500/20 text-purple-400 border-purple-500/30 hover:bg-purple-500/30">
-          <Piano className="w-3.5 h-3.5" />
-          <span className="font-semibold">{totalInstrumental}</span>
-          <span className="text-xs opacity-80">instrumental{totalInstrumental !== 1 ? 'is' : ''}</span>
-        </Badge>
-      )}
+      <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
+        <Music className="w-3.5 h-3.5" />
+        <span className="font-semibold">{totalCredits}</span>
+        <span className="text-xs opacity-80">{totalCredits === 1 ? 'crédito' : 'créditos'}</span>
+      </Badge>
       
       {showBuyButton && (
         <Button asChild size="sm" variant="default" className="rounded-full h-8 px-4">
