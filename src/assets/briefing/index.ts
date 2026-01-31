@@ -25,6 +25,11 @@ import parodiaImg from './types/parodia.jpg';
 import corporativaImg from './types/corporativa.jpg';
 import trilhaImg from './types/trilha.jpg';
 
+// Creation Mode Images (for plan selection)
+import vocalImg from './types/vocal.jpg';
+import customLyricImg from './types/custom-lyric.jpg';
+import instrumentalTypeImg from './types/instrumental.jpg';
+
 // Emotions Images
 import alegriaImg from './emotions/alegria.jpg';
 import saudadeImg from './emotions/saudade.jpg';
@@ -144,6 +149,13 @@ export const typeImages: Record<string, string> = {
   parodia: parodiaImg,
   corporativa: corporativaImg,
   trilha: trilhaImg,
+};
+
+// Creation mode images for plan selection
+export const creationModeImages: Record<string, string> = {
+  vocal: vocalImg,
+  custom_lyric: customLyricImg,
+  instrumental: instrumentalTypeImg,
 };
 
 export const emotionImages: Record<string, string> = {
@@ -344,4 +356,8 @@ export {
   childStyleNinarImg,
   childStyleDesenhoImg,
   childStyleAutoImg,
+  // Creation Modes
+  vocalImg,
+  customLyricImg,
+  instrumentalTypeImg,
 };
