@@ -190,57 +190,57 @@ export const useBriefingTranslations = () => {
 
   // Children's music flow options
   const childAgeGroupOptions = [
-    { id: "0-3", label: t('steps.children.ageGroup.0-3'), description: t('steps.children.ageGroup.0-3Desc') },
-    { id: "4-6", label: t('steps.children.ageGroup.4-6'), description: t('steps.children.ageGroup.4-6Desc') },
-    { id: "7-9", label: t('steps.children.ageGroup.7-9'), description: t('steps.children.ageGroup.7-9Desc') },
-    { id: "10-12", label: t('steps.children.ageGroup.10-12'), description: t('steps.children.ageGroup.10-12Desc') },
+    { id: "0-3", label: t('children.ageGroup.0-3'), description: t('children.ageGroup.0-3Desc') },
+    { id: "4-6", label: t('children.ageGroup.4-6'), description: t('children.ageGroup.4-6Desc') },
+    { id: "7-9", label: t('children.ageGroup.7-9'), description: t('children.ageGroup.7-9Desc') },
+    { id: "10-12", label: t('children.ageGroup.10-12'), description: t('children.ageGroup.10-12Desc') },
   ];
 
   const childObjectiveOptions = [
-    { id: "diversao", label: t('steps.children.objective.diversao'), description: t('steps.children.objective.diversaoDesc') },
-    { id: "valores", label: t('steps.children.objective.valores'), description: t('steps.children.objective.valoresDesc') },
-    { id: "rotina", label: t('steps.children.objective.rotina'), description: t('steps.children.objective.rotinaDesc') },
-    { id: "educacao", label: t('steps.children.objective.educacao'), description: t('steps.children.objective.educacaoDesc') },
-    { id: "emocoes", label: t('steps.children.objective.emocoes'), description: t('steps.children.objective.emocoesDesc') },
-    { id: "aventura", label: t('steps.children.objective.aventura'), description: t('steps.children.objective.aventuraDesc') },
+    { id: "diversao", label: t('children.objective.diversao'), description: t('children.objective.diversaoDesc') },
+    { id: "valores", label: t('children.objective.valores'), description: t('children.objective.valoresDesc') },
+    { id: "rotina", label: t('children.objective.rotina'), description: t('children.objective.rotinaDesc') },
+    { id: "educacao", label: t('children.objective.educacao'), description: t('children.objective.educacaoDesc') },
+    { id: "emocoes", label: t('children.objective.emocoes'), description: t('children.objective.emocoesDesc') },
+    { id: "aventura", label: t('children.objective.aventura'), description: t('children.objective.aventuraDesc') },
   ];
 
   const childThemeOptions = [
-    { id: "animais", label: t('steps.children.theme.animais') },
-    { id: "natureza", label: t('steps.children.theme.natureza') },
-    { id: "familia", label: t('steps.children.theme.familia') },
-    { id: "escola", label: t('steps.children.theme.escola') },
-    { id: "fantasia", label: t('steps.children.theme.fantasia'), description: t('steps.children.theme.fantasiaDesc') },
-    { id: "profissoes", label: t('steps.children.theme.profissoes') },
-    { id: "superacao", label: t('steps.children.theme.superacao'), description: t('steps.children.theme.superacaoDesc') },
+    { id: "animais", label: t('children.theme.animais') },
+    { id: "natureza", label: t('children.theme.natureza') },
+    { id: "familia", label: t('children.theme.familia') },
+    { id: "escola", label: t('children.theme.escola') },
+    { id: "fantasia", label: t('children.theme.fantasia'), description: t('children.theme.fantasiaDesc') },
+    { id: "profissoes", label: t('children.theme.profissoes') },
+    { id: "superacao", label: t('children.theme.superacao'), description: t('children.theme.superacaoDesc') },
   ];
 
   const childMoodOptions = [
-    { id: "alegre", label: t('steps.children.mood.alegre') },
-    { id: "calma", label: t('steps.children.mood.calma') },
-    { id: "animada", label: t('steps.children.mood.animada') },
-    { id: "suave", label: t('steps.children.mood.suave') },
+    { id: "alegre", label: t('children.mood.alegre') },
+    { id: "calma", label: t('children.mood.calma') },
+    { id: "animada", label: t('children.mood.animada') },
+    { id: "suave", label: t('children.mood.suave') },
   ];
 
   const childStyleOptions = [
-    { id: "cantiga", label: t('steps.children.style.cantiga'), description: t('steps.children.style.cantigaDesc') },
-    { id: "pop", label: t('steps.children.style.pop'), description: t('steps.children.style.popDesc') },
-    { id: "educativo", label: t('steps.children.style.educativo'), description: t('steps.children.style.educativoDesc') },
-    { id: "ninar", label: t('steps.children.style.ninar'), description: t('steps.children.style.ninarDesc') },
-    { id: "desenho", label: t('steps.children.style.desenho'), description: t('steps.children.style.desenhoDesc') },
-    { id: "auto", label: t('steps.children.style.auto'), description: t('steps.children.style.autoDesc') },
+    { id: "cantiga", label: t('children.style.cantiga'), description: t('children.style.cantigaDesc') },
+    { id: "pop", label: t('children.style.pop'), description: t('children.style.popDesc') },
+    { id: "educativo", label: t('children.style.educativo'), description: t('children.style.educativoDesc') },
+    { id: "ninar", label: t('children.style.ninar'), description: t('children.style.ninarDesc') },
+    { id: "desenho", label: t('children.style.desenho'), description: t('children.style.desenhoDesc') },
+    { id: "auto", label: t('children.style.auto'), description: t('children.style.autoDesc') },
   ];
 
   const childInteractionOptions = [
-    { id: "sim", label: t('steps.children.interaction.yes'), description: t('steps.children.interaction.yesDesc') },
-    { id: "nao", label: t('steps.children.interaction.no'), description: t('steps.children.interaction.noDesc') },
+    { id: "sim", label: t('children.interaction.yes'), description: t('children.interaction.yesDesc') },
+    { id: "nao", label: t('children.interaction.no'), description: t('children.interaction.noDesc') },
   ];
 
   const childNarrativeOptions = [
-    { id: "cantada", label: t('steps.children.narrative.cantada') },
-    { id: "cantada_falas", label: t('steps.children.narrative.cantadaFalas') },
-    { id: "narrador", label: t('steps.children.narrative.narrador') },
-    { id: "historia", label: t('steps.children.narrative.historia') },
+    { id: "cantada", label: t('children.narrative.cantada') },
+    { id: "cantada_falas", label: t('children.narrative.cantadaFalas') },
+    { id: "narrador", label: t('children.narrative.narrador') },
+    { id: "historia", label: t('children.narrative.historia') },
   ];
 
   const childVoiceOptions = [
@@ -250,15 +250,15 @@ export const useBriefingTranslations = () => {
 
   // Get children's chat messages
   const getChildrenChatMessages = () => ({
-    intro: t('steps.children.intro'),
-    ageGroup: t('steps.children.ageGroup.question'),
-    objective: t('steps.children.objective.question'),
-    theme: t('steps.children.theme.question'),
-    mood: t('steps.children.mood.question'),
-    style: t('steps.children.style.question'),
-    interaction: t('steps.children.interaction.question'),
-    narrative: t('steps.children.narrative.question'),
-    story: t('steps.children.story.question'),
+    intro: t('children.intro'),
+    ageGroup: t('children.ageGroup.question'),
+    objective: t('children.objective.question'),
+    theme: t('children.theme.question'),
+    mood: t('children.mood.question'),
+    style: t('children.style.question'),
+    interaction: t('children.interaction.question'),
+    narrative: t('children.narrative.question'),
+    story: t('children.story.question'),
   });
 
   // Voice type options
