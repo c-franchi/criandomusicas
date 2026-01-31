@@ -2,13 +2,12 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, Home, ArrowLeft, AlertTriangle } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, Home, ArrowLeft } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import PlanTypeToggle from "@/components/PlanTypeToggle";
 import SEO from "@/components/SEO";
 import CreditsBanner from "@/components/CreditsBanner";
 import { useTranslation } from "react-i18next";
@@ -310,18 +309,10 @@ const Planos = () => {
             {t('section.giftsDescription')}
           </p>
           
-          {/* Toggle Vocal/Instrumental */}
-          <PlanTypeToggle 
-            isInstrumental={isInstrumental} 
-            onToggle={setIsInstrumental}
-            className="mb-4"
-          />
-          
-          {isInstrumental && (
-            <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse mb-4">
-              {t('instrumental.discount')}
-            </Badge>
-          )}
+          {/* Universal credits badge */}
+          <Badge className="bg-primary/20 text-primary border-primary/30">
+            🎵 {t('universal.badge', { defaultValue: 'Créditos universais - use para qualquer tipo de música' })}
+          </Badge>
         </div>
 
         {/* Plans Grid */}
@@ -469,18 +460,10 @@ const Planos = () => {
               {t('section.creatorDescription')}
             </p>
             
-            {/* Toggle Vocal/Instrumental para Creator */}
-            <PlanTypeToggle 
-              isInstrumental={isInstrumental} 
-              onToggle={setIsInstrumental}
-              className="mb-4"
-            />
-            
-            {isInstrumental && (
-              <Badge className="bg-accent/20 text-accent border-accent/30 animate-pulse mb-4">
-                {t('section.instrumentalCreatorDiscount')}
-              </Badge>
-            )}
+            {/* Universal credits badge */}
+            <Badge className="bg-primary/20 text-primary border-primary/30">
+              🎵 {t('universal.creatorBadge', { defaultValue: 'Créditos universais - crie vocal, instrumental ou com sua letra' })}
+            </Badge>
           </div>
 
           {/* Diferenciais Grid */}
@@ -625,18 +608,16 @@ const Planos = () => {
             </div>
           )}
 
-          {/* Credit Type Warning for Creator plans */}
-          <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border border-amber-500/30 max-w-3xl mx-auto">
+          {/* Universal Credits Info */}
+          <div className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/30 max-w-3xl mx-auto">
             <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <Music className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-amber-400">
-                  {t('creator.creditTypeWarning.title')}
+                <p className="font-medium text-primary">
+                  {t('creator.universalCredits.title', { defaultValue: 'Créditos Universais' })}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {isInstrumental 
-                    ? t('creator.creditTypeWarning.instrumental')
-                    : t('creator.creditTypeWarning.vocal')}
+                  {t('creator.universalCredits.description', { defaultValue: 'Use seus créditos para criar músicas vocais, instrumentais ou com sua própria letra. Flexibilidade total!' })}
                 </p>
               </div>
             </div>

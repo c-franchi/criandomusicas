@@ -174,6 +174,7 @@ serve(async (req) => {
     });
 
     // Count orders created in current billing period with relevant statuses
+    // Universal credits: count ALL creator orders regardless of type
     const { count: usedCredits, error: countError } = await supabaseClient
       .from('orders')
       .select('*', { count: 'exact', head: true })

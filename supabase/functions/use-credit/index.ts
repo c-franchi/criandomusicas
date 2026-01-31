@@ -12,23 +12,6 @@ const logStep = (step: string, details?: any) => {
   console.log(`[USE-CREDIT] ${step}${detailsStr}`);
 };
 
-// Credit type compatibility:
-// - 'vocal' credits can be used for: vocal songs, custom lyric songs
-// - 'instrumental' credits can be used for: instrumental songs only
-const getCreditType = (planId: string): 'vocal' | 'instrumental' => {
-  return planId.includes('instrumental') ? 'instrumental' : 'vocal';
-};
-
-const isCreditCompatible = (planId: string, orderType: 'vocal' | 'instrumental' | 'custom_lyric'): boolean => {
-  const creditType = getCreditType(planId);
-  
-  if (creditType === 'instrumental') {
-    return orderType === 'instrumental';
-  }
-  
-  return orderType === 'vocal' || orderType === 'custom_lyric';
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -78,10 +61,10 @@ serve(async (req) => {
     const userEmail = claimsData.claims.email as string | undefined;
     logStep("User authenticated", { userId, orderId });
 
-    // Get order to determine type
+    // Get order to verify ownership
     const { data: orderData, error: orderFetchError } = await supabaseClient
       .from('orders')
-      .select('is_instrumental, has_custom_lyric, user_id')
+      .select('user_id')
       .eq('id', orderId)
       .single();
     
@@ -92,38 +75,29 @@ serve(async (req) => {
     if (orderData.user_id !== userId) {
       throw new Error("Order does not belong to this user");
     }
-
-    // Determine order type for credit compatibility
-    let orderType: 'vocal' | 'instrumental' | 'custom_lyric' = 'vocal';
-    if (orderData.is_instrumental) {
-      orderType = 'instrumental';
-    } else if (orderData.has_custom_lyric) {
-      orderType = 'custom_lyric';
-    }
     
-    logStep("Order type determined", { orderId, orderType });
+    logStep("Order verified", { orderId });
 
-    // Find an active credit package with available credits
+    // Find an active credit package with available credits (FIFO - oldest first)
+    // Universal credits: any credit can be used for any order type
     const { data: credits, error: creditsError } = await supabaseClient
       .from('user_credits')
       .select('*')
       .eq('user_id', userId)
       .eq('is_active', true)
-      .order('purchased_at', { ascending: true }); // Use oldest credits first (FIFO)
+      .order('purchased_at', { ascending: true });
 
     if (creditsError) {
       throw new Error(`Error fetching credits: ${creditsError.message}`);
     }
 
-    // Find first COMPATIBLE package with available credits (priority: packages first)
+    // Find first package with available credits (no type compatibility check needed)
     let creditToUse = null;
     if (credits && credits.length > 0) {
       for (const credit of credits) {
         if (credit.total_credits > credit.used_credits) {
-          if (isCreditCompatible(credit.plan_id, orderType)) {
-            creditToUse = credit;
-            break;
-          }
+          creditToUse = credit;
+          break;
         }
       }
     }
@@ -163,25 +137,6 @@ serve(async (req) => {
             if (creatorSub) {
               const creditsTotal = parseInt(creatorSub.metadata?.credits || '0');
               const planId = creatorSub.metadata?.plan_id || 'creator_start';
-              const isInstrumental = planId.includes('instrumental');
-              
-              // Check compatibility
-              const isCompatible = isInstrumental 
-                ? orderType === 'instrumental' 
-                : orderType !== 'instrumental';
-              
-              if (!isCompatible) {
-                const creditTypeName = orderType === 'instrumental' ? 'instrumental' : 'vocal';
-                return new Response(JSON.stringify({
-                  success: false,
-                  error: `Sua assinatura Creator é ${isInstrumental ? 'instrumental' : 'vocal'}, mas este pedido requer créditos ${creditTypeName === 'instrumental' ? 'instrumentais' : 'vocais'}.`,
-                  needs_purchase: true,
-                  wrong_type: true,
-                }), {
-                  headers: { ...corsHeaders, "Content-Type": "application/json" },
-                  status: 200,
-                });
-              }
               
               // Get period data with fallbacks
               let currentPeriodStartTs = creatorSub.current_period_start;
@@ -241,22 +196,6 @@ serve(async (req) => {
 
     // If still no credits available
     if (!creditToUse && !useSubscription) {
-      // Check if they have any credits at all (wrong type)
-      const hasAnyPackageCredits = credits?.some(c => c.total_credits > c.used_credits) || false;
-      
-      if (hasAnyPackageCredits) {
-        const creditTypeName = orderType === 'instrumental' ? 'instrumental' : 'vocal';
-        return new Response(JSON.stringify({
-          success: false,
-          error: `Você não tem créditos ${creditTypeName === 'instrumental' ? 'instrumentais' : 'de música cantada'} disponíveis. Seus créditos são de outro tipo.`,
-          needs_purchase: true,
-          wrong_type: true,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-      
       return new Response(JSON.stringify({
         success: false,
         error: "Nenhum crédito disponível",
@@ -297,7 +236,6 @@ serve(async (req) => {
         source: 'subscription',
         credit_package: {
           plan_id: subscriptionPlanId,
-          credit_type: getCreditType(subscriptionPlanId),
         },
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -307,11 +245,9 @@ serve(async (req) => {
 
     // Use package credit
     if (creditToUse) {
-      logStep("Compatible package credit found", { 
+      logStep("Package credit found", { 
         creditId: creditToUse.id, 
         planId: creditToUse.plan_id,
-        creditType: getCreditType(creditToUse.plan_id),
-        orderType,
         used: creditToUse.used_credits, 
         total: creditToUse.total_credits 
       });
@@ -359,7 +295,6 @@ serve(async (req) => {
 
       logStep("Package credit used successfully", { 
         creditId: creditToUse.id, 
-        creditType: getCreditType(creditToUse.plan_id),
         newUsed: newUsedCredits, 
         remainingCredits: creditToUse.total_credits - newUsedCredits 
       });
@@ -374,7 +309,6 @@ serve(async (req) => {
           total: creditToUse.total_credits,
           used: newUsedCredits,
           remaining: creditToUse.total_credits - newUsedCredits,
-          credit_type: getCreditType(creditToUse.plan_id),
         },
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

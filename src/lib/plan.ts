@@ -14,29 +14,30 @@ export interface PlanInfo {
 // Static fallback plans (used when DB is not available)
 // IMPORTANT: These values MUST match the database pricing_config table and Stripe prices!
 // Single: R$ 9,90 | Package: R$ 24,90 | 5-Pack: R$ 39,90
+// UNIVERSAL CREDITS: All plans can be used for vocal, instrumental, or custom lyrics
 export const PLANS: PlanInfo[] = [
   {
     id: "single",
-    title: "Música Única",
+    title: "1 Crédito",
     price: "R$ 9,90",
     limitSec: 180,
-    features: ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h"],
-    cta: "Criar Música"
+    features: ["1 crédito universal", "Use para vocal, instrumental ou letra própria", "Alta qualidade", "Entrega em até 48h"],
+    cta: "Comprar"
   },
   {
     id: "package",
-    title: "Pacote 3 Músicas",
+    title: "3 Créditos",
     price: "R$ 24,90",
     limitSec: 180,
-    features: ["Até 3 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 48h", "Suporte VIP"],
+    features: ["3 créditos universais", "Use para qualquer tipo de música", "Economia de 16%", "Entrega em até 48h", "Suporte VIP"],
     cta: "Pacote Popular"
   },
   {
     id: "subscription",
-    title: "Pacote 5 Músicas",
+    title: "5 Créditos",
     price: "R$ 39,90",
     limitSec: 300,
-    features: ["Até 5 músicas completas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 48h", "Prioridade na fila"],
+    features: ["5 créditos universais", "Melhor custo-benefício", "Entrega em até 48h", "Prioridade na fila"],
     cta: "Melhor Valor"
   },
 ];
