@@ -33,6 +33,16 @@ import superacaoImg from './emotions/superacao.jpg';
 import pazImg from './emotions/paz.jpg';
 import feImg from './emotions/fe.jpg';
 
+// Voice Types Images
+import vozMasculinaImg from './voices/masculina.jpg';
+import vozFemininaImg from './voices/feminina.jpg';
+import vozInfantilMasculinaImg from './voices/infantil-masculina.jpg';
+import vozInfantilFemininaImg from './voices/infantil-feminina.jpg';
+import duetoImg from './voices/dueto.jpg';
+import duplaMasculinaImg from './voices/dupla-masculina.jpg';
+import duplaFemininaImg from './voices/dupla-feminina.jpg';
+import coralImg from './voices/coral.jpg';
+
 export const genreImages: Record<string, string> = {
   pop: popImg,
   rock: rockImg,
@@ -71,6 +81,17 @@ export const emotionImages: Record<string, string> = {
   fe: feImg,
 };
 
+export const voiceImages: Record<string, string> = {
+  masculina: vozMasculinaImg,
+  feminina: vozFemininaImg,
+  'infantil-masculina': vozInfantilMasculinaImg,
+  'infantil-feminina': vozInfantilFemininaImg,
+  dueto: duetoImg,
+  'dupla-masculina': duplaMasculinaImg,
+  'dupla-feminina': duplaFemininaImg,
+  coral: coralImg,
+};
+
 export {
   // Genres
   popImg,
@@ -104,4 +125,13 @@ export {
   superacaoImg,
   pazImg,
   feImg,
+  // Voices
+  vozMasculinaImg,
+  vozFemininaImg,
+  vozInfantilMasculinaImg,
+  vozInfantilFemininaImg,
+  duetoImg,
+  duplaMasculinaImg,
+  duplaFemininaImg,
+  coralImg,
 };

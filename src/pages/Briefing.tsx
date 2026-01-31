@@ -17,7 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
-import { genreImages, typeImages, emotionImages } from "@/assets/briefing";
+import { genreImages, typeImages, emotionImages, voiceImages } from "@/assets/briefing";
 import {
   Dialog,
   DialogContent,
@@ -2807,10 +2807,29 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Voice Type - with image cards */}
+                {currentBotMessage.field === 'voiceType' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: voiceImages[opt.id] || voiceImages.masculina
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('briefing:voiceTypes', 'Tipos de voz')}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
-                 currentBotMessage.field !== 'style' && (
+                 currentBotMessage.field !== 'style' &&
+                 currentBotMessage.field !== 'voiceType' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button
