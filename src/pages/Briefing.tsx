@@ -20,7 +20,8 @@ import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
-  childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages
+  childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
+  soundtrackUsageImages, soundtrackEmotionImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -2445,8 +2446,8 @@ const Briefing = () => {
       voiceType: data.voiceType || '',
       musicType: 'homenagem', // Default para criação rápida
       emotion: 'amor',        // Default para criação rápida
-      rhythm: 'medio',        // Default
-      atmosphere: 'alegre',   // Default
+      rhythm: 'moderado',     // Default - valores válidos: lento, moderado, animado
+      atmosphere: 'festivo',  // Default - valores válidos: intimo, festivo, melancolico, epico, leve, misterioso
       autoGenerateName: true, // Sempre automático na rápida
       emotionIntensity: 3,    // Default
     };
@@ -3397,6 +3398,44 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Soundtrack Usage - with image cards */}
+                {currentBotMessage.field === 'soundtrackUsage' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: soundtrackUsageImages[opt.id] || soundtrackUsageImages.video_institucional
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.soundtrack.usage.question', 'Tipo de uso')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Soundtrack Emotion - with image cards */}
+                {currentBotMessage.field === 'soundtrackEmotion' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: soundtrackEmotionImages[opt.id] || soundtrackEmotionImages.inspiracao
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.soundtrack.emotion.question', 'Emoção da trilha')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
@@ -3408,7 +3447,9 @@ const Briefing = () => {
                  currentBotMessage.field !== 'childObjective' &&
                  currentBotMessage.field !== 'childTheme' &&
                  currentBotMessage.field !== 'childMood' &&
-                 currentBotMessage.field !== 'childStyle' && (
+                 currentBotMessage.field !== 'childStyle' &&
+                 currentBotMessage.field !== 'soundtrackUsage' &&
+                 currentBotMessage.field !== 'soundtrackEmotion' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button

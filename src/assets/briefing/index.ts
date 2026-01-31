@@ -11,6 +11,9 @@ import pagodeImg from './genres/pagode.jpg';
 import bossaImg from './genres/bossa.jpg';
 import eletronicoImg from './genres/eletronico.jpg';
 import classicoImg from './genres/classico.jpg';
+import lofiImg from './genres/lofi.jpg';
+import ambienteImg from './genres/ambiente.jpg';
+import cinematicoImg from './genres/cinematico.jpg';
 
 // Music Types Images
 import homenagemImg from './types/homenagem.jpg';
@@ -127,6 +130,9 @@ export const genreImages: Record<string, string> = {
   bossa: bossaImg,
   eletronico: eletronicoImg,
   classico: classicoImg,
+  lofi: lofiImg,
+  ambiente: ambienteImg,
+  cinematico: cinematicoImg,
 };
 
 export const typeImages: Record<string, string> = {
@@ -263,6 +269,9 @@ export {
   bossaImg,
   eletronicoImg,
   classicoImg,
+  lofiImg,
+  ambienteImg,
+  cinematicoImg,
   // Types
   homenagemImg,
   romanticaImg,
