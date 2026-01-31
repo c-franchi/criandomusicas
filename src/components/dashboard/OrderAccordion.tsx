@@ -49,14 +49,14 @@ export const OrderAccordion = ({
           value={order.id}
           className="border rounded-lg bg-card/50 backdrop-blur-sm px-4 data-[state=open]:bg-card transition-colors"
         >
-          <AccordionTrigger className="hover:no-underline py-4">
-            <div className="flex flex-1 items-center justify-between gap-4 pr-4">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+          <AccordionTrigger className="hover:no-underline py-3 sm:py-4">
+            <div className="flex flex-1 items-center justify-between gap-2 sm:gap-4 pr-2 sm:pr-4 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                 <div className="shrink-0">
-                  <Music className="w-5 h-5 text-primary" />
+                  <Music className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
                 </div>
                 <div className="text-left min-w-0 flex-1">
-                  <p className="font-semibold text-sm sm:text-base truncate">
+                  <p className="font-semibold text-xs sm:text-base truncate">
                     {order.song_title || order.lyric_title || `${order.music_type || 'Música'}`}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
@@ -64,11 +64,11 @@ export const OrderAccordion = ({
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Badge className={`${getStatusColor(order.status || 'DRAFT')} text-xs whitespace-nowrap`}>
+              <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+                <Badge className={`${getStatusColor(order.status || 'DRAFT')} text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 whitespace-nowrap max-w-[80px] sm:max-w-none truncate`}>
                   {getStatusText(order.status || 'DRAFT', order.is_instrumental)}
                 </Badge>
-                <span className="font-bold text-primary text-sm hidden sm:block">
+                <span className="font-bold text-primary text-xs sm:text-sm hidden sm:block">
                   R$ {((order.amount || 0) / 100).toFixed(2).replace('.', ',')}
                 </span>
               </div>

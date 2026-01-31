@@ -246,6 +246,7 @@ const Briefing = () => {
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [availableCredits, setAvailableCredits] = useState(0);
   const [isUsingCredit, setIsUsingCredit] = useState(false);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isEditingSingleField, setIsEditingSingleField] = useState(false);
   const [editingFieldStep, setEditingFieldStep] = useState<number | null>(null);
   
@@ -1842,6 +1843,7 @@ const Briefing = () => {
   };
 
   const finishBriefing = async () => {
+    setIsCreatingOrder(true);
     const data = formData;
     
     // Limpar auto-save ao finalizar
@@ -1948,6 +1950,7 @@ const Briefing = () => {
         // Mostrar modal de confirmação ao invés de usar automaticamente
         setPendingOrderId(orderData.id);
         setAvailableCredits(creditsData.total_available);
+        setIsCreatingOrder(false);
         setShowCreditModal(true);
         return;
       }
@@ -1964,6 +1967,7 @@ const Briefing = () => {
         description: 'Tente novamente.',
         variant: 'destructive'
       });
+      setIsCreatingOrder(false);
     }
   };
 
@@ -2757,13 +2761,23 @@ const Briefing = () => {
                   setTimeout(() => addBotMessage(chatFlow[0]), 500);
                 }}
                 className="flex-1"
+                disabled={isCreatingOrder}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Recomeçar
               </Button>
-              <Button onClick={checkWhatsAppAndFinish} className="flex-1">
-                <Check className="w-4 h-4 mr-2" />
-                Confirmar e Criar
+              <Button onClick={checkWhatsAppAndFinish} className="flex-1" disabled={isCreatingOrder}>
+                {isCreatingOrder ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Confirmar e Criar
+                  </>
+                )}
               </Button>
             </div>
 
