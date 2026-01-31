@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Music, Download, Smartphone, Bell, Check, ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Music, Download, Smartphone, Bell, Check, ArrowLeft, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { NotificationToggle } from '@/components/PushNotificationPrompt';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -15,6 +15,7 @@ interface BeforeInstallPromptEvent extends Event {
 const Install = () => {
   const { t } = useTranslation('common');
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
@@ -65,21 +66,31 @@ const Install = () => {
       {/* Header */}
       <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" asChild>
-              <Link to="/">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-            </Button>
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center">
-                <Music className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-lg">{t('install.title')}</h1>
-                <p className="text-xs text-muted-foreground">Criando Músicas</p>
+              <Button variant="ghost" size="icon" asChild>
+                <Link to="/">
+                  <ArrowLeft className="w-5 h-5" />
+                </Link>
+              </Button>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center">
+                  <Music className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h1 className="font-bold text-lg">{t('install.title')}</h1>
+                  <p className="text-xs text-muted-foreground">Criando Músicas</p>
+                </div>
               </div>
             </div>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate('/')}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="w-5 h-5" />
+            </Button>
           </div>
         </div>
       </header>

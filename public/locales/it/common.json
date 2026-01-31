@@ -84,10 +84,30 @@
     "title": "Installa l'App",
     "subtitle": "Accedi rapidamente a Criando Músicas dalla tua schermata home",
     "installButton": "Installa Ora",
-    "iosInstructions": "Su iPhone/iPad:",
-    "iosStep1": "Tocca il pulsante condividi",
-    "iosStep2": "Scorri verso il basso e tocca \"Aggiungi alla schermata Home\"",
-    "iosStep3": "Tocca \"Aggiungi\"",
+    "addToHome": "Aggiungi alla Schermata Home",
+    "addToHomeDesc": "Installa l'app per un accesso rapido",
+    "browserHint": "Apri il menu del browser e seleziona \"Installa\" o \"Aggiungi alla schermata home\"",
+    "installed": "App Installata!",
+    "installedDesc": "L'app è installata sulla tua schermata home",
+    "installNow": "Installa Ora",
+    "ios": {
+      "title": "Su iPhone/iPad:",
+      "step1": "Tocca il pulsante condividi (quadrato con freccia)",
+      "step2": "Scorri verso il basso e tocca \"Aggiungi alla schermata Home\"",
+      "step3": "Tocca \"Aggiungi\" nell'angolo in alto a destra"
+    },
+    "notifications": {
+      "title": "Notifiche",
+      "description": "Ricevi avvisi quando la tua canzone è pronta"
+    },
+    "features": {
+      "quickAccess": "Accesso Rapido",
+      "quickAccessDesc": "Dalla tua schermata home",
+      "notifications": "Notifiche",
+      "notificationsDesc": "Saprai quando la tua canzone è pronta",
+      "offline": "Funziona Offline",
+      "offlineDesc": "Accedi anche senza internet"
+    },
     "benefits": {
       "title": "Vantaggi dell'app:",
       "fast": "Accesso rapido dalla schermata home",
@@ -137,5 +157,6 @@
   },
   "loading": "Caricamento...",
   "and": "e",
-  "backToHome": "Torna alla home"
+  "backToHome": "Torna alla home",
+  "backHome": "Torna alla Home"
 }

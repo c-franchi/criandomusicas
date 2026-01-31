@@ -84,10 +84,30 @@
     "title": "Instalar la App",
     "subtitle": "Ten acceso rápido a Criando Músicas desde tu pantalla de inicio",
     "installButton": "Instalar Ahora",
-    "iosInstructions": "En iPhone/iPad:",
-    "iosStep1": "Toca el botón compartir",
-    "iosStep2": "Desplázate hacia abajo y toca \"Añadir a pantalla de inicio\"",
-    "iosStep3": "Toca \"Añadir\"",
+    "addToHome": "Añadir a Pantalla de Inicio",
+    "addToHomeDesc": "Instala la app para acceso rápido",
+    "browserHint": "Abre el menú del navegador y selecciona \"Instalar\" o \"Añadir a pantalla de inicio\"",
+    "installed": "¡App Instalada!",
+    "installedDesc": "La app está instalada en tu pantalla de inicio",
+    "installNow": "Instalar Ahora",
+    "ios": {
+      "title": "En iPhone/iPad:",
+      "step1": "Toca el botón compartir (cuadrado con flecha)",
+      "step2": "Desplázate hacia abajo y toca \"Añadir a pantalla de inicio\"",
+      "step3": "Toca \"Añadir\" en la esquina superior derecha"
+    },
+    "notifications": {
+      "title": "Notificaciones",
+      "description": "Recibe alertas cuando tu canción esté lista"
+    },
+    "features": {
+      "quickAccess": "Acceso Rápido",
+      "quickAccessDesc": "Desde tu pantalla de inicio",
+      "notifications": "Notificaciones",
+      "notificationsDesc": "Sabe cuándo tu canción está lista",
+      "offline": "Funciona Offline",
+      "offlineDesc": "Accede incluso sin internet"
+    },
     "benefits": {
       "title": "Ventajas de la app:",
       "fast": "Acceso rápido desde la pantalla de inicio",
@@ -137,5 +157,6 @@
   },
   "loading": "Cargando...",
   "and": "y",
-  "backToHome": "Volver al inicio"
+  "backToHome": "Volver al inicio",
+  "backHome": "Volver al Inicio"
 }
