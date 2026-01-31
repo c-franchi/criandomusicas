@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight } from "lucide-react";
+import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -251,10 +251,16 @@ export const QuickCreation = ({
           
           <button
             onClick={onSwitchToDetailed}
-            className="w-full flex items-center justify-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/30 hover:border-primary/50 hover:from-primary/20 hover:via-accent/20 hover:to-primary/20 transition-all duration-300 group"
           >
-            {t('quickCreation.switchToDetailed', 'Prefere criar com mais detalhes?')}
-            <ChevronRight className="w-4 h-4" />
+            <Palette className="w-4 h-4 text-primary group-hover:scale-110 transition-transform" />
+            <span className="text-sm font-medium text-foreground">
+              {t('quickCreation.switchToDetailed', 'Prefere criar com mais detalhes?')}
+            </span>
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-primary/50 text-primary">
+              {t('quickCreation.recommended', 'Recomendado')}
+            </Badge>
+            <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
           </button>
         </div>
       </div>
