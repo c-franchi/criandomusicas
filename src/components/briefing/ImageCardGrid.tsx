@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ImageCard } from "./ImageCard";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, MoreHorizontal, Send, ChevronLeft, ChevronRight } from "lucide-react";
+import { LayoutGrid, MoreHorizontal, Send, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -29,6 +29,21 @@ interface ImageCardGridProps {
   onOtherSelect?: (customValue: string) => void;
 }
 
+// Skeleton shimmer component for loading state
+const CardSkeleton = ({ variant = 'square' }: { variant?: 'square' | 'circle' }) => (
+  <div className="flex-shrink-0 animate-pulse">
+    <div className={cn(
+      "bg-muted/60 relative overflow-hidden",
+      variant === 'circle' 
+        ? "w-16 h-16 sm:w-20 sm:h-20 rounded-full" 
+        : "w-20 h-20 sm:w-24 sm:h-24 rounded-xl"
+    )}>
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]" />
+    </div>
+    <div className="h-3 w-12 mt-1.5 mx-auto bg-muted/40 rounded" />
+  </div>
+);
+
 export const ImageCardGrid = ({
   options,
   selectedId,
@@ -44,6 +59,7 @@ export const ImageCardGrid = ({
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState("");
   const [isDragging, setIsDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -73,8 +89,21 @@ export const ImageCardGrid = ({
     setScrollLeft(scrollRef.current.scrollLeft);
   };
 
-  const handleMouseUp = () => setIsDragging(false);
-  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => {
+    if (isDragging) {
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 150);
+    }
+    setIsDragging(false);
+  };
+  
+  const handleMouseLeave = () => {
+    if (isDragging) {
+      setIsLoading(true);
+      setTimeout(() => setIsLoading(false), 150);
+    }
+    setIsDragging(false);
+  };
 
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!isDragging || !scrollRef.current) return;
@@ -179,12 +208,27 @@ export const ImageCardGrid = ({
               </button>
             )}
 
+            {/* Loading indicator */}
+            <AnimatePresence>
+              {isLoading && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-30 flex items-center justify-center bg-background/50 backdrop-blur-sm rounded-xl"
+                >
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Horizontal scroll container with drag support */}
             <div
               ref={scrollRef}
               className={cn(
-                "flex gap-3 overflow-x-auto pb-2 px-1 cursor-grab select-none",
-                isDragging && "cursor-grabbing"
+                "flex gap-3 overflow-x-auto pb-2 px-1 cursor-grab select-none transition-opacity",
+                isDragging && "cursor-grabbing",
+                isLoading && "opacity-70"
               )}
               style={{ 
                 scrollbarWidth: 'none', 
