@@ -644,12 +644,17 @@
   },
   "quickCreation": {
     "title": "Quick Creation",
+    "pageTitle": "Create music with AI",
     "promptLabel": "Describe your music",
-    "promptPlaceholder": "Tell the story, characters, special moments... or paste your lyrics here!",
+    "promptPlaceholder": "Write your prompt or lyrics...",
     "reset": "Reset",
     "instrumental": "Instrumental",
     "genreLabel": "Music Genre",
+    "genreTitle": "Music genres",
+    "addGenre": "Add more genre",
+    "addGenrePlaceholder": "E.g.: Lo-fi, Funk, K-pop...",
     "voiceLabel": "Voice Type",
+    "voiceTitle": "Vocal type",
     "createButton": "Create Music",
     "hint": "AI will complete the details automatically",
     "switchToDetailed": "Prefer to create with more details?"

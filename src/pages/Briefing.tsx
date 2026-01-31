@@ -425,7 +425,7 @@ const Briefing = () => {
           setCurrentStep(22);
           addBotMessage(chatFlow[22]); // customLyricText
         } else {
-          // vocal - ir direto para musicType, pulando isInstrumental
+          // vocal - ir direto para criação rápida
           setFormData(prev => ({ 
             ...prev, 
             isInstrumental: false, 
@@ -436,8 +436,7 @@ const Briefing = () => {
             celebrationEmoji: undefined,
           }));
           setSelectedPlanId('single');
-          setCurrentStep(1);
-          addBotMessage(chatFlow[1]); // musicType
+          setCreationMode('quick'); // Ativar modo rápido ao invés do chat
         }
         return;
       }
