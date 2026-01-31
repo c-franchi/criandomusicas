@@ -372,6 +372,84 @@
       "noStyle": "🤖 No, genera automaticamente",
       "noStyleDesc": "L'IA creerà in base alle prossime domande",
       "pasteStyle": "Incolla il tuo style/prompt tecnico qui sotto: 🎵\n\nEsempio: \"female vocal, pop ballad, piano, strings, 80bpm, emotional, intimate atmosphere\""
+    },
+    "soundtrack": {
+      "intro": "🎬 Creiamo la tua colonna sonora!\n\nQuesto tipo di musica è perfetto per video, film, giochi, podcast e altro.",
+      "usage": {
+        "question": "Dove verrà utilizzata questa colonna sonora? 🎬",
+        "videoInstitucional": "Video Aziendale",
+        "filme": "Film / Cortometraggio",
+        "trailer": "Trailer / Teaser",
+        "jogo": "Videogioco",
+        "podcast": "Podcast",
+        "redesSociais": "Video per Social Media",
+        "meditacao": "Meditazione / Rilassamento",
+        "ambiente": "Ambiente (negozio, evento, attesa)"
+      },
+      "emotion": {
+        "question": "Quale emozione principale deve trasmettere la colonna sonora? 🎭",
+        "suspense": "Suspense",
+        "drama": "Emozione / Drama",
+        "inspiracao": "Ispirazione / Speranza",
+        "tensao": "Tensione",
+        "acao": "Azione / Energia",
+        "paz": "Pace / Rilassamento",
+        "misterio": "Mistero",
+        "alegria": "Gioia"
+      },
+      "dynamics": {
+        "question": "Come deve evolversi la colonna sonora? 📊",
+        "constante": "Costante",
+        "constanteDesc": "Stesso clima dall'inizio alla fine",
+        "crescente": "Crescente (build-up)",
+        "crescenteDesc": "L'intensità aumenta gradualmente",
+        "crescenteClimax": "Crescente con Climax",
+        "crescenteClimaxDesc": "Build-up + punto alto emotivo",
+        "ondulada": "Ondulata",
+        "onduladaDesc": "Sale e scende in intensità",
+        "minimalista": "Minimalista",
+        "minimalistaDesc": "Meno elementi, più spazio"
+      },
+      "style": {
+        "question": "Quale stile preferisci? 🎼",
+        "epico": "Cinematica Epica",
+        "epicoDesc": "Grandioso, orchestrale, impattante",
+        "emocional": "Cinematica Emotiva",
+        "emocionalDesc": "Toccante, drammatico, sensibile",
+        "eletronicaAmbiente": "Elettronica Ambient",
+        "orquestral": "Orchestrale",
+        "pianoSolo": "Piano Solo",
+        "ambient": "Ambient / Drone",
+        "lofi": "Lo-fi Strumentale",
+        "auto": "Lascia Scegliere il Sistema"
+      },
+      "rhythm": {
+        "question": "Qual è il ritmo della colonna sonora? 🎵",
+        "lento": "Lento",
+        "medio": "Medio",
+        "rapido": "Veloce",
+        "variavel": "Variabile"
+      },
+      "voice": {
+        "question": "La colonna sonora deve avere voce? 🎤",
+        "instrumental": "No, completamente strumentale",
+        "instrumentalDesc": "Solo strumenti",
+        "vocalizacoes": "Solo vocalizzazioni",
+        "vocalizacoesDesc": "Ahh, hum, pad vocali",
+        "monologoFalado": "Voce parlata / Monologo",
+        "monologoFaladoDesc": "Narrazione o testo parlato",
+        "vozEterea": "Voce eterea senza parole",
+        "vozEtereaDesc": "Vocale ambientale, senza testo definito"
+      },
+      "scene": {
+        "question": "Descrivi la scena o la sensazione desiderata (opzionale) 🎬\n\nEsempi: \"eroe che cammina da solo\", \"paesaggio all'alba\", \"tensione prima della decisione\""
+      },
+      "language": {
+        "question": "Lingua (per voce/monologo): 🌍",
+        "pt": "Portoghese",
+        "en": "Inglese",
+        "es": "Spagnolo"
+      }
     }
   },
   "confirmation": {
@@ -418,7 +496,16 @@
     "summary": "🎵 Riepilogo della tua musica",
     "customLyricBadge": "📝 Testo Proprio",
     "instrumentalBadge": "Strumentale",
-    "vocalBadge": "Canzone Cantata"
+    "vocalBadge": "Canzone Cantata",
+    "soundtrackBadge": "🎬 Colonna Sonora",
+    "soundtrackUsage": "Utilizzo",
+    "soundtrackEmotion": "Emozione",
+    "soundtrackDynamics": "Dinamica",
+    "soundtrackStyle": "Stile",
+    "soundtrackRhythm": "Ritmo",
+    "soundtrackVoice": "Voce",
+    "soundtrackScene": "Scena",
+    "soundtrackLanguage": "Lingua"
   },
   "creditModal": {
     "title": "Usare Credito?",

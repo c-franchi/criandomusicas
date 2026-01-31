@@ -248,6 +248,81 @@ export const useBriefingTranslations = () => {
     { id: "infantil_fem", label: t('steps.voiceType.infantilFem'), description: t('steps.voiceType.infantilFemDesc') },
   ];
 
+  // Soundtrack flow options
+  const soundtrackUsageOptions = [
+    { id: "video_institucional", label: t('steps.soundtrack.usage.videoInstitucional') },
+    { id: "filme", label: t('steps.soundtrack.usage.filme') },
+    { id: "trailer", label: t('steps.soundtrack.usage.trailer') },
+    { id: "jogo", label: t('steps.soundtrack.usage.jogo') },
+    { id: "podcast", label: t('steps.soundtrack.usage.podcast') },
+    { id: "redes_sociais", label: t('steps.soundtrack.usage.redesSociais') },
+    { id: "meditacao", label: t('steps.soundtrack.usage.meditacao') },
+    { id: "ambiente", label: t('steps.soundtrack.usage.ambiente') },
+  ];
+
+  const soundtrackEmotionOptions = [
+    { id: "suspense", label: t('steps.soundtrack.emotion.suspense') },
+    { id: "drama", label: t('steps.soundtrack.emotion.drama') },
+    { id: "inspiracao", label: t('steps.soundtrack.emotion.inspiracao') },
+    { id: "tensao", label: t('steps.soundtrack.emotion.tensao') },
+    { id: "acao", label: t('steps.soundtrack.emotion.acao') },
+    { id: "paz", label: t('steps.soundtrack.emotion.paz') },
+    { id: "misterio", label: t('steps.soundtrack.emotion.misterio') },
+    { id: "alegria", label: t('steps.soundtrack.emotion.alegria') },
+  ];
+
+  const soundtrackDynamicsOptions = [
+    { id: "constante", label: t('steps.soundtrack.dynamics.constante'), description: t('steps.soundtrack.dynamics.constanteDesc') },
+    { id: "crescente", label: t('steps.soundtrack.dynamics.crescente'), description: t('steps.soundtrack.dynamics.crescenteDesc') },
+    { id: "crescente_climax", label: t('steps.soundtrack.dynamics.crescenteClimax'), description: t('steps.soundtrack.dynamics.crescenteClimaxDesc') },
+    { id: "ondulada", label: t('steps.soundtrack.dynamics.ondulada'), description: t('steps.soundtrack.dynamics.onduladaDesc') },
+    { id: "minimalista", label: t('steps.soundtrack.dynamics.minimalista'), description: t('steps.soundtrack.dynamics.minimalistaDesc') },
+  ];
+
+  const soundtrackStyleOptions = [
+    { id: "epico", label: t('steps.soundtrack.style.epico'), description: t('steps.soundtrack.style.epicoDesc') },
+    { id: "emocional", label: t('steps.soundtrack.style.emocional'), description: t('steps.soundtrack.style.emocionalDesc') },
+    { id: "eletronica_ambiente", label: t('steps.soundtrack.style.eletronicaAmbiente') },
+    { id: "orquestral", label: t('steps.soundtrack.style.orquestral') },
+    { id: "piano_solo", label: t('steps.soundtrack.style.pianoSolo') },
+    { id: "ambient", label: t('steps.soundtrack.style.ambient') },
+    { id: "lofi", label: t('steps.soundtrack.style.lofi') },
+    { id: "auto", label: t('steps.soundtrack.style.auto') },
+  ];
+
+  const soundtrackRhythmOptions = [
+    { id: "lento", label: t('steps.soundtrack.rhythm.lento') },
+    { id: "medio", label: t('steps.soundtrack.rhythm.medio') },
+    { id: "rapido", label: t('steps.soundtrack.rhythm.rapido') },
+    { id: "variavel", label: t('steps.soundtrack.rhythm.variavel') },
+  ];
+
+  const soundtrackVoiceOptions = [
+    { id: "instrumental", label: t('steps.soundtrack.voice.instrumental'), description: t('steps.soundtrack.voice.instrumentalDesc') },
+    { id: "vocalizacoes", label: t('steps.soundtrack.voice.vocalizacoes'), description: t('steps.soundtrack.voice.vocalizacoesDesc') },
+    { id: "monologo_falado", label: t('steps.soundtrack.voice.monologoFalado'), description: t('steps.soundtrack.voice.monologoFaladoDesc') },
+    { id: "voz_eterea", label: t('steps.soundtrack.voice.vozEterea'), description: t('steps.soundtrack.voice.vozEtereaDesc') },
+  ];
+
+  const soundtrackLanguageOptions = [
+    { id: "pt", label: t('steps.soundtrack.language.pt') },
+    { id: "en", label: t('steps.soundtrack.language.en') },
+    { id: "es", label: t('steps.soundtrack.language.es') },
+  ];
+
+  // Get soundtrack chat messages
+  const getSoundtrackChatMessages = () => ({
+    intro: t('steps.soundtrack.intro'),
+    usage: t('steps.soundtrack.usage.question'),
+    emotion: t('steps.soundtrack.emotion.question'),
+    dynamics: t('steps.soundtrack.dynamics.question'),
+    style: t('steps.soundtrack.style.question'),
+    rhythm: t('steps.soundtrack.rhythm.question'),
+    voice: t('steps.soundtrack.voice.question'),
+    scene: t('steps.soundtrack.scene.question'),
+    language: t('steps.soundtrack.language.question'),
+  });
+
   // Get children's chat messages
   const getChildrenChatMessages = () => ({
     intro: t('children.intro'),
@@ -595,6 +670,15 @@ export const useBriefingTranslations = () => {
     childNarrativeOptions,
     childVoiceOptions,
     getChildrenChatMessages,
+    // Soundtrack options
+    soundtrackUsageOptions,
+    soundtrackEmotionOptions,
+    soundtrackDynamicsOptions,
+    soundtrackStyleOptions,
+    soundtrackRhythmOptions,
+    soundtrackVoiceOptions,
+    soundtrackLanguageOptions,
+    getSoundtrackChatMessages,
     // Labels
     getPlanLabels,
     getIntensityLabels,

@@ -372,6 +372,84 @@
       "noStyle": "🤖 No, generate automatically",
       "noStyleDesc": "The AI will create based on the next questions",
       "pasteStyle": "Paste your technical style/prompt below: 🎵\n\nExample: \"female vocal, pop ballad, piano, strings, 80bpm, emotional, intimate atmosphere\""
+    },
+    "soundtrack": {
+      "intro": "🎬 Let's create your soundtrack!\n\nThis type of music is perfect for videos, films, games, podcasts and more.",
+      "usage": {
+        "question": "Where will this soundtrack be used? 🎬",
+        "videoInstitucional": "Corporate Video",
+        "filme": "Film / Short Film",
+        "trailer": "Trailer / Teaser",
+        "jogo": "Game",
+        "podcast": "Podcast",
+        "redesSociais": "Social Media Video",
+        "meditacao": "Meditation / Relaxation",
+        "ambiente": "Ambience (store, event, waiting)"
+      },
+      "emotion": {
+        "question": "What main emotion should the soundtrack convey? 🎭",
+        "suspense": "Suspense",
+        "drama": "Emotion / Drama",
+        "inspiracao": "Inspiration / Hope",
+        "tensao": "Tension",
+        "acao": "Action / Energy",
+        "paz": "Peace / Relaxation",
+        "misterio": "Mystery",
+        "alegria": "Joy"
+      },
+      "dynamics": {
+        "question": "How should the soundtrack evolve? 📊",
+        "constante": "Constant",
+        "constanteDesc": "Same mood from start to finish",
+        "crescente": "Building Up",
+        "crescenteDesc": "Intensity gradually increases",
+        "crescenteClimax": "Build-up with Climax",
+        "crescenteClimaxDesc": "Build-up + emotional high point",
+        "ondulada": "Wave-like",
+        "onduladaDesc": "Rises and falls in intensity",
+        "minimalista": "Minimalist",
+        "minimalistaDesc": "Fewer elements, more space"
+      },
+      "style": {
+        "question": "What style do you prefer? 🎼",
+        "epico": "Epic Cinematic",
+        "epicoDesc": "Grand, orchestral, impactful",
+        "emocional": "Emotional Cinematic",
+        "emocionalDesc": "Touching, dramatic, sensitive",
+        "eletronicaAmbiente": "Electronic Ambient",
+        "orquestral": "Orchestral",
+        "pianoSolo": "Piano Solo",
+        "ambient": "Ambient / Drone",
+        "lofi": "Lo-fi Instrumental",
+        "auto": "Let the System Choose"
+      },
+      "rhythm": {
+        "question": "What's the tempo of the soundtrack? 🎵",
+        "lento": "Slow",
+        "medio": "Medium",
+        "rapido": "Fast",
+        "variavel": "Variable"
+      },
+      "voice": {
+        "question": "Should the soundtrack have vocals? 🎤",
+        "instrumental": "No, fully instrumental",
+        "instrumentalDesc": "Instruments only",
+        "vocalizacoes": "Vocalizations only",
+        "vocalizacoesDesc": "Ahh, hum, vocal pads",
+        "monologoFalado": "Spoken voice / Monologue",
+        "monologoFaladoDesc": "Narration or spoken text",
+        "vozEterea": "Ethereal voice without words",
+        "vozEtereaDesc": "Ambient vocals, no defined lyrics"
+      },
+      "scene": {
+        "question": "Describe the scene or desired feeling (optional) 🎬\n\nExamples: \"hero walking alone\", \"landscape at dawn\", \"tension before the decision\""
+      },
+      "language": {
+        "question": "Language (for voice/monologue): 🌍",
+        "pt": "Portuguese",
+        "en": "English",
+        "es": "Spanish"
+      }
     }
   },
   "confirmation": {
@@ -418,7 +496,16 @@
     "summary": "🎵 Your music summary",
     "customLyricBadge": "📝 Custom Lyrics",
     "instrumentalBadge": "Instrumental",
-    "vocalBadge": "Vocal Song"
+    "vocalBadge": "Vocal Song",
+    "soundtrackBadge": "🎬 Soundtrack",
+    "soundtrackUsage": "Usage",
+    "soundtrackEmotion": "Emotion",
+    "soundtrackDynamics": "Dynamics",
+    "soundtrackStyle": "Style",
+    "soundtrackRhythm": "Tempo",
+    "soundtrackVoice": "Voice",
+    "soundtrackScene": "Scene",
+    "soundtrackLanguage": "Language"
   },
   "creditModal": {
     "title": "Use Credit?",

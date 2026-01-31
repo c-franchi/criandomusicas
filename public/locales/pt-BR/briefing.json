@@ -372,6 +372,84 @@
       "noStyle": "🤖 Não, gerar automaticamente",
       "noStyleDesc": "A IA vai criar baseado nas próximas perguntas",
       "pasteStyle": "Cole seu style/prompt técnico abaixo: 🎵\n\nExemplo: \"female vocal, pop ballad, piano, strings, 80bpm, emotional, intimate atmosphere\""
+    },
+    "soundtrack": {
+      "intro": "🎬 Vamos criar sua trilha sonora!\n\nEsse tipo de música é perfeito para vídeos, filmes, jogos, podcasts e mais.",
+      "usage": {
+        "question": "Onde essa trilha será usada? 🎬",
+        "videoInstitucional": "Vídeo Institucional",
+        "filme": "Filme / Curta-metragem",
+        "trailer": "Trailer / Teaser",
+        "jogo": "Jogo",
+        "podcast": "Podcast",
+        "redesSociais": "Vídeo para Redes Sociais",
+        "meditacao": "Meditação / Relaxamento",
+        "ambiente": "Ambiente (loja, evento, espera)"
+      },
+      "emotion": {
+        "question": "Qual emoção principal a trilha deve transmitir? 🎭",
+        "suspense": "Suspense",
+        "drama": "Emoção / Drama",
+        "inspiracao": "Inspiração / Esperança",
+        "tensao": "Tensão",
+        "acao": "Ação / Energia",
+        "paz": "Paz / Relaxamento",
+        "misterio": "Mistério",
+        "alegria": "Alegria"
+      },
+      "dynamics": {
+        "question": "Como a trilha deve evoluir? 📊",
+        "constante": "Constante",
+        "constanteDesc": "Mesmo clima do início ao fim",
+        "crescente": "Crescente (build-up)",
+        "crescenteDesc": "Intensidade aumenta gradualmente",
+        "crescenteClimax": "Crescente com Clímax",
+        "crescenteClimaxDesc": "Build-up + ponto alto emocional",
+        "ondulada": "Ondulada",
+        "onduladaDesc": "Sobe e desce em intensidade",
+        "minimalista": "Minimalista",
+        "minimalistaDesc": "Menos elementos, mais espaço"
+      },
+      "style": {
+        "question": "Qual estilo você prefere? 🎼",
+        "epico": "Cinemática Épica",
+        "epicoDesc": "Grandioso, orquestral, impactante",
+        "emocional": "Cinemática Emocional",
+        "emocionalDesc": "Tocante, dramático, sensível",
+        "eletronicaAmbiente": "Eletrônica Ambiente",
+        "orquestral": "Orquestral",
+        "pianoSolo": "Piano Solo",
+        "ambient": "Ambient / Drone",
+        "lofi": "Lo-fi Instrumental",
+        "auto": "Deixar o Sistema Escolher"
+      },
+      "rhythm": {
+        "question": "Qual o ritmo da trilha? 🎵",
+        "lento": "Lento",
+        "medio": "Médio",
+        "rapido": "Rápido",
+        "variavel": "Variável"
+      },
+      "voice": {
+        "question": "A trilha deve ter voz? 🎤",
+        "instrumental": "Não, totalmente instrumental",
+        "instrumentalDesc": "Apenas instrumentos",
+        "vocalizacoes": "Apenas vocalizações",
+        "vocalizacoesDesc": "Ahh, hum, pads vocais",
+        "monologoFalado": "Voz falada / Monólogo",
+        "monologoFaladoDesc": "Narração ou texto falado",
+        "vozEterea": "Voz etérea sem palavras",
+        "vozEtereaDesc": "Vocal ambiente, sem letra definida"
+      },
+      "scene": {
+        "question": "Descreva a cena ou sensação desejada (opcional) 🎬\n\nExemplos: \"herói caminhando sozinho\", \"paisagem ao amanhecer\", \"tensão antes da decisão\""
+      },
+      "language": {
+        "question": "Idioma (para voz/monólogo): 🌍",
+        "pt": "Português",
+        "en": "Inglês",
+        "es": "Espanhol"
+      }
     }
   },
   "confirmation": {
@@ -418,7 +496,16 @@
     "summary": "🎵 Resumo da sua música",
     "customLyricBadge": "📝 Letra Própria",
     "instrumentalBadge": "Instrumental",
-    "vocalBadge": "Música Cantada"
+    "vocalBadge": "Música Cantada",
+    "soundtrackBadge": "🎬 Trilha Sonora",
+    "soundtrackUsage": "Uso",
+    "soundtrackEmotion": "Emoção",
+    "soundtrackDynamics": "Dinâmica",
+    "soundtrackStyle": "Estilo",
+    "soundtrackRhythm": "Ritmo",
+    "soundtrackVoice": "Voz",
+    "soundtrackScene": "Cena",
+    "soundtrackLanguage": "Idioma"
   },
   "creditModal": {
     "title": "Usar Crédito?",
