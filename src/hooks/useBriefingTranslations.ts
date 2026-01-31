@@ -51,6 +51,17 @@ export const useBriefingTranslations = () => {
         { id: "superacao_dor", label: t('steps.motivational.emotion.superacaoDor') }
       ];
     }
+    if (musicType === 'religiosa') {
+      return [
+        { id: "paz", label: t('steps.gospel.emotion.paz') },
+        { id: "fe", label: t('steps.gospel.emotion.fe') },
+        { id: "esperanca", label: t('steps.gospel.emotion.esperanca') },
+        { id: "quebrantamento", label: t('steps.gospel.emotion.quebrantamento') },
+        { id: "confianca", label: t('steps.gospel.emotion.confianca') },
+        { id: "alegria", label: t('steps.gospel.emotion.alegria') },
+        { id: "reverencia", label: t('steps.gospel.emotion.reverencia') }
+      ];
+    }
     return [
       { id: "alegria", label: t('steps.emotion.alegria') },
       { id: "saudade", label: t('steps.emotion.saudade') },
@@ -111,6 +122,70 @@ export const useBriefingTranslations = () => {
     narrative: t('steps.motivational.narrative.question'),
     perspective: t('steps.motivational.perspective.question'),
     story: t('steps.motivational.story.question'),
+  });
+
+  // Gospel/Religious flow options
+  const gospelContextOptions = [
+    { id: "adoracao", label: t('steps.gospel.context.adoracao'), description: t('steps.gospel.context.adoracaoDesc') },
+    { id: "louvor", label: t('steps.gospel.context.louvor'), description: t('steps.gospel.context.louvorDesc') },
+    { id: "oracao", label: t('steps.gospel.context.oracao'), description: t('steps.gospel.context.oracaoDesc') },
+    { id: "confianca", label: t('steps.gospel.context.confianca'), description: t('steps.gospel.context.confiancaDesc') },
+    { id: "esperanca", label: t('steps.gospel.context.esperanca'), description: t('steps.gospel.context.esperancaDesc') },
+    { id: "gratidao", label: t('steps.gospel.context.gratidao'), description: t('steps.gospel.context.gratidaoDesc') },
+    { id: "restauracao", label: t('steps.gospel.context.restauracao'), description: t('steps.gospel.context.restauracaoDesc') },
+    { id: "consagracao", label: t('steps.gospel.context.consagracao'), description: t('steps.gospel.context.consagracaoDesc') },
+  ];
+
+  const gospelEmotionOptions = [
+    { id: "paz", label: t('steps.gospel.emotion.paz') },
+    { id: "fe", label: t('steps.gospel.emotion.fe') },
+    { id: "esperanca", label: t('steps.gospel.emotion.esperanca') },
+    { id: "quebrantamento", label: t('steps.gospel.emotion.quebrantamento') },
+    { id: "confianca", label: t('steps.gospel.emotion.confianca') },
+    { id: "alegria", label: t('steps.gospel.emotion.alegria') },
+    { id: "reverencia", label: t('steps.gospel.emotion.reverencia') },
+  ];
+
+  const gospelIntensityOptions = [
+    { id: "suave", label: t('steps.gospel.intensity.suave'), description: t('steps.gospel.intensity.suaveDesc') },
+    { id: "crescente", label: t('steps.gospel.intensity.crescente'), description: t('steps.gospel.intensity.crescenteDesc') },
+    { id: "congregacional", label: t('steps.gospel.intensity.congregacional'), description: t('steps.gospel.intensity.congregacionalDesc') },
+    { id: "profetica", label: t('steps.gospel.intensity.profetica'), description: t('steps.gospel.intensity.profeticaDesc') },
+  ];
+
+  const gospelStyleOptions = [
+    { id: "worship", label: t('steps.gospel.style.worship') },
+    { id: "congregacional", label: t('steps.gospel.style.congregacional') },
+    { id: "tradicional", label: t('steps.gospel.style.tradicional') },
+    { id: "acustico", label: t('steps.gospel.style.acustico') },
+    { id: "instrumental_canto", label: t('steps.gospel.style.instrumentalCanto') },
+    { id: "auto", label: t('steps.gospel.style.auto') },
+  ];
+
+  const gospelNarrativeOptions = [
+    { id: "cantada", label: t('steps.gospel.narrative.cantada') },
+    { id: "leituras", label: t('steps.gospel.narrative.leituras') },
+    { id: "monologos", label: t('steps.gospel.narrative.monologos') },
+    { id: "narrador", label: t('steps.gospel.narrative.narrador') },
+  ];
+
+  const gospelPerspectiveOptions = [
+    { id: "primeira_pessoa", label: t('steps.gospel.perspective.primeiraPessoa'), description: t('steps.gospel.perspective.primeiraPessoaDesc') },
+    { id: "congregacional", label: t('steps.gospel.perspective.congregacional'), description: t('steps.gospel.perspective.congregacionalDesc') },
+    { id: "profetica", label: t('steps.gospel.perspective.profetica'), description: t('steps.gospel.perspective.profeticaDesc') },
+  ];
+
+  // Get gospel chat messages
+  const getGospelChatMessages = () => ({
+    intro: t('steps.gospel.intro'),
+    context: t('steps.gospel.context.question'),
+    emotion: t('steps.gospel.emotion.question'),
+    intensity: t('steps.gospel.intensity.question'),
+    style: t('steps.gospel.style.question'),
+    narrative: t('steps.gospel.narrative.question'),
+    perspective: t('steps.gospel.perspective.question'),
+    biblicalReference: t('steps.gospel.biblicalReference.question'),
+    story: t('steps.gospel.story.question'),
   });
 
   // Voice type options
@@ -429,6 +504,14 @@ export const useBriefingTranslations = () => {
     motivationalPerspectiveOptions,
     motivationalStyleOptions,
     getMotivationalChatMessages,
+    // Gospel/Religious options
+    gospelContextOptions,
+    gospelEmotionOptions,
+    gospelIntensityOptions,
+    gospelStyleOptions,
+    gospelNarrativeOptions,
+    gospelPerspectiveOptions,
+    getGospelChatMessages,
     // Labels
     getPlanLabels,
     getIntensityLabels,
