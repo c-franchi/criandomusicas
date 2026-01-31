@@ -631,6 +631,7 @@
     "genreLabel": "Genere Musicale",
     "voiceLabel": "Tipo di Voce",
     "createButton": "Crea Musica",
-    "hint": "L'IA completerà i dettagli automaticamente"
+    "hint": "L'IA completerà i dettagli automaticamente",
+    "switchToDetailed": "Preferisci creare con più dettagli?"
   }
 }
