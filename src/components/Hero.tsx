@@ -41,14 +41,19 @@ const Hero = () => {
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background Images - Responsive */}
-      <div className="absolute inset-0">
+      {/* Background Images - Responsive with fallback */}
+      <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-primary/20">
         {/* Desktop Background */}
         <img 
           src={heroDesktop}
           alt=""
           className="hidden md:block w-full h-full object-cover"
           role="presentation"
+          loading="eager"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
         {/* Mobile Background */}
         <img 
@@ -56,6 +61,11 @@ const Hero = () => {
           alt=""
           className="md:hidden w-full h-full object-cover object-right"
           role="presentation"
+          loading="eager"
+          decoding="async"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+          }}
         />
       </div>
       
