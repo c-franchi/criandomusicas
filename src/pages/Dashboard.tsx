@@ -14,8 +14,8 @@ import { useCredits } from "@/hooks/useCredits";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "react-i18next";
 import RegionSelector from "@/components/RegionSelector";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OrderCard } from "@/components/dashboard/OrderCard";
+import { StyledTabs, StyledTabsContent, StyledTabsList, StyledTabsTrigger } from "@/components/dashboard/StyledTabs";
+import { OrderAccordion } from "@/components/dashboard/OrderAccordion";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -461,36 +461,36 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
         >
-          <Tabs defaultValue="vocal" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-6">
-              <TabsTrigger value="vocal" className="flex items-center gap-1.5 text-xs sm:text-sm">
+          <StyledTabs defaultValue="vocal" className="w-full">
+            <StyledTabsList className="grid w-full grid-cols-3 mb-6">
+              <StyledTabsTrigger value="vocal" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Mic className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.vocal')}</span>
                 <span className="xs:hidden">Vocal</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {vocalOrders.length}
                 </Badge>
-              </TabsTrigger>
-              <TabsTrigger value="instrumental" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              </StyledTabsTrigger>
+              <StyledTabsTrigger value="instrumental" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Piano className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.instrumental')}</span>
                 <span className="xs:hidden">Instrum.</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {instrumentalOrders.length}
                 </Badge>
-              </TabsTrigger>
-              <TabsTrigger value="custom" className="flex items-center gap-1.5 text-xs sm:text-sm">
+              </StyledTabsTrigger>
+              <StyledTabsTrigger value="custom" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Edit3 className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.customLyric')}</span>
                 <span className="xs:hidden">Própria</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {customLyricOrders.length}
                 </Badge>
-              </TabsTrigger>
-            </TabsList>
+              </StyledTabsTrigger>
+            </StyledTabsList>
 
             {/* Vocal Tab */}
-            <TabsContent value="vocal" className="space-y-4">
+            <StyledTabsContent value="vocal" className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                 <Button asChild className="w-full sm:w-auto">
                   <Link to="/briefing?type=vocal">
@@ -515,24 +515,18 @@ const Dashboard = () => {
                   </Button>
                 </Card>
               ) : (
-                <div className="space-y-4">
-                  {vocalOrders.map((order, index) => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      index={index}
-                      t={t}
-                      getStatusColor={getStatusColor}
-                      getStatusText={getStatusText}
-                      setDeleteOrderId={setDeleteOrderId}
-                    />
-                  ))}
-                </div>
+                <OrderAccordion 
+                  orders={vocalOrders}
+                  t={t}
+                  getStatusColor={getStatusColor}
+                  getStatusText={getStatusText}
+                  setDeleteOrderId={setDeleteOrderId}
+                />
               )}
-            </TabsContent>
+            </StyledTabsContent>
 
             {/* Instrumental Tab */}
-            <TabsContent value="instrumental" className="space-y-4">
+            <StyledTabsContent value="instrumental" className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                 <Button asChild className="w-full sm:w-auto">
                   <Link to="/briefing?type=instrumental">
@@ -557,24 +551,18 @@ const Dashboard = () => {
                   </Button>
                 </Card>
               ) : (
-                <div className="space-y-4">
-                  {instrumentalOrders.map((order, index) => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      index={index}
-                      t={t}
-                      getStatusColor={getStatusColor}
-                      getStatusText={getStatusText}
-                      setDeleteOrderId={setDeleteOrderId}
-                    />
-                  ))}
-                </div>
+                <OrderAccordion 
+                  orders={instrumentalOrders}
+                  t={t}
+                  getStatusColor={getStatusColor}
+                  getStatusText={getStatusText}
+                  setDeleteOrderId={setDeleteOrderId}
+                />
               )}
-            </TabsContent>
+            </StyledTabsContent>
 
             {/* Custom Lyric Tab */}
-            <TabsContent value="custom" className="space-y-4">
+            <StyledTabsContent value="custom" className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                 <Button asChild className="w-full sm:w-auto">
                   <Link to="/briefing?type=custom_lyric">
@@ -599,22 +587,16 @@ const Dashboard = () => {
                   </Button>
                 </Card>
               ) : (
-                <div className="space-y-4">
-                  {customLyricOrders.map((order, index) => (
-                    <OrderCard 
-                      key={order.id} 
-                      order={order} 
-                      index={index}
-                      t={t}
-                      getStatusColor={getStatusColor}
-                      getStatusText={getStatusText}
-                      setDeleteOrderId={setDeleteOrderId}
-                    />
-                  ))}
-                </div>
+                <OrderAccordion 
+                  orders={customLyricOrders}
+                  t={t}
+                  getStatusColor={getStatusColor}
+                  getStatusText={getStatusText}
+                  setDeleteOrderId={setDeleteOrderId}
+                />
               )}
-            </TabsContent>
-          </Tabs>
+            </StyledTabsContent>
+          </StyledTabs>
         </motion.div>
 
         {/* Delete Confirmation Dialog */}
