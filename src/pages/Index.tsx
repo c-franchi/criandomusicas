@@ -51,15 +51,14 @@ const Index = () => {
       />
       <Hero />
       
-      {/* Celebration Banner - after Hero for maximum visibility */}
+      {/* Celebration Popup - shows as modal for event dates */}
       {!isLoading && closestDate && !celebrationDismissed && (
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          <CelebrationSuggestion
-            celebration={closestDate}
-            onAccept={handleCelebrationAccept}
-            onDismiss={handleCelebrationDismiss}
-          />
-        </div>
+        <CelebrationSuggestion
+          celebration={closestDate}
+          onAccept={handleCelebrationAccept}
+          onDismiss={handleCelebrationDismiss}
+          open={!celebrationDismissed}
+        />
       )}
       
       <ProcessSteps />

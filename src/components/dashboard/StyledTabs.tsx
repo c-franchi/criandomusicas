@@ -29,8 +29,8 @@ const StyledTabsTrigger = React.forwardRef<
       "inline-flex items-center justify-center whitespace-nowrap rounded-lg px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium transition-all duration-300",
       "ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
       "disabled:pointer-events-none disabled:opacity-50",
-      // Inactive state
-      "bg-transparent text-muted-foreground border border-transparent hover:bg-muted/50 hover:text-foreground",
+      // Inactive state - with subtle background to differentiate from section
+      "bg-muted/40 text-muted-foreground border border-muted/50 hover:bg-muted/70 hover:text-foreground",
       // Active state - gradient style
       "data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:via-accent data-[state=active]:to-primary",
       "data-[state=active]:text-primary-foreground data-[state=active]:border-0",
