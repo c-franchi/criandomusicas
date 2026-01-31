@@ -899,8 +899,14 @@ const Briefing = () => {
       field: 'autoGenerateName',
       options: nameOptions
     },
-    // FLUXO INFANTIL (índices 60-70)
-    // Índice 54-59: Reservados para expansões
+    // PLACEHOLDERS para índices 54-59 (reservados para expansões)
+    { type: 'bot', content: '', inputType: 'text', field: 'story' } as ChatMessage, // 54
+    { type: 'bot', content: '', inputType: 'text', field: 'story' } as ChatMessage, // 55
+    { type: 'bot', content: '', inputType: 'text', field: 'story' } as ChatMessage, // 56
+    { type: 'bot', content: '', inputType: 'text', field: 'story' } as ChatMessage, // 57
+    { type: 'bot', content: '', inputType: 'text', field: 'story' } as ChatMessage, // 58
+    { type: 'bot', content: '', inputType: 'text', field: 'story' } as ChatMessage, // 59
+    // FLUXO INFANTIL (índices 60-69)
     // Índice 60: Faixa etária
     {
       type: 'bot',
