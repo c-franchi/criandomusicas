@@ -370,6 +370,45 @@ const Briefing = () => {
         return;
       }
       
+      // NOVO: Verificar se tem celebração na URL
+      const celebrationFromUrl = urlParams.get('celebration');
+      const celebrationNameFromUrl = urlParams.get('celebrationName');
+      const celebrationEmojiFromUrl = urlParams.get('celebrationEmoji');
+      
+      if (celebrationFromUrl) {
+        // Criar objeto de celebração a partir dos params da URL
+        const urlCelebration = {
+          id: celebrationFromUrl,
+          localizedName: celebrationNameFromUrl || 'Celebração',
+          emoji: decodeURIComponent(celebrationEmojiFromUrl || '🎉'),
+          // Campos com defaults seguros para compatibilidade
+          name: celebrationNameFromUrl || 'Celebração',
+          name_en: null,
+          name_es: null,
+          name_it: null,
+          month: new Date().getMonth() + 1,
+          day: new Date().getDate(),
+          calculation_rule: null,
+          suggested_music_type: null,
+          suggested_atmosphere: null,
+          suggested_emotion: null,
+          description: null,
+          description_en: null,
+          description_es: null,
+          description_it: null,
+          is_active: true,
+          sort_order: 0,
+          calculatedDate: new Date(),
+          daysUntil: 0,
+          localizedDescription: '',
+        };
+        
+        setSelectedCelebration(urlCelebration as typeof closestDate);
+        setShowCelebrationTypeModal(true);
+        setShowPlanSelection(false);
+        return;
+      }
+      
       // Se não tem planId na URL, mostrar seleção de pacote primeiro
       if (!planIdFromUrl) {
         setShowPlanSelection(true);
