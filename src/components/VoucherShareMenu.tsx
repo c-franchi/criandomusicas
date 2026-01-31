@@ -29,16 +29,10 @@ const PLAN_LABELS: Record<string, string> = {
   single: 'Música Única',
   package: 'Pacote 3 Músicas',
   subscription: 'Pacote 5 Músicas',
-  single_instrumental: 'Música Única (Instrumental)',
-  package_instrumental: 'Pacote 3 Músicas (Instrumental)',
-  subscription_instrumental: 'Pacote 5 Músicas (Instrumental)',
   single_custom_lyric: 'Letra Própria',
   creator_start: 'Creator Start',
   creator_pro: 'Creator Pro',
   creator_studio: 'Creator Studio',
-  creator_start_instrumental: 'Creator Start (Instrumental)',
-  creator_pro_instrumental: 'Creator Pro (Instrumental)',
-  creator_studio_instrumental: 'Creator Studio (Instrumental)',
 };
 
 const formatPlanNames = (planIds: string[] | null): string => {
