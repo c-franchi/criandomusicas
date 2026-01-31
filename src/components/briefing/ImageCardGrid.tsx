@@ -1,8 +1,8 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { ImageCard } from "./ImageCard";
 import { cn } from "@/lib/utils";
-import { LayoutGrid, MoreHorizontal, Send } from "lucide-react";
+import { LayoutGrid, MoreHorizontal, Send, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -43,6 +43,68 @@ export const ImageCardGrid = ({
   const [showAll, setShowAll] = useState(false);
   const [showOtherInput, setShowOtherInput] = useState(false);
   const [otherValue, setOtherValue] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const updateScrollState = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  }, []);
+
+  useEffect(() => {
+    updateScrollState();
+    const el = scrollRef.current;
+    if (el) {
+      el.addEventListener('scroll', updateScrollState);
+      return () => el.removeEventListener('scroll', updateScrollState);
+    }
+  }, [updateScrollState, options]);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+  const handleMouseLeave = () => setIsDragging(false);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!scrollRef.current) return;
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const scrollTo = (direction: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const scrollAmount = 200;
+    scrollRef.current.scrollBy({
+      left: direction === 'left' ? -scrollAmount : scrollAmount,
+      behavior: 'smooth'
+    });
+  };
 
   const handleSelect = (id: string) => {
     onSelect(id);
@@ -99,15 +161,42 @@ export const ImageCardGrid = ({
           </div>
         ) : (
           <>
-            {/* Horizontal scroll container */}
+            {/* Navigation arrows */}
+            {canScrollLeft && (
+              <button
+                onClick={() => scrollTo('left')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-background/90 border border-border rounded-full flex items-center justify-center shadow-lg hover:bg-muted transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            {canScrollRight && (
+              <button
+                onClick={() => scrollTo('right')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 bg-background/90 border border-border rounded-full flex items-center justify-center shadow-lg hover:bg-muted transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Horizontal scroll container with drag support */}
             <div
               ref={scrollRef}
-              className="flex gap-3 overflow-x-auto pb-2 touch-pan-x"
+              className={cn(
+                "flex gap-3 overflow-x-auto pb-2 px-1 cursor-grab select-none",
+                isDragging && "cursor-grabbing"
+              )}
               style={{ 
                 scrollbarWidth: 'none', 
                 msOverflowStyle: 'none',
                 WebkitOverflowScrolling: 'touch'
               }}
+              onMouseDown={handleMouseDown}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseLeave}
+              onMouseMove={handleMouseMove}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
             >
               {options.map((option, index) => (
                 <motion.div
@@ -123,7 +212,7 @@ export const ImageCardGrid = ({
                     imageSrc={option.imageSrc}
                     selected={selectedId === option.id}
                     variant={variant}
-                    onClick={() => onSelect(option.id)}
+                    onClick={() => !isDragging && onSelect(option.id)}
                   />
                 </motion.div>
               ))}
@@ -138,7 +227,7 @@ export const ImageCardGrid = ({
                 >
                   <button
                     type="button"
-                    onClick={handleOtherClick}
+                    onClick={() => !isDragging && handleOtherClick()}
                     className={cn(
                       "relative group flex flex-col items-center gap-1.5 p-1 rounded-xl transition-all duration-300",
                       "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -165,8 +254,13 @@ export const ImageCardGrid = ({
               )}
             </div>
 
-            {/* Fade gradient on right */}
-            <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+            {/* Fade gradients */}
+            {canScrollLeft && (
+              <div className="absolute left-0 top-0 bottom-2 w-8 bg-gradient-to-r from-background to-transparent pointer-events-none" />
+            )}
+            {canScrollRight && (
+              <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-background to-transparent pointer-events-none" />
+            )}
           </>
         )}
       </div>
