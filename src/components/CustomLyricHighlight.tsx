@@ -37,7 +37,7 @@ const CustomLyricHighlight = () => {
   const features = [
     th('customLyric.features.ownLyric', { defaultValue: "Use sua própria letra ou poema" }),
     th('customLyric.features.quality', { defaultValue: "Áudio profissional de alta qualidade" }),
-    th('customLyric.features.delivery', { defaultValue: "Entrega em até 48h na plataforma" }),
+    th('customLyric.features.delivery', { defaultValue: "Entrega em até 24h na plataforma" }),
     th('customLyric.features.style', { defaultValue: "Escolha o estilo musical" })
   ];
 

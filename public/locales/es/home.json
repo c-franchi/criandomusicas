@@ -74,7 +74,7 @@
       "professional": "Edición profesional con efectos",
       "transitions": "Transiciones cinematográficas",
       "sync": "Sincronización con la música",
-      "delivery": "Entrega en hasta 48h"
+      "delivery": "Entrega en hasta 24h"
     },
     "loopNotice": {
       "title": "¿Canciones más largas?",
@@ -98,7 +98,7 @@
       "ratingLabel": "Calificación Promedio",
       "satisfaction": "100%",
       "satisfactionLabel": "Satisfacción",
-      "delivery": "48h",
+      "delivery": "24h",
       "deliveryLabel": "Tiempo Promedio"
     },
     "musicTypes": {
@@ -143,7 +143,7 @@
       "Perfecto para videos y podcasts",
       "Ideal para contenido de fondo",
       "Uso comercial liberado",
-      "Entrega en hasta 48h"
+      "Entrega en hasta 24h"
     ],
     "cta": "Crear Pista Instrumental",
     "styles": {
@@ -221,7 +221,7 @@
     "features": {
       "ownLyric": "Usa tu propia letra o poema",
       "quality": "Audio profesional de alta calidad",
-      "delivery": "Entrega en hasta 48h en la plataforma",
+      "delivery": "Entrega en hasta 24h en la plataforma",
       "style": "Elige el estilo musical"
     },
     "cardTitle": "Canción con Tu Propia Letra",

@@ -74,7 +74,7 @@
       "professional": "Professional editing with effects",
       "transitions": "Cinematic transitions",
       "sync": "Music synchronization",
-      "delivery": "Delivery within 48h"
+      "delivery": "Delivery within 24h"
     },
     "loopNotice": {
       "title": "Longer songs?",
@@ -98,7 +98,7 @@
       "ratingLabel": "Average Rating",
       "satisfaction": "100%",
       "satisfactionLabel": "Satisfaction",
-      "delivery": "48h",
+      "delivery": "24h",
       "deliveryLabel": "Average Time"
     },
     "musicTypes": {
@@ -143,7 +143,7 @@
       "Perfect for videos and podcasts",
       "Ideal for background content",
       "Commercial use allowed",
-      "Delivery within 48h"
+      "Delivery within 24h"
     ],
     "cta": "Create Instrumental Track",
     "styles": {
@@ -221,7 +221,7 @@
     "features": {
       "ownLyric": "Use your own lyrics or poem",
       "quality": "High quality professional audio",
-      "delivery": "Delivery within 48h on the platform",
+      "delivery": "Delivery within 24h on the platform",
       "style": "Choose the musical style"
     },
     "cardTitle": "Song with Your Own Lyrics",

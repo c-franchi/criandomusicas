@@ -74,7 +74,7 @@
       "professional": "Editing professionale con effetti",
       "transitions": "Transizioni cinematografiche",
       "sync": "Sincronizzazione con la musica",
-      "delivery": "Consegna entro 48h"
+      "delivery": "Consegna entro 24h"
     },
     "loopNotice": {
       "title": "Canzoni più lunghe?",
@@ -98,7 +98,7 @@
       "ratingLabel": "Valutazione Media",
       "satisfaction": "100%",
       "satisfactionLabel": "Soddisfazione",
-      "delivery": "48h",
+      "delivery": "24h",
       "deliveryLabel": "Tempo Medio"
     },
     "musicTypes": {
@@ -143,7 +143,7 @@
       "Perfetto per video e podcast",
       "Ideale per contenuti di sottofondo",
       "Uso commerciale consentito",
-      "Consegna entro 48h"
+      "Consegna entro 24h"
     ],
     "cta": "Crea Traccia Strumentale",
     "styles": {
@@ -221,7 +221,7 @@
     "features": {
       "ownLyric": "Usa il tuo testo o poesia",
       "quality": "Audio professionale di alta qualità",
-      "delivery": "Consegna entro 48h sulla piattaforma",
+      "delivery": "Consegna entro 24h sulla piattaforma",
       "style": "Scegli lo stile musicale"
     },
     "cardTitle": "Canzone con Il Tuo Testo",

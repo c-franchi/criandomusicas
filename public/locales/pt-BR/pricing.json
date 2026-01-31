@@ -155,8 +155,8 @@
   },
   "instrumentalFeatures": {
     "single": ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega em até 24h"],
-    "package": ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Suporte VIP"],
-    "subscription": ["Até 5 músicas instrumentais", "Arranjos personalizados", "Qualidade premium", "Prioridade na fila"]
+    "package": ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Entrega em até 24h", "Suporte VIP"],
+    "subscription": ["Até 5 músicas instrumentais", "Arranjos personalizados", "Qualidade premium", "Entrega em até 24h", "Prioridade na fila"]
   },
   "features_list": {
     "song": "Música personalizada",

@@ -226,7 +226,7 @@ const Hero = () => {
             <div className="text-sm text-muted-foreground">{t('hero.stats.songs')}</div>
           </div>
           <div className="text-center">
-            <div className="text-3xl md:text-4xl font-bold gradient-text mb-1">48h</div>
+            <div className="text-3xl md:text-4xl font-bold gradient-text mb-1">24h</div>
             <div className="text-sm text-muted-foreground">{t('hero.stats.time')}</div>
           </div>
           <div className="text-center">
