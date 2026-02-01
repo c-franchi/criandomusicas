@@ -48,19 +48,39 @@ const Auth = () => {
   // Handle OAuth callback - detect and process Google sign-in return
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      // Detect if this is an OAuth callback (hash with access_token)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const currentUrl = window.location.href;
+      const currentPath = window.location.pathname;
+      const currentHash = window.location.hash;
+      
+      console.log('[Auth] Checking OAuth callback:', { currentPath, hasHash: !!currentHash });
+      
+      // Detect if this is an OAuth callback
+      // 1. Hash with access_token (standard OAuth return)
+      // 2. Path is /~oauth/callback
+      const hashParams = new URLSearchParams(currentHash.substring(1));
       const accessToken = hashParams.get('access_token');
+      const isOAuthCallbackPath = currentPath === '/~oauth/callback';
       
-      if (!accessToken) return;
+      if (!accessToken && !isOAuthCallbackPath) {
+        console.log('[Auth] Not an OAuth callback');
+        return;
+      }
       
+      console.log('[Auth] OAuth callback detected, processing...');
       setIsProcessingOAuth(true);
       
       // Wait for session to be established
-      const checkSession = async (retries = 5) => {
-        const { data: { session } } = await supabase.auth.getSession();
+      const checkSession = async (retries = 10) => {
+        console.log('[Auth] Checking session, retries left:', retries);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('[Auth] Session error:', sessionError);
+        }
         
         if (session?.user) {
+          console.log('[Auth] Session found for user:', session.user.email);
+          
           // Check if this is a new user (profile created recently)
           const { data: profile } = await supabase
             .from('profiles')
@@ -71,6 +91,8 @@ const Auth = () => {
           if (profile) {
             const profileAge = Date.now() - new Date(profile.created_at).getTime();
             const isNewUser = profileAge < 60000; // Less than 1 minute = new user
+            
+            console.log('[Auth] Profile age:', profileAge, 'isNewUser:', isNewUser);
             
             if (isNewUser) {
               // Send welcome email for new Google users
@@ -83,16 +105,17 @@ const Auth = () => {
                 await supabase.functions.invoke('send-welcome-email', {
                   body: { email: session.user.email, userName }
                 });
-                console.log('Welcome email sent to new Google user');
+                console.log('[Auth] Welcome email sent to new Google user');
               } catch (e) {
-                console.error('Welcome email error:', e);
+                console.error('[Auth] Welcome email error:', e);
               }
             }
           }
           
-          // Clean up hash and redirect
+          // Clean up URL and redirect to home
+          console.log('[Auth] OAuth complete, redirecting to home');
           window.history.replaceState(null, '', '/');
-          setIsProcessingOAuth(false);
+          window.location.href = '/';
           return;
         }
         
@@ -100,14 +123,15 @@ const Auth = () => {
         if (retries > 0) {
           setTimeout(() => checkSession(retries - 1), 500);
         } else {
-          // Fallback: redirect anyway
+          console.log('[Auth] No session after retries, redirecting anyway');
+          // Fallback: redirect to home
           window.history.replaceState(null, '', '/');
-          setIsProcessingOAuth(false);
+          window.location.href = '/';
         }
       };
       
       // Give Supabase time to process the token
-      setTimeout(() => checkSession(), 300);
+      setTimeout(() => checkSession(), 500);
     };
     
     handleOAuthCallback();
@@ -291,11 +315,14 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
+      console.log('[Auth] Starting Google OAuth, redirect_uri:', `${window.location.origin}/auth`);
+      
       const { error } = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth`,
       });
 
       if (error) {
+        console.error('[Auth] Google OAuth error:', error);
         toast({
           title: t('errors.googleError'),
           description: error.message,
@@ -303,7 +330,7 @@ const Auth = () => {
         });
       }
     } catch (err) {
-      console.error('Google sign in error:', err);
+      console.error('[Auth] Google sign in error:', err);
       toast({
         title: t('errors.unexpectedError'),
         description: t('errors.unexpectedError'),

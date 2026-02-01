@@ -70,6 +70,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/~oauth/callback" element={<Auth />} />
+              <Route path="/auth/callback" element={<Auth />} />
               
               {/* Lazy loaded routes */}
               <Route path="/briefing" element={<Briefing />} />
