@@ -657,7 +657,7 @@
     "voiceTitle": "Vocal type",
     "createButton": "Create Music",
     "hint": "AI will complete the details automatically",
-    "switchToDetailed": "Prefer to create with more details?"
+    "switchToDetailed": "Create your music with more details"
   },
   "noCreditModal": {
     "title": "Insufficient credits",
