@@ -65,7 +65,7 @@ const QuickCreationComponent = ({
 
   // Map style options with images
   const styleOptionsWithImages = useMemo(() => {
-    return styleOptions.slice(0, 12).map(opt => ({
+    return styleOptions.slice(0, 15).map(opt => ({
       id: opt.id,
       label: opt.label,
       imageSrc: genreImages[opt.id as keyof typeof genreImages] || genreImages.pop || ''
