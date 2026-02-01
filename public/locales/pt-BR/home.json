@@ -306,5 +306,23 @@
     "contact": "Contato",
     "copyright": "© 2025 Criando Músicas. Todos os direitos reservados.",
     "developedBy": "Desenvolvido por"
+  },
+  "contact": {
+    "title": "Entre em Contato",
+    "subtitle": "Envie sua dúvida ou mensagem e responderemos por email.",
+    "name": "Nome",
+    "namePlaceholder": "Seu nome completo",
+    "email": "Email",
+    "emailPlaceholder": "seu@email.com",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Sobre o que você quer falar?",
+    "message": "Mensagem",
+    "messagePlaceholder": "Digite sua dúvida ou mensagem aqui...",
+    "send": "Enviar Mensagem",
+    "sending": "Enviando...",
+    "successTitle": "Mensagem enviada!",
+    "successDescription": "Responderemos em breve pelo email informado.",
+    "errorTitle": "Erro ao enviar",
+    "errorDescription": "Tente novamente ou entre em contato pelo WhatsApp."
   }
 }

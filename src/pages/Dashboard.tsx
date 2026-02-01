@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import RegionSelector from "@/components/RegionSelector";
 import { StyledTabs, StyledTabsContent, StyledTabsList, StyledTabsTrigger } from "@/components/dashboard/StyledTabs";
 import { OrderAccordion } from "@/components/dashboard/OrderAccordion";
+import ReceivedCreditsNotification from "@/components/ReceivedCreditsNotification";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -402,8 +403,10 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
+          className="space-y-3"
         >
           <NotificationBanner />
+          <ReceivedCreditsNotification variant="banner" />
         </motion.div>
 
         {/* Header */}

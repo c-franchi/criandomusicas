@@ -338,5 +338,22 @@
     "musicProductionSoon": "Produção da música (em breve)",
     "goToDashboard": "Ir para Dashboard",
     "produceMusicSoon": "Produzir Música (Em Breve)"
+  },
+  "receivedCredits": {
+    "youHave": "Você tem",
+    "creditPending": "crédito pendente",
+    "creditsPending": "créditos pendentes",
+    "fromUser": "De: {{name}}",
+    "fromSomeone": "Alguém enviou créditos para você",
+    "view": "Ver",
+    "accept": "Aceitar",
+    "credit": "crédito",
+    "credits": "créditos",
+    "from": "De:",
+    "code": "Código",
+    "accepted": "Crédito recebido!",
+    "acceptedDesc": "O crédito foi adicionado à sua conta.",
+    "errorTitle": "Erro ao aceitar",
+    "errorDesc": "Tente novamente ou contate o suporte."
   }
 }
