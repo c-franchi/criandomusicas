@@ -1,173 +1,252 @@
 
-# Plano: Corrigir OAuth Google para Domínio Personalizado
+# Plano: Simplificar OAuth - Usar Apenas Supabase Auth Nativo
 
-## Problema Identificado
+## Problema Atual
 
-O código atual na linha 321-323 do `Auth.tsx` chama `lovable.auth.signInWithOAuth()` mesmo estando no domínio personalizado:
+O código atual mistura dois sistemas de OAuth que conflitam:
 
-```typescript
-// PROBLEMA: Esta chamada redireciona para /~oauth/initiate no domínio ATUAL
-const { error } = await lovable.auth.signInWithOAuth('google', {
-  redirect_uri: `${LOVABLE_CLOUD_URL}/auth`,  // ← Este parâmetro é ignorado no INÍCIO do fluxo
-});
-```
+1. **Lovable OAuth SDK** (`lovable.auth.signInWithOAuth`)
+2. **Supabase Auth** (`supabase.auth.signInWithOAuth`)
 
-O SDK do Lovable sempre inicia o OAuth no domínio atual, causando tentativa de acesso à rota `/~oauth/initiate` no Firebase, que resulta em 404.
+Isso causa:
+- Callbacks diferentes disputando a sessão
+- Sessão criada → sobrescrita → destruída
+- Loop de "pisca e volta"
 
 ## Solução
 
-Modificar o fluxo para que o OAuth NUNCA seja iniciado no domínio personalizado. Em vez disso, redirecionar o navegador diretamente para o domínio Lovable.
+**Remover completamente o Lovable OAuth** e usar **apenas Supabase Auth nativo**, que já funcionava antes.
 
 ## Arquivo a Modificar
 
 | Arquivo | Alteração |
 |---------|-----------|
-| `src/pages/Auth.tsx` | Corrigir `handleGoogleSignIn` e adicionar detecção de `?start_google_oauth=true` |
+| `src/pages/Auth.tsx` | Simplificar para usar apenas `supabase.auth.signInWithOAuth()` |
 
-## Detalhes Técnicos
+## Alterações Detalhadas
 
-### 1. Modificar handleGoogleSignIn (linhas 301-362)
+### 1. Remover Import do Lovable (linha 11)
 
-**Antes (código problemático):**
 ```typescript
-if (!isLovableHost) {
-  sessionStorage.setItem('oauth_return_url', returnUrl);
-  // PROBLEMA: Chama o SDK no domínio errado
-  const { error } = await lovable.auth.signInWithOAuth('google', {
-    redirect_uri: `${LOVABLE_CLOUD_URL}/auth`,
-  });
-}
+// REMOVER esta linha:
+import { lovable } from '@/integrations/lovable/index';
 ```
 
-**Depois (código corrigido):**
-```typescript
-if (!isLovableHost) {
-  // Salvar apenas a origem (não a URL completa com /auth)
-  sessionStorage.setItem('oauth_return_url', window.location.origin);
-  
-  // NÃO chamar o SDK aqui - redirecionar diretamente para o domínio Lovable
-  window.location.href = `${LOVABLE_CLOUD_URL}/auth?start_google_oauth=true`;
-  return; // Importante: parar execução aqui
-}
-```
+### 2. Remover useEffect de Cross-Domain OAuth (linhas 121-152)
 
-### 2. Adicionar Detecção de `?start_google_oauth=true`
-
-Adicionar um novo `useEffect` no início do componente para detectar o parâmetro e iniciar OAuth automaticamente:
+Todo este bloco será **REMOVIDO** - não precisamos mais detectar `start_google_oauth`:
 
 ```typescript
-// Detectar se veio redirecionado do domínio personalizado para iniciar OAuth
+// REMOVER este useEffect inteiro:
 useEffect(() => {
   const startGoogleOAuth = searchParams.get('start_google_oauth');
-  const currentHost = window.location.host;
-  const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
-  
-  // Só iniciar OAuth se:
-  // 1. Estiver no domínio Lovable
-  // 2. Tiver o parâmetro start_google_oauth=true
-  // 3. Não estiver já processando OAuth
-  if (isLovableHost && startGoogleOAuth === 'true' && !isProcessingOAuth) {
-    console.log('[Auth] Starting Google OAuth from redirect');
-    
-    // Limpar o parâmetro da URL para evitar loop
-    window.history.replaceState(null, '', '/auth');
-    
-    // Iniciar OAuth agora que estamos no domínio correto
-    lovable.auth.signInWithOAuth('google', {
-      redirect_uri: `${window.location.origin}/auth`,
-    }).then(({ error }) => {
-      if (error) {
-        console.error('[Auth] OAuth start error:', error);
-      }
-    });
-  }
-}, [searchParams, isProcessingOAuth]);
+  // ... todo o código de cross-domain redirect
+}, [searchParams, isProcessingOAuth, toast, t]);
 ```
 
-### 3. Ajustar Lógica de Retorno (linhas 121-153)
+### 3. Remover useEffect de Redirect de Retorno (linhas 155-181)
 
-Corrigir para usar apenas a origem salva (não `/auth`):
+Todo este bloco será **REMOVIDO** - não há mais fluxo cross-domain:
 
 ```typescript
-// Verificar se oauth_return_url contém apenas a origem
-const returnUrl = sessionStorage.getItem('oauth_return_url');
+// REMOVER este useEffect inteiro:
+useEffect(() => {
+  const checkCrossDomainRedirect = async () => {
+    // ... todo o código de redirect back
+  };
+  // ...
+}, [user]);
+```
 
-if (session?.access_token && session?.refresh_token) {
-  const returnOrigin = returnUrl; // Já é apenas a origem
-  if (returnOrigin && !returnOrigin.includes('lovable.app')) {
-    console.log('[Auth] Redirecting back to custom domain');
-    sessionStorage.removeItem('oauth_return_url');
+### 4. Simplificar handleGoogleSignIn (linhas 329-375)
+
+**ANTES (complexo com cross-domain):**
+```typescript
+const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    const currentHost = window.location.host;
+    const isLovableHost = currentHost.includes('lovable.app');
+    const LOVABLE_CLOUD_URL = 'https://criandomusicas.lovable.app';
     
-    // Redirecionar para /auth no domínio original com tokens
-    window.location.href = `${returnOrigin}/auth#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+    if (!isLovableHost) {
+      sessionStorage.setItem('oauth_return_url', window.location.origin);
+      window.location.href = `${LOVABLE_CLOUD_URL}/auth?start_google_oauth=true`;
+      return;
+    }
+    
+    const { error } = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: `${window.location.origin}/auth`,
+    });
+    // ...
   }
+};
+```
+
+**DEPOIS (simples com Supabase nativo):**
+```typescript
+const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    console.log('[Auth] Starting Google OAuth with Supabase');
+    
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/auth`
+      }
+    });
+
+    if (error) {
+      console.error('[Auth] Google OAuth error:', error);
+      toast({
+        title: t('errors.googleError'),
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
+  } catch (err) {
+    console.error('[Auth] Google sign in error:', err);
+    toast({
+      title: t('errors.unexpectedError'),
+      variant: 'destructive',
+    });
+  }
+  setLoading(false);
+};
+```
+
+### 5. Manter useEffect de Captura de Tokens (linhas 46-94)
+
+Este **permanece** - ainda é útil para capturar tokens do hash da URL após OAuth:
+
+```typescript
+// MANTER este useEffect (funciona com Supabase OAuth também)
+useEffect(() => {
+  const handleOAuthCallback = async () => {
+    const currentHash = window.location.hash;
+    if (!currentHash) return;
+
+    const hashParams = new URLSearchParams(currentHash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+
+    if (accessToken && refreshToken) {
+      // ... estabelecer sessão
+    }
+  };
+  handleOAuthCallback();
+}, [toast, t]);
+```
+
+### 6. Remover Estado desnecessário
+
+```typescript
+// REMOVER:
+const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
+
+// MANTER o loading para o botão:
+const [loading, setLoading] = useState(false);
+```
+
+### 7. Remover Loading de OAuth Processing (linhas 184-193)
+
+```typescript
+// REMOVER este bloco:
+if (isProcessingOAuth) {
+  return (
+    <div className="...">
+      <Loader2 ... />
+      <p>Processando login...</p>
+    </div>
+  );
 }
 ```
 
-## Fluxo Corrigido
+## Fluxo Simplificado
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. Usuário em criandomusicas.com.br clica "Entrar com Google"   │
+│ 1. Usuário clica "Entrar com Google" (qualquer domínio)         │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 2. handleGoogleSignIn detecta domínio personalizado             │
-│    - Salva origem em sessionStorage                             │
-│    - Redireciona para lovable.app/auth?start_google_oauth=true  │
-│    - NÃO chama SDK                                              │
+│ 2. supabase.auth.signInWithOAuth({                              │
+│      provider: 'google',                                        │
+│      options: { redirectTo: window.location.origin/auth }       │
+│    })                                                           │
+│                                                                 │
+│    Supabase redireciona para:                                   │
+│    haiiaqzhuydsjujtdcnq.supabase.co/auth/v1/authorize?...       │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 3. Auth.tsx no domínio Lovable detecta ?start_google_oauth=true │
-│    - useEffect captura o parâmetro                              │
-│    - Chama lovable.auth.signInWithOAuth()                       │
-│    - SDK redireciona para /~oauth/initiate (funciona!)          │
+│ 3. Google OAuth acontece normalmente                            │
+│    (no domínio do Google)                                       │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 4. Google OAuth acontece normalmente                            │
-│    - Usuário autentica no Google                                │
-│    - Google redireciona de volta para lovable.app/auth          │
+│ 4. Google redireciona para:                                     │
+│    haiiaqzhuydsjujtdcnq.supabase.co/auth/v1/callback            │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 5. Supabase estabelece sessão no domínio Lovable                │
-│    - useEffect detecta oauth_return_url no sessionStorage       │
-│    - Redireciona para criandomusicas.com.br/auth#tokens...      │
+│ 5. Supabase processa callback e redireciona para:               │
+│    criandomusicas.com.br/auth#access_token=...                  │
+│    (ou lovable.app, dependendo do redirectTo original)          │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 6. Auth.tsx no domínio personalizado captura tokens do hash     │
-│    - supabase.auth.setSession() estabelece sessão local         │
-│    - Usuário está autenticado!                                  │
+│ 6. useEffect captura tokens do hash                             │
+│    supabase.auth.setSession() estabelece sessão                 │
+│    Usuário autenticado!                                         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Alterações Resumidas no Código
+## Configuração Necessária no Backend (Usuário deve fazer)
 
-1. **Linha ~312-335**: Remover chamada ao SDK no domínio personalizado, usar `window.location.href` diretamente
+### Google Cloud Console
 
-2. **Adicionar novo useEffect**: Detectar `?start_google_oauth=true` e iniciar OAuth no domínio Lovable
+Em **Authorized redirect URIs**, deve ter **APENAS**:
 
-3. **Linha ~316**: Salvar apenas `window.location.origin` (não `/auth`) no sessionStorage
+```
+https://haiiaqzhuydsjujtdcnq.supabase.co/auth/v1/callback
+```
 
-4. **Linha ~141**: Ajustar para usar `${returnOrigin}/auth#tokens...`
+### Lovable Cloud Dashboard (URL Configuration)
+
+- **Site URL**: `https://criandomusicas.com.br`
+- **Additional Redirect URLs**:
+  - `https://criandomusicas.com.br/auth`
+  - `https://criandomusicas.lovable.app/auth`
+
+## Resumo das Alterações no Código
+
+| Linha | Ação | Descrição |
+|-------|------|-----------|
+| 11 | REMOVER | Import do `lovable` |
+| 37 | REMOVER | Estado `isProcessingOAuth` |
+| 121-152 | REMOVER | useEffect de `start_google_oauth` |
+| 155-181 | REMOVER | useEffect de redirect cross-domain |
+| 184-193 | REMOVER | Loading de OAuth processing |
+| 329-375 | REESCREVER | `handleGoogleSignIn` simplificado |
+
+## Benefícios
+
+1. **Código mais simples** - menos de 100 linhas removidas
+2. **Um único sistema de auth** - apenas Supabase
+3. **Funciona em qualquer domínio** - sem cross-domain hacks
+4. **Era assim que funcionava antes** - testado e comprovado
+5. **Branding** - pode ser ajustado no Google Console sem tocar no código
 
 ## Testes Necessários
 
-1. Acessar `criandomusicas.com.br/auth` e clicar em "Entrar com Google"
-   - Deve redirecionar para `criandomusicas.lovable.app/auth?start_google_oauth=true`
-   - NÃO deve tentar acessar `/~oauth/initiate` no domínio personalizado
-
-2. OAuth deve completar no domínio Lovable
-   - Google login funciona normalmente
-
-3. Após autenticação, usuário deve retornar ao domínio personalizado
-   - Sessão deve estar ativa
-   - Não deve haver erro 404
+1. Publicar a aplicação
+2. Acessar `criandomusicas.com.br/auth` e clicar em "Entrar com Google"
+3. Verificar que OAuth completa sem erro 404
+4. Verificar que sessão persiste no domínio próprio
