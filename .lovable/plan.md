@@ -1,215 +1,211 @@
 
+# Plano: Corrigir Login Google no Domínio Personalizado
 
-# Plano: Corrigir Logout e Login Google
+## Diagnóstico do Problema
 
-## Diagnóstico
+### Causa Raiz Identificada
+O erro 404 ocorre porque:
 
-Os logs do servidor mostram:
-- `session_not_found` no endpoint `/logout` com status `403`
-- Isso significa que o logout no servidor falha, mas o código atual **não limpa os dados locais** quando isso acontece
+1. **O domínio `criandomusicas.com.br` está hospedado no Firebase Hosting**
+2. **O OAuth do Lovable Cloud usa rotas especiais `/~oauth/*`** que são interceptadas pelo servidor do Lovable Cloud
+3. **O Firebase Hosting não conhece essas rotas** e tenta servir o SPA, que também não tem essa rota
 
 ### Fluxo Atual (Quebrado)
-1. Usuário clica logout
-2. `supabase.auth.signOut()` é chamado
-3. Servidor retorna erro 403 (sessão não existe)
-4. **localStorage NÃO é limpo** porque o SDK não força limpeza local em erro
-5. Usuário vai para tela de login, mas sessão antiga ainda está no localStorage
-6. Ao tentar login Google, há conflito de sessões
-7. Erro 404 aparece, mas depois a sessão antiga é restaurada
+```text
+1. Usuário acessa criandomusicas.com.br (Firebase Hosting)
+2. Clica em "Login com Google"
+3. lovable.auth.signInWithOAuth() redireciona para:
+   criandomusicas.com.br/~oauth/initiate?provider=google...
+4. Firebase não conhece /~oauth/* → tenta servir index.html
+5. React Router não tem rota /~oauth/initiate → 404
+```
+
+### Fluxo Correto (No Lovable Cloud)
+```text
+1. Usuário acessa criandomusicas.lovable.app (Lovable Cloud)
+2. Clica em "Login com Google"
+3. lovable.auth.signInWithOAuth() redireciona para:
+   criandomusicas.lovable.app/~oauth/initiate?provider=google...
+4. Lovable Cloud intercepta /~oauth/* → processa OAuth
+5. Redireciona de volta com tokens → login funciona
+```
 
 ## Solução
 
-### 1. Melhorar `handleSignOut` em `useAuth.tsx`
+Modificar o código para detectar quando está em um domínio não-Lovable e usar o domínio Lovable Cloud como intermediário para o OAuth.
 
-Forçar limpeza local independente do resultado da API:
-
-```typescript
-const handleSignOut = async () => {
-  console.log('[Auth] Starting signOut...');
-  
-  try {
-    // Attempt server signout but don't depend on success
-    await supabase.auth.signOut({ scope: 'local' });
-    console.log('[Auth] Server signOut completed');
-  } catch (error) {
-    console.error('[Auth] Server signOut error (will clean local anyway):', error);
-  }
-  
-  // ALWAYS clear local state regardless of server response
-  setUser(null);
-  setSession(null);
-  setProfile(null);
-  
-  // Force clear localStorage auth keys
-  const keysToRemove = Object.keys(localStorage).filter(key => 
-    key.startsWith('sb-') || key.includes('supabase')
-  );
-  keysToRemove.forEach(key => localStorage.removeItem(key));
-  
-  console.log('[Auth] Local storage cleaned, keys removed:', keysToRemove.length);
-};
-```
-
-### 2. Adicionar Logs no OAuth Callback
-
-Melhorar o `useEffect` em `Auth.tsx` para mais visibilidade:
-
-```typescript
-useEffect(() => {
-  const handleOAuthCallback = async () => {
-    const currentPath = window.location.pathname;
-    const currentHash = window.location.hash;
-    
-    console.log('[Auth] Page load check:', {
-      path: currentPath,
-      hasHash: !!currentHash,
-      hashPreview: currentHash.substring(0, 50)
-    });
-    
-    // Check for existing session first
-    const { data: { session: existingSession } } = await supabase.auth.getSession();
-    console.log('[Auth] Existing session:', existingSession ? existingSession.user.email : 'none');
-    
-    // ... rest of logic
-  };
-  
-  handleOAuthCallback();
-}, []);
-```
-
-### 3. Tratar Redirecionamento OAuth Corretamente
-
-Atualizar lógica de redirecionamento para evitar 404:
-
-```typescript
-// No handleOAuthCallback
-if (session?.user) {
-  console.log('[Auth] OAuth complete, user:', session.user.email);
-  
-  // Use React Router navigation instead of window.location
-  // to avoid potential 404 issues
-  setIsProcessingOAuth(false);
-  // Let the Navigate component handle redirect
-  return;
-}
-```
-
-## Arquivos a Modificar
+### Arquivos a Modificar
 
 | Arquivo | Mudança |
 |---------|---------|
-| `src/hooks/useAuth.tsx` | Melhorar `handleSignOut` com limpeza forçada do localStorage |
-| `src/pages/Auth.tsx` | Adicionar mais logs e melhorar tratamento de redirecionamento |
+| `src/pages/Auth.tsx` | Detectar domínio e usar URL do Lovable Cloud para OAuth |
+| `src/App.tsx` | Adicionar rota para capturar retorno do OAuth |
 
-## Detalhes Técnicos
+### Detalhes Técnicos
 
-### useAuth.tsx - handleSignOut Melhorado
+#### 1. Auth.tsx - Modificar handleGoogleSignIn
 
 ```typescript
-const handleSignOut = async () => {
-  console.log('[Auth] Initiating sign out...');
-  
+const handleGoogleSignIn = async () => {
+  setLoading(true);
   try {
-    // Use 'local' scope to ensure local cleanup even if server session is gone
-    await supabase.auth.signOut({ scope: 'local' });
-    console.log('[Auth] Supabase signOut completed');
-  } catch (error) {
-    // Log but don't throw - we'll clean up locally anyway
-    console.error('[Auth] SignOut API error:', error);
-  }
-  
-  // CRITICAL: Always clear state regardless of API result
-  setUser(null);
-  setSession(null);
-  setProfile(null);
-  
-  // Force clear all Supabase-related localStorage items
-  try {
-    const storageKeys = Object.keys(localStorage);
-    const supabaseKeys = storageKeys.filter(key => 
-      key.startsWith('sb-') || 
-      key.includes('supabase') ||
-      key.includes('auth-token')
-    );
+    const currentHost = window.location.host;
+    const isLovableHost = currentHost.includes('lovable.app') || 
+                          currentHost.includes('lovableproject.com');
     
-    supabaseKeys.forEach(key => {
-      localStorage.removeItem(key);
-      console.log('[Auth] Removed localStorage key:', key);
-    });
+    // URL publicada do Lovable Cloud
+    const LOVABLE_CLOUD_URL = 'https://criandomusicas.lovable.app';
     
-    console.log('[Auth] Local cleanup complete. Removed', supabaseKeys.length, 'keys');
-  } catch (e) {
-    console.error('[Auth] localStorage cleanup error:', e);
+    if (isLovableHost) {
+      // Domínio Lovable - OAuth normal
+      console.log('[Auth] Lovable domain, using normal OAuth flow');
+      const { error } = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: `${window.location.origin}/auth`,
+      });
+      if (error) {
+        toast({ title: t('errors.googleError'), description: error.message, variant: 'destructive' });
+      }
+    } else {
+      // Domínio Firebase/personalizado - redirecionar via Lovable Cloud
+      console.log('[Auth] Custom domain detected, redirecting to Lovable Cloud for OAuth');
+      
+      // Salvar domínio original para retorno
+      sessionStorage.setItem('oauth_return_host', window.location.origin);
+      
+      // Redirecionar para Lovable Cloud que sabe processar /~oauth/*
+      // Após OAuth, Lovable Cloud redirecionará de volta para /auth com tokens
+      const returnUrl = `${window.location.origin}/auth`;
+      window.location.href = `${LOVABLE_CLOUD_URL}/auth?oauth_google=true&return_to=${encodeURIComponent(returnUrl)}`;
+    }
+  } catch (err) {
+    console.error('[Auth] Google sign in error:', err);
+    toast({ title: t('errors.unexpectedError'), variant: 'destructive' });
   }
+  setLoading(false);
 };
 ```
 
-### Auth.tsx - OAuth Callback Melhorado
+#### 2. Abordagem Alternativa (Recomendada)
+
+Como o OAuth do Lovable Cloud depende das rotas `/~oauth/*` serem interceptadas pelo servidor, a solução mais limpa seria:
+
+**Opção A**: Redirecionar diretamente para o Lovable Cloud para fazer OAuth
+```typescript
+const handleGoogleSignIn = async () => {
+  const currentHost = window.location.host;
+  const isLovableHost = currentHost.includes('lovable.app');
+  
+  if (!isLovableHost) {
+    // No domínio personalizado, usar URL do Lovable Cloud
+    // O SDK vai iniciar OAuth a partir do domínio correto
+    window.location.href = 'https://criandomusicas.lovable.app/auth?start_google_oauth=true';
+    return;
+  }
+  
+  // Fluxo normal para domínios Lovable
+  const { error } = await lovable.auth.signInWithOAuth('google', {
+    redirect_uri: `${window.location.origin}/auth`,
+  });
+  // ...
+};
+```
+
+**Opção B**: Adicionar rewrite no Firebase para proxy das rotas /~oauth/*
+Esta opção não é viável pois o Firebase Hosting não suporta proxy para domínios externos.
+
+## Solução Final Recomendada
+
+A solução mais robusta é **processar o OAuth através do domínio Lovable Cloud** e depois sincronizar a sessão de volta para o domínio personalizado.
+
+### Implementação
+
+#### Auth.tsx - handleGoogleSignIn Corrigido
 
 ```typescript
-useEffect(() => {
-  const handleOAuthCallback = async () => {
-    const currentPath = window.location.pathname;
-    const currentHash = window.location.hash;
+const handleGoogleSignIn = async () => {
+  setLoading(true);
+  try {
+    const currentHost = window.location.host;
+    const isLovableHost = currentHost.includes('lovable.app') || 
+                          currentHost.includes('lovableproject.com');
     
-    console.log('[Auth] ======= OAuth Check Start =======');
-    console.log('[Auth] Path:', currentPath);
-    console.log('[Auth] Hash exists:', !!currentHash);
-    console.log('[Auth] Full URL:', window.location.href);
+    console.log('[Auth] Starting Google OAuth, host:', currentHost, 'isLovable:', isLovableHost);
     
-    // First check existing session state
-    const { data: { session: existingSession } } = await supabase.auth.getSession();
-    console.log('[Auth] Existing session check:', {
-      hasSession: !!existingSession,
-      userEmail: existingSession?.user?.email || 'none'
-    });
-    
-    // Detect OAuth callback scenarios
-    const hashParams = new URLSearchParams(currentHash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const isOAuthCallbackPath = currentPath === '/~oauth/callback';
-    const isAuthCallbackPath = currentPath === '/auth/callback';
-    
-    const isOAuthCallback = !!accessToken || isOAuthCallbackPath || isAuthCallbackPath;
-    
-    console.log('[Auth] OAuth detection:', {
-      hasAccessToken: !!accessToken,
-      isOAuthCallbackPath,
-      isAuthCallbackPath,
-      isOAuthCallback
-    });
-    
-    if (!isOAuthCallback) {
-      console.log('[Auth] Not an OAuth callback, skipping');
+    if (!isLovableHost) {
+      // Domínio personalizado (Firebase) - não pode processar /~oauth/*
+      // Redirecionar para fazer OAuth no Lovable Cloud e voltar com tokens
+      console.log('[Auth] Custom domain - redirecting through Lovable Cloud');
+      
+      // Armazenar URL de retorno
+      const returnUrl = `${window.location.origin}/auth`;
+      sessionStorage.setItem('oauth_return_url', returnUrl);
+      
+      // Fazer OAuth via domínio Lovable e retornar
+      const lovableUrl = 'https://criandomusicas.lovable.app';
+      const { error } = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: `${lovableUrl}/auth`,
+      });
+      
+      if (error) {
+        console.error('[Auth] OAuth init error:', error);
+        toast({ title: t('errors.googleError'), description: error.message, variant: 'destructive' });
+      }
+      // O SDK vai redirecionar para lovable.app/~oauth/initiate automaticamente
       return;
     }
     
-    console.log('[Auth] Processing OAuth callback...');
-    setIsProcessingOAuth(true);
-    
-    // ... rest of session check logic
-  };
-  
-  handleOAuthCallback();
-}, []);
+    // Domínio Lovable - OAuth normal funciona
+    console.log('[Auth] Lovable domain, using standard OAuth');
+    const { error } = await lovable.auth.signInWithOAuth('google', {
+      redirect_uri: `${window.location.origin}/auth`,
+    });
+
+    if (error) {
+      console.error('[Auth] Google OAuth error:', error);
+      toast({ title: t('errors.googleError'), description: error.message, variant: 'destructive' });
+    }
+  } catch (err) {
+    console.error('[Auth] Google sign in error:', err);
+    toast({ title: t('errors.unexpectedError'), variant: 'destructive' });
+  }
+  setLoading(false);
+};
 ```
 
-## Testes Recomendados
+#### Auth.tsx - Detectar retorno OAuth e redirecionar para domínio original
 
-1. **Teste de Logout**:
-   - Fazer login com qualquer método
-   - Fazer logout
-   - Verificar no console que os logs `[Auth] Local cleanup complete` aparecem
-   - Verificar no DevTools > Application > Local Storage que não há chaves `sb-*`
+No useEffect de OAuth callback, adicionar lógica para redirecionar de volta:
 
-2. **Teste de Login Google após Logout**:
-   - Fazer login com Google
-   - Fazer logout
-   - Tentar login com Google novamente
-   - Verificar se NÃO há erro 404
-   - Verificar se o login completa normalmente
+```typescript
+// Após estabelecer sessão com sucesso:
+if (session?.user) {
+  console.log('[Auth] Session established for:', session.user.email);
+  
+  // Verificar se veio de domínio personalizado
+  const returnUrl = sessionStorage.getItem('oauth_return_url');
+  if (returnUrl && !window.location.origin.includes(new URL(returnUrl).host)) {
+    console.log('[Auth] Redirecting back to custom domain:', returnUrl);
+    sessionStorage.removeItem('oauth_return_url');
+    
+    // Passar tokens para o domínio original (via hash)
+    // O domínio original vai capturar e estabelecer sessão
+    window.location.href = `${returnUrl}#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+    return;
+  }
+  
+  // Fluxo normal - redirecionar para home
+  window.location.href = '/';
+}
+```
 
-3. **Verificação de Console**:
-   - Todos os passos devem mostrar logs `[Auth]` no console
-   - Facilita debug de problemas futuros
+## Resumo das Alterações
 
+1. **Detectar domínio** no `handleGoogleSignIn`
+2. **Para domínios não-Lovable**: Usar domínio Lovable Cloud (`criandomusicas.lovable.app`) como redirect_uri
+3. **Após OAuth bem-sucedido**: Redirecionar de volta para domínio original com tokens no hash
+4. **No domínio original**: Capturar tokens do hash e estabelecer sessão via `supabase.auth.setSession()`
+
+## Testes Necessários
+
+1. Login Google no domínio `criandomusicas.lovable.app` (deve funcionar normalmente)
+2. Login Google no domínio `criandomusicas.com.br` (deve redirecionar via Lovable Cloud e voltar logado)
