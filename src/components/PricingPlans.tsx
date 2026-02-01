@@ -15,6 +15,7 @@ interface PricingPlan {
   price_display: string;
   price_cents: number;
   price_promo_cents: number | null;
+  credits: number;
   features: string[];
   is_popular: boolean;
   is_active: boolean;
@@ -63,13 +64,14 @@ const PricingPlans = () => {
       if (error) {
         console.error('Error fetching plans:', error);
         setPlans([
-          { id: "single", name: "1 Crédito", price_display: "R$ 9,90", price_cents: 990, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 1 },
-          { id: "package", name: "3 Créditos", price_display: "R$ 24,90", price_cents: 2490, price_promo_cents: null, features: [], is_popular: true, is_active: true, sort_order: 2 },
-          { id: "subscription", name: "5 Créditos", price_display: "R$ 39,90", price_cents: 3990, price_promo_cents: null, features: [], is_popular: false, is_active: true, sort_order: 3 }
+          { id: "single", name: "1 Crédito", price_display: "R$ 9,90", price_cents: 990, price_promo_cents: null, credits: 1, features: [], is_popular: false, is_active: true, sort_order: 1 },
+          { id: "package", name: "3 Créditos", price_display: "R$ 24,90", price_cents: 2490, price_promo_cents: null, credits: 3, features: [], is_popular: true, is_active: true, sort_order: 2 },
+          { id: "subscription", name: "5 Créditos", price_display: "R$ 39,90", price_cents: 3990, price_promo_cents: null, credits: 5, features: [], is_popular: false, is_active: true, sort_order: 3 }
         ]);
       } else {
         const mappedPlans = (data || []).map(item => ({
           ...item,
+          credits: item.credits || 1,
           features: Array.isArray(item.features) ? item.features as string[] : []
         }));
         setPlans(mappedPlans);
@@ -93,10 +95,9 @@ const PricingPlans = () => {
     }
   };
 
-  const getButtonText = (planId: string) => {
-    const credits = planId === 'subscription' ? 5 : planId === 'package' ? 3 : 1;
-    if (credits > 1) {
-      return t('ctaCredits', { credits });
+  const getButtonText = (plan: PricingPlan) => {
+    if (plan.credits > 1) {
+      return t('ctaCredits', { credits: plan.credits });
     }
     return t('cta');
   };
@@ -238,7 +239,7 @@ const PricingPlans = () => {
                           : "bg-primary hover:bg-primary/90 text-primary-foreground"
                       }`}
                     >
-                      {getButtonText(plan.id)}
+                      {getButtonText(plan)}
                     </Button>
                   </div>
                 </CardContent>

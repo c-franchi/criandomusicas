@@ -27,17 +27,21 @@ interface PricingPlan {
   price_cents: number;
   price_promo_cents: number | null;
   price_display: string;
+  credits: number;
   features: string[];
   is_popular: boolean;
   is_active: boolean;
 }
 
-// Get credits for a plan
-const getCreditsForPlan = (planId: string): number => {
-  // Pacotes avulsos
+// Get credits for a plan (fallback for plans without credits in DB)
+const getCreditsForPlan = (plan: PricingPlan): number => {
+  // Use credits from DB if available
+  if (plan.credits && plan.credits > 0) return plan.credits;
+  
+  // Fallback for legacy plans
+  const planId = plan.id;
   if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
-  // Planos Creator - valores mensais reais
   if (planId.includes('creator_studio')) return 300;
   if (planId.includes('creator_pro')) return 150;
   if (planId.includes('creator_start')) return 50;
@@ -47,7 +51,7 @@ const getCreditsForPlan = (planId: string): number => {
 // Calculate price per credit
 const getPricePerCredit = (plan: PricingPlan): number => {
   const price = plan.price_promo_cents || plan.price_cents;
-  const credits = getCreditsForPlan(plan.id);
+  const credits = getCreditsForPlan(plan);
   return Math.round(price / credits);
 };
 
@@ -101,10 +105,22 @@ const Planos = () => {
           );
           const customLyric = data.find(p => p.id === 'single_custom_lyric');
           
-          setPlans(universalPlans.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
-          setCreatorPlans(creator.map(p => ({ ...p, features: Array.isArray(p.features) ? p.features as string[] : [] })));
+          setPlans(universalPlans.map(p => ({ 
+            ...p, 
+            credits: p.credits || 1,
+            features: Array.isArray(p.features) ? p.features as string[] : [] 
+          })));
+          setCreatorPlans(creator.map(p => ({ 
+            ...p, 
+            credits: p.credits || 1,
+            features: Array.isArray(p.features) ? p.features as string[] : [] 
+          })));
           if (customLyric) {
-            setCustomLyricPlan({ ...customLyric, features: Array.isArray(customLyric.features) ? customLyric.features as string[] : [] });
+            setCustomLyricPlan({ 
+              ...customLyric, 
+              credits: customLyric.credits || 1,
+              features: Array.isArray(customLyric.features) ? customLyric.features as string[] : [] 
+            });
           }
         }
       } catch (error) {
@@ -138,21 +154,22 @@ const Planos = () => {
   };
 
   // Get translated plan description
-  const getPlanDescription = (planId: string): string => {
-    const description = t(`plans.${planId}.description`, { defaultValue: '' });
+  const getPlanDescription = (plan: PricingPlan): string => {
+    const description = t(`plans.${plan.id}.description`, { defaultValue: '' });
     if (description) return description;
     
     // Fallback descriptions for Creator plans
-    const credits = getCreditsForPlan(planId);
+    const credits = getCreditsForPlan(plan);
     const songWord = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
     
     return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
   };
 
   // Get description for Creator plans with credits
-  const getCreatorPlanDescription = (planId: string): string => {
-    const credits = getCreditsForPlan(planId);
+  const getCreatorPlanDescription = (plan: PricingPlan): string => {
+    const credits = getCreditsForPlan(plan);
     const songType = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
+    const planId = plan.id;
     
     // Define descriptions for each plan tier
     if (planId.includes('creator_start')) {
@@ -207,8 +224,8 @@ const Planos = () => {
     return defaults[planId] || [];
   };
 
-  const getButtonText = (planId: string) => {
-    const credits = getCreditsForPlan(planId);
+  const getButtonText = (plan: PricingPlan) => {
+    const credits = getCreditsForPlan(plan);
     if (credits === 1) return t('cta');
     return t('ctaCredits', { credits });
   };
@@ -320,7 +337,7 @@ const Planos = () => {
               const hasPromo = plan.price_promo_cents !== null;
               const displayPrice = hasPromo ? formatPrice(plan.price_promo_cents!) : formatPrice(plan.price_cents);
               const originalPrice = hasPromo ? formatPrice(plan.price_cents) : null;
-              const credits = getCreditsForPlan(plan.id);
+              const credits = getCreditsForPlan(plan);
               const pricePerCredit = getPricePerCredit(plan);
               
               // Calculate savings compared to buying singles
@@ -438,7 +455,7 @@ const Planos = () => {
                             : "bg-primary hover:bg-primary/90 text-primary-foreground"
                         }`}
                       >
-                        {getButtonText(plan.id)}
+                        {getButtonText(plan)}
                       </Button>
                     </div>
                   </CardContent>
@@ -499,7 +516,7 @@ const Planos = () => {
           ) : (
             <div className="grid lg:grid-cols-3 gap-8 mb-12 pt-4">
               {creatorPlans.map((plan) => {
-                const credits = getCreditsForPlan(plan.id);
+                const credits = getCreditsForPlan(plan);
                 const pricePerMusic = Math.round((plan.price_promo_cents || plan.price_cents) / credits);
                 const isPopular = plan.is_popular || plan.id.includes('creator_pro');
                 
@@ -544,7 +561,7 @@ const Planos = () => {
                       {/* Description with min-height for alignment */}
                       <div className="mb-4 min-h-[52px] flex items-center justify-center">
                         <p className="text-sm text-muted-foreground leading-relaxed text-center px-2">
-                          {getCreatorPlanDescription(plan.id) || `${credits} músicas/mês`}
+                          {getCreatorPlanDescription(plan) || `${credits} músicas/mês`}
                         </p>
                       </div>
                       

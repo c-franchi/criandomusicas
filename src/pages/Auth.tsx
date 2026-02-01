@@ -17,8 +17,7 @@ import { useTranslation } from 'react-i18next';
 const getInitialResetMode = () => {
   if (typeof window === 'undefined') return false;
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  const type = hashParams.get('type');
-  return type === 'recovery';
+  return hashParams.get('type') === 'recovery';
 };
 
 const Auth = () => {
@@ -31,7 +30,6 @@ const Auth = () => {
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
-  // Initialize synchronously to catch recovery mode before auth redirect
   const [resetPasswordMode, setResetPasswordMode] = useState(getInitialResetMode);
   const [resetEmail, setResetEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -45,56 +43,41 @@ const Auth = () => {
     }
   }, [isRecoverySession, resetPasswordMode]);
 
-  // Handle OAuth callback - detect and process Google sign-in return
+  // Handle OAuth callback - capture tokens from URL hash (cross-domain flow)
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      const currentPath = window.location.pathname;
       const currentHash = window.location.hash;
-      const currentHost = window.location.host;
-      const isLovableHost = currentHost.includes('lovable.app') || 
-                            currentHost.includes('lovableproject.com');
-      
-      console.log('[Auth] ======= OAuth Check Start =======');
-      console.log('[Auth] Host:', currentHost, 'isLovable:', isLovableHost);
-      console.log('[Auth] Path:', currentPath);
-      console.log('[Auth] Hash exists:', !!currentHash);
-      console.log('[Auth] Full URL:', window.location.href);
-      
-      // Detect OAuth callback scenarios
+      if (!currentHash) return;
+
       const hashParams = new URLSearchParams(currentHash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
-      const isOAuthCallbackPath = currentPath === '/~oauth/callback';
-      const isAuthCallbackPath = currentPath === '/auth/callback';
-      
-      // Check if this is a cross-domain token transfer (from Lovable Cloud back to custom domain)
-      if (!isLovableHost && accessToken && refreshToken) {
-        console.log('[Auth] Cross-domain token transfer detected');
+
+      // Check if this is a cross-domain token transfer
+      if (accessToken && refreshToken) {
+        console.log('[Auth] Token transfer detected, establishing session...');
         setIsProcessingOAuth(true);
-        
+
         try {
-          // Set session using tokens from URL hash
           const { data, error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
           });
-          
+
           if (error) {
-            console.error('[Auth] Failed to set session from tokens:', error);
+            console.error('[Auth] Failed to set session:', error);
             toast({
               title: t('errors.authError'),
               description: error.message,
               variant: 'destructive',
             });
             setIsProcessingOAuth(false);
-            // Clean up URL
             window.history.replaceState(null, '', '/auth');
             return;
           }
-          
+
           if (data.session?.user) {
-            console.log('[Auth] Session established on custom domain for:', data.session.user.email);
-            // Clean up URL and redirect to home
+            console.log('[Auth] Session established for:', data.session.user.email);
             window.history.replaceState(null, '', '/');
             window.location.href = '/';
             return;
@@ -103,127 +86,16 @@ const Auth = () => {
           console.error('[Auth] Error setting session:', err);
           setIsProcessingOAuth(false);
           window.history.replaceState(null, '', '/auth');
-          return;
         }
       }
-      
-      // First check existing session state
-      const { data: { session: existingSession } } = await supabase.auth.getSession();
-      console.log('[Auth] Existing session check:', {
-        hasSession: !!existingSession,
-        userEmail: existingSession?.user?.email || 'none'
-      });
-      
-      const isOAuthCallback = !!accessToken || isOAuthCallbackPath || isAuthCallbackPath;
-      
-      console.log('[Auth] OAuth detection:', {
-        hasAccessToken: !!accessToken,
-        isOAuthCallbackPath,
-        isAuthCallbackPath,
-        isOAuthCallback
-      });
-      
-      if (!isOAuthCallback) {
-        console.log('[Auth] Not an OAuth callback, skipping');
-        return;
-      }
-      
-      console.log('[Auth] Processing OAuth callback...');
-      setIsProcessingOAuth(true);
-      
-      // Wait for session to be established
-      const checkSession = async (retries = 15) => {
-        console.log('[Auth] Checking session, retries left:', retries);
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) {
-          console.error('[Auth] Session error:', sessionError);
-        }
-        
-        if (session?.user) {
-          console.log('[Auth] Session found for user:', session.user.email);
-          
-          // Check if we need to redirect back to custom domain
-          const returnUrl = sessionStorage.getItem('oauth_return_url');
-          if (isLovableHost && returnUrl) {
-            try {
-              const returnOrigin = new URL(returnUrl).origin;
-              // Only redirect if the return URL is for a different domain
-              if (!returnOrigin.includes('lovable.app') && !returnOrigin.includes('lovableproject.com')) {
-                console.log('[Auth] Redirecting back to custom domain:', returnUrl);
-                sessionStorage.removeItem('oauth_return_url');
-                
-                // Pass tokens to custom domain via URL hash
-                const redirectWithTokens = `${returnUrl}#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
-                window.location.href = redirectWithTokens;
-                return;
-              }
-            } catch (e) {
-              console.error('[Auth] Error parsing return URL:', e);
-              sessionStorage.removeItem('oauth_return_url');
-            }
-          }
-          
-          // Check if this is a new user (profile created recently)
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('created_at')
-            .eq('user_id', session.user.id)
-            .maybeSingle();
-          
-          if (profile) {
-            const profileAge = Date.now() - new Date(profile.created_at).getTime();
-            const isNewUser = profileAge < 60000; // Less than 1 minute = new user
-            
-            console.log('[Auth] Profile age:', profileAge, 'isNewUser:', isNewUser);
-            
-            if (isNewUser) {
-              // Send welcome email for new Google users
-              const userName = session.user.user_metadata?.name || 
-                             session.user.user_metadata?.full_name ||
-                             session.user.email?.split('@')[0] || 
-                             'Usuário';
-              
-              try {
-                await supabase.functions.invoke('send-welcome-email', {
-                  body: { email: session.user.email, userName }
-                });
-                console.log('[Auth] Welcome email sent to new Google user');
-              } catch (e) {
-                console.error('[Auth] Welcome email error:', e);
-              }
-            }
-          }
-          
-          // Clean up URL and redirect to home
-          console.log('[Auth] OAuth complete, redirecting to home');
-          setIsProcessingOAuth(false);
-          window.history.replaceState(null, '', '/');
-          window.location.href = '/';
-          return;
-        }
-        
-        // Retry if session not ready yet
-        if (retries > 0) {
-          setTimeout(() => checkSession(retries - 1), 400);
-        } else {
-          console.log('[Auth] No session after retries, clearing OAuth state');
-          setIsProcessingOAuth(false);
-          // Don't redirect - let user try login again
-        }
-      };
-      
-      // Give Supabase time to process the token
-      setTimeout(() => checkSession(), 300);
     };
-    
+
     handleOAuthCallback();
   }, [toast, t]);
 
-  // Clean up URL hash AFTER session is confirmed (delay to let Supabase process)
+  // Clean up URL hash after recovery mode is detected
   useEffect(() => {
     if (resetPasswordMode && window.location.hash.includes('type=recovery')) {
-      // Delay hash cleanup to ensure Supabase has processed the token
       const timer = setTimeout(() => {
         window.history.replaceState(null, '', window.location.pathname);
       }, 1000);
@@ -245,7 +117,42 @@ const Auth = () => {
     }
   }, [searchParams, toast, t]);
 
-  // Show loading while processing OAuth callback
+  // Check after OAuth if we need to redirect back to custom domain
+  useEffect(() => {
+    const checkCrossDomainRedirect = async () => {
+      const currentHost = window.location.host;
+      const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
+      const returnUrl = sessionStorage.getItem('oauth_return_url');
+      
+      if (!isLovableHost || !returnUrl) return;
+      
+      // We're on Lovable domain with a pending return URL - check if we have a session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.access_token && session?.refresh_token) {
+        try {
+          const returnOrigin = new URL(returnUrl).origin;
+          // Only redirect if return URL is for a different domain
+          if (!returnOrigin.includes('lovable.app') && !returnOrigin.includes('lovableproject.com')) {
+            console.log('[Auth] Redirecting back to custom domain with tokens');
+            sessionStorage.removeItem('oauth_return_url');
+            
+            // Pass tokens via hash to custom domain
+            window.location.href = `${returnUrl}#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+          }
+        } catch (e) {
+          console.error('[Auth] Error parsing return URL:', e);
+          sessionStorage.removeItem('oauth_return_url');
+        }
+      }
+    };
+    
+    // Small delay to let Supabase process the OAuth callback
+    const timer = setTimeout(checkCrossDomainRedirect, 500);
+    return () => clearTimeout(timer);
+  }, [user]);
+
+  // Show loading while processing OAuth
   if (isProcessingOAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
@@ -266,7 +173,7 @@ const Auth = () => {
     );
   }
 
-  // Redirect if already authenticated (and not in reset password mode or recovery session)
+  // Redirect if already authenticated
   if (user && !resetPasswordMode && !isRecoverySession) {
     return <Navigate to="/" replace />;
   }
@@ -315,7 +222,6 @@ const Auth = () => {
       console.error('Sign in error:', err);
       toast({
         title: t('errors.unexpectedError'),
-        description: t('errors.unexpectedError'),
         variant: 'destructive',
       });
     }
@@ -344,7 +250,6 @@ const Auth = () => {
     if (password.length < 6) {
       toast({
         title: t('errors.passwordTooShort'),
-        description: t('errors.passwordTooShort'),
         variant: 'destructive',
       });
       setLoading(false);
@@ -373,56 +278,52 @@ const Auth = () => {
           description: t('success.signupLoggedIn'),
         });
         
-        // Send welcome email (don't block on failure)
+        // Send welcome email
         try {
           await supabase.functions.invoke('send-welcome-email', {
             body: { email, userName: name }
           });
-          console.log('Welcome email sent successfully');
         } catch (emailError) {
           console.error('Failed to send welcome email:', emailError);
-          // Don't show error to user - welcome email is non-critical
         }
       }
     } catch (err) {
       console.error('Sign up error:', err);
       toast({
         title: t('errors.unexpectedError'),
-        description: t('errors.unexpectedError'),
         variant: 'destructive',
       });
     }
     setLoading(false);
   };
 
+  // SIMPLIFIED Google Sign In - uses Lovable Cloud OAuth directly
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
       const currentHost = window.location.host;
-      const isLovableHost = currentHost.includes('lovable.app') || 
-                            currentHost.includes('lovableproject.com');
+      const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
       
-      // URL publicada do Lovable Cloud
+      // Lovable Cloud published URL
       const LOVABLE_CLOUD_URL = 'https://criandomusicas.lovable.app';
       
-      console.log('[Auth] Starting Google OAuth, host:', currentHost, 'isLovable:', isLovableHost);
+      console.log('[Auth] Google OAuth - Host:', currentHost, 'isLovable:', isLovableHost);
       
       if (!isLovableHost) {
-        // Domínio personalizado (Firebase) - não pode processar /~oauth/*
-        // Redirecionar para fazer OAuth no Lovable Cloud e voltar com tokens
-        console.log('[Auth] Custom domain - redirecting through Lovable Cloud');
-        
-        // Armazenar URL de retorno no sessionStorage
+        // Custom domain (Firebase) - redirect to Lovable Cloud for OAuth
+        // Store return URL for cross-domain handshake
         const returnUrl = `${window.location.origin}/auth`;
         sessionStorage.setItem('oauth_return_url', returnUrl);
         
-        // Fazer OAuth via domínio Lovable - o SDK vai redirecionar para lovable.app/~oauth/initiate
+        console.log('[Auth] Custom domain - redirecting to Lovable Cloud');
+        
+        // Call OAuth with Lovable Cloud as redirect_uri
         const { error } = await lovable.auth.signInWithOAuth('google', {
           redirect_uri: `${LOVABLE_CLOUD_URL}/auth`,
         });
         
         if (error) {
-          console.error('[Auth] OAuth init error:', error);
+          console.error('[Auth] OAuth error:', error);
           sessionStorage.removeItem('oauth_return_url');
           toast({
             title: t('errors.googleError'),
@@ -431,12 +332,13 @@ const Auth = () => {
           });
           setLoading(false);
         }
-        // O SDK vai redirecionar automaticamente, não precisa setLoading(false)
         return;
       }
       
-      // Domínio Lovable - OAuth normal funciona
-      console.log('[Auth] Lovable domain, using standard OAuth');
+      // Lovable domain - check if we need to redirect back to custom domain
+      const returnUrl = sessionStorage.getItem('oauth_return_url');
+      
+      // Standard OAuth on Lovable domain
       const { error } = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: `${window.location.origin}/auth`,
       });
@@ -453,7 +355,6 @@ const Auth = () => {
       console.error('[Auth] Google sign in error:', err);
       toast({
         title: t('errors.unexpectedError'),
-        description: t('errors.unexpectedError'),
         variant: 'destructive',
       });
     }
@@ -477,44 +378,22 @@ const Auth = () => {
     }
 
     try {
-      const redirectUrl = `${window.location.origin}/auth`;
-      
-      // Call custom Edge Function to send branded Portuguese email
-      const { data, error } = await supabase.functions.invoke('send-recovery-email', {
-        body: { email, redirectUrl },
+      const { error } = await supabase.functions.invoke('send-recovery-email', {
+        body: { email }
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        let errorMessage = t('errors.sendEmailError');
-        if (error.message?.includes('rate limit')) {
-          errorMessage = t('errors.rateLimited');
-        }
-        toast({
-          title: t('errors.authError'),
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } else if (data?.error) {
-        console.error('Email send error:', data.error);
-        toast({
-          title: t('errors.authError'),
-          description: data.error,
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: t('success.emailSent'),
-          description: t('success.checkInbox'),
-        });
-        setForgotPasswordMode(false);
-        setResetEmail('');
-      }
+      if (error) throw error;
+
+      toast({
+        title: t('forgot.emailSent'),
+        description: t('forgot.checkInbox'),
+      });
+      setForgotPasswordMode(false);
+      setResetEmail('');
     } catch (err) {
-      console.error('Forgot password error:', err);
+      console.error('Password reset error:', err);
       toast({
         title: t('errors.unexpectedError'),
-        description: t('errors.unexpectedError'),
         variant: 'destructive',
       });
     }
@@ -525,20 +404,10 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
-    if (!newPassword || !confirmPassword) {
-      toast({
-        title: t('errors.requiredFields'),
-        description: t('errors.fillAllFields'),
-        variant: 'destructive',
-      });
-      setLoading(false);
-      return;
-    }
-
     if (newPassword !== confirmPassword) {
       toast({
-        title: t('errors.passwordMismatch'),
-        description: t('errors.passwordMismatch'),
+        title: t('reset.passwordMismatch'),
+        description: t('reset.passwordMismatchDesc'),
         variant: 'destructive',
       });
       setLoading(false);
@@ -548,7 +417,6 @@ const Auth = () => {
     if (newPassword.length < 6) {
       toast({
         title: t('errors.passwordTooShort'),
-        description: t('errors.passwordTooShort'),
         variant: 'destructive',
       });
       setLoading(false);
@@ -556,402 +424,315 @@ const Auth = () => {
     }
 
     try {
-      // CRITICAL: Verify session exists before attempting to update password
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        toast({
-          title: t('errors.sessionExpired'),
-          description: t('errors.sessionExpired'),
-          variant: 'destructive',
-        });
-        setResetPasswordMode(false);
-        setLoading(false);
-        return;
-      }
-
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
-      if (error) {
-        let errorMessage = error.message;
-        if (error.message.includes('session missing') || error.message.includes('Auth session missing')) {
-          errorMessage = t('errors.sessionExpired');
-        }
-        toast({
-          title: t('errors.authError'),
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } else {
-        // Sign out first to clear recovery session
-        await supabase.auth.signOut();
-        
-        // Reset all state
-        setResetPasswordMode(false);
-        setNewPassword('');
-        setConfirmPassword('');
-        toast({
-          title: t('success.passwordChanged'),
-          description: t('success.passwordChangedLogin'),
-        });
-        
-        // Show login form - already reset state above
-      }
+      if (error) throw error;
+
+      toast({
+        title: t('reset.success'),
+        description: t('reset.successDesc'),
+      });
+
+      setResetPasswordMode(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      
+      await supabase.auth.signOut();
+      window.location.href = '/auth';
     } catch (err) {
-      console.error('Reset password error:', err);
+      console.error('Password update error:', err);
       toast({
         title: t('errors.unexpectedError'),
-        description: t('errors.unexpectedError'),
         variant: 'destructive',
       });
     }
     setLoading(false);
   };
 
-  // Reset password form
+  // Reset Password Mode
   if (resetPasswordMode) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <Music className="w-8 h-8 text-primary" />
-              <h1 className="text-2xl font-bold gradient-text">{t('brand')}</h1>
-            </div>
-            <p className="text-muted-foreground">
-              {t('recovery.subtitle')}
-            </p>
-          </div>
-
-          <Card className="glass-card border-border/50">
-            <CardHeader className="text-center">
-              <CardTitle>{t('recovery.title')}</CardTitle>
-              <CardDescription>
-                {t('recovery.subtitle')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleResetPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">{t('recovery.newPassword')}</Label>
-                  <div className="relative">
-                    <Input
-                      id="new-password"
-                      type={showNewPassword ? "text" : "password"}
-                      placeholder="••••••••"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      minLength={6}
-                      required
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">{t('recovery.confirmPassword')}</Label>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md premium-card">
+          <CardHeader className="text-center pb-4">
+            <Link to="/" className="flex items-center justify-center gap-2 mb-4">
+              <Music className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold gradient-text">Criando Músicas</span>
+            </Link>
+            <CardTitle className="text-2xl">{t('reset.title')}</CardTitle>
+            <CardDescription>{t('reset.subtitle')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleResetPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">{t('reset.newPassword')}</Label>
+                <div className="relative">
                   <Input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    minLength={6}
+                    id="newPassword"
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder={t('reset.newPasswordPlaceholder')}
                     required
+                    minLength={6}
+                    className="pr-10"
                   />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-0 top-0 h-full px-3"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {t('recovery.submitting')}
-                    </>
-                  ) : (
-                    t('recovery.submit')
-                  )}
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  className="w-full"
-                  onClick={() => {
-                    setResetPasswordMode(false);
-                    supabase.auth.signOut();
-                  }}
-                >
-                  {t('recovery.cancel')}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">{t('reset.confirmPassword')}</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder={t('reset.confirmPasswordPlaceholder')}
+                  required
+                  minLength={6}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {t('reset.button')}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-6">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 transition-colors mb-6"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('backToHome')}
-          </Link>
-          
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Music className="w-8 h-8 text-primary" />
-            <h1 className="text-2xl font-bold gradient-text">{t('brand')}</h1>
-          </div>
-          <p className="text-muted-foreground">
-            {t('accessSubtitle')}
-          </p>
-        </div>
-
-        <Card className="glass-card border-border/50">
-          <CardHeader className="text-center">
-            <CardTitle>{t('accessAccount')}</CardTitle>
-            <CardDescription>
-              {t('accessSubtitle')}
-            </CardDescription>
+  // Forgot Password Mode
+  if (forgotPasswordMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md premium-card">
+          <CardHeader className="text-center pb-4">
+            <Link to="/" className="flex items-center justify-center gap-2 mb-4">
+              <Music className="h-8 w-8 text-primary" />
+              <span className="text-xl font-bold gradient-text">Criando Músicas</span>
+            </Link>
+            <CardTitle className="text-2xl">{t('forgot.title')}</CardTitle>
+            <CardDescription>{t('forgot.subtitle')}</CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="signin" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">{t('login.tab')}</TabsTrigger>
-                <TabsTrigger value="signup">{t('signup.tab')}</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="signin" className="space-y-4 mt-6">
-                {forgotPasswordMode ? (
-                  <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="reset-email">{t('recovery.emailLabel')}</Label>
-                      <Input
-                        id="reset-email"
-                        type="email"
-                        placeholder={t('login.emailPlaceholder')}
-                        value={resetEmail}
-                        onChange={(e) => setResetEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t('recovery.sending')}
-                        </>
-                      ) : (
-                        t('recovery.sendLink')
-                      )}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      className="w-full"
-                      onClick={() => setForgotPasswordMode(false)}
-                    >
-                      {t('recovery.backToLogin')}
-                    </Button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email">{t('login.email')}</Label>
-                      <Input
-                        id="signin-email"
-                        name="email"
-                        type="email"
-                        placeholder={t('login.emailPlaceholder')}
-                        autoComplete="email"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-password">{t('login.password')}</Label>
-                      <div className="relative">
-                        <Input
-                          id="signin-password"
-                          name="password"
-                          type={showSignInPassword ? "text" : "password"}
-                          placeholder={t('login.passwordPlaceholder')}
-                          autoComplete="current-password"
-                          required
-                          className="pr-10"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowSignInPassword(!showSignInPassword)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          {showSignInPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-                    <Button 
-                      type="submit" 
-                      className="w-full" 
-                      disabled={loading}
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t('login.submitting')}
-                        </>
-                      ) : (
-                        t('login.submit')
-                      )}
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="link" 
-                      className="w-full text-sm"
-                      onClick={() => setForgotPasswordMode(true)}
-                    >
-                      {t('login.forgotPassword')}
-                    </Button>
-                  </form>
-                )}
-                
-                {/* Google Sign In */}
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">{t('login.orContinueWith')}</span>
-                  </div>
-                </div>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                >
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
-                  {t('login.googleLogin')}
-                </Button>
-              </TabsContent>
-              
-              <TabsContent value="signup" className="space-y-4 mt-6">
-                <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">{t('signup.name')}</Label>
-                    <Input
-                      id="signup-name"
-                      name="name"
-                      type="text"
-                      placeholder={t('signup.namePlaceholder')}
-                      autoComplete="name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">{t('signup.email')}</Label>
-                    <Input
-                      id="signup-email"
-                      name="email"
-                      type="email"
-                      placeholder={t('signup.emailPlaceholder')}
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">{t('signup.password')}</Label>
-                    <div className="relative">
-                      <Input
-                        id="signup-password"
-                        name="password"
-                        type={showSignUpPassword ? "text" : "password"}
-                        placeholder={t('signup.passwordPlaceholder')}
-                        autoComplete="new-password"
-                        minLength={6}
-                        required
-                        className="pr-10"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSignUpPassword(!showSignUpPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        {showSignUpPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{t('signup.passwordHint')}</p>
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    disabled={loading}
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {t('signup.submitting')}
-                      </>
-                    ) : (
-                      t('signup.submit')
-                    )}
-                  </Button>
-                </form>
-                
-                {/* Google Sign Up */}
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">{t('signup.orSignupWith')}</span>
-                  </div>
-                </div>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleGoogleSignIn}
-                  disabled={loading}
-                >
-                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                  </svg>
-                  {t('signup.googleSignup')}
-                </Button>
-              </TabsContent>
-            </Tabs>
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="resetEmail">{t('login.email')}</Label>
+                <Input
+                  id="resetEmail"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder={t('login.emailPlaceholder')}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                {t('forgot.button')}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full"
+                onClick={() => setForgotPasswordMode(false)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                {t('forgot.backToLogin')}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
+    );
+  }
+
+  // Main Auth Page
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md premium-card">
+        <CardHeader className="text-center pb-4">
+          <Link to="/" className="flex items-center justify-center gap-2 mb-4">
+            <Music className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold gradient-text">Criando Músicas</span>
+          </Link>
+          <CardTitle className="text-2xl">{t('title')}</CardTitle>
+          <CardDescription>{t('subtitle')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {/* Google Sign In Button */}
+          <Button
+            variant="outline"
+            className="w-full mb-6 h-12 text-base"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+            ) : (
+              <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+            )}
+            {t('login.google')}
+          </Button>
+
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">{t('login.or')}</span>
+            </div>
+          </div>
+
+          <Tabs defaultValue="signin" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="signin">{t('login.tab')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('signup.tab')}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signin-email">{t('login.email')}</Label>
+                  <Input
+                    id="signin-email"
+                    name="email"
+                    type="email"
+                    placeholder={t('login.emailPlaceholder')}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signin-password">{t('login.password')}</Label>
+                  <div className="relative">
+                    <Input
+                      id="signin-password"
+                      name="password"
+                      type={showSignInPassword ? 'text' : 'password'}
+                      placeholder={t('login.passwordPlaceholder')}
+                      required
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowSignInPassword(!showSignInPassword)}
+                    >
+                      {showSignInPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {t('login.button')}
+                </Button>
+                <Button
+                  type="button"
+                  variant="link"
+                  className="w-full text-sm"
+                  onClick={() => setForgotPasswordMode(true)}
+                >
+                  {t('login.forgotPassword')}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">{t('signup.name')}</Label>
+                  <Input
+                    id="signup-name"
+                    name="name"
+                    type="text"
+                    placeholder={t('signup.namePlaceholder')}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">{t('login.email')}</Label>
+                  <Input
+                    id="signup-email"
+                    name="email"
+                    type="email"
+                    placeholder={t('login.emailPlaceholder')}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">{t('login.password')}</Label>
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      name="password"
+                      type={showSignUpPassword ? 'text' : 'password'}
+                      placeholder={t('signup.passwordPlaceholder')}
+                      required
+                      minLength={6}
+                      className="pr-10"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                    >
+                      {showSignUpPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  {t('signup.button')}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          <p className="text-xs text-center text-muted-foreground mt-6">
+            {t('terms.agreement')}{' '}
+            <Link to="/termos-de-uso" className="text-primary hover:underline">
+              {t('terms.termsOfUse')}
+            </Link>{' '}
+            {t('terms.and')}{' '}
+            <Link to="/politica-de-privacidade" className="text-primary hover:underline">
+              {t('terms.privacyPolicy')}
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 };
