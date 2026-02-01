@@ -637,7 +637,7 @@
     "voiceTitle": "Tipo vocal",
     "createButton": "Crear Música",
     "hint": "La IA completará los detalles automáticamente",
-    "switchToDetailed": "¿Prefieres crear con más detalles?"
+    "switchToDetailed": "Crea tu música con más detalles"
   },
   "noCreditModal": {
     "title": "Créditos insuficientes",

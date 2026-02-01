@@ -394,6 +394,7 @@ export const useBriefingTranslations = () => {
     { id: "pagode", label: t('steps.style.pagode') },
     { id: "gospel", label: t('steps.style.gospel') },
     { id: "bossa", label: t('steps.style.bossa') },
+    { id: "ambiente", label: t('steps.style.ambiente') },
     { id: "outros", label: t('steps.style.outros') }
   ];
 
