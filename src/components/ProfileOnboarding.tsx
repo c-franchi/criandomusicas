@@ -115,15 +115,44 @@ const ProfileOnboarding = ({
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // First try to update existing profile
+      const { data: existingProfile, error: fetchError } = await supabase
         .from("profiles")
-        .update({
-          name: formData.name.trim(),
-          whatsapp: formData.whatsapp || null,
-          avatar_url: avatarUrl,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", userId);
+        .select("id")
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error("Error fetching profile:", fetchError);
+        throw fetchError;
+      }
+
+      let error;
+      
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from("profiles")
+          .update({
+            name: formData.name.trim(),
+            whatsapp: formData.whatsapp || null,
+            avatar_url: avatarUrl,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("user_id", userId);
+        error = updateError;
+      } else {
+        // Insert new profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            user_id: userId,
+            name: formData.name.trim(),
+            whatsapp: formData.whatsapp || null,
+            avatar_url: avatarUrl,
+          });
+        error = insertError;
+      }
 
       if (error) throw error;
 

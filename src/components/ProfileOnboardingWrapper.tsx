@@ -10,30 +10,55 @@ const ProfileOnboardingWrapper = () => {
 
   useEffect(() => {
     const checkProfileComplete = async () => {
-      if (loading || !user) {
+      // Wait for auth to fully load
+      if (loading) {
+        return;
+      }
+      
+      // No user = no onboarding needed
+      if (!user) {
+        setCheckedProfile(true);
+        setShowOnboarding(false);
+        return;
+      }
+
+      // First, check the profile from useAuth (already fetched)
+      if (profile?.name && profile.name.trim() !== "") {
+        setShowOnboarding(false);
         setCheckedProfile(true);
         return;
       }
 
-      // Check if profile exists and has required data
-      const { data: profileData } = await supabase
-        .from("profiles")
-        .select("name, avatar_url, whatsapp")
-        .eq("user_id", user.id)
-        .maybeSingle();
+      // If profile from useAuth is incomplete, double-check with a fresh query
+      // This handles race conditions where profile might not be loaded yet
+      try {
+        const { data: profileData, error } = await supabase
+          .from("profiles")
+          .select("name")
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-      // Show onboarding if:
-      // 1. No profile exists yet (will be created on signup)
-      // 2. Profile exists but name is empty/null
-      // 3. Profile was just created (name might be from signup)
-      const needsOnboarding = !profileData?.name || profileData.name.trim() === "";
+        if (error) {
+          console.error("Error checking profile:", error);
+          // On error, don't show onboarding to avoid blocking existing users
+          setShowOnboarding(false);
+          setCheckedProfile(true);
+          return;
+        }
 
-      setShowOnboarding(needsOnboarding);
+        // Show onboarding only if profile doesn't exist or name is empty
+        const needsOnboarding = !profileData?.name || profileData.name.trim() === "";
+        setShowOnboarding(needsOnboarding);
+      } catch (err) {
+        console.error("Error in profile check:", err);
+        setShowOnboarding(false);
+      }
+      
       setCheckedProfile(true);
     };
 
     checkProfileComplete();
-  }, [user, loading]);
+  }, [user, profile, loading]);
 
   const handleComplete = () => {
     setShowOnboarding(false);
@@ -41,6 +66,7 @@ const ProfileOnboardingWrapper = () => {
     window.location.reload();
   };
 
+  // Don't render anything until we've checked
   if (!checkedProfile || loading || !user || !showOnboarding) {
     return null;
   }
