@@ -661,7 +661,14 @@
     "songNameTitle": "Song name",
     "songNamePlaceholder": "Leave empty to generate automatically",
     "optional": "(optional)",
-    "creating": "Creating your music..."
+    "creating": "Creating your music...",
+    "generatingLyrics": "Generating lyrics...",
+    "wait": "Please wait a few seconds.",
+    "approvingAuto": "Auto-approving...",
+    "almostThere": "Almost there!",
+    "inProduction": "Music in production!",
+    "deliveryNotice": "You will receive your music within 12 hours. Track it on the dashboard.",
+    "deliveryTime": "Your music will be delivered within 12 hours ⏰"
   },
   "noCreditModal": {
     "title": "Insufficient credits",

@@ -86,7 +86,7 @@ const generateWelcomeEmailHtml = (userName: string): string => {
                       <div style="display: inline-block; width: 32px; height: 32px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); border-radius: 50%; color: white; text-align: center; line-height: 32px; font-weight: bold; margin-right: 12px;">3</div>
                       <span style="color: #4b5563; font-size: 14px;">
                         <strong style="color: #1f2937;">Receba sua Música</strong><br/>
-                        Em até 48 horas, sua música estará pronta para emocionar!
+                        Em até 24 horas, sua música estará pronta para emocionar!
                       </span>
                     </td>
                   </tr>

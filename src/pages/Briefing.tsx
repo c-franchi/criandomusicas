@@ -2266,8 +2266,8 @@ const Briefing = () => {
       } else if (isQuickMode) {
         // MODO RÁPIDO: gerar letra + aprovar automaticamente
         toast({
-          title: '✨ Gerando sua música...',
-          description: 'Isso pode levar alguns segundos.',
+          title: '✨ ' + t('quickCreation.generatingLyrics', 'Gerando letra...'),
+          description: t('quickCreation.wait', 'Aguarde alguns segundos.'),
         });
         
         // 1. Gerar letras
@@ -2280,8 +2280,13 @@ const Briefing = () => {
           }
         });
         
-        // 2. Aguardar um pouco e pegar primeira letra gerada
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // 2. Mostrar progresso e aguardar
+        toast({
+          title: '📝 ' + t('quickCreation.approvingAuto', 'Aprovando automaticamente...'),
+          description: t('quickCreation.almostThere', 'Quase lá!'),
+        });
+        
+        await new Promise(resolve => setTimeout(resolve, 3000));
         
         const { data: lyricsData } = await supabase
           .from('lyrics')
@@ -2307,8 +2312,8 @@ const Briefing = () => {
         }
         
         toast({
-          title: '🎵 Música em produção!',
-          description: 'Acompanhe o progresso no dashboard.',
+          title: '🎵 ' + t('quickCreation.inProduction', 'Música em produção!'),
+          description: t('quickCreation.deliveryNotice', 'Você receberá sua música em até 12 horas. Acompanhe no dashboard.'),
         });
         clearSavedBriefing();
         navigate('/dashboard');
@@ -2913,9 +2918,10 @@ const Briefing = () => {
         {/* Loading overlay */}
         {isCreatingOrder && (
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4 text-center px-4">
               <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <p className="text-foreground font-medium">{t('quickCreation.creating', 'Criando sua música...')}</p>
+              <p className="text-foreground font-medium text-lg">{t('quickCreation.creating', 'Criando sua música...')}</p>
+              <p className="text-sm text-muted-foreground">{t('quickCreation.deliveryTime', 'Sua música será entregue em até 12 horas ⏰')}</p>
             </div>
           </div>
         )}

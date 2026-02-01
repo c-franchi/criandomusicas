@@ -36,6 +36,7 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   // Sync recovery session from auth context
   useEffect(() => {
@@ -43,6 +44,74 @@ const Auth = () => {
       setResetPasswordMode(true);
     }
   }, [isRecoverySession, resetPasswordMode]);
+
+  // Handle OAuth callback - detect and process Google sign-in return
+  useEffect(() => {
+    const handleOAuthCallback = async () => {
+      // Detect if this is an OAuth callback (hash with access_token)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      
+      if (!accessToken) return;
+      
+      setIsProcessingOAuth(true);
+      
+      // Wait for session to be established
+      const checkSession = async (retries = 5) => {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Check if this is a new user (profile created recently)
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('created_at')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (profile) {
+            const profileAge = Date.now() - new Date(profile.created_at).getTime();
+            const isNewUser = profileAge < 60000; // Less than 1 minute = new user
+            
+            if (isNewUser) {
+              // Send welcome email for new Google users
+              const userName = session.user.user_metadata?.name || 
+                             session.user.user_metadata?.full_name ||
+                             session.user.email?.split('@')[0] || 
+                             'Usuário';
+              
+              try {
+                await supabase.functions.invoke('send-welcome-email', {
+                  body: { email: session.user.email, userName }
+                });
+                console.log('Welcome email sent to new Google user');
+              } catch (e) {
+                console.error('Welcome email error:', e);
+              }
+            }
+          }
+          
+          // Clean up hash and redirect
+          window.history.replaceState(null, '', '/');
+          setIsProcessingOAuth(false);
+          return;
+        }
+        
+        // Retry if session not ready yet
+        if (retries > 0) {
+          setTimeout(() => checkSession(retries - 1), 500);
+        } else {
+          // Fallback: redirect anyway
+          window.history.replaceState(null, '', '/');
+          setIsProcessingOAuth(false);
+        }
+      };
+      
+      // Give Supabase time to process the token
+      setTimeout(() => checkSession(), 300);
+    };
+    
+    handleOAuthCallback();
+  }, []);
 
   // Clean up URL hash AFTER session is confirmed (delay to let Supabase process)
   useEffect(() => {
@@ -68,6 +137,18 @@ const Auth = () => {
       });
     }
   }, [searchParams, toast, t]);
+
+  // Show loading while processing OAuth callback
+  if (isProcessingOAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">{t('login.processing', 'Processando login...')}</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading while auth is initializing
   if (authLoading) {
