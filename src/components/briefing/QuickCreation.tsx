@@ -36,6 +36,7 @@ export interface QuickCreationData {
   style: string;
   additionalGenre?: string;
   voiceType?: string;
+  songName?: string;
 }
 
 interface QuickCreationProps {
@@ -62,6 +63,7 @@ const QuickCreationComponent = ({
   const [additionalGenre, setAdditionalGenre] = useState("");
   const [showAdditionalGenre, setShowAdditionalGenre] = useState(false);
   const [voiceType, setVoiceType] = useState("");
+  const [songName, setSongName] = useState("");
 
   // Map style options with images
   const styleOptionsWithImages = useMemo(() => {
@@ -97,6 +99,7 @@ const QuickCreationComponent = ({
       style,
       additionalGenre: additionalGenre.trim() || undefined,
       voiceType: isInstrumental ? undefined : voiceType,
+      songName: songName.trim() || undefined,
     });
   };
 
@@ -107,6 +110,7 @@ const QuickCreationComponent = ({
     setAdditionalGenre("");
     setShowAdditionalGenre(false);
     setVoiceType("");
+    setSongName("");
   };
 
   const isValid = prompt.trim().length > 10 && style && (isInstrumental || voiceType);
@@ -255,6 +259,23 @@ const QuickCreationComponent = ({
               </motion.section>
             )}
           </AnimatePresence>
+
+          {/* Song Name Input (optional) */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-medium text-foreground">
+              {t('quickCreation.songNameTitle', 'Nome da música')}
+              <span className="text-muted-foreground font-normal ml-1">
+                {t('quickCreation.optional', '(opcional)')}
+              </span>
+            </h3>
+            <Input
+              value={songName}
+              onChange={(e) => setSongName(e.target.value)}
+              placeholder={t('quickCreation.songNamePlaceholder', 'Deixe vazio para gerar automaticamente')}
+              className="bg-card/80 border-border/30"
+              maxLength={100}
+            />
+          </section>
         </div>
       </div>
 

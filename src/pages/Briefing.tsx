@@ -297,6 +297,7 @@ const Briefing = () => {
   const [editingFieldStep, setEditingFieldStep] = useState<number | null>(null);
   const [isQuickMode, setIsQuickMode] = useState(false);
   const [showNoCreditModal, setShowNoCreditModal] = useState(false);
+  const [quickModeFormData, setQuickModeFormData] = useState<BriefingFormData | null>(null);
   
   const initialFormData: BriefingFormData = {
     isInstrumental: false,
@@ -2065,7 +2066,13 @@ const Briefing = () => {
     setShowWhatsAppModal(false);
     if (pendingFinish) {
       setPendingFinish(false);
-      finishBriefing();
+      // Se for modo rápido, usar os dados guardados
+      if (isQuickMode && quickModeFormData) {
+        finishBriefingWithData(quickModeFormData);
+        setQuickModeFormData(null);
+      } else {
+        finishBriefing();
+      }
     }
   };
 
@@ -2460,7 +2467,7 @@ const Briefing = () => {
   };
 
   // Handler para criação rápida
-  const handleQuickCreationSubmit = (data: QuickCreationData) => {
+  const handleQuickCreationSubmit = async (data: QuickCreationData) => {
     // Converter QuickCreationData para BriefingFormData
     const newFormData: BriefingFormData = {
       ...initialFormData,
@@ -2473,16 +2480,156 @@ const Briefing = () => {
       emotion: 'amor',        // Default para criação rápida
       rhythm: 'moderado',     // Default - valores válidos: lento, moderado, animado
       atmosphere: 'festivo',  // Default - valores válidos: intimo, festivo, melancolico, epico, leve, misterioso
-      autoGenerateName: true, // Sempre automático na rápida
+      autoGenerateName: !data.songName, // Automático se não fornecer nome
+      songName: data.songName || '',    // Nome da música se fornecido
       emotionIntensity: 3,    // Default
     };
     
     setFormData(newFormData);
     setIsQuickMode(true); // Marcar como modo rápido
     setCreationMode(null);
+    setQuickModeFormData(newFormData); // Guardar para uso após WhatsApp modal
     
-    // Ir direto para confirmação
-    showConfirmationScreen(newFormData);
+    // Modo rápido: pular confirmação e ir direto para criação
+    // Verificar WhatsApp antes de finalizar
+    if (profile?.whatsapp) {
+      await finishBriefingWithData(newFormData);
+    } else {
+      // Verificar novamente do banco
+      if (user?.id) {
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('whatsapp')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profileData?.whatsapp) {
+          await finishBriefingWithData(newFormData);
+          return;
+        }
+      }
+      // Mostrar modal de WhatsApp
+      setPendingFinish(true);
+      setShowWhatsAppModal(true);
+    }
+  };
+  
+  // Função para finalizar briefing com formData específico (para modo rápido)
+  const finishBriefingWithData = async (data: BriefingFormData) => {
+    setIsCreatingOrder(true);
+    clearSavedBriefing();
+    
+    const briefingData = {
+      isInstrumental: data.isInstrumental,
+      hasCustomLyric: data.hasCustomLyric,
+      customLyricText: data.customLyricText,
+      hasCustomStylePrompt: data.hasCustomStylePrompt,
+      customStylePrompt: data.customStylePrompt,
+      isConfidential: data.isConfidential,
+      musicType: data.musicType,
+      emotion: data.emotion,
+      emotionIntensity: data.emotionIntensity,
+      story: data.story,
+      structure: ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
+      hasMonologue: data.hasMonologue,
+      monologuePosition: data.monologuePosition || 'bridge',
+      mandatoryWords: data.mandatoryWords,
+      restrictedWords: data.restrictedWords,
+      voiceType: data.voiceType,
+      style: data.style === 'outros' ? data.customStyle : data.style,
+      rhythm: data.rhythm,
+      atmosphere: data.atmosphere,
+      songName: data.songName,
+      autoGenerateName: data.autoGenerateName,
+      instruments: data.instruments,
+      soloInstrument: data.soloInstrument,
+      soloMoment: data.soloMoment,
+      instrumentationNotes: data.instrumentationNotes,
+      corporateFormat: data.corporateFormat,
+      contactInfo: data.contactInfo,
+      callToAction: data.callToAction,
+      plan: userPlan,
+      lgpdConsent: true
+    };
+
+    try {
+      const { data: orderData, error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user?.id,
+          status: 'AWAITING_PAYMENT',
+          payment_status: 'PENDING',
+          plan_id: selectedPlanId || 'single',
+          is_instrumental: briefingData.isInstrumental,
+          has_custom_lyric: briefingData.hasCustomLyric,
+          is_confidential: briefingData.isConfidential,
+          music_type: briefingData.musicType,
+          music_style: briefingData.style,
+          emotion: briefingData.emotion,
+          emotion_intensity: briefingData.emotionIntensity,
+          story: briefingData.story,
+          has_monologue: briefingData.hasMonologue,
+          monologue_position: briefingData.monologuePosition,
+          mandatory_words: briefingData.mandatoryWords,
+          restricted_words: briefingData.restrictedWords,
+          voice_type: briefingData.voiceType,
+          rhythm: briefingData.rhythm,
+          atmosphere: briefingData.atmosphere,
+          music_structure: JSON.stringify(briefingData.structure),
+          instruments: briefingData.instruments.length > 0 ? briefingData.instruments : null,
+          solo_instrument: briefingData.soloInstrument || null,
+          solo_moment: briefingData.soloMoment || null,
+          instrumentation_notes: briefingData.instrumentationNotes || null,
+          song_title: briefingData.autoGenerateName ? null : (briefingData.songName || null),
+          style_prompt: briefingData.hasCustomStylePrompt && briefingData.customStylePrompt ? briefingData.customStylePrompt : null,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
+      
+      const orderType = briefingData.isInstrumental ? 'instrumental' : 'vocal';
+      
+      const { data: creditsData } = await supabase.functions.invoke('check-credits', {
+        body: { orderType }
+      });
+      
+      if (creditsData?.has_credits && creditsData?.total_available > 0) {
+        const result = await supabase.functions.invoke('use-credit', {
+          body: { orderId: orderData.id }
+        });
+        
+        if (result.error || !result.data?.success) {
+          console.error('Error using credit:', result.error || result.data?.error);
+          navigate(`/checkout/${orderData.id}?planId=${selectedPlanId || 'single'}`);
+          setIsCreatingOrder(false);
+          return;
+        }
+        
+        toast({
+          title: '✨ Crédito utilizado!',
+          description: 'Gerando sua música...',
+        });
+        
+        await processOrderAfterCredit(orderData.id, briefingData);
+        setIsCreatingOrder(false);
+        return;
+      }
+
+      setPendingOrderId(orderData.id);
+      setIsCreatingOrder(false);
+      setShowNoCreditModal(true);
+    } catch (error) {
+      console.error('Error creating order:', error);
+      toast({
+        title: 'Erro ao criar pedido',
+        description: 'Tente novamente.',
+        variant: 'destructive'
+      });
+      setIsCreatingOrder(false);
+    }
   };
 
   // Handler para voltar do modo rápido
@@ -2734,6 +2881,44 @@ const Briefing = () => {
           voiceOptions={voiceTypeOptions}
           credits={totalVocal}
         />
+        {/* WhatsApp Modal for quick creation */}
+        {user?.id && (
+          <WhatsAppModal
+            open={showWhatsAppModal}
+            onOpenChange={setShowWhatsAppModal}
+            onConfirm={handleWhatsAppConfirm}
+            userId={user.id}
+          />
+        )}
+        {/* No Credit Modal */}
+        <Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">{t('noCreditModal.title')}</DialogTitle>
+              <DialogDescription className="text-center">
+                {t('noCreditModal.description')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-3 pt-4">
+              <p className="text-sm text-muted-foreground text-center">
+                {t('noCreditModal.message')}
+              </p>
+              <Button onClick={handleGoToCheckout} className="w-full">
+                <CreditCard className="w-4 h-4 mr-2" />
+                {t('noCreditModal.buyButton')}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        {/* Loading overlay */}
+        {isCreatingOrder && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-12 h-12 animate-spin text-primary" />
+              <p className="text-foreground font-medium">{t('quickCreation.creating', 'Criando sua música...')}</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
