@@ -286,7 +286,7 @@ const QuickCreationComponent = ({
             
             <Palette className="w-4 h-4 text-primary drop-shadow-[0_0_8px_rgba(var(--primary-rgb),0.8)] group-hover:scale-110 transition-transform relative z-10" />
             <span className="text-sm font-medium text-foreground drop-shadow-[0_0_4px_rgba(var(--primary-rgb),0.3)] relative z-10">
-              {t('quickCreation.switchToDetailed', 'Prefere criar com mais detalhes?')}
+              {t('quickCreation.switchToDetailed', 'Crie sua música com mais detalhes')}
             </span>
             <Badge 
               variant="outline" 
