@@ -72,9 +72,13 @@ const QuickCreationComponent = ({
     }));
   }, [styleOptions]);
 
-  // Map voice options with images (expanded options)
+  // Map voice options with images (expanded options including children voices)
   const voiceOptionsWithImages = useMemo(() => {
-    const expandedVoiceIds = ['masculina', 'feminina', 'dueto', 'coral', 'infantil-masculina', 'infantil-feminina'];
+    const expandedVoiceIds = [
+      'masculina', 'feminina', 'dueto', 'coral',
+      'infantil-masculina', 'infantil-feminina',
+      'infantil_masc', 'infantil_fem'
+    ];
     return voiceOptions
       .filter(v => expandedVoiceIds.includes(v.id))
       .map(opt => ({
