@@ -12,14 +12,14 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[CREATE-CREATOR-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
-// Map plan IDs to Stripe price IDs and config (PRODUCTION)
-const PLAN_PRICES: Record<string, { priceId: string; credits: number; name: string }> = {
-  'creator_start': { priceId: 'price_1StxcNEE1g2DASjfQjDpFjKH', credits: 50, name: 'Creator Start' },
-  'creator_pro': { priceId: 'price_1StxcoEE1g2DASjflhQMQWph', credits: 150, name: 'Creator Pro' },
-  'creator_studio': { priceId: 'price_1Stxd1EE1g2DASjfk6zQSMXp', credits: 300, name: 'Creator Studio' },
-  'creator_start_instrumental': { priceId: 'price_1StxdIEE1g2DASjfxz5jlr5e', credits: 50, name: 'Creator Start Instrumental' },
-  'creator_pro_instrumental': { priceId: 'price_1StxdXEE1g2DASjfp97OFEMM', credits: 150, name: 'Creator Pro Instrumental' },
-  'creator_studio_instrumental': { priceId: 'price_1StxdnEE1g2DASjfPKhtgXMA', credits: 300, name: 'Creator Studio Instrumental' },
+// Fallback map for plan credits (used when DB doesn't have the info)
+const PLAN_CREDITS: Record<string, { credits: number; name: string }> = {
+  'creator_start': { credits: 50, name: 'Creator Start' },
+  'creator_pro': { credits: 150, name: 'Creator Pro' },
+  'creator_studio': { credits: 300, name: 'Creator Studio' },
+  'creator_start_instrumental': { credits: 50, name: 'Creator Start Instrumental' },
+  'creator_pro_instrumental': { credits: 150, name: 'Creator Pro Instrumental' },
+  'creator_studio_instrumental': { credits: 300, name: 'Creator Studio Instrumental' },
 };
 
 serve(async (req) => {
@@ -36,11 +36,37 @@ serve(async (req) => {
     logStep("Function started");
 
     const { planId, voucherCode } = await req.json();
-    if (!planId || !PLAN_PRICES[planId]) {
+    
+    // Validate plan ID
+    const planCredits = PLAN_CREDITS[planId];
+    if (!planId || !planCredits) {
       throw new Error("Invalid plan ID");
     }
 
-    const planConfig = PLAN_PRICES[planId];
+    // Fetch stripe_price_id from database
+    const { data: pricingConfig, error: pricingError } = await supabaseClient
+      .from('pricing_config')
+      .select('stripe_price_id, price_cents, price_promo_cents, name')
+      .eq('id', planId)
+      .eq('is_active', true)
+      .maybeSingle();
+
+    if (pricingError) {
+      logStep("Error fetching pricing config", { error: pricingError.message });
+      throw new Error("Erro ao buscar configuração de preço");
+    }
+
+    if (!pricingConfig?.stripe_price_id) {
+      logStep("No stripe_price_id found for plan", { planId });
+      throw new Error("Este plano não está configurado corretamente. Por favor, contate o suporte.");
+    }
+
+    const planConfig = {
+      priceId: pricingConfig.stripe_price_id,
+      credits: planCredits.credits,
+      name: pricingConfig.name || planCredits.name,
+    };
+    
     logStep("Plan selected", { planId, ...planConfig, voucherCode: voucherCode || 'none' });
 
     // Retrieve authenticated user

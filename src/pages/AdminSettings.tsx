@@ -76,6 +76,7 @@ const AdminSettings = () => {
   const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
   const [loadingPricing, setLoadingPricing] = useState(false);
   const [savingPricing, setSavingPricing] = useState(false);
+  const [syncingStripe, setSyncingStripe] = useState(false);
   
   // PIX Config
   const [pixConfig, setPixConfig] = useState<PixConfig | null>(null);
@@ -218,6 +219,7 @@ const AdminSettings = () => {
   const savePricingConfigs = async () => {
     setSavingPricing(true);
     try {
+      // 1. Save to database first
       for (const config of pricingConfigs) {
         const { error } = await supabase
           .from('pricing_config')
@@ -231,9 +233,46 @@ const AdminSettings = () => {
       }
 
       toast({
-        title: 'Preços atualizados!',
-        description: 'As novas configurações de preço estão ativas.',
+        title: 'Preços salvos no banco!',
+        description: 'Sincronizando com Stripe...',
       });
+
+      // 2. Sync with Stripe
+      setSyncingStripe(true);
+      const activePlans = pricingConfigs.filter(c => c.is_active);
+      
+      const { data: session } = await supabase.auth.getSession();
+      const { data, error: syncError } = await supabase.functions.invoke('sync-stripe-prices', {
+        body: { plans: activePlans },
+        headers: {
+          Authorization: `Bearer ${session?.session?.access_token}`,
+        },
+      });
+
+      if (syncError) {
+        console.error('Stripe sync error:', syncError);
+        toast({
+          title: 'Aviso',
+          description: 'Preços salvos no banco, mas houve erro ao sincronizar com Stripe. Os checkouts podem usar preços antigos.',
+          variant: 'destructive',
+        });
+      } else if (data?.updatedPlans && data.updatedPlans.length > 0) {
+        // Update local state with new stripe_price_ids
+        setPricingConfigs(prev => prev.map(p => {
+          const updated = data.updatedPlans.find((u: { id: string; stripe_price_id: string }) => u.id === p.id);
+          return updated ? { ...p, stripe_price_id: updated.stripe_price_id } : p;
+        }));
+
+        toast({
+          title: 'Preços sincronizados!',
+          description: `${data.updatedPlans.length} plano(s) atualizado(s) no Stripe. Os novos preços já estão ativos.`,
+        });
+      } else {
+        toast({
+          title: 'Preços atualizados!',
+          description: 'Nenhuma alteração necessária no Stripe.',
+        });
+      }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
@@ -243,6 +282,7 @@ const AdminSettings = () => {
       });
     } finally {
       setSavingPricing(false);
+      setSyncingStripe(false);
     }
   };
 
