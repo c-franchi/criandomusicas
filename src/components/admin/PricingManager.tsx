@@ -114,36 +114,25 @@ const PricingManager = () => {
   };
 
   const syncStripePrice = async (planId: string) => {
-    try {
-      const { error } = await supabase.functions.invoke('sync-stripe-prices', {
-        body: { planId }
-      });
-
-      if (error) {
-        console.error('Stripe sync error:', error);
-        toast({
-          title: '⚠️ Aviso',
-          description: 'Preço atualizado no banco, mas sincronização com Stripe falhou. Verifique manualmente.',
-          variant: 'default',
-        });
-      }
-    } catch (err) {
-      console.error('Stripe sync error:', err);
-    }
+    // Sync is now manual via button - no auto sync on save to avoid errors
+    console.log('Plan saved, Stripe sync available via button:', planId);
   };
 
   const syncAllPrices = async () => {
     setSyncing(true);
     try {
-      const { error } = await supabase.functions.invoke('sync-stripe-prices', {
-        body: { syncAll: true }
+      // Get active plans to sync
+      const activePlans = plans.filter(p => p.is_active);
+      
+      const { data, error } = await supabase.functions.invoke('sync-stripe-prices', {
+        body: { plans: activePlans }
       });
 
       if (error) throw error;
 
       toast({
         title: 'Preços sincronizados',
-        description: 'Todos os preços foram sincronizados com o Stripe.',
+        description: data?.message || 'Todos os preços foram sincronizados com o Stripe.',
       });
 
       await fetchPlans();
@@ -151,7 +140,7 @@ const PricingManager = () => {
       console.error('Error syncing prices:', error);
       toast({
         title: 'Erro ao sincronizar',
-        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        description: error instanceof Error ? error.message : 'Erro desconhecido. Verifique se você tem permissão de admin.',
         variant: 'destructive',
       });
     } finally {
@@ -206,36 +195,46 @@ const PricingManager = () => {
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor={`price-${plan.id}`}>Preço (centavos)</Label>
+            <Label htmlFor={`price-${plan.id}`}>Preço (R$)</Label>
             <Input
               id={`price-${plan.id}`}
-              type="number"
-              value={plan.price_cents}
+              type="text"
+              inputMode="decimal"
+              value={(plan.price_cents / 100).toFixed(2).replace('.', ',')}
               onChange={(e) => {
-                const value = parseInt(e.target.value) || 0;
-                setPlans(prev => prev.map(p => 
-                  p.id === plan.id ? { ...p, price_cents: value } : p
-                ));
+                // Allow typing with comma or dot as decimal separator
+                const rawValue = e.target.value.replace(/[^\d,\.]/g, '').replace(',', '.');
+                const numValue = parseFloat(rawValue);
+                if (!isNaN(numValue)) {
+                  const cents = Math.round(numValue * 100);
+                  setPlans(prev => prev.map(p => 
+                    p.id === plan.id ? { ...p, price_cents: cents } : p
+                  ));
+                } else if (rawValue === '' || rawValue === '0') {
+                  setPlans(prev => prev.map(p => 
+                    p.id === plan.id ? { ...p, price_cents: 0 } : p
+                  ));
+                }
               }}
-              min={0}
             />
             <p className="text-xs text-muted-foreground">
-              = {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(plan.price_cents / 100)}
+              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(plan.price_cents / 100)}
             </p>
           </div>
           <div className="space-y-2">
             <Label htmlFor={`credits-${plan.id}`}>Créditos</Label>
             <Input
               id={`credits-${plan.id}`}
-              type="number"
-              value={plan.credits}
+              type="text"
+              inputMode="numeric"
+              value={plan.credits.toString()}
               onChange={(e) => {
-                const value = parseInt(e.target.value) || 1;
+                const rawValue = e.target.value.replace(/[^\d]/g, '');
+                const value = parseInt(rawValue) || 0;
                 setPlans(prev => prev.map(p => 
-                  p.id === plan.id ? { ...p, credits: value } : p
+                  p.id === plan.id ? { ...p, credits: Math.max(1, value) } : p
                 ));
               }}
-              min={1}
             />
             <p className="text-xs text-muted-foreground">
               Músicas incluídas no plano

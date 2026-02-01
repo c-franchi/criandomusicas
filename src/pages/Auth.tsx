@@ -504,7 +504,7 @@ const Auth = () => {
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {t('reset.button')}
+                {loading ? t('recovery.submitting') : t('recovery.submit')}
               </Button>
             </form>
           </CardContent>
@@ -523,8 +523,8 @@ const Auth = () => {
               <Music className="h-8 w-8 text-primary" />
               <span className="text-xl font-bold gradient-text">Criando Músicas</span>
             </Link>
-            <CardTitle className="text-2xl">{t('forgot.title')}</CardTitle>
-            <CardDescription>{t('forgot.subtitle')}</CardDescription>
+            <CardTitle className="text-2xl">{t('forgotPassword.title')}</CardTitle>
+            <CardDescription>{t('forgotPassword.description')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleForgotPassword} className="space-y-4">
@@ -541,7 +541,7 @@ const Auth = () => {
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                {t('forgot.button')}
+                {loading ? t('recovery.sending') : t('recovery.sendLink')}
               </Button>
               <Button
                 type="button"
@@ -550,7 +550,7 @@ const Auth = () => {
                 onClick={() => setForgotPasswordMode(false)}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                {t('forgot.backToLogin')}
+                {t('forgotPassword.backToLogin')}
               </Button>
             </form>
           </CardContent>
@@ -568,8 +568,8 @@ const Auth = () => {
             <Music className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold gradient-text">Criando Músicas</span>
           </Link>
-          <CardTitle className="text-2xl">{t('title')}</CardTitle>
-          <CardDescription>{t('subtitle')}</CardDescription>
+          <CardTitle className="text-2xl">{t('accessAccount')}</CardTitle>
+          <CardDescription>{t('accessSubtitle')}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* Google Sign In Button */}
@@ -601,7 +601,7 @@ const Auth = () => {
                 />
               </svg>
             )}
-            {t('login.google')}
+            {t('login.googleLogin')}
           </Button>
 
           <div className="relative mb-6">
@@ -609,7 +609,7 @@ const Auth = () => {
               <span className="w-full border-t" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">{t('login.or')}</span>
+              <span className="bg-card px-2 text-muted-foreground">{t('login.orContinueWith')}</span>
             </div>
           </div>
 
@@ -655,7 +655,7 @@ const Auth = () => {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  {t('login.button')}
+                  {t('login.submit')}
                 </Button>
                 <Button
                   type="button"
@@ -715,20 +715,20 @@ const Auth = () => {
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-                  {t('signup.button')}
+                  {t('signup.submit')}
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
 
           <p className="text-xs text-center text-muted-foreground mt-6">
-            {t('terms.agreement')}{' '}
+            Ao continuar, você concorda com os{' '}
             <Link to="/termos-de-uso" className="text-primary hover:underline">
-              {t('terms.termsOfUse')}
+              Termos de Uso
             </Link>{' '}
-            {t('terms.and')}{' '}
+            e a{' '}
             <Link to="/politica-de-privacidade" className="text-primary hover:underline">
-              {t('terms.privacyPolicy')}
+              Política de Privacidade
             </Link>
           </p>
         </CardContent>

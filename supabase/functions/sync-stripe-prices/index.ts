@@ -66,28 +66,32 @@ serve(async (req) => {
     }
 
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token);
 
-    if (claimsError || !claimsData?.claims?.sub) {
-      logStep("Authentication failed", { error: claimsError?.message });
+    if (userError || !user) {
+      logStep("Authentication failed", { error: userError?.message });
       return new Response(JSON.stringify({ error: "Sessão expirada. Por favor, faça login novamente." }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 401,
       });
     }
 
-    const userId = claimsData.claims.sub as string;
-    logStep("User authenticated", { userId });
+    const userId = user.id;
+    logStep("User authenticated", { userId, email: user.email });
 
-    // Check if user is admin
-    const { data: roleData, error: roleError } = await supabaseClient
+    // Check if user is admin using service role to bypass RLS
+    const { data: roleData, error: roleError } = await supabaseAdmin
       .from('user_roles')
       .select('role')
       .eq('user_id', userId)
       .eq('role', 'admin')
       .maybeSingle();
 
-    if (roleError || !roleData) {
+    if (roleError) {
+      logStep("Role check error", { error: roleError.message });
+    }
+    
+    if (!roleData) {
       logStep("User is not admin", { userId });
       return new Response(JSON.stringify({ error: "Apenas administradores podem sincronizar preços" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
