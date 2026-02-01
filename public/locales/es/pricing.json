@@ -100,8 +100,8 @@
         "Letras curadas profesionalmente",
         "Portadas listas para miniaturas",
         "Uso comercial y monetización",
-        "Entrega express en hasta 24h",
-        "Gerente de cuenta dedicado"
+        "Entrega en hasta 24h",
+        "Soporte prioritario"
       ]
     },
     "creator_start_instrumental": {
@@ -136,8 +136,8 @@
         "Arreglos personalizados",
         "Portadas listas para miniaturas",
         "Uso comercial y monetización",
-        "Entrega express en hasta 24h",
-        "Gerente de cuenta dedicado"
+        "Entrega en hasta 24h",
+        "Soporte prioritario"
       ]
     }
   },
@@ -149,14 +149,14 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 canción completa", "2 letras personalizadas para elegir", "Letra + audio profesional", "Alta calidad", "Entrega en hasta 24h"],
-    "package": ["3 canciones completas", "2 letras personalizadas cada", "16% de ahorro", "Letra + audio profesional", "Alta calidad", "Entrega en hasta 24h", "Soporte VIP"],
+    "single": ["1 canción completa", "2 letras personalizadas para elegir", "Letra + audio profesional", "Calidad premium", "Entrega en hasta 24h", "¡Úsalo cuando quieras, sin límite!"],
+    "package": ["3 canciones completas", "2 letras personalizadas cada", "16% de ahorro", "Letra + audio profesional", "Calidad premium", "Entrega en hasta 24h", "Soporte VIP"],
     "subscription": ["Hasta 5 canciones", "2 letras personalizadas cada", "Letra + audio profesional", "Calidad premium", "Entrega en hasta 24h", "Prioridad en cola"]
   },
   "instrumentalFeatures": {
-    "single": ["1 pista instrumental completa", "Arreglo personalizado", "Audio profesional", "Alta calidad", "Entrega en hasta 24h"],
-    "package": ["3 pistas instrumentales completas", "Arreglos personalizados", "16% de ahorro", "Audio profesional", "Soporte VIP"],
-    "subscription": ["Hasta 5 pistas instrumentales", "Arreglos personalizados", "Calidad premium", "Prioridad en cola"]
+    "single": ["1 pista instrumental completa", "Arreglo personalizado", "Audio profesional", "Calidad premium", "Entrega en hasta 24h", "¡Úsalo cuando quieras, sin límite!"],
+    "package": ["3 pistas instrumentales completas", "Arreglos personalizados", "16% de ahorro", "Audio profesional", "Calidad premium", "Entrega en hasta 24h", "Soporte VIP"],
+    "subscription": ["Hasta 5 pistas instrumentales", "Arreglos personalizados", "Calidad premium", "Entrega en hasta 24h", "Prioridad en cola"]
   },
   "features_list": {
     "song": "Canción personalizada",

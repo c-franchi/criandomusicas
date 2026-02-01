@@ -41,9 +41,9 @@ const PricingPlans = () => {
     // Fallback with 24h delivery
     switch (planId) {
       case "single":
-        return ["1 universal credit", "Use for vocal, instrumental or custom lyrics", "Professional audio", "High quality", "Delivery within 24h"];
+        return ["1 universal credit", "Use for vocal, instrumental or custom lyrics", "Professional audio", "Premium quality", "Delivery within 24h", "Use anytime, no deadline!"];
       case "package":
-        return ["3 universal credits", "Use for any type of music", "16% savings", "Professional audio", "Delivery within 24h", "VIP support"];
+        return ["3 universal credits", "Use for any type of music", "16% savings", "Professional audio", "Premium quality", "Delivery within 24h", "VIP support"];
       case "subscription":
         return ["5 universal credits", "Best value", "Premium quality", "Delivery within 24h", "Priority queue"];
       default:
