@@ -100,8 +100,8 @@
         "Letras curadas profissionalmente",
         "Capas prontas para thumbnails",
         "Uso comercial e monetização",
-        "Entrega expressa em até 24h",
-        "Gerente de conta dedicado"
+        "Entrega em até 24h",
+        "Suporte prioritário"
       ]
     },
     "creator_start_instrumental": {
@@ -136,8 +136,8 @@
         "Arranjos personalizados",
         "Capas prontas para thumbnails",
         "Uso comercial e monetização",
-        "Entrega expressa em até 24h",
-        "Gerente de conta dedicado"
+        "Entrega em até 24h",
+        "Suporte prioritário"
       ]
     }
   },
@@ -149,13 +149,13 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 24h"],
-    "package": ["3 músicas completas", "2 letras personalizadas cada", "Economia de 16%", "Letra + áudio profissional", "Alta qualidade", "Entrega em até 24h", "Suporte VIP"],
+    "single": ["1 música completa", "2 letras personalizadas para escolher", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 24h", "Use quando quiser, sem prazo!"],
+    "package": ["3 músicas completas", "2 letras personalizadas cada", "Economia de 16%", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 24h", "Suporte VIP"],
     "subscription": ["Até 5 músicas", "2 letras personalizadas cada", "Letra + áudio profissional", "Qualidade premium", "Entrega em até 24h", "Prioridade na fila"]
   },
   "instrumentalFeatures": {
-    "single": ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Alta qualidade", "Entrega em até 24h"],
-    "package": ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Entrega em até 24h", "Suporte VIP"],
+    "single": ["1 música instrumental completa", "Arranjo personalizado", "Áudio profissional", "Qualidade premium", "Entrega em até 24h", "Use quando quiser, sem prazo!"],
+    "package": ["3 músicas instrumentais completas", "Arranjos personalizados", "Economia de 16%", "Áudio profissional", "Qualidade premium", "Entrega em até 24h", "Suporte VIP"],
     "subscription": ["Até 5 músicas instrumentais", "Arranjos personalizados", "Qualidade premium", "Entrega em até 24h", "Prioridade na fila"]
   },
   "features_list": {

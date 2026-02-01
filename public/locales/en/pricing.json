@@ -100,8 +100,8 @@
         "Professionally curated lyrics",
         "Thumbnail-ready covers",
         "Commercial use & monetization",
-        "Express delivery within 24h",
-        "Dedicated account manager"
+        "Delivery within 24h",
+        "Priority support"
       ]
     },
     "creator_start_instrumental": {
@@ -136,8 +136,8 @@
         "Custom arrangements",
         "Thumbnail-ready covers",
         "Commercial use & monetization",
-        "Express delivery within 24h",
-        "Dedicated account manager"
+        "Delivery within 24h",
+        "Priority support"
       ]
     }
   },
@@ -149,14 +149,14 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 complete song", "2 personalized lyrics to choose", "Lyrics + professional audio", "High quality", "Delivery within 24h"],
-    "package": ["3 complete songs", "2 personalized lyrics each", "16% savings", "Lyrics + professional audio", "High quality", "Delivery within 24h", "VIP support"],
+    "single": ["1 complete song", "2 personalized lyrics to choose", "Lyrics + professional audio", "Premium quality", "Delivery within 24h", "Use anytime, no deadline!"],
+    "package": ["3 complete songs", "2 personalized lyrics each", "16% savings", "Lyrics + professional audio", "Premium quality", "Delivery within 24h", "VIP support"],
     "subscription": ["Up to 5 songs", "2 personalized lyrics each", "Lyrics + professional audio", "Premium quality", "Delivery within 24h", "Priority queue"]
   },
   "instrumentalFeatures": {
-    "single": ["1 complete instrumental track", "Custom arrangement", "Professional audio", "High quality", "Delivery within 24h"],
-    "package": ["3 complete instrumental tracks", "Custom arrangements", "16% savings", "Professional audio", "VIP support"],
-    "subscription": ["Up to 5 instrumental tracks", "Custom arrangements", "Premium quality", "Priority queue"]
+    "single": ["1 complete instrumental track", "Custom arrangement", "Professional audio", "Premium quality", "Delivery within 24h", "Use anytime, no deadline!"],
+    "package": ["3 complete instrumental tracks", "Custom arrangements", "16% savings", "Professional audio", "Premium quality", "Delivery within 24h", "VIP support"],
+    "subscription": ["Up to 5 instrumental tracks", "Custom arrangements", "Premium quality", "Delivery within 24h", "Priority queue"]
   },
   "features_list": {
     "song": "Personalized song",

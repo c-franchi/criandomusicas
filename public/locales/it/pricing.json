@@ -100,8 +100,8 @@
         "Testi curati professionalmente",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Consegna express entro 24h",
-        "Account manager dedicato"
+        "Consegna entro 24h",
+        "Supporto prioritario"
       ]
     },
     "creator_start_instrumental": {
@@ -136,8 +136,8 @@
         "Arrangiamenti personalizzati",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
-        "Consegna express entro 24h",
-        "Account manager dedicato"
+        "Consegna entro 24h",
+        "Supporto prioritario"
       ]
     }
   },
@@ -149,14 +149,14 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 canzone completa", "2 testi personalizzati tra cui scegliere", "Testo + audio professionale", "Alta qualità", "Consegna entro 24h"],
-    "package": ["3 canzoni complete", "2 testi personalizzati ciascuna", "16% di risparmio", "Testo + audio professionale", "Alta qualità", "Consegna entro 24h", "Supporto VIP"],
+    "single": ["1 canzone completa", "2 testi personalizzati tra cui scegliere", "Testo + audio professionale", "Qualità premium", "Consegna entro 24h", "Usalo quando vuoi, senza scadenza!"],
+    "package": ["3 canzoni complete", "2 testi personalizzati ciascuna", "16% di risparmio", "Testo + audio professionale", "Qualità premium", "Consegna entro 24h", "Supporto VIP"],
     "subscription": ["Fino a 5 canzoni", "2 testi personalizzati ciascuna", "Testo + audio professionale", "Qualità premium", "Consegna entro 24h", "Priorità in coda"]
   },
   "instrumentalFeatures": {
-    "single": ["1 traccia strumentale completa", "Arrangiamento personalizzato", "Audio professionale", "Alta qualità", "Consegna entro 24h"],
-    "package": ["3 tracce strumentali complete", "Arrangiamenti personalizzati", "16% di risparmio", "Audio professionale", "Supporto VIP"],
-    "subscription": ["Fino a 5 tracce strumentali", "Arrangiamenti personalizzati", "Qualità premium", "Priorità in coda"]
+    "single": ["1 traccia strumentale completa", "Arrangiamento personalizzato", "Audio professionale", "Qualità premium", "Consegna entro 24h", "Usalo quando vuoi, senza scadenza!"],
+    "package": ["3 tracce strumentali complete", "Arrangiamenti personalizzati", "16% di risparmio", "Audio professionale", "Qualità premium", "Consegna entro 24h", "Supporto VIP"],
+    "subscription": ["Fino a 5 tracce strumentali", "Arrangiamenti personalizzati", "Qualità premium", "Consegna entro 24h", "Priorità in coda"]
   },
   "features_list": {
     "song": "Canzone personalizzata",
