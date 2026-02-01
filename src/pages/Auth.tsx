@@ -48,29 +48,46 @@ const Auth = () => {
   // Handle OAuth callback - detect and process Google sign-in return
   useEffect(() => {
     const handleOAuthCallback = async () => {
-      const currentUrl = window.location.href;
       const currentPath = window.location.pathname;
       const currentHash = window.location.hash;
       
-      console.log('[Auth] Checking OAuth callback:', { currentPath, hasHash: !!currentHash });
+      console.log('[Auth] ======= OAuth Check Start =======');
+      console.log('[Auth] Path:', currentPath);
+      console.log('[Auth] Hash exists:', !!currentHash);
+      console.log('[Auth] Full URL:', window.location.href);
       
-      // Detect if this is an OAuth callback
-      // 1. Hash with access_token (standard OAuth return)
-      // 2. Path is /~oauth/callback
+      // First check existing session state
+      const { data: { session: existingSession } } = await supabase.auth.getSession();
+      console.log('[Auth] Existing session check:', {
+        hasSession: !!existingSession,
+        userEmail: existingSession?.user?.email || 'none'
+      });
+      
+      // Detect OAuth callback scenarios
       const hashParams = new URLSearchParams(currentHash.substring(1));
       const accessToken = hashParams.get('access_token');
       const isOAuthCallbackPath = currentPath === '/~oauth/callback';
+      const isAuthCallbackPath = currentPath === '/auth/callback';
       
-      if (!accessToken && !isOAuthCallbackPath) {
-        console.log('[Auth] Not an OAuth callback');
+      const isOAuthCallback = !!accessToken || isOAuthCallbackPath || isAuthCallbackPath;
+      
+      console.log('[Auth] OAuth detection:', {
+        hasAccessToken: !!accessToken,
+        isOAuthCallbackPath,
+        isAuthCallbackPath,
+        isOAuthCallback
+      });
+      
+      if (!isOAuthCallback) {
+        console.log('[Auth] Not an OAuth callback, skipping');
         return;
       }
       
-      console.log('[Auth] OAuth callback detected, processing...');
+      console.log('[Auth] Processing OAuth callback...');
       setIsProcessingOAuth(true);
       
       // Wait for session to be established
-      const checkSession = async (retries = 10) => {
+      const checkSession = async (retries = 15) => {
         console.log('[Auth] Checking session, retries left:', retries);
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
@@ -112,8 +129,9 @@ const Auth = () => {
             }
           }
           
-          // Clean up URL and redirect to home
+          // Clean up URL and redirect to home using React Router approach
           console.log('[Auth] OAuth complete, redirecting to home');
+          setIsProcessingOAuth(false);
           window.history.replaceState(null, '', '/');
           window.location.href = '/';
           return;
@@ -121,17 +139,16 @@ const Auth = () => {
         
         // Retry if session not ready yet
         if (retries > 0) {
-          setTimeout(() => checkSession(retries - 1), 500);
+          setTimeout(() => checkSession(retries - 1), 400);
         } else {
-          console.log('[Auth] No session after retries, redirecting anyway');
-          // Fallback: redirect to home
-          window.history.replaceState(null, '', '/');
-          window.location.href = '/';
+          console.log('[Auth] No session after retries, clearing OAuth state');
+          setIsProcessingOAuth(false);
+          // Don't redirect - let user try login again
         }
       };
       
       // Give Supabase time to process the token
-      setTimeout(() => checkSession(), 500);
+      setTimeout(() => checkSession(), 300);
     };
     
     handleOAuthCallback();

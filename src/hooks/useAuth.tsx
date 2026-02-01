@@ -120,10 +120,40 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    console.log('[Auth] Initiating sign out...');
+    
+    try {
+      // Use 'local' scope to ensure local cleanup even if server session is gone
+      await supabase.auth.signOut({ scope: 'local' });
+      console.log('[Auth] Supabase signOut completed');
+    } catch (error) {
+      // Log but don't throw - we'll clean up locally anyway
+      console.error('[Auth] SignOut API error:', error);
+    }
+    
+    // CRITICAL: Always clear state regardless of API result
     setUser(null);
     setSession(null);
     setProfile(null);
+    
+    // Force clear all Supabase-related localStorage items
+    try {
+      const storageKeys = Object.keys(localStorage);
+      const supabaseKeys = storageKeys.filter(key => 
+        key.startsWith('sb-') || 
+        key.includes('supabase') ||
+        key.includes('auth-token')
+      );
+      
+      supabaseKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log('[Auth] Removed localStorage key:', key);
+      });
+      
+      console.log('[Auth] Local cleanup complete. Removed', supabaseKeys.length, 'keys');
+    } catch (e) {
+      console.error('[Auth] localStorage cleanup error:', e);
+    }
   };
 
   return (
