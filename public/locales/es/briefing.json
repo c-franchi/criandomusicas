@@ -641,7 +641,14 @@
     "songNameTitle": "Nombre de la canción",
     "songNamePlaceholder": "Deja vacío para generar automáticamente",
     "optional": "(opcional)",
-    "creating": "Creando tu música..."
+    "creating": "Creando tu música...",
+    "generatingLyrics": "Generando letra...",
+    "wait": "Espera unos segundos.",
+    "approvingAuto": "Aprobando automáticamente...",
+    "almostThere": "¡Casi listo!",
+    "inProduction": "¡Música en producción!",
+    "deliveryNotice": "Recibirás tu música en hasta 12 horas. Sigue en el panel.",
+    "deliveryTime": "Tu música será entregada en hasta 12 horas ⏰"
   },
   "noCreditModal": {
     "title": "Créditos insuficientes",
