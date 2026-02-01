@@ -97,6 +97,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
+    // Get sender's name from profile
+    const { data: senderProfile } = await supabaseAdmin
+      .from('profiles')
+      .select('name')
+      .eq('user_id', fromUserId)
+      .single();
+    
+    const senderName = senderProfile?.name || fromUserEmail?.split('@')[0] || 'Um amigo';
+
     // Find user's credits that match the type and have available balance
     const { data: userCredits, error: creditsError } = await supabaseAdmin
       .from('user_credits')
@@ -144,9 +153,11 @@ serve(async (req) => {
 
     // Check if recipient already exists (only if email provided)
     let recipientUser = null;
+    let isNewUser = false;
     if (toEmail) {
       const { data: recipientUsers } = await supabaseAdmin.auth.admin.listUsers();
       recipientUser = recipientUsers?.users?.find(u => u.email?.toLowerCase() === toEmail.toLowerCase());
+      isNewUser = !recipientUser;
     }
 
     // Generate unique transfer code
@@ -198,8 +209,37 @@ serve(async (req) => {
 
     console.log('[TRANSFER-CREDITS] Transfer created:', transfer.id);
 
-    // TODO: Send email notification to recipient using Resend
-    // This can be implemented later with the send-email edge function
+    // Send invite email if recipient doesn't have an account yet
+    if (toEmail && isNewUser) {
+      console.log('[TRANSFER-CREDITS] Recipient is new user, sending invite email');
+      try {
+        const inviteResponse = await fetch(
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transfer-invite`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+            },
+            body: JSON.stringify({
+              toEmail: toEmail.toLowerCase(),
+              fromUserName: senderName,
+              transferCode: transferCode,
+              message: message,
+            }),
+          }
+        );
+        
+        if (!inviteResponse.ok) {
+          console.error('[TRANSFER-CREDITS] Failed to send invite email:', await inviteResponse.text());
+        } else {
+          console.log('[TRANSFER-CREDITS] Invite email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('[TRANSFER-CREDITS] Error sending invite email:', emailError);
+        // Don't fail the transfer if email fails
+      }
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -209,6 +249,7 @@ serve(async (req) => {
           code: transferCode,
           amount,
           toEmail,
+          isNewUser, // Inform frontend if recipient is new
         }
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
