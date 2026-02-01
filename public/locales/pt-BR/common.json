@@ -18,6 +18,8 @@
     "musicReadyGeneric": "Sua música está pronta para ouvir!",
     "paymentApproved": "Pagamento aprovado!",
     "paymentApprovedDesc": "Seu pagamento foi confirmado e estamos criando sua música.",
+    "orderReceived": "Pedido recebido!",
+    "orderReceivedDesc": "Estamos criando sua música. Acompanhe o progresso no dashboard.",
     "errorTitle": "Erro",
     "errorAccepting": "Não foi possível aceitar o crédito.",
     "accept": "Aceitar",

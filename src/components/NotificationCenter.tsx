@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Bell, Gift, Music, CreditCard, CheckCircle, X, Loader2 } from "lucide-react";
+import { Bell, Gift, Music, CreditCard, CheckCircle, X, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 interface Notification {
   id: string;
-  type: 'credit_transfer' | 'music_ready' | 'payment_approved' | 'general';
+  type: 'credit_transfer' | 'music_ready' | 'payment_approved' | 'order_received' | 'general';
   title: string;
   message: string;
   createdAt: string;
@@ -39,6 +39,7 @@ interface OrderNotification {
   id: string;
   status: string;
   payment_status: string;
+  payment_method?: string | null;
   music_ready_at?: string | null;
   updated_at: string;
   song_title: string | null;
@@ -161,20 +162,27 @@ const NotificationCenter = () => {
 
       const { data: paidOrders } = await supabase
         .from('orders')
-        .select('id, status, payment_status, updated_at, song_title')
+        .select('id, status, payment_status, payment_method, updated_at, song_title')
         .eq('user_id', user.id)
         .eq('payment_status', 'PAID')
-        .in('status', ['PAID', 'BRIEFING_COMPLETE', 'LYRICS_PENDING', 'LYRICS_GENERATED'])
+        .in('status', ['PAID', 'BRIEFING_COMPLETE', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING'])
         .gte('updated_at', threeDaysAgo.toISOString())
         .order('updated_at', { ascending: false });
 
       if (paidOrders) {
         paidOrders.forEach((order: OrderNotification) => {
+          // Diferenciar: créditos vs pagamento real
+          const isCredit = order.payment_method === 'credits' || order.payment_method === 'subscription';
+          
           allNotifications.push({
-            id: `payment_${order.id}`,
-            type: 'payment_approved',
-            title: t('notifications.paymentApproved', 'Pagamento aprovado!'),
-            message: t('notifications.paymentApprovedDesc', 'Seu pagamento foi confirmado e estamos criando sua música.'),
+            id: isCredit ? `order_${order.id}` : `payment_${order.id}`,
+            type: isCredit ? 'order_received' : 'payment_approved',
+            title: isCredit 
+              ? t('notifications.orderReceived', 'Pedido recebido!')
+              : t('notifications.paymentApproved', 'Pagamento aprovado!'),
+            message: isCredit
+              ? t('notifications.orderReceivedDesc', 'Estamos criando sua música. Acompanhe o progresso no dashboard.')
+              : t('notifications.paymentApprovedDesc', 'Seu pagamento foi confirmado e estamos criando sua música.'),
             createdAt: order.updated_at,
             read: false,
             actionUrl: `/pedido/${order.id}`,
@@ -252,6 +260,8 @@ const NotificationCenter = () => {
         return <Music className="w-4 h-4 text-green-500" />;
       case 'payment_approved':
         return <CreditCard className="w-4 h-4 text-blue-500" />;
+      case 'order_received':
+        return <Sparkles className="w-4 h-4 text-purple-500" />;
       default:
         return <Bell className="w-4 h-4 text-muted-foreground" />;
     }
@@ -265,6 +275,8 @@ const NotificationCenter = () => {
         return 'bg-green-500/10 border-green-500/20';
       case 'payment_approved':
         return 'bg-blue-500/10 border-blue-500/20';
+      case 'order_received':
+        return 'bg-purple-500/10 border-purple-500/20';
       default:
         return 'bg-muted/50 border-border';
     }
