@@ -333,6 +333,29 @@ serve(async (req) => {
       'misterioso': 'Mysterious, ambient textures, subtle tension, ethereal pads'
     };
 
+    // Detectar se é música de ambiente/relaxamento
+    const isAmbientRelaxation = style === 'ambiente' || 
+      atmosphere === 'relaxamento' || 
+      atmosphere === 'calmo' ||
+      musicType === 'trilha' && (atmosphere === 'paz' || atmosphere === 'calma');
+    
+    // Instruções especiais para música de ambiente/relaxamento
+    const ambientInstructions = isAmbientRelaxation ? `
+⚠️ CRITICAL AMBIENT/RELAXATION REQUIREMENTS:
+- MANDATORY: Very slow tempo (50-70 BPM maximum)
+- MANDATORY: Minimal arrangement - few notes, long sustained tones
+- MANDATORY: Background music style - should NOT draw attention
+- MANDATORY: No sudden dynamic changes, no crescendos, no drums
+- Use: ambient pads, soft piano, gentle strings, nature sounds, soft synths
+- AVOID: percussion, drums, fast arpeggios, complex melodies, sudden changes
+- Style: Lo-fi, ambient, meditation music, focus music, study music
+- The music must help concentration, not distract from it
+- Think: spa music, meditation, yoga, study background` : '';
+    
+    // Forçar ritmo lento para ambiente/relaxamento
+    const effectiveRhythm = isAmbientRelaxation ? 'lento' : rhythm;
+    const effectiveBpm = isAmbientRelaxation ? '50-70 BPM (Ambient/Meditation)' : (bpmMap[effectiveRhythm] || '90-110 BPM');
+
     let stylePrompt: string;
     let finalPrompt: string;
     let generatedInstrumentalTitle: string = '';
@@ -357,17 +380,17 @@ serve(async (req) => {
 
 Track details:
 - Type: ${musicType}
-- Style: ${style}
+- Style: ${style}${isAmbientRelaxation ? ' (AMBIENT/RELAXATION music for focus and calm)' : ''}
 - Atmosphere: ${atmosphere}
-- Instruments: ${instrumentsList}
-- Mood: ${rhythm === 'lento' ? 'Slow, contemplative' : rhythm === 'animado' ? 'Energetic, upbeat' : 'Balanced, flowing'}
+- Instruments: ${isAmbientRelaxation ? 'Ambient pads, soft piano, gentle strings' : instrumentsList}
+- Mood: ${isAmbientRelaxation ? 'Very calm, peaceful, meditative' : (rhythm === 'lento' ? 'Slow, contemplative' : rhythm === 'animado' ? 'Energetic, upbeat' : 'Balanced, flowing')}
 
 Requirements:
 - Title in Portuguese (Brazil)
 - 2-5 words maximum
 - Evocative and memorable
 - No quotes, just the title text
-- Examples: "Aurora Dourada", "Ventos do Sul", "Despertar Épico"
+${isAmbientRelaxation ? '- Should evoke peace, tranquility, focus (Ex: "Serenidade", "Momento de Paz", "Brisa Suave")' : '- Examples: "Aurora Dourada", "Ventos do Sul", "Despertar Épico"'}
 
 Return ONLY the title, nothing else.`;
 
@@ -401,6 +424,7 @@ Create a style prompt for an INSTRUMENTAL track (NO VOCALS).
 
 ⚠️ CRITICAL: OUTPUT MUST BE UNDER 950 CHARACTERS TOTAL. Be extremely concise.
 ⚠️ NO artist/band names. NO explanations. Just the prompt.
+${ambientInstructions}
 
 FORMAT (very brief, in English):
 [Style]
@@ -414,12 +438,13 @@ Production: (brief notes)
 Structure: (brief structure)`;
 
       const userPrompt = `INSTRUMENTAL track style prompt (UNDER 950 CHARS):
-Type: ${musicType}, Style: ${style}
-Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
-Atmosphere: ${atmosphere}
-Instruments: ${instrumentsList}
+Type: ${musicType}, Style: ${style}${isAmbientRelaxation ? ' (AMBIENT/RELAXATION - MUST BE VERY CALM)' : ''}
+Tempo: ${effectiveRhythm} (${effectiveBpm})
+Atmosphere: ${atmosphere}${isAmbientRelaxation ? ' - FOCUS MUSIC, NO DISTRACTIONS' : ''}
+Instruments: ${isAmbientRelaxation ? 'Ambient pads, soft piano, gentle strings ONLY - NO DRUMS' : instrumentsList}
 ${soloInfo}
 ${instrumentationNotes ? `Notes: ${instrumentationNotes}` : ''}
+${isAmbientRelaxation ? 'CRITICAL: This is background/focus music. Must be VERY slow, minimal, calming. No drums, no fast parts.' : ''}
 
 BE VERY CONCISE - under 950 characters total.`;
 
