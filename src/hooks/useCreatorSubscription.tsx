@@ -12,6 +12,7 @@ export interface CreatorSubscription {
   current_period_start: string | null;
   subscription_id: string | null;
   cancel_at_period_end?: boolean;
+  canceled_at?: string | null;
 }
 
 const PLAN_DETAILS: Record<string, { name: string; price: string; isInstrumental: boolean }> = {

@@ -165,12 +165,20 @@ serve(async (req) => {
     const subscriptionEnd = new Date(currentPeriodEndTs * 1000).toISOString();
     const currentPeriodStart = new Date(currentPeriodStartTs * 1000).toISOString();
 
+    // Check if subscription is scheduled for cancellation
+    const cancelAtPeriodEnd = creatorSub.cancel_at_period_end || false;
+    const canceledAt = creatorSub.canceled_at 
+      ? new Date(creatorSub.canceled_at * 1000).toISOString() 
+      : null;
+
     logStep("Active creator subscription found", { 
       subscriptionId: creatorSub.id, 
       planId, 
       creditsTotal,
       subscriptionEnd,
-      currentPeriodStart
+      currentPeriodStart,
+      cancelAtPeriodEnd,
+      canceledAt
     });
 
     // Count orders created in current billing period with relevant statuses
@@ -202,6 +210,8 @@ serve(async (req) => {
       subscription_end: subscriptionEnd,
       current_period_start: currentPeriodStart,
       subscription_id: creatorSub.id,
+      cancel_at_period_end: cancelAtPeriodEnd,
+      canceled_at: canceledAt,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
