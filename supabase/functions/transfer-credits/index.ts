@@ -64,6 +64,49 @@ serve(async (req) => {
 
     console.log('[TRANSFER-CREDITS] Request:', { fromUserId, toEmail, amount, creditType });
 
+    // Use service role to perform admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Check rate limit: 1 transfer every 15 days
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(fifteenDaysAgo.getDate() - 15);
+    
+    const { data: recentTransfers, error: recentError } = await supabaseAdmin
+      .from('credit_transfers')
+      .select('id, created_at')
+      .eq('from_user_id', fromUserId)
+      .gte('created_at', fifteenDaysAgo.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1);
+
+    if (recentError) {
+      console.error('[TRANSFER-CREDITS] Error checking recent transfers:', recentError);
+      throw recentError;
+    }
+
+    if (recentTransfers && recentTransfers.length > 0) {
+      const lastTransferDate = new Date(recentTransfers[0].created_at);
+      const nextAllowedDate = new Date(lastTransferDate);
+      nextAllowedDate.setDate(nextAllowedDate.getDate() + 15);
+      
+      const daysRemaining = Math.ceil((nextAllowedDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      
+      console.log('[TRANSFER-CREDITS] Rate limit exceeded. Last transfer:', lastTransferDate, 'Next allowed:', nextAllowedDate);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Você só pode transferir 1 crédito a cada 15 dias. Próxima transferência permitida em ${daysRemaining} dia(s).`,
+          nextAllowedDate: nextAllowedDate.toISOString(),
+          daysRemaining
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Validate input - só quantidade obrigatória
     if (!amount || amount <= 0) {
       return new Response(
@@ -91,11 +134,7 @@ serve(async (req) => {
       }
     }
 
-    // Use service role to perform admin operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
+    // supabaseAdmin already declared above for rate limit check
 
     // Get sender's name from profile
     const { data: senderProfile } = await supabaseAdmin
