@@ -69,6 +69,7 @@ const App = () => (
               {/* Critical routes - loaded immediately */}
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/~oauth/callback" element={<Auth />} />
               
               {/* Lazy loaded routes */}
               <Route path="/briefing" element={<Briefing />} />
