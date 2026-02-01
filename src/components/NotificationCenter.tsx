@@ -44,6 +44,27 @@ interface OrderNotification {
   song_title: string | null;
 }
 
+const DISMISSED_STORAGE_KEY = 'dismissed_notifications';
+
+const getDismissedIds = (): string[] => {
+  try {
+    const stored = localStorage.getItem(DISMISSED_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveDismissedId = (id: string) => {
+  const dismissed = getDismissedIds();
+  if (!dismissed.includes(id)) {
+    dismissed.push(id);
+    // Keep only last 100 dismissed IDs to prevent storage bloat
+    const trimmed = dismissed.slice(-100);
+    localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify(trimmed));
+  }
+};
+
 const NotificationCenter = () => {
   const { t } = useTranslation('common');
   const { user } = useAuth();
@@ -53,6 +74,7 @@ const NotificationCenter = () => {
   const [loading, setLoading] = useState(true);
   const [accepting, setAccepting] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState<string[]>(getDismissedIds);
 
   useEffect(() => {
     if (user) {
@@ -164,7 +186,13 @@ const NotificationCenter = () => {
       // Sort all notifications by date
       allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      setNotifications(allNotifications);
+      // Filter out dismissed notifications (except credit transfers which are handled by DB status)
+      const currentDismissed = getDismissedIds();
+      const filtered = allNotifications.filter(n => 
+        n.type === 'credit_transfer' || !currentDismissed.includes(n.id)
+      );
+
+      setNotifications(filtered);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {
@@ -176,7 +204,7 @@ const NotificationCenter = () => {
     setAccepting(transferId);
     try {
       const { error } = await supabase.functions.invoke('accept-credit-transfer', {
-        body: { transferId },
+        body: { transferId, action: 'accept' },
       });
 
       if (error) throw error;
@@ -207,7 +235,12 @@ const NotificationCenter = () => {
     }
   };
 
-  const dismissNotification = (notificationId: string) => {
+  const dismissNotification = (notificationId: string, notificationType: Notification['type']) => {
+    // For non-credit notifications, persist the dismissal
+    if (notificationType !== 'credit_transfer') {
+      saveDismissedId(notificationId);
+      setDismissedIds(prev => [...prev, notificationId]);
+    }
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
 
@@ -309,7 +342,7 @@ const NotificationCenter = () => {
                     variant="ghost"
                     size="icon"
                     className="absolute top-1 right-1 h-6 w-6 opacity-50 hover:opacity-100"
-                    onClick={() => dismissNotification(notification.id)}
+                    onClick={() => dismissNotification(notification.id, notification.type)}
                   >
                     <X className="w-3 h-3" />
                   </Button>
