@@ -8,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
 import { Music, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +33,6 @@ const Auth = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [isProcessingOAuth, setIsProcessingOAuth] = useState(false);
 
   // Sync recovery session from auth context
   useEffect(() => {
@@ -43,7 +41,7 @@ const Auth = () => {
     }
   }, [isRecoverySession, resetPasswordMode]);
 
-  // Handle OAuth callback - capture tokens from URL hash (cross-domain flow)
+  // Handle OAuth callback - capture tokens from URL hash
   useEffect(() => {
     const handleOAuthCallback = async () => {
       const currentHash = window.location.hash;
@@ -53,10 +51,9 @@ const Auth = () => {
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
 
-      // Check if this is a cross-domain token transfer
+      // Check if this is a token transfer from OAuth
       if (accessToken && refreshToken) {
         console.log('[Auth] Token transfer detected, establishing session...');
-        setIsProcessingOAuth(true);
 
         try {
           const { data, error } = await supabase.auth.setSession({
@@ -71,7 +68,6 @@ const Auth = () => {
               description: error.message,
               variant: 'destructive',
             });
-            setIsProcessingOAuth(false);
             window.history.replaceState(null, '', '/auth');
             return;
           }
@@ -84,7 +80,6 @@ const Auth = () => {
           }
         } catch (err) {
           console.error('[Auth] Error setting session:', err);
-          setIsProcessingOAuth(false);
           window.history.replaceState(null, '', '/auth');
         }
       }
@@ -116,81 +111,6 @@ const Auth = () => {
       });
     }
   }, [searchParams, toast, t]);
-
-  // Detect if redirected from custom domain to start OAuth
-  useEffect(() => {
-    const startGoogleOAuth = searchParams.get('start_google_oauth');
-    const currentHost = window.location.host;
-    const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
-    
-    // Only start OAuth if:
-    // 1. We're on Lovable domain
-    // 2. We have the start_google_oauth=true parameter
-    // 3. We're not already processing OAuth
-    if (isLovableHost && startGoogleOAuth === 'true' && !isProcessingOAuth) {
-      console.log('[Auth] Starting Google OAuth from custom domain redirect');
-      setIsProcessingOAuth(true);
-      
-      // Clear the parameter to prevent loops
-      window.history.replaceState(null, '', '/auth');
-      
-      // Now we can safely call OAuth SDK on Lovable domain
-      lovable.auth.signInWithOAuth('google', {
-        redirect_uri: `${window.location.origin}/auth`,
-      }).then(({ error }) => {
-        if (error) {
-          console.error('[Auth] OAuth start error:', error);
-          setIsProcessingOAuth(false);
-          toast({
-            title: t('errors.googleError'),
-            description: error.message,
-            variant: 'destructive',
-          });
-        }
-      });
-    }
-  }, [searchParams, isProcessingOAuth, toast, t]);
-
-  // Check after OAuth if we need to redirect back to custom domain
-  useEffect(() => {
-    const checkCrossDomainRedirect = async () => {
-      const currentHost = window.location.host;
-      const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
-      const returnOrigin = sessionStorage.getItem('oauth_return_url');
-      
-      if (!isLovableHost || !returnOrigin) return;
-      
-      // We're on Lovable domain with a pending return URL - check if we have a session
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (session?.access_token && session?.refresh_token) {
-        // Only redirect if return URL is for a different domain
-        if (!returnOrigin.includes('lovable.app') && !returnOrigin.includes('lovableproject.com')) {
-          console.log('[Auth] Redirecting back to custom domain with tokens');
-          sessionStorage.removeItem('oauth_return_url');
-          
-          // Pass tokens via hash to custom domain /auth
-          window.location.href = `${returnOrigin}/auth#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
-        }
-      }
-    };
-    
-    // Small delay to let Supabase process the OAuth callback
-    const timer = setTimeout(checkCrossDomainRedirect, 500);
-    return () => clearTimeout(timer);
-  }, [user]);
-
-  // Show loading while processing OAuth
-  if (isProcessingOAuth) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">{t('login.processing', 'Processando login...')}</p>
-        </div>
-      </div>
-    );
-  }
 
   // Show loading while auth is initializing
   if (authLoading) {
@@ -325,35 +245,17 @@ const Auth = () => {
     setLoading(false);
   };
 
-  // Google Sign In - redirects to Lovable domain if on custom domain
+  // Google Sign In - uses native Supabase OAuth
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const currentHost = window.location.host;
-      const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
+      console.log('[Auth] Starting Google OAuth with Supabase');
       
-      // Lovable Cloud published URL
-      const LOVABLE_CLOUD_URL = 'https://criandomusicas.lovable.app';
-      
-      console.log('[Auth] Google OAuth - Host:', currentHost, 'isLovable:', isLovableHost);
-      
-      if (!isLovableHost) {
-        // Custom domain (Firebase) - DO NOT call SDK here!
-        // The SDK always initiates OAuth on the current domain, causing 404 on /~oauth/initiate
-        
-        // Save only the origin (not the full URL) for return redirect
-        sessionStorage.setItem('oauth_return_url', window.location.origin);
-        
-        console.log('[Auth] Custom domain - redirecting to Lovable Cloud to start OAuth');
-        
-        // Redirect browser directly to Lovable domain with flag to start OAuth
-        window.location.href = `${LOVABLE_CLOUD_URL}/auth?start_google_oauth=true`;
-        return; // Stop execution here - browser will navigate away
-      }
-      
-      // We're on Lovable domain - safe to call OAuth SDK directly
-      const { error } = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: `${window.location.origin}/auth`,
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth`
+        }
       });
 
       if (error) {
@@ -363,15 +265,17 @@ const Auth = () => {
           description: error.message,
           variant: 'destructive',
         });
+        setLoading(false);
       }
+      // Note: Don't setLoading(false) on success - browser will navigate away
     } catch (err) {
       console.error('[Auth] Google sign in error:', err);
       toast({
         title: t('errors.unexpectedError'),
         variant: 'destructive',
       });
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
