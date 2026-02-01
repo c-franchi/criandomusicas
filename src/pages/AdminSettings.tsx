@@ -63,6 +63,7 @@ import { AudioSampleManager, ShareAnalytics, type AudioSample, type PricingConfi
 import VideoOrdersManager from "@/components/admin/VideoOrdersManager";
 import ReactionVideosManager from "@/components/admin/ReactionVideosManager";
 import ReviewsManager from "@/components/admin/ReviewsManager";
+import PricingManager from "@/components/admin/PricingManager";
 import { BarChart3 } from "lucide-react";
 
 const AdminSettings = () => {
@@ -558,64 +559,7 @@ const AdminSettings = () => {
           
           {/* PRICING TAB */}
           <TabsContent value="pricing" className="space-y-4">
-            <Card className="p-4 sm:p-6 border-primary/30">
-              <h2 className="font-semibold text-lg mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-primary" />
-                Configurações de Preços
-              </h2>
-              
-              {loadingPricing ? (
-                <div className="flex items-center justify-center py-8">
-                  <Music className="w-6 h-6 animate-spin text-primary" />
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
-                    💡 Todos os créditos são universais - podem ser usados para vocal, instrumental ou letra própria.
-                  </p>
-                  {pricingConfigs.filter(c => c.is_active).map((config) => (
-                    <Card key={config.id} className="p-4 bg-muted/30">
-                      <div className="flex items-center justify-between mb-3">
-                        <h3 className="font-semibold">{config.name}</h3>
-                        <Badge variant="default">Ativo</Badge>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label className="text-xs">Preço (centavos)</Label>
-                          <Input
-                            type="number"
-                            value={config.price_cents}
-                            onChange={(e) => updatePricingConfig(config.id, 'price_cents', parseInt(e.target.value) || 0)}
-                            className="h-10"
-                          />
-                          <p className="text-sm text-primary font-semibold mt-1">
-                            = R$ {(config.price_cents / 100).toFixed(2).replace('.', ',')}
-                          </p>
-                        </div>
-                        <div>
-                          <Label className="text-xs">Preço Promo (centavos)</Label>
-                          <Input
-                            type="number"
-                            value={config.price_promo_cents || ''}
-                            onChange={(e) => updatePricingConfig(config.id, 'price_promo_cents', e.target.value ? parseInt(e.target.value) : null)}
-                            className="h-10"
-                          />
-                          {config.price_promo_cents && (
-                            <p className="text-sm text-accent font-semibold mt-1">
-                              Promo: R$ {(config.price_promo_cents / 100).toFixed(2).replace('.', ',')}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                  <Button onClick={savePricingConfigs} className="w-full" disabled={savingPricing}>
-                    {savingPricing ? <Music className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                    Salvar Preços
-                  </Button>
-                </div>
-              )}
-            </Card>
+            <PricingManager />
           </TabsContent>
           
           {/* VOUCHERS TAB */}
