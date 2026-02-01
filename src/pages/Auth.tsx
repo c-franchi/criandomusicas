@@ -117,32 +117,60 @@ const Auth = () => {
     }
   }, [searchParams, toast, t]);
 
+  // Detect if redirected from custom domain to start OAuth
+  useEffect(() => {
+    const startGoogleOAuth = searchParams.get('start_google_oauth');
+    const currentHost = window.location.host;
+    const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
+    
+    // Only start OAuth if:
+    // 1. We're on Lovable domain
+    // 2. We have the start_google_oauth=true parameter
+    // 3. We're not already processing OAuth
+    if (isLovableHost && startGoogleOAuth === 'true' && !isProcessingOAuth) {
+      console.log('[Auth] Starting Google OAuth from custom domain redirect');
+      setIsProcessingOAuth(true);
+      
+      // Clear the parameter to prevent loops
+      window.history.replaceState(null, '', '/auth');
+      
+      // Now we can safely call OAuth SDK on Lovable domain
+      lovable.auth.signInWithOAuth('google', {
+        redirect_uri: `${window.location.origin}/auth`,
+      }).then(({ error }) => {
+        if (error) {
+          console.error('[Auth] OAuth start error:', error);
+          setIsProcessingOAuth(false);
+          toast({
+            title: t('errors.googleError'),
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
+      });
+    }
+  }, [searchParams, isProcessingOAuth, toast, t]);
+
   // Check after OAuth if we need to redirect back to custom domain
   useEffect(() => {
     const checkCrossDomainRedirect = async () => {
       const currentHost = window.location.host;
       const isLovableHost = currentHost.includes('lovable.app') || currentHost.includes('lovableproject.com');
-      const returnUrl = sessionStorage.getItem('oauth_return_url');
+      const returnOrigin = sessionStorage.getItem('oauth_return_url');
       
-      if (!isLovableHost || !returnUrl) return;
+      if (!isLovableHost || !returnOrigin) return;
       
       // We're on Lovable domain with a pending return URL - check if we have a session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.access_token && session?.refresh_token) {
-        try {
-          const returnOrigin = new URL(returnUrl).origin;
-          // Only redirect if return URL is for a different domain
-          if (!returnOrigin.includes('lovable.app') && !returnOrigin.includes('lovableproject.com')) {
-            console.log('[Auth] Redirecting back to custom domain with tokens');
-            sessionStorage.removeItem('oauth_return_url');
-            
-            // Pass tokens via hash to custom domain
-            window.location.href = `${returnUrl}#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
-          }
-        } catch (e) {
-          console.error('[Auth] Error parsing return URL:', e);
+        // Only redirect if return URL is for a different domain
+        if (!returnOrigin.includes('lovable.app') && !returnOrigin.includes('lovableproject.com')) {
+          console.log('[Auth] Redirecting back to custom domain with tokens');
           sessionStorage.removeItem('oauth_return_url');
+          
+          // Pass tokens via hash to custom domain /auth
+          window.location.href = `${returnOrigin}/auth#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
         }
       }
     };
@@ -297,7 +325,7 @@ const Auth = () => {
     setLoading(false);
   };
 
-  // SIMPLIFIED Google Sign In - uses Lovable Cloud OAuth directly
+  // Google Sign In - redirects to Lovable domain if on custom domain
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
@@ -310,35 +338,20 @@ const Auth = () => {
       console.log('[Auth] Google OAuth - Host:', currentHost, 'isLovable:', isLovableHost);
       
       if (!isLovableHost) {
-        // Custom domain (Firebase) - redirect to Lovable Cloud for OAuth
-        // Store return URL for cross-domain handshake
-        const returnUrl = `${window.location.origin}/auth`;
-        sessionStorage.setItem('oauth_return_url', returnUrl);
+        // Custom domain (Firebase) - DO NOT call SDK here!
+        // The SDK always initiates OAuth on the current domain, causing 404 on /~oauth/initiate
         
-        console.log('[Auth] Custom domain - redirecting to Lovable Cloud');
+        // Save only the origin (not the full URL) for return redirect
+        sessionStorage.setItem('oauth_return_url', window.location.origin);
         
-        // Call OAuth with Lovable Cloud as redirect_uri
-        const { error } = await lovable.auth.signInWithOAuth('google', {
-          redirect_uri: `${LOVABLE_CLOUD_URL}/auth`,
-        });
+        console.log('[Auth] Custom domain - redirecting to Lovable Cloud to start OAuth');
         
-        if (error) {
-          console.error('[Auth] OAuth error:', error);
-          sessionStorage.removeItem('oauth_return_url');
-          toast({
-            title: t('errors.googleError'),
-            description: error.message,
-            variant: 'destructive',
-          });
-          setLoading(false);
-        }
-        return;
+        // Redirect browser directly to Lovable domain with flag to start OAuth
+        window.location.href = `${LOVABLE_CLOUD_URL}/auth?start_google_oauth=true`;
+        return; // Stop execution here - browser will navigate away
       }
       
-      // Lovable domain - check if we need to redirect back to custom domain
-      const returnUrl = sessionStorage.getItem('oauth_return_url');
-      
-      // Standard OAuth on Lovable domain
+      // We're on Lovable domain - safe to call OAuth SDK directly
       const { error } = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: `${window.location.origin}/auth`,
       });
