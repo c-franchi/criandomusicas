@@ -2492,7 +2492,7 @@ const Briefing = () => {
     
     setFormData(newFormData);
     setIsQuickMode(true); // Marcar como modo rápido
-    setCreationMode(null);
+    // NÃO setar creationMode(null) aqui - será setado em finishBriefingWithData
     setQuickModeFormData(newFormData); // Guardar para uso após WhatsApp modal
     
     // Modo rápido: pular confirmação e ir direto para criação
@@ -2522,6 +2522,7 @@ const Briefing = () => {
   // Função para finalizar briefing com formData específico (para modo rápido)
   const finishBriefingWithData = async (data: BriefingFormData) => {
     setIsCreatingOrder(true);
+    setCreationMode(null); // Agora sim, quando loading já está ativo
     clearSavedBriefing();
     
     const briefingData = {
