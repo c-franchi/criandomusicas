@@ -10,7 +10,7 @@ import { useCredits } from "@/hooks/useCredits";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
 import ThemeToggle from "@/components/ThemeToggle";
 import RegionSelector from "@/components/RegionSelector";
-
+import NotificationCenter from "@/components/NotificationCenter";
 interface AppHeaderProps {
   variant?: "floating" | "sticky" | "simple";
   showLogo?: boolean;
@@ -71,6 +71,9 @@ const AppHeader = ({
         
         {/* Theme Toggle */}
         <ThemeToggle />
+
+        {/* Notification Center - Bell Icon */}
+        {user && <NotificationCenter />}
 
         {user && showUserMenu ? (
           <>

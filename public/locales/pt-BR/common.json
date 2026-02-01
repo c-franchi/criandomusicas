@@ -1,4 +1,28 @@
 {
+  "notifications": {
+    "title": "Notificações",
+    "new": "nova",
+    "newPlural": "novas",
+    "empty": "Nenhuma notificação no momento",
+    "justNow": "Agora",
+    "minutesAgo": "{{count}}min atrás",
+    "hoursAgo": "{{count}}h atrás",
+    "daysAgo": "{{count}}d atrás",
+    "creditReceived": "Crédito recebido!",
+    "creditFromUser": "{{name}} enviou {{amount}} crédito(s) para você",
+    "creditFromSomeone": "Você recebeu {{amount}} crédito(s)",
+    "creditAccepted": "Crédito aceito!",
+    "creditAcceptedDesc": "O crédito foi adicionado à sua conta.",
+    "musicReady": "Música pronta!",
+    "musicReadyTitle": "Sua música \"{{title}}\" está pronta!",
+    "musicReadyGeneric": "Sua música está pronta para ouvir!",
+    "paymentApproved": "Pagamento aprovado!",
+    "paymentApprovedDesc": "Seu pagamento foi confirmado e estamos criando sua música.",
+    "errorTitle": "Erro",
+    "errorAccepting": "Não foi possível aceitar o crédito.",
+    "accept": "Aceitar",
+    "view": "Ver"
+  },
   "nav": {
     "home": "Início",
     "plans": "Planos",
