@@ -1,10 +1,12 @@
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Image, Users, Sparkles, Headphones, Crown, Check } from "lucide-react";
+import { FileText, Image, Users, Sparkles, Headphones, Crown, Check, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -48,33 +50,70 @@ const cardHoverVariants = {
   },
 };
 
-// Creator plan data with universal credits
-const CREATOR_PLANS = [
-  {
-    id: 'creator_start',
-    name: 'Creator Start',
-    credits: 50,
-    price: 2990, // cents
-    popular: false,
-  },
-  {
-    id: 'creator_pro',
-    name: 'Creator Pro',
-    credits: 150,
-    price: 4990, // cents
-    popular: true,
-  },
-  {
-    id: 'creator_studio',
-    name: 'Creator Studio',
-    credits: 300,
-    price: 7990, // cents
-    popular: false,
-  },
-];
+// Credits mapping for creator plans
+const CREATOR_CREDITS: Record<string, number> = {
+  'creator_start': 50,
+  'creator_pro': 150,
+  'creator_studio': 300,
+};
+
+interface CreatorPlan {
+  id: string;
+  name: string;
+  credits: number;
+  price: number;
+  popular: boolean;
+}
 
 const CreatorSection = () => {
   const { t, i18n } = useTranslation('pricing');
+  const [creatorPlans, setCreatorPlans] = useState<CreatorPlan[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch creator plans from database
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('pricing_config')
+          .select('*')
+          .in('id', ['creator_start', 'creator_pro', 'creator_studio'])
+          .eq('is_active', true)
+          .order('sort_order', { ascending: true });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setCreatorPlans(data.map(p => ({
+            id: p.id,
+            name: p.name,
+            credits: CREATOR_CREDITS[p.id] || 50,
+            price: p.price_promo_cents || p.price_cents,
+            popular: p.is_popular || false,
+          })));
+        } else {
+          // Fallback to default values if no data
+          setCreatorPlans([
+            { id: 'creator_start', name: 'Creator Start', credits: 50, price: 2990, popular: false },
+            { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 4990, popular: true },
+            { id: 'creator_studio', name: 'Creator Studio', credits: 300, price: 7990, popular: false },
+          ]);
+        }
+      } catch (error) {
+        console.error('Error fetching creator plans:', error);
+        // Fallback to default values
+        setCreatorPlans([
+          { id: 'creator_start', name: 'Creator Start', credits: 50, price: 2990, popular: false },
+          { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 4990, popular: true },
+          { id: 'creator_studio', name: 'Creator Studio', credits: 300, price: 7990, popular: false },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans();
+  }, []);
 
   // Format price based on language
   const formatPrice = (cents: number): string => {
@@ -164,6 +203,16 @@ const CreatorSection = () => {
 
   const features = getCreatorFeatures();
 
+  if (loading) {
+    return (
+      <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10 overflow-hidden" id="criadores">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[400px]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10 overflow-hidden" id="criadores">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -237,7 +286,7 @@ const CreatorSection = () => {
           whileInView="visible"
           viewport={{ once: true, margin: "-10%" }}
         >
-          {CREATOR_PLANS.map((plan, index) => (
+          {creatorPlans.map((plan, index) => (
             <motion.div
               key={plan.id}
               variants={itemVariants}
