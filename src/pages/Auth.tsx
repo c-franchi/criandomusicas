@@ -50,11 +50,62 @@ const Auth = () => {
     const handleOAuthCallback = async () => {
       const currentPath = window.location.pathname;
       const currentHash = window.location.hash;
+      const currentHost = window.location.host;
+      const isLovableHost = currentHost.includes('lovable.app') || 
+                            currentHost.includes('lovableproject.com');
       
       console.log('[Auth] ======= OAuth Check Start =======');
+      console.log('[Auth] Host:', currentHost, 'isLovable:', isLovableHost);
       console.log('[Auth] Path:', currentPath);
       console.log('[Auth] Hash exists:', !!currentHash);
       console.log('[Auth] Full URL:', window.location.href);
+      
+      // Detect OAuth callback scenarios
+      const hashParams = new URLSearchParams(currentHash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const isOAuthCallbackPath = currentPath === '/~oauth/callback';
+      const isAuthCallbackPath = currentPath === '/auth/callback';
+      
+      // Check if this is a cross-domain token transfer (from Lovable Cloud back to custom domain)
+      if (!isLovableHost && accessToken && refreshToken) {
+        console.log('[Auth] Cross-domain token transfer detected');
+        setIsProcessingOAuth(true);
+        
+        try {
+          // Set session using tokens from URL hash
+          const { data, error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          
+          if (error) {
+            console.error('[Auth] Failed to set session from tokens:', error);
+            toast({
+              title: t('errors.authError'),
+              description: error.message,
+              variant: 'destructive',
+            });
+            setIsProcessingOAuth(false);
+            // Clean up URL
+            window.history.replaceState(null, '', '/auth');
+            return;
+          }
+          
+          if (data.session?.user) {
+            console.log('[Auth] Session established on custom domain for:', data.session.user.email);
+            // Clean up URL and redirect to home
+            window.history.replaceState(null, '', '/');
+            window.location.href = '/';
+            return;
+          }
+        } catch (err) {
+          console.error('[Auth] Error setting session:', err);
+          setIsProcessingOAuth(false);
+          window.history.replaceState(null, '', '/auth');
+          return;
+        }
+      }
       
       // First check existing session state
       const { data: { session: existingSession } } = await supabase.auth.getSession();
@@ -62,12 +113,6 @@ const Auth = () => {
         hasSession: !!existingSession,
         userEmail: existingSession?.user?.email || 'none'
       });
-      
-      // Detect OAuth callback scenarios
-      const hashParams = new URLSearchParams(currentHash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const isOAuthCallbackPath = currentPath === '/~oauth/callback';
-      const isAuthCallbackPath = currentPath === '/auth/callback';
       
       const isOAuthCallback = !!accessToken || isOAuthCallbackPath || isAuthCallbackPath;
       
@@ -97,6 +142,27 @@ const Auth = () => {
         
         if (session?.user) {
           console.log('[Auth] Session found for user:', session.user.email);
+          
+          // Check if we need to redirect back to custom domain
+          const returnUrl = sessionStorage.getItem('oauth_return_url');
+          if (isLovableHost && returnUrl) {
+            try {
+              const returnOrigin = new URL(returnUrl).origin;
+              // Only redirect if the return URL is for a different domain
+              if (!returnOrigin.includes('lovable.app') && !returnOrigin.includes('lovableproject.com')) {
+                console.log('[Auth] Redirecting back to custom domain:', returnUrl);
+                sessionStorage.removeItem('oauth_return_url');
+                
+                // Pass tokens to custom domain via URL hash
+                const redirectWithTokens = `${returnUrl}#access_token=${session.access_token}&refresh_token=${session.refresh_token}&token_type=bearer`;
+                window.location.href = redirectWithTokens;
+                return;
+              }
+            } catch (e) {
+              console.error('[Auth] Error parsing return URL:', e);
+              sessionStorage.removeItem('oauth_return_url');
+            }
+          }
           
           // Check if this is a new user (profile created recently)
           const { data: profile } = await supabase
@@ -129,7 +195,7 @@ const Auth = () => {
             }
           }
           
-          // Clean up URL and redirect to home using React Router approach
+          // Clean up URL and redirect to home
           console.log('[Auth] OAuth complete, redirecting to home');
           setIsProcessingOAuth(false);
           window.history.replaceState(null, '', '/');
@@ -152,7 +218,7 @@ const Auth = () => {
     };
     
     handleOAuthCallback();
-  }, []);
+  }, [toast, t]);
 
   // Clean up URL hash AFTER session is confirmed (delay to let Supabase process)
   useEffect(() => {
@@ -332,8 +398,45 @@ const Auth = () => {
   const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      console.log('[Auth] Starting Google OAuth, redirect_uri:', `${window.location.origin}/auth`);
+      const currentHost = window.location.host;
+      const isLovableHost = currentHost.includes('lovable.app') || 
+                            currentHost.includes('lovableproject.com');
       
+      // URL publicada do Lovable Cloud
+      const LOVABLE_CLOUD_URL = 'https://criandomusicas.lovable.app';
+      
+      console.log('[Auth] Starting Google OAuth, host:', currentHost, 'isLovable:', isLovableHost);
+      
+      if (!isLovableHost) {
+        // Domínio personalizado (Firebase) - não pode processar /~oauth/*
+        // Redirecionar para fazer OAuth no Lovable Cloud e voltar com tokens
+        console.log('[Auth] Custom domain - redirecting through Lovable Cloud');
+        
+        // Armazenar URL de retorno no sessionStorage
+        const returnUrl = `${window.location.origin}/auth`;
+        sessionStorage.setItem('oauth_return_url', returnUrl);
+        
+        // Fazer OAuth via domínio Lovable - o SDK vai redirecionar para lovable.app/~oauth/initiate
+        const { error } = await lovable.auth.signInWithOAuth('google', {
+          redirect_uri: `${LOVABLE_CLOUD_URL}/auth`,
+        });
+        
+        if (error) {
+          console.error('[Auth] OAuth init error:', error);
+          sessionStorage.removeItem('oauth_return_url');
+          toast({
+            title: t('errors.googleError'),
+            description: error.message,
+            variant: 'destructive',
+          });
+          setLoading(false);
+        }
+        // O SDK vai redirecionar automaticamente, não precisa setLoading(false)
+        return;
+      }
+      
+      // Domínio Lovable - OAuth normal funciona
+      console.log('[Auth] Lovable domain, using standard OAuth');
       const { error } = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: `${window.location.origin}/auth`,
       });
