@@ -637,7 +637,11 @@
     "voiceTitle": "Tipo vocal",
     "createButton": "Crear Música",
     "hint": "La IA completará los detalles automáticamente",
-    "switchToDetailed": "Crea tu música con más detalles"
+    "switchToDetailed": "Crea tu música con más detalles",
+    "songNameTitle": "Nombre de la canción",
+    "songNamePlaceholder": "Deja vacío para generar automáticamente",
+    "optional": "(opcional)",
+    "creating": "Creando tu música..."
   },
   "noCreditModal": {
     "title": "Créditos insuficientes",
