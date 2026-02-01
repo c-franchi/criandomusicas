@@ -530,13 +530,14 @@ const AdminSettings = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {pricingConfigs.map((config) => (
+                  <p className="text-sm text-muted-foreground bg-muted/50 p-3 rounded-lg">
+                    💡 Todos os créditos são universais - podem ser usados para vocal, instrumental ou letra própria.
+                  </p>
+                  {pricingConfigs.filter(c => c.is_active).map((config) => (
                     <Card key={config.id} className="p-4 bg-muted/30">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold">{config.name}</h3>
-                        <Badge variant={config.is_active ? "default" : "secondary"}>
-                          {config.is_active ? "Ativo" : "Inativo"}
-                        </Badge>
+                        <Badge variant="default">Ativo</Badge>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
@@ -560,7 +561,7 @@ const AdminSettings = () => {
                             className="h-10"
                           />
                           {config.price_promo_cents && (
-                            <p className="text-sm text-green-500 font-semibold mt-1">
+                            <p className="text-sm text-accent font-semibold mt-1">
                               Promo: R$ {(config.price_promo_cents / 100).toFixed(2).replace('.', ',')}
                             </p>
                           )}
@@ -707,10 +708,9 @@ const AdminSettings = () => {
                         <Label>Válido para planos (opcional)</Label>
                         <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-background">
                           {[
-                            { id: 'single', label: 'Música Única' },
-                            { id: 'package', label: 'Pacote 3 Músicas' },
-                            { id: 'subscription', label: 'Pacote 5 Músicas' },
-                            { id: 'single_custom_lyric', label: 'Letra Própria' },
+                            { id: 'single', label: '1 Crédito Universal' },
+                            { id: 'package', label: '3 Créditos Universais' },
+                            { id: 'subscription', label: '5 Créditos Universais' },
                             { id: 'creator_start', label: 'Creator Start' },
                             { id: 'creator_pro', label: 'Creator Pro' },
                             { id: 'creator_studio', label: 'Creator Studio' },
