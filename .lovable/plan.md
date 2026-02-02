@@ -1,70 +1,83 @@
 
-# Plano: Correção do Sistema de Crédito Preview para Usuários Antigos
+# Plano: Corrigir Sistema de Crédito Preview para Novos Usuários
 
-## Diagnóstico
+## Problema Identificado
 
-### O que está acontecendo:
-1. O trigger `grant_preview_credit` foi criado em **02/02/2026** (migração recente)
-2. Apenas usuários cadastrados **APÓS** essa data recebem o crédito automaticamente
-3. Todos os 9 usuários anteriores (tanto Google quanto email) NÃO têm o crédito preview
+O usuário `historiasemconto@gmail.com` **TEM** o crédito preview no banco de dados:
+- `plan_id: preview_test`
+- `total_credits: 1`
+- `used_credits: 0`
+- `is_active: true`
 
-### Dados encontrados:
-| Email | Provider | Crédito Preview |
-|-------|----------|-----------------|
-| trompeteweb@gmail.com | Google | **SIM** (02/02) |
-| mnartsdesign@gmail.com | Google | NÃO |
-| cbshinoselouvores@gmail.com | Google | NÃO |
-| franchitrader@gmail.com | Email | NÃO |
-| rogerinhovaz33@gmail.com | Email | NÃO |
-| ... outros 5 usuários | Ambos | NÃO |
+Porém, o sistema mostra "Créditos insuficientes" porque:
 
-### Conclusão:
-- O sistema **ESTÁ FUNCIONANDO** para novos cadastros (incluindo Google OAuth)
-- O problema é que usuários **ANTIGOS** não foram contemplados retroativamente
+1. **Edge Function `check-credits`** (linha 104): O crédito preview é **excluído** do `total_credits`
+2. **Hook `useCredits`** (linha 113): Define `hasCredits: totalCredits > 0` = `false`
+3. **Briefing.tsx** (linha 1999): Verifica `!has_credits` e mostra modal de erro
 
 ## Solução
 
-Criar uma migração SQL que concede crédito preview retroativamente para todos os usuários que não possuem.
+Modificar a lógica para considerar o crédito preview como válido para criação de música.
 
-### Migração a criar:
+### Mudança 1: Hook `useCredits.tsx`
 
-```sql
--- Conceder credito preview retroativo para usuarios existentes
-INSERT INTO public.user_credits (user_id, plan_id, total_credits, used_credits, is_active)
-SELECT 
-  u.id,
-  'preview_test',
-  1,
-  0,
-  true
-FROM auth.users u
-WHERE NOT EXISTS (
-  SELECT 1 FROM public.user_credits uc 
-  WHERE uc.user_id = u.id AND uc.plan_id = 'preview_test'
-);
+Atualizar a linha 113 para incluir preview:
+
+```typescript
+// ANTES
+hasCredits: totalCredits > 0,
+
+// DEPOIS  
+hasCredits: totalCredits > 0 || (data.preview_credit_available === true),
 ```
+
+### Mudança 2: Verificação no Briefing.tsx
+
+Atualizar a verificação na linha 1999:
+
+```typescript
+// ANTES
+if (!creditsData?.has_credits || creditsData?.total_available <= 0) {
+
+// DEPOIS
+const hasAnyCredit = creditsData?.has_credits || 
+                     creditsData?.total_available > 0 || 
+                     creditsData?.preview_credit_available === true;
+if (!hasAnyCredit) {
+```
+
+### Mudança 3: Exibição de Créditos no Dashboard/Perfil
+
+No `CreditsManagement.tsx` e `CreditsBanner.tsx`, mostrar que o usuário tem 1 crédito preview disponível quando `previewCreditAvailable` é true.
 
 ## Arquivos a Modificar
 
-| Tipo | Ação |
-|------|------|
-| Migração SQL | Criar nova migração para conceder créditos retroativos |
+| Arquivo | Mudança |
+|---------|---------|
+| `src/hooks/useCredits.tsx` | Incluir preview no `hasCredits` |
+| `src/pages/Briefing.tsx` | Verificar `preview_credit_available` |
+| `src/components/CreditsBanner.tsx` | Mostrar crédito preview |
+| `src/components/CreditsManagement.tsx` | Exibir crédito preview na listagem |
+
+## Fluxo Corrigido
+
+```text
+Novo Usuário → Login Google
+       ↓
+Trigger banco → Cria crédito preview_test
+       ↓
+check-credits → Retorna preview_credit_available: true
+       ↓
+useCredits → hasCredits: true (inclui preview)
+       ↓
+Briefing → Permite criar música (preview 40s)
+       ↓
+Dashboard → Mostra "1 crédito preview disponível"
+```
 
 ## Resultado Esperado
 
-Após a migração:
-- Todos os 9 usuários antigos receberão 1 crédito preview
-- Novos cadastros continuarão recebendo automaticamente via trigger
-- Sistema de preview funcionará para todos os usuários
-
-## Verificação
-
-Após aplicar a correção, executar:
-```sql
-SELECT COUNT(*) as total_users,
-       COUNT(uc.id) as users_with_preview
-FROM auth.users u
-LEFT JOIN user_credits uc ON u.id = uc.user_id AND uc.plan_id = 'preview_test';
-```
-
-Ambos valores devem ser iguais.
+- Usuários com apenas crédito preview podem criar músicas
+- UI mostra claramente que é um crédito de preview (40 segundos)
+- Modal "Créditos insuficientes" não aparece para usuários com preview disponível
+- Após usar o preview, sistema redireciona para compra
