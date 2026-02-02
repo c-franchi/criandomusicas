@@ -2131,12 +2131,47 @@ const Briefing = () => {
 
     // Criar ordem no Supabase
     try {
+      // Buscar preço do plano selecionado
+      let orderAmount = 990; // Default: R$ 9,90
+      const effectivePlanId = briefingData.hasCustomLyric 
+        ? 'single_custom_lyric' 
+        : briefingData.isInstrumental 
+          ? (selectedPlanId?.includes('instrumental') ? selectedPlanId : `${selectedPlanId || 'single'}_instrumental`)
+          : (selectedPlanId || 'single');
+      
+      const { data: pricingData } = await supabase
+        .from('pricing_config')
+        .select('price_promo_cents, price_cents')
+        .eq('id', effectivePlanId)
+        .single();
+      
+      if (pricingData) {
+        orderAmount = pricingData.price_promo_cents || pricingData.price_cents;
+      } else {
+        // Fallback: buscar plano base se variante não encontrada
+        const basePlanId = selectedPlanId?.replace('_instrumental', '') || 'single';
+        const { data: basePricing } = await supabase
+          .from('pricing_config')
+          .select('price_promo_cents, price_cents')
+          .eq('id', basePlanId)
+          .single();
+        
+        if (basePricing) {
+          const basePrice = basePricing.price_promo_cents || basePricing.price_cents;
+          // Aplicar 20% desconto para instrumental
+          orderAmount = briefingData.isInstrumental 
+            ? Math.round(basePrice * 0.8 / 100) * 100 - 10 
+            : basePrice;
+        }
+      }
+      
       const { data: orderData, error } = await supabase
         .from('orders')
         .insert({
           user_id: user?.id,
           status: 'AWAITING_PAYMENT',
           payment_status: 'PENDING',
+          amount: orderAmount, // Incluir amount na criação
           plan_id: selectedPlanId, // Save the selected plan for credit tracking
           is_instrumental: briefingData.isInstrumental,
           has_custom_lyric: briefingData.hasCustomLyric,
@@ -2548,12 +2583,44 @@ const Briefing = () => {
     };
 
     try {
+      // Buscar preço do plano selecionado
+      let orderAmount = 990; // Default: R$ 9,90
+      const effectivePlanId = briefingData.isInstrumental 
+        ? (selectedPlanId?.includes('instrumental') ? selectedPlanId : `${selectedPlanId || 'single'}_instrumental`)
+        : (selectedPlanId || 'single');
+      
+      const { data: pricingData } = await supabase
+        .from('pricing_config')
+        .select('price_promo_cents, price_cents')
+        .eq('id', effectivePlanId)
+        .single();
+      
+      if (pricingData) {
+        orderAmount = pricingData.price_promo_cents || pricingData.price_cents;
+      } else {
+        // Fallback: buscar plano base
+        const basePlanId = selectedPlanId?.replace('_instrumental', '') || 'single';
+        const { data: basePricing } = await supabase
+          .from('pricing_config')
+          .select('price_promo_cents, price_cents')
+          .eq('id', basePlanId)
+          .single();
+        
+        if (basePricing) {
+          const basePrice = basePricing.price_promo_cents || basePricing.price_cents;
+          orderAmount = briefingData.isInstrumental 
+            ? Math.round(basePrice * 0.8 / 100) * 100 - 10 
+            : basePrice;
+        }
+      }
+      
       const { data: orderData, error } = await supabase
         .from('orders')
         .insert({
           user_id: user?.id,
           status: 'AWAITING_PAYMENT',
           payment_status: 'PENDING',
+          amount: orderAmount, // Incluir amount na criação
           plan_id: selectedPlanId || 'single',
           is_instrumental: briefingData.isInstrumental,
           has_custom_lyric: briefingData.hasCustomLyric,
