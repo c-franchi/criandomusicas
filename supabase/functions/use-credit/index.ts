@@ -89,6 +89,7 @@ serve(async (req) => {
 
     // Find an active credit package with available credits (FIFO - oldest first)
     // Universal credits: any credit can be used for any order type
+    // IMPORTANT: Prioritize regular credits over preview credits
     const { data: credits, error: creditsError } = await supabaseClient
       .from('user_credits')
       .select('*')
@@ -100,14 +101,29 @@ serve(async (req) => {
       throw new Error(`Error fetching credits: ${creditsError.message}`);
     }
 
-    // Find first package with available credits (no type compatibility check needed)
+    // Find first package with available credits
+    // Prioritize regular credits over preview credits
     let creditToUse = null;
+    let previewCredit = null;
+    
     if (credits && credits.length > 0) {
       for (const credit of credits) {
         if (credit.total_credits > credit.used_credits) {
+          // Store preview credit separately
+          if (credit.plan_id === 'preview_test') {
+            previewCredit = credit;
+            continue;
+          }
+          // Use first regular credit found
           creditToUse = credit;
           break;
         }
+      }
+      
+      // If no regular credits, use preview credit
+      if (!creditToUse && previewCredit) {
+        creditToUse = previewCredit;
+        logStep("Using preview credit (no regular credits available)");
       }
     }
 
@@ -294,6 +310,9 @@ serve(async (req) => {
       }
 
       // Update order to mark as paid via credits
+      // Mark as preview if using preview credit
+      const isPreviewCredit = creditToUse.plan_id === 'preview_test';
+      
       const { error: orderError } = await supabaseClient
         .from('orders')
         .update({
@@ -302,6 +321,7 @@ serve(async (req) => {
           payment_method: 'credits',
           plan_id: creditToUse.plan_id,
           amount: 0,
+          is_preview: isPreviewCredit,
         })
         .eq('id', orderId)
         .eq('user_id', userId);

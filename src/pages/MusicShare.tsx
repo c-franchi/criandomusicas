@@ -3,32 +3,38 @@ import { useParams, Link, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
   Music, 
   Play, 
   Pause, 
   Loader2,
   Sparkles,
-  Shield
+  Shield,
+  Clock
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
+import PreviewBanner from "@/components/PreviewBanner";
+import PreviewCompletedModal from "@/components/PreviewCompletedModal";
 
 interface TrackData {
   audio_url: string;
   title: string;
   music_style: string;
   cover_url: string | null;
+  is_preview?: boolean;
 }
 
 const MusicShare = () => {
-  const { t, i18n } = useTranslation('common');
+  const { t, i18n } = useTranslation(['common', 'briefing']);
   const { orderId } = useParams();
   const [searchParams] = useSearchParams();
   const [track, setTrack] = useState<TrackData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Apply language from URL parameter if present
@@ -75,9 +81,10 @@ const MusicShare = () => {
 
         setTrack({
           audio_url: data.audio_url,
-          title: data.title || t('share.defaultTitle'),
+          title: data.title || t('common:share.defaultTitle'),
           music_style: data.music_style || '',
-          cover_url: data.cover_url || null
+          cover_url: data.cover_url || null,
+          is_preview: data.is_preview || false
         });
       } catch (err) {
         console.error('Error fetching track:', err);
@@ -120,6 +127,14 @@ const MusicShare = () => {
     }
   };
 
+  // Show preview modal when audio ends for preview tracks
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+    if (track?.is_preview) {
+      setShowPreviewModal(true);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted">
@@ -136,14 +151,14 @@ const MusicShare = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted p-4">
         <Card className="p-8 text-center max-w-md">
           <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-          <h1 className="text-xl font-bold mb-2">{t('share.notFound')}</h1>
+          <h1 className="text-xl font-bold mb-2">{t('common:share.notFound')}</h1>
           <p className="text-muted-foreground mb-6">
-            {t('share.notFoundDesc')}
+            {t('common:share.notFoundDesc')}
           </p>
           <Button asChild>
             <Link to="/">
               <Sparkles className="w-4 h-4 mr-2" />
-              {t('share.createOwn')}
+              {t('common:share.createOwn')}
             </Link>
           </Button>
         </Card>
@@ -153,7 +168,7 @@ const MusicShare = () => {
 
   const ogImage = track.cover_url || 'https://criandomusicas.com.br/og-image.jpg';
   const pageTitle = `${track.title} | Criando Músicas`;
-  const pageDescription = `${t('share.listenTo')} "${track.title}" - ${t('share.personalizedMusic')}. ${track.music_style ? `${t('share.style')}: ${track.music_style}` : ''}`;
+  const pageDescription = `${t('common:share.listenTo')} "${track.title}" - ${t('common:share.personalizedMusic')}. ${track.music_style ? `${t('common:share.style')}: ${track.music_style}` : ''}`;
 
   return (
     <>
@@ -199,9 +214,16 @@ const MusicShare = () => {
         <audio 
           ref={audioRef} 
           src={track.audio_url}
-          onEnded={() => setIsPlaying(false)}
+          onEnded={handleAudioEnded}
           preload="metadata"
         />
+
+        {/* Preview Badge */}
+        {track.is_preview && (
+          <div className="mb-4">
+            <PreviewBanner variant="info" />
+          </div>
+        )}
 
         {/* Player Controls */}
         <div className="flex flex-col gap-2 sm:gap-3 mb-6 sm:mb-8">
@@ -213,12 +235,12 @@ const MusicShare = () => {
             {isPlaying ? (
               <>
                 <Pause className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                {t('share.pause')}
+                {t('common:share.pause')}
               </>
             ) : (
               <>
                 <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                {t('share.listen')}
+                {t('common:share.listen')}
               </>
             )}
           </Button>
@@ -231,7 +253,7 @@ const MusicShare = () => {
             <span>Site oficial verificado</span>
           </div>
           <p className="text-sm font-medium text-foreground">
-            {t('share.wantToCreate')}
+            {t('common:share.wantToCreate')}
           </p>
           <Button 
             asChild 
@@ -241,13 +263,19 @@ const MusicShare = () => {
           >
             <Link to="/">
               <Sparkles className="w-5 h-5 mr-2" />
-              {t('share.createOwn')}
+              {t('common:share.createOwn')}
             </Link>
           </Button>
           <p className="text-[10px] text-muted-foreground">
-            Gratis para comecar - Sem compromisso
+            {t('briefing:preview.freeStart', 'Gratis para comecar - Sem compromisso')}
           </p>
         </div>
+
+        {/* Preview Completed Modal */}
+        <PreviewCompletedModal 
+          open={showPreviewModal} 
+          onOpenChange={setShowPreviewModal}
+        />
         </Card>
       </div>
     </>

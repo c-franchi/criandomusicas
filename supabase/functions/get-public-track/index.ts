@@ -64,7 +64,7 @@ serve(async (req) => {
     // Fetch order info for title/style/cover - song_title takes priority
     const { data: orderData } = await supabase
       .from("orders")
-      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric")
+      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric, is_preview, plan_id")
       .eq("id", orderId)
       .single();
 
@@ -110,12 +110,16 @@ serve(async (req) => {
       }
     })();
 
+    // Determine if this is a preview order
+    const isPreview = orderData?.is_preview === true || orderData?.plan_id === 'preview_test';
+
     return new Response(
       JSON.stringify({
         audio_url: trackData.audio_url,
         title,
         music_style: orderData?.music_style || "",
-        cover_url: orderData?.cover_url || null
+        cover_url: orderData?.cover_url || null,
+        is_preview: isPreview
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

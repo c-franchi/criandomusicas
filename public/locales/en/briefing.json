@@ -675,5 +675,28 @@
     "description": "You don't have credits available to create this music.",
     "message": "Purchase a package or subscription to continue creating music.",
     "buyButton": "View purchase options"
+  },
+  "preview": {
+    "warning": "⚠️ Attention: This is a TEST PREVIEW with a maximum duration of 40 seconds, created only to demonstrate the style and atmosphere of the music.",
+    "fullVersionNote": "To generate the full music, you will need to purchase credits.",
+    "generateButton": "Generate Preview",
+    "playingLabel": "Preview playing",
+    "playingDescription": "You are listening to a test version to understand the style of the music.",
+    "completedTitle": "Did you like what you heard?",
+    "completedDescription": "That was just a short preview.",
+    "fullVersionFeatures": "The full version can have:",
+    "featureFullLyrics": "Complete lyrics",
+    "featureMoreVerses": "More verses and chorus",
+    "featureProStructure": "Professional structure",
+    "featureFinalQuality": "Final quality for real use",
+    "createFullButton": "Create full music",
+    "buyCreditsButton": "Buy credits",
+    "usedNotice": "Your preview credit has been used. To continue creating music, purchase credits.",
+    "badge": "Preview (up to 40s)",
+    "freePreviewBadge": "🎁 Free preview",
+    "maxDuration": "up to 40s",
+    "freeStart": "Free to start - No commitment",
+    "downloadBlocked": "Download available only in the full version",
+    "shareNotice": "This is a test preview"
   }
 }

@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.sync-stripe-prices]
 verify_jwt = false
+
+[functions.grant-preview-credit]
+verify_jwt = false
