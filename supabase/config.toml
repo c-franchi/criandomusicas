@@ -80,3 +80,6 @@ verify_jwt = false
 
 [functions.grant-preview-credit]
 verify_jwt = false
+
+[functions.admin-update-order]
+verify_jwt = false
