@@ -50,11 +50,11 @@ const cardHoverVariants = {
   },
 };
 
-// Credits mapping for creator plans
+// Credits mapping for creator plans (fallback values)
 const CREATOR_CREDITS: Record<string, number> = {
-  'creator_start': 50,
+  'creator_start': 40,
   'creator_pro': 150,
-  'creator_studio': 300,
+  'creator_studio': 230,
 };
 
 interface CreatorPlan {
@@ -87,25 +87,25 @@ const CreatorSection = () => {
           setCreatorPlans(data.map(p => ({
             id: p.id,
             name: p.name,
-            credits: CREATOR_CREDITS[p.id] || 50,
+            credits: p.credits || CREATOR_CREDITS[p.id] || 40,
             price: p.price_promo_cents || p.price_cents,
             popular: p.is_popular || false,
           })));
         } else {
           // Fallback to default values if no data
           setCreatorPlans([
-            { id: 'creator_start', name: 'Creator Start', credits: 50, price: 2990, popular: false },
-            { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 4990, popular: true },
-            { id: 'creator_studio', name: 'Creator Studio', credits: 300, price: 7990, popular: false },
+            { id: 'creator_start', name: 'Creator Start', credits: 40, price: 4990, popular: false },
+            { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 8990, popular: true },
+            { id: 'creator_studio', name: 'Creator Studio', credits: 230, price: 11990, popular: false },
           ]);
         }
       } catch (error) {
         console.error('Error fetching creator plans:', error);
         // Fallback to default values
         setCreatorPlans([
-          { id: 'creator_start', name: 'Creator Start', credits: 50, price: 2990, popular: false },
-          { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 4990, popular: true },
-          { id: 'creator_studio', name: 'Creator Studio', credits: 300, price: 7990, popular: false },
+          { id: 'creator_start', name: 'Creator Start', credits: 40, price: 4990, popular: false },
+          { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 8990, popular: true },
+          { id: 'creator_studio', name: 'Creator Studio', credits: 230, price: 11990, popular: false },
         ]);
       } finally {
         setLoading(false);
