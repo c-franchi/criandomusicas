@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Trash2 } from "lucide-react";
+import { ExternalLink, Trash2, Clock } from "lucide-react";
 import { TFunction } from "i18next";
+import { isPreviewOrder } from "@/hooks/usePreviewCredit";
 
 interface Order {
   id: string;
@@ -20,6 +21,8 @@ interface Order {
   is_instrumental?: boolean;
   has_custom_lyric?: boolean;
   song_title?: string;
+  plan_id?: string;
+  is_preview?: boolean;
 }
 
 interface OrderCardProps {
@@ -39,6 +42,8 @@ export const OrderCard = ({
   getStatusText,
   setDeleteOrderId 
 }: OrderCardProps) => {
+  const isPreview = order.is_preview || isPreviewOrder(order.plan_id);
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -50,9 +55,20 @@ export const OrderCard = ({
         <Card className="p-4 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10 cursor-pointer">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg mb-1 break-words text-foreground group-hover:text-primary transition-colors">
-                {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
-              </h3>
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-lg break-words text-foreground group-hover:text-primary transition-colors">
+                  {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
+                </h3>
+                {isPreview && (
+                  <Badge 
+                    variant="outline" 
+                    className="text-[10px] px-1.5 py-0.5 gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 bg-amber-500/10 shrink-0"
+                  >
+                    <Clock className="w-2.5 h-2.5" />
+                    Preview
+                  </Badge>
+                )}
+              </div>
               <p className="text-sm text-muted-foreground mb-2">
                 {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
               </p>

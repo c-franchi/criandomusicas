@@ -269,14 +269,16 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, story, briefing, pronunciations = [] } = await req.json() as {
+    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false } = await req.json() as {
       orderId: string;
       story: string;
       briefing: BriefingData;
       pronunciations?: Pronunciation[];
+      isPreview?: boolean;
+      autoApprove?: boolean;
     };
 
-    console.log("generate-lyrics called with orderId:", orderId);
+    console.log("generate-lyrics called with orderId:", orderId, "isPreview:", isPreview, "autoApprove:", autoApprove);
 
     if (!orderId || !story) {
       return new Response(
@@ -292,6 +294,21 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Initialize Supabase client for order checks
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+    
+    // Check if order is a preview order from database
+    const { data: orderInfo } = await supabase
+      .from('orders')
+      .select('is_preview, plan_id, user_id')
+      .eq('id', orderId)
+      .single();
+    
+    const isPreviewOrder = isPreview || orderInfo?.is_preview || orderInfo?.plan_id === 'preview_test';
+    console.log("Order preview status:", isPreviewOrder);
 
     const {
       musicType = 'homenagem',
@@ -318,8 +335,12 @@ serve(async (req) => {
       term => !pronunciations.some(p => p.term === term)
     );
 
+    // For preview orders, use simplified structure
+    const previewStructure = ['intro', 'chorus'];
+    const effectiveStructure = isPreviewOrder ? previewStructure : structure;
+
     // Build structure tags based on user selection
-    const structureTags = structure.map(s => `[${s.charAt(0).toUpperCase() + s.slice(1)}]`).join(', ');
+    const structureTags = effectiveStructure.map(s => `[${s.charAt(0).toUpperCase() + s.slice(1)}]`).join(', ');
 
     // Map voice type to Portuguese description
     const voiceTypeMap: Record<string, string> = {
@@ -332,7 +353,32 @@ serve(async (req) => {
     };
     const voiceDescription = voiceTypeMap[voiceType] || 'voz feminina solo';
 
-    const systemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
+    // PREVIEW: Use special short prompt
+    const systemPrompt = isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA CURTA de música (20-40 segundos).
+
+REGRAS CRÍTICAS PARA PREVIEW:
+1. Gere APENAS uma estrutura CURTA: [Intro] + [Chorus]
+2. O [Intro] deve ter 2-4 versos instrumentais ou de abertura
+3. O [Chorus] deve ter NO MÁXIMO 4 linhas curtas e memoráveis
+4. NÃO inclua [Verse], [Bridge], [Outro] ou outras seções
+5. A música completa será ~20-40 segundos
+6. Estilo musical: ${style}
+7. Tipo de voz: ${voiceDescription}
+8. Emoção: ${emotion}
+
+⚠️ IMPORTANTE: Esta é uma PRÉVIA DE TESTE. Mantenha MUITO curta!
+
+FORMATO OBRIGATÓRIO:
+
+TÍTULO DA MÚSICA
+
+[Intro]
+(2-4 versos de abertura curtos)
+
+[Chorus]
+(MÁXIMO 4 linhas - refrão curto e impactante)
+
+[End]` : `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 REGRAS OBRIGATÓRIAS:
 1. Gere APENAS a letra final, sem comentários, explicações ou metadados
@@ -556,11 +602,6 @@ INSTRUÇÕES FINAIS:
       phonetic2 = applyPronunciations(processedBody2, pronunciations);
     }
 
-    // Save to Supabase
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
     // Insert lyrics with phonetic versions - use processedBody for display
     const { data: insertedLyrics, error: insertError } = await supabase
       .from('lyrics')
@@ -608,18 +649,10 @@ INSTRUÇÕES FINAIS:
       console.error("Error updating order status:", updateError);
     }
 
-    // Get user_id from order for push notification
-    const { data: orderData } = await supabase
-      .from('orders')
-      .select('user_id')
-      .eq('id', orderId)
-      .single();
-
-    // Send push notification that lyrics are ready
-    if (orderData?.user_id) {
+    // Send push notification that lyrics are ready (use orderInfo from earlier)
+    if (orderInfo?.user_id) {
       try {
         console.log("Sending push notification for lyrics ready...");
-        const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
         
         await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
           method: 'POST',
@@ -628,7 +661,7 @@ INSTRUÇÕES FINAIS:
             'Authorization': `Bearer ${supabaseKey}`
           },
           body: JSON.stringify({
-            user_id: orderData.user_id,
+            user_id: orderInfo.user_id,
             order_id: orderId,
             title: '✨ Letras prontas!',
             body: 'As letras da sua música foram geradas. Acesse para escolher sua favorita!',
