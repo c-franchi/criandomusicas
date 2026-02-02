@@ -1,38 +1,70 @@
 
-# Correção: Erro de Sintaxe JSON nas Traduções
+# Plano: Correção do Sistema de Crédito Preview para Usuários Antigos
 
-## Problema Identificado
+## Diagnóstico
 
-O arquivo `public/locales/pt-BR/home.json` contém um erro de sintaxe JSON que impede o carregamento de todas as traduções em português brasileiro.
+### O que está acontecendo:
+1. O trigger `grant_preview_credit` foi criado em **02/02/2026** (migração recente)
+2. Apenas usuários cadastrados **APÓS** essa data recebem o crédito automaticamente
+3. Todos os 9 usuários anteriores (tanto Google quanto email) NÃO têm o crédito preview
 
-## Causa
+### Dados encontrados:
+| Email | Provider | Crédito Preview |
+|-------|----------|-----------------|
+| trompeteweb@gmail.com | Google | **SIM** (02/02) |
+| mnartsdesign@gmail.com | Google | NÃO |
+| cbshinoselouvores@gmail.com | Google | NÃO |
+| franchitrader@gmail.com | Email | NÃO |
+| rogerinhovaz33@gmail.com | Email | NÃO |
+| ... outros 5 usuários | Ambos | NÃO |
 
-Falta uma **vírgula** na linha 19, após o fechamento do objeto `stats`:
+### Conclusão:
+- O sistema **ESTÁ FUNCIONANDO** para novos cadastros (incluindo Google OAuth)
+- O problema é que usuários **ANTIGOS** não foram contemplados retroativamente
 
-```text
-Linha 19: }       ← Falta vírgula aqui
-Linha 20: "previewBadge": "🎁 Novo!..."
+## Solução
+
+Criar uma migração SQL que concede crédito preview retroativamente para todos os usuários que não possuem.
+
+### Migração a criar:
+
+```sql
+-- Conceder credito preview retroativo para usuarios existentes
+INSERT INTO public.user_credits (user_id, plan_id, total_credits, used_credits, is_active)
+SELECT 
+  u.id,
+  'preview_test',
+  1,
+  0,
+  true
+FROM auth.users u
+WHERE NOT EXISTS (
+  SELECT 1 FROM public.user_credits uc 
+  WHERE uc.user_id = u.id AND uc.plan_id = 'preview_test'
+);
 ```
 
-## Correção Necessária
+## Arquivos a Modificar
 
-Adicionar a vírgula faltante na linha 19:
+| Tipo | Ação |
+|------|------|
+| Migração SQL | Criar nova migração para conceder créditos retroativos |
 
-```json
-"stats": {
-  "songs": "Músicas Criadas",
-  "time": "Tempo Médio",
-  "rating": "Avaliação"
-},                       // ← Adicionar vírgula
-"previewBadge": "🎁 Novo! Teste grátis antes de comprar",
+## Resultado Esperado
+
+Após a migração:
+- Todos os 9 usuários antigos receberão 1 crédito preview
+- Novos cadastros continuarão recebendo automaticamente via trigger
+- Sistema de preview funcionará para todos os usuários
+
+## Verificação
+
+Após aplicar a correção, executar:
+```sql
+SELECT COUNT(*) as total_users,
+       COUNT(uc.id) as users_with_preview
+FROM auth.users u
+LEFT JOIN user_credits uc ON u.id = uc.user_id AND uc.plan_id = 'preview_test';
 ```
 
-## Arquivo a Modificar
-
-| Arquivo | Mudança |
-|---------|---------|
-| `public/locales/pt-BR/home.json` | Adicionar vírgula na linha 19 |
-
-## Impacto da Correção
-
-Após a correção, todas as traduções em português serão carregadas corretamente e o site exibirá os textos traduzidos em vez das chaves i18n.
+Ambos valores devem ser iguais.
