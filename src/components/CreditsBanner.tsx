@@ -1,4 +1,4 @@
-import { ChevronRight, Crown, Music } from 'lucide-react';
+import { ChevronRight, Crown, Music, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,7 @@ interface CreditsBannerProps {
 
 export function CreditsBanner({ className = '', showBuyButton = true, compact = false }: CreditsBannerProps) {
   const { t } = useTranslation('common');
-  const { loading, hasCredits, totalCredits, subscriptionInfo } = useCredits();
+  const { loading, hasCredits, totalCredits, subscriptionInfo, previewCreditAvailable } = useCredits();
 
   if (loading) {
     return (
@@ -24,7 +24,11 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
     );
   }
 
-  if (!hasCredits) {
+  // Calculate display credits (include preview if available and no other credits)
+  const displayCredits = totalCredits > 0 ? totalCredits : (previewCreditAvailable ? 1 : 0);
+  const isOnlyPreview = totalCredits === 0 && previewCreditAvailable;
+
+  if (!hasCredits && !previewCreditAvailable) {
     if (!showBuyButton) return null;
     
     return (
@@ -49,9 +53,9 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
   if (compact) {
     return (
       <div className={`flex gap-2 flex-wrap items-center ${className}`}>
-        <Badge className="gap-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
+        <Badge className={`gap-1.5 ${isOnlyPreview ? 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30' : 'bg-primary/20 text-primary border-primary/30'} hover:opacity-80`}>
           <Music className="w-3 h-3" />
-          {totalCredits} {totalCredits === 1 ? 'crédito' : 'créditos'}
+          {isOnlyPreview ? '1 preview grátis' : `${displayCredits} ${displayCredits === 1 ? 'crédito' : 'créditos'}`}
         </Badge>
         {isFromSubscription && (
           <Badge variant="outline" className="gap-1 text-amber-500 border-amber-500/30">
@@ -73,11 +77,19 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
         </Badge>
       )}
       
-      <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
-        <Music className="w-3.5 h-3.5" />
-        <span className="font-semibold">{totalCredits}</span>
-        <span className="text-xs opacity-80">{totalCredits === 1 ? 'crédito' : 'créditos'}</span>
-      </Badge>
+      {isOnlyPreview ? (
+        <Badge className="gap-1.5 px-3 py-1.5 bg-emerald-500/20 text-emerald-600 border-emerald-500/30">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span className="font-semibold">1 preview grátis</span>
+          <span className="text-xs opacity-80">(40s)</span>
+        </Badge>
+      ) : (
+        <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
+          <Music className="w-3.5 h-3.5" />
+          <span className="font-semibold">{displayCredits}</span>
+          <span className="text-xs opacity-80">{displayCredits === 1 ? 'crédito' : 'créditos'}</span>
+        </Badge>
+      )}
       
       {showBuyButton && (
         <Button asChild size="sm" variant="default" className="rounded-full h-8 px-4">
