@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, memo } from "react";
+import { useState, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { ImageCardGrid } from "./ImageCardGrid";
 import { genreImages, voiceImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
+import { PreviewBanner } from "@/components/PreviewBanner";
 
 // Preload critical images on module load
 const preloadImages = () => {
@@ -46,6 +47,7 @@ interface QuickCreationProps {
   styleOptions: { id: string; label: string }[];
   voiceOptions: { id: string; label: string }[];
   credits?: number;
+  isPreviewMode?: boolean;
 }
 
 const QuickCreationComponent = ({ 
@@ -54,7 +56,8 @@ const QuickCreationComponent = ({
   onSwitchToDetailed,
   styleOptions,
   voiceOptions,
-  credits = 0
+  credits = 0,
+  isPreviewMode = false
 }: QuickCreationProps) => {
   const { t } = useTranslation('briefing');
   const [prompt, setPrompt] = useState("");
@@ -137,6 +140,11 @@ const QuickCreationComponent = ({
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto p-4 space-y-6">
+          {/* Preview Warning Banner */}
+          {isPreviewMode && (
+            <PreviewBanner variant="warning" showDuration={true} />
+          )}
+
           {/* Prompt Input - Dark Card Style */}
           <div className="bg-card/80 rounded-xl p-4 border border-border/30">
             <Textarea
@@ -290,7 +298,9 @@ const QuickCreationComponent = ({
             size="lg"
           >
             <Sparkles className="w-5 h-5 mr-2" />
-            {t('quickCreation.createButton', 'Criar Música')}
+            {isPreviewMode 
+              ? t('preview.generateButton', 'Gerar Preview')
+              : t('quickCreation.createButton', 'Criar Música')}
           </Button>
           
           <button

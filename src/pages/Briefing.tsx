@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import WhatsAppModal from "@/components/WhatsAppModal";
 import CreditsBanner from "@/components/CreditsBanner";
 import { useCredits, getPlanLabel } from "@/hooks/useCredits";
+import { usePreviewCredit } from "@/hooks/usePreviewCredit";
 import { useBriefingTranslations, INSTRUMENT_OPTIONS } from "@/hooks/useBriefingTranslations";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
@@ -2414,6 +2415,7 @@ const Briefing = () => {
 
   // Get credit info for plan selection badges
   const { totalVocal, totalInstrumental, hasCredits } = useCredits();
+  const { previewCreditAvailable } = usePreviewCredit();
   const hasVocalCredits = totalVocal > 0;
   const hasInstrumentalCredits = totalInstrumental > 0;
 
@@ -2870,6 +2872,7 @@ const Briefing = () => {
           styleOptions={styleOptions}
           voiceOptions={voiceTypeOptions}
           credits={totalVocal}
+          isPreviewMode={previewCreditAvailable && totalVocal === 0}
         />
         {/* WhatsApp Modal for quick creation */}
         {user?.id && (
