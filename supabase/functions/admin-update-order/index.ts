@@ -18,7 +18,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey } = body;
+    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey, musicStyle, musicType } = body;
     
     // Allow service role key or admin auth
     const authHeader = req.headers.get("Authorization");
@@ -71,6 +71,8 @@ serve(async (req) => {
     if (voucherCode !== undefined) updateData.voucher_code = voucherCode;
     if (discountApplied !== undefined) updateData.discount_applied = discountApplied;
     if (amount !== undefined) updateData.amount = amount;
+    if (musicStyle !== undefined) updateData.music_style = musicStyle;
+    if (musicType !== undefined) updateData.music_type = musicType;
 
     const { data, error } = await supabaseClient
       .from('orders')
