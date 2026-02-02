@@ -17,6 +17,8 @@
       "time": "Tempo Médio",
       "rating": "Avaliação"
     }
+    "previewBadge": "🎁 Novo! Teste grátis antes de comprar",
+    "previewSubtext": "Crie uma prévia de 40s da sua música"
   },
   "process": {
     "title": "Como",
@@ -42,6 +44,14 @@
       "savings16": "Economia de 16%",
       "bestSavings": "Maior economia",
       "viewPackages": "Ver Pacotes"
+    },
+    "preview": {
+      "title": "🎁 Preview Gratuito",
+      "description": "Crie sua conta e teste o sistema de graça! Você recebe 1 crédito para gerar uma prévia de até 40 segundos da sua música.",
+      "benefit1": "Sem compromisso",
+      "benefit2": "Conheça o estilo antes de comprar",
+      "benefit3": "Cadastro simples e rápido",
+      "cta": "Começar Grátis"
     }
   },
   "samples": {
