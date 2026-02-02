@@ -337,5 +337,14 @@
     "musicProductionSoon": "Producción de música (próximamente)",
     "goToDashboard": "Ir al Panel",
     "produceMusicSoon": "Producir Música (Próximamente)"
+  },
+  "preview": {
+    "badge": "Vista Previa",
+    "downloadBlocked": "Descarga bloqueada",
+    "downloadBlockedTitle": "🔒 Descarga no disponible",
+    "downloadBlockedDesc": "Esta es una vista previa de prueba. Adquiere créditos para descargar la canción completa.",
+    "buyCredits": "Comprar Créditos",
+    "createFull": "Crear Canción Completa",
+    "notice": "Esta es una vista previa de 40 segundos. Para descargar la versión completa con todos los versos y calidad final, adquiere créditos."
   }
 }

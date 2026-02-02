@@ -16,7 +16,9 @@
       "songs": "Canzoni Create",
       "time": "Tempo Medio",
       "rating": "Valutazione"
-    }
+    },
+    "previewBadge": "🎁 Nuovo! Prova gratis prima di acquistare",
+    "previewSubtext": "Crea un'anteprima di 40s della tua canzone"
   },
   "process": {
     "title": "Come",
@@ -42,6 +44,14 @@
       "savings16": "16% di risparmio",
       "bestSavings": "Maggior risparmio",
       "viewPackages": "Vedi Pacchetti"
+    },
+    "preview": {
+      "title": "🎁 Anteprima Gratuita",
+      "description": "Crea il tuo account e prova il sistema gratis! Ricevi 1 credito per generare un'anteprima fino a 40 secondi della tua canzone.",
+      "benefit1": "Senza impegno",
+      "benefit2": "Conosci lo stile prima di acquistare",
+      "benefit3": "Registrazione semplice e veloce",
+      "cta": "Inizia Gratis"
     }
   },
   "samples": {

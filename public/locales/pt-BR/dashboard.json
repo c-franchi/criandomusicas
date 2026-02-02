@@ -355,5 +355,14 @@
     "acceptedDesc": "O crédito foi adicionado à sua conta.",
     "errorTitle": "Erro ao aceitar",
     "errorDesc": "Tente novamente ou contate o suporte."
+  },
+  "preview": {
+    "badge": "Preview",
+    "downloadBlocked": "Download bloqueado",
+    "downloadBlockedTitle": "🔒 Download indisponível",
+    "downloadBlockedDesc": "Esta é uma prévia de teste. Adquira créditos para baixar a música completa.",
+    "buyCredits": "Comprar Créditos",
+    "createFull": "Criar Música Completa",
+    "notice": "Esta é uma prévia de 40 segundos. Para baixar a versão completa com todos os versos e qualidade final, adquira créditos."
   }
 }

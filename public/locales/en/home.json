@@ -16,7 +16,9 @@
       "songs": "Songs Created",
       "time": "Average Time",
       "rating": "Rating"
-    }
+    },
+    "previewBadge": "🎁 New! Try free before you buy",
+    "previewSubtext": "Create a 40s preview of your song"
   },
   "process": {
     "title": "How it",
@@ -42,6 +44,14 @@
       "savings16": "16% savings",
       "bestSavings": "Best savings",
       "viewPackages": "View Packages"
+    },
+    "preview": {
+      "title": "🎁 Free Preview",
+      "description": "Create your account and test the system for free! You get 1 credit to generate a preview of up to 40 seconds of your song.",
+      "benefit1": "No commitment",
+      "benefit2": "Know the style before buying",
+      "benefit3": "Quick and easy signup",
+      "cta": "Start Free"
     }
   },
   "samples": {

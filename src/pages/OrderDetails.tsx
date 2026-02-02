@@ -18,7 +18,9 @@ import {
   FileText,
   MessageCircle,
   Video,
-  Camera
+  Camera,
+  Lock,
+  ShoppingCart
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -27,6 +29,7 @@ import { supabase } from "@/integrations/supabase/client";
 import ReviewForm from "@/components/ReviewForm";
 import ReactionVideoUpload from "@/components/ReactionVideoUpload";
 import { formatLocalizedDate } from "@/lib/i18n-format";
+import { isPreviewOrder } from "@/hooks/usePreviewCredit";
 
 interface OrderData {
   id: string;
@@ -47,6 +50,8 @@ interface OrderData {
   cover_url: string | null;
   song_title: string | null;
   has_custom_lyric: boolean | null;
+  is_preview: boolean | null;
+  plan_id: string | null;
 }
 
 interface LyricData {
@@ -379,8 +384,8 @@ const OrderDetails = () => {
   const statusInfo = getStatusInfo();
   const approvedLyric = lyrics.find(l => l.is_approved);
   const isMusicReady = order.status === 'MUSIC_READY' || order.status === 'COMPLETED';
-
   const isInstrumental = order.is_instrumental === true;
+  const isPreview = isPreviewOrder(order.plan_id) || order.is_preview === true;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
@@ -400,6 +405,11 @@ const OrderDetails = () => {
               {isInstrumental && (
                 <Badge className="bg-purple-500/20 text-purple-600 border-purple-500/30">
                   {t('badges.instrumental')}
+                </Badge>
+              )}
+              {isPreview && (
+                <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
+                  {t('preview.badge', 'Preview')}
                 </Badge>
               )}
             </div>
@@ -473,18 +483,53 @@ const OrderDetails = () => {
                       {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                       {isPlaying ? t('orderDetails.music.pause') : t('orderDetails.music.play')}
                     </Button>
-                    <Button 
-                      onClick={downloadTrack}
-                      variant="outline"
-                      size="default"
-                      className="gap-2 flex-1 min-w-[120px]"
-                    >
-                      <Download className="w-4 h-4" />
-                      {t('orderDetails.music.download')}
-                    </Button>
+                    {isPreview ? (
+                      <Button 
+                        variant="outline"
+                        size="default"
+                        className="gap-2 flex-1 min-w-[120px] cursor-not-allowed opacity-60"
+                        disabled
+                      >
+                        <Lock className="w-4 h-4" />
+                        {t('preview.downloadBlocked', 'Download bloqueado')}
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={downloadTrack}
+                        variant="outline"
+                        size="default"
+                        className="gap-2 flex-1 min-w-[120px]"
+                      >
+                        <Download className="w-4 h-4" />
+                        {t('orderDetails.music.download')}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
+
+              {/* Preview Notice */}
+              {isPreview && (
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
+                  <p className="text-sm text-amber-700 dark:text-amber-400">
+                    {t('preview.notice', 'Esta é uma prévia de 40 segundos. Para baixar a versão completa com todos os versos e qualidade final, adquira créditos.')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm" className="gap-2">
+                      <Link to="/planos">
+                        <ShoppingCart className="w-4 h-4" />
+                        {t('preview.buyCredits', 'Comprar Créditos')}
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm" className="gap-2">
+                      <Link to="/briefing?type=vocal">
+                        <Music className="w-4 h-4" />
+                        {t('preview.createFull', 'Criar Música Completa')}
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Share Options */}
               <div className="pt-4 border-t border-border/50 space-y-3">
