@@ -18,7 +18,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey, musicStyle, musicType } = body;
+    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey, musicStyle, musicType, songTitle, voiceType, stylePrompt } = body;
     
     // Allow service role key or admin auth
     const authHeader = req.headers.get("Authorization");
@@ -31,10 +31,10 @@ serve(async (req) => {
       adminUserId = "service-role";
     } else if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "");
-      const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+      const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
       
-      if (!claimsError && claimsData?.claims?.sub) {
-        const userId = claimsData.claims.sub as string;
+      if (!userError && userData?.user?.id) {
+        const userId = userData.user.id;
         
         // Check if user is admin
         const { data: roleData } = await supabaseClient
@@ -73,6 +73,9 @@ serve(async (req) => {
     if (amount !== undefined) updateData.amount = amount;
     if (musicStyle !== undefined) updateData.music_style = musicStyle;
     if (musicType !== undefined) updateData.music_type = musicType;
+    if (songTitle !== undefined) updateData.song_title = songTitle;
+    if (voiceType !== undefined) updateData.voice_type = voiceType;
+    if (stylePrompt !== undefined) updateData.style_prompt = stylePrompt;
 
     const { data, error } = await supabaseClient
       .from('orders')
