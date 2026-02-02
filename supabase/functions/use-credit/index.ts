@@ -61,10 +61,10 @@ serve(async (req) => {
     const userEmail = claimsData.claims.email as string | undefined;
     logStep("User authenticated", { userId, orderId });
 
-    // Get order to verify ownership
+    // Get order to verify ownership and get details for notification
     const { data: orderData, error: orderFetchError } = await supabaseClient
       .from('orders')
-      .select('user_id')
+      .select('user_id, music_type, music_style, is_instrumental')
       .eq('id', orderId)
       .single();
     
@@ -75,6 +75,15 @@ serve(async (req) => {
     if (orderData.user_id !== userId) {
       throw new Error("Order does not belong to this user");
     }
+    
+    // Get user profile for notification
+    const { data: profileData } = await supabaseClient
+      .from('profiles')
+      .select('name')
+      .eq('user_id', userId)
+      .single();
+    
+    const userName = profileData?.name || userEmail || 'Cliente';
     
     logStep("Order verified", { orderId });
 
@@ -230,6 +239,23 @@ serve(async (req) => {
         orderId 
       });
 
+      // Notify admin about new order
+      try {
+        await supabaseClient.functions.invoke('notify-admin-order', {
+          body: {
+            orderId,
+            userId,
+            orderType: orderData.is_instrumental ? 'instrumental' : 'vocal',
+            userName,
+            musicType: orderData.music_style || orderData.music_type || 'personalizada',
+            isPixReceipt: false,
+          },
+        });
+        logStep("Admin notification sent");
+      } catch (notifyError) {
+        logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
+      }
+
       return new Response(JSON.stringify({
         success: true,
         message: "Crédito da assinatura utilizado com sucesso",
@@ -298,6 +324,23 @@ serve(async (req) => {
         newUsed: newUsedCredits, 
         remainingCredits: creditToUse.total_credits - newUsedCredits 
       });
+
+      // Notify admin about new order
+      try {
+        await supabaseClient.functions.invoke('notify-admin-order', {
+          body: {
+            orderId,
+            userId,
+            orderType: orderData.is_instrumental ? 'instrumental' : 'vocal',
+            userName,
+            musicType: orderData.music_style || orderData.music_type || 'personalizada',
+            isPixReceipt: false,
+          },
+        });
+        logStep("Admin notification sent");
+      } catch (notifyError) {
+        logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
+      }
 
       return new Response(JSON.stringify({
         success: true,
