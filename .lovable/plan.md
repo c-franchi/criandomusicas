@@ -1,104 +1,156 @@
 
-# Plano: Corrigir Tela Preta na Criação Rápida
+# Plano: Notificações Admin via E-mail + WhatsApp (TextMeBot)
 
-## Problema Identificado
+## Objetivo
 
-No `handleQuickCreationSubmit`, o estado `creationMode` é setado para `null` **antes** de:
-1. Verificar se o usuário tem WhatsApp
-2. Chamar `finishBriefingWithData` que seta `isCreatingOrder(true)`
+Implementar sistema de notificações alternativo para o admin usando:
+1. **E-mail** via Resend (já configurado)
+2. **WhatsApp** via TextMeBot API
 
-Como o modal de WhatsApp e o loading overlay estão renderizados **dentro** do bloco `creationMode === 'quick'`, quando `creationMode` vira `null`, tudo desaparece e a tela fica preta.
+## Secret Necessário
 
-## Arquivo a Modificar
+| Secret | Descrição |
+|--------|-----------|
+| `TEXTMEBOT_API_KEY` | Chave da API TextMeBot |
 
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/pages/Briefing.tsx` | Adiar `setCreationMode(null)` para o momento correto |
+## Arquivos a Modificar
 
-## Solução
+| Arquivo | Ação |
+|---------|------|
+| `supabase/functions/notify-admin-order/index.ts` | Adicionar e-mail + WhatsApp |
 
-Mover `setCreationMode(null)` para ser chamado **somente dentro** de `finishBriefingWithData`, garantindo que o loading overlay seja mostrado no momento certo.
+## Implementação
 
-### Alteração em handleQuickCreationSubmit (linhas 2493-2496)
-
-**ANTES:**
-```typescript
-setFormData(newFormData);
-setIsQuickMode(true);
-setCreationMode(null);  // ← BUG: remove a UI antes de mostrar loading/modal
-setQuickModeFormData(newFormData);
-```
-
-**DEPOIS:**
-```typescript
-setFormData(newFormData);
-setIsQuickMode(true);
-// NÃO setar creationMode aqui - será setado em finishBriefingWithData
-setQuickModeFormData(newFormData);
-```
-
-### Alteração em finishBriefingWithData (linha 2523-2525)
-
-**ANTES:**
-```typescript
-const finishBriefingWithData = async (data: BriefingFormData) => {
-  setIsCreatingOrder(true);
-  clearSavedBriefing();
-```
-
-**DEPOIS:**
-```typescript
-const finishBriefingWithData = async (data: BriefingFormData) => {
-  setIsCreatingOrder(true);
-  setCreationMode(null); // ← Agora sim, quando loading já está ativo
-  clearSavedBriefing();
-```
-
-## Fluxo Corrigido
+### Arquitetura do Sistema
 
 ```text
 ┌─────────────────────────────────────────────────────────────────┐
-│ 1. Usuário clica "Criar Música" (creationMode = 'quick')        │
+│              NOVO PEDIDO / PIX RECEBIDO                         │
 └─────────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│ 2. handleQuickCreationSubmit                                    │
-│    - setIsQuickMode(true)                                       │
-│    - NÃO altera creationMode (UI permanece visível)             │
-│    - Verifica WhatsApp                                          │
+│              notify-admin-order (Edge Function)                 │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │ 1. Push Notification (existente - pode falhar)             ││
+│  │ 2. E-mail via Resend ✅                                    ││
+│  │ 3. WhatsApp via TextMeBot ✅                               ││
+│  └─────────────────────────────────────────────────────────────┘│
 └─────────────────────────────────────────────────────────────────┘
-                              │
-             ┌────────────────┴────────────────┐
-             ▼                                 ▼
-┌──────────────────────────┐    ┌──────────────────────────┐
-│ Tem WhatsApp?            │    │ Sem WhatsApp?            │
-│ → finishBriefingWithData │    │ → showWhatsAppModal      │
-│   - isCreatingOrder=true │    │   (modal DENTRO do       │
-│   - creationMode=null    │    │   creationMode='quick')  │
-│   - Loading overlay      │    │   Modal é visível! ✓     │
-└──────────────────────────┘    └──────────────────────────┘
 ```
 
-## Resumo
+### Detalhes Técnicos
 
-| Linha | Ação | Descrição |
-|-------|------|-----------|
-| 2495 | REMOVER | `setCreationMode(null)` |
-| 2524 | ADICIONAR | `setCreationMode(null)` após `setIsCreatingOrder(true)` |
+**1. Serviço WhatsApp (TextMeBot)**
 
-## Benefícios
+```typescript
+// Função centralizada com boas práticas anti-ban
+async function sendWhatsAppMessage(phone: string, message: string): Promise<boolean> {
+  const apiKey = Deno.env.get("TEXTMEBOT_API_KEY");
+  if (!apiKey) {
+    console.error("[WhatsApp] API Key não configurada");
+    return false;
+  }
 
-1. **Modal de WhatsApp visível** - UI permanece enquanto modal é exibido
-2. **Loading overlay funciona** - Aparece dentro do Quick Creation
-3. **Transição suave** - UI só desaparece quando loading está ativo
-4. **Sem tela preta** - Sempre há algo renderizado
+  try {
+    const encodedMessage = encodeURIComponent(message);
+    const url = `https://api.textmebot.com/send.php?recipient=${phone}&apikey=${apiKey}&text=${encodedMessage}`;
+    
+    const response = await fetch(url);
+    const result = await response.text();
+    
+    console.log(`[WhatsApp] Enviado para ${phone}: ${result}`);
+    return response.ok;
+  } catch (error) {
+    console.error("[WhatsApp] Erro:", error);
+    return false;
+  }
+}
+```
+
+**2. E-mail via Resend**
+
+```typescript
+// Usando Resend já configurado
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+
+await resend.emails.send({
+  from: "Criando Músicas <noreply@criandomusicas.com.br>",
+  to: ["neizao.franchi@gmail.com"],
+  replyTo: "contato@criandomusicas.com.br",
+  subject: isPixReceipt 
+    ? `💰 Comprovante PIX - ${userName}` 
+    : `🎵 Novo Pedido - ${userName}`,
+  html: emailTemplate
+});
+```
+
+### Mensagens de Notificação
+
+**E-mail (HTML)**:
+```html
+<div style="font-family: Arial, sans-serif; padding: 20px;">
+  <h2 style="color: #8B5CF6;">🎵 Novo Pedido Recebido!</h2>
+  <p><strong>Cliente:</strong> {userName}</p>
+  <p><strong>Tipo:</strong> {musicType}</p>
+  <p><strong>Pedido:</strong> #{orderId}</p>
+  <a href="https://criandomusicas.lovable.app/admin" 
+     style="background: #8B5CF6; color: white; padding: 12px 24px; 
+            text-decoration: none; border-radius: 8px; display: inline-block;">
+    Abrir Painel Admin
+  </a>
+</div>
+```
+
+**WhatsApp (Texto)**:
+```text
+🎵 *Novo Pedido!*
+
+👤 Cliente: {userName}
+🎶 Tipo: {musicType}
+📋 Pedido: #{orderId}
+
+🔗 https://criandomusicas.lovable.app/admin
+```
+
+### Dados Fixos do Admin
+
+| Campo | Valor |
+|-------|-------|
+| E-mail | neizao.franchi@gmail.com |
+| WhatsApp | 5516997813038 |
+
+### Boas Práticas Implementadas
+
+| Prática | Implementação |
+|---------|---------------|
+| API Key em variável de ambiente | `TEXTMEBOT_API_KEY` |
+| Encode correto da mensagem | `encodeURIComponent()` |
+| Fallback de erro | Try/catch com log |
+| Estrutura modular | Função `sendWhatsAppMessage()` |
+| Sem loops automáticos | Envio único por evento |
+| Logs de envio | Console.log com status |
+
+### Fluxo de Fallback
+
+```text
+Evento (Novo Pedido/PIX)
+         │
+         ├─→ Push (pode falhar) ──→ Log
+         │
+         ├─→ E-mail (Resend) ────→ Log
+         │
+         └─→ WhatsApp (TextMeBot) → Log
+```
 
 ## Testes Necessários
 
-1. Acessar `/briefing?type=vocal` e preencher o formulário de criação rápida
-2. Clicar em "Criar Música"
-3. Verificar que:
-   - Se não tem WhatsApp: modal aparece corretamente
-   - Se tem WhatsApp: loading overlay aparece e prossegue
-4. Verificar que não há mais tela preta em nenhum cenário
+1. Criar pedido de teste no modo rápido
+2. Verificar e-mail no inbox do admin
+3. Verificar mensagem WhatsApp no celular do admin
+4. Testar upload de comprovante PIX
+5. Verificar logs da edge function
+
+## Próximo Passo
+
+Preciso da **API Key do TextMeBot** para configurar como secret. Se ainda não tiver, acesse https://textmebot.com para obter.
