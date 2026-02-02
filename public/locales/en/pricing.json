@@ -94,9 +94,9 @@
     },
     "creator_studio": {
       "name": "Creator Studio",
-      "description": "300 songs/month for professional studios",
+      "description": "230 songs/month for professional studios",
       "features": [
-        "300 songs per month",
+        "230 songs per month",
         "Professionally curated lyrics",
         "Thumbnail-ready covers",
         "Commercial use & monetization",
@@ -130,9 +130,9 @@
     },
     "creator_studio_instrumental": {
       "name": "Creator Studio Instrumental",
-      "description": "300 instrumentals/month for professional studios",
+      "description": "230 instrumentals/month for professional studios",
       "features": [
-        "300 instrumentals per month",
+        "230 instrumentals per month",
         "Custom arrangements",
         "Thumbnail-ready covers",
         "Commercial use & monetization",

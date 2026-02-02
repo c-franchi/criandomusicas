@@ -94,9 +94,9 @@
     },
     "creator_studio": {
       "name": "Creator Studio",
-      "description": "300 canzoni/mese per studi professionali",
+      "description": "230 canzoni/mese per studi professionali",
       "features": [
-        "300 canzoni al mese",
+        "230 canzoni al mese",
         "Testi curati professionalmente",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
@@ -130,9 +130,9 @@
     },
     "creator_studio_instrumental": {
       "name": "Creator Studio Instrumental",
-      "description": "300 strumentali/mese per studi professionali",
+      "description": "230 strumentali/mese per studi professionali",
       "features": [
-        "300 strumentali al mese",
+        "230 strumentali al mese",
         "Arrangiamenti personalizzati",
         "Copertine pronte per thumbnail",
         "Uso commerciale e monetizzazione",
