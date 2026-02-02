@@ -350,6 +350,7 @@ export type Database = {
           instruments: string[] | null
           is_confidential: boolean | null
           is_instrumental: boolean | null
+          is_preview: boolean | null
           mandatory_words: string | null
           monologue_position: string | null
           music_ready_at: string | null
@@ -398,6 +399,7 @@ export type Database = {
           instruments?: string[] | null
           is_confidential?: boolean | null
           is_instrumental?: boolean | null
+          is_preview?: boolean | null
           mandatory_words?: string | null
           monologue_position?: string | null
           music_ready_at?: string | null
@@ -446,6 +448,7 @@ export type Database = {
           instruments?: string[] | null
           is_confidential?: boolean | null
           is_instrumental?: boolean | null
+          is_preview?: boolean | null
           mandatory_words?: string | null
           monologue_position?: string | null
           music_ready_at?: string | null

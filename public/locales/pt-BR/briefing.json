@@ -675,5 +675,28 @@
     "description": "Você não possui créditos disponíveis para criar esta música.",
     "message": "Adquira um pacote ou assinatura para continuar criando músicas.",
     "buyButton": "Ver opções de compra"
+  },
+  "preview": {
+    "warning": "⚠️ Atenção: Este é um PREVIEW DE TESTE com duração máxima de 40 segundos, criado apenas para demonstrar o estilo e a atmosfera da música.",
+    "fullVersionNote": "Para gerar a música completa, será necessário adquirir créditos.",
+    "generateButton": "Gerar Preview",
+    "playingLabel": "Preview em reprodução",
+    "playingDescription": "Você está ouvindo uma versão de teste para conhecer o estilo da música.",
+    "completedTitle": "Gostou do que ouviu?",
+    "completedDescription": "Essa foi apenas uma prévia curta.",
+    "fullVersionFeatures": "A versão completa pode ter:",
+    "featureFullLyrics": "Letra completa",
+    "featureMoreVerses": "Mais versos e refrão",
+    "featureProStructure": "Estrutura profissional",
+    "featureFinalQuality": "Qualidade final para uso real",
+    "createFullButton": "Criar música completa",
+    "buyCreditsButton": "Comprar créditos",
+    "usedNotice": "Seu crédito de preview foi utilizado. Para continuar criando músicas, adquira créditos.",
+    "badge": "Preview (até 40s)",
+    "freePreviewBadge": "🎁 Preview grátis",
+    "maxDuration": "até 40s",
+    "freeStart": "Grátis para começar - Sem compromisso",
+    "downloadBlocked": "Download disponível apenas na versão completa",
+    "shareNotice": "Esta é uma prévia de teste"
   }
 }
