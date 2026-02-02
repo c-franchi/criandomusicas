@@ -11,6 +11,15 @@ const logStep = (step: string, details?: any) => {
   console.log(`[VALIDATE-VOUCHER] ${step}${detailsStr}`);
 };
 
+// Normalize plan ID variants to base tier for universal credits
+const normalizeToBasePlan = (planId: string): string => {
+  if (planId.startsWith('single')) return 'single';
+  if (planId.startsWith('package')) return 'package';
+  if (planId.startsWith('subscription')) return 'subscription';
+  if (planId.startsWith('creator_')) return planId; // Creator plans stay as-is
+  return planId;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -102,15 +111,23 @@ serve(async (req) => {
       });
     }
 
-    // Check plan restriction
-    if (voucher.plan_ids && voucher.plan_ids.length > 0 && !voucher.plan_ids.includes(planId)) {
-      return new Response(JSON.stringify({ 
-        valid: false, 
-        error: "Este voucher não é válido para o plano selecionado" 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    // Check plan restriction - normalize to base plan for universal credits
+    if (voucher.plan_ids && voucher.plan_ids.length > 0) {
+      const basePlanId = normalizeToBasePlan(planId);
+      const hasValidPlan = voucher.plan_ids.some((allowedPlan: string) => 
+        normalizeToBasePlan(allowedPlan) === basePlanId
+      );
+      
+      if (!hasValidPlan) {
+        logStep("Plan restriction failed", { planId, basePlanId, allowedPlans: voucher.plan_ids });
+        return new Response(JSON.stringify({ 
+          valid: false, 
+          error: "Este voucher não é válido para o plano selecionado" 
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      }
     }
 
     // Check if user already used this voucher too many times (if authenticated)

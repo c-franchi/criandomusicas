@@ -324,6 +324,16 @@ export default function Checkout() {
     processVIPAccess();
   }, [isVIP, vipLoading, order, user, navigate, processingVIP]);
 
+  // Calculate effective planId based on order type for universal credits
+  const getEffectivePlanId = (): string => {
+    if (!order) return currentPlanInfo?.id || 'single';
+    
+    if (order.has_custom_lyric) return 'single_custom_lyric';
+    if (order.is_instrumental) return 'single_instrumental';
+    
+    return currentPlanInfo?.id || 'single';
+  };
+
   const validateVoucher = async () => {
     if (!voucherCode.trim()) {
       toast.error(t('voucher.placeholder'));
@@ -334,8 +344,9 @@ export default function Checkout() {
     setVoucherResult(null);
 
     try {
+      const effectivePlanId = getEffectivePlanId();
       const { data, error } = await supabase.functions.invoke('validate-voucher', {
-        body: { code: voucherCode, planId: 'single' },
+        body: { code: voucherCode, planId: effectivePlanId },
       });
 
       if (error) throw error;
@@ -361,8 +372,9 @@ export default function Checkout() {
     setApplyingVoucher(true);
 
     try {
+      const effectivePlanId = getEffectivePlanId();
       const { data, error } = await supabase.functions.invoke('apply-voucher', {
-        body: { code: voucherCode, orderId: order.id, planId: 'single' },
+        body: { code: voucherCode, orderId: order.id, planId: effectivePlanId },
       });
 
       if (error) throw error;
