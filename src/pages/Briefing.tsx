@@ -2658,7 +2658,7 @@ const Briefing = () => {
         body: { orderType }
       });
       
-      if (creditsData?.has_credits && creditsData?.total_available > 0) {
+      if (creditsData?.has_credits && (creditsData?.total_available > 0 || creditsData?.preview_credit_available)) {
         const result = await supabase.functions.invoke('use-credit', {
           body: { orderId: orderData.id }
         });

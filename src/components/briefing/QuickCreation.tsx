@@ -1,6 +1,6 @@
 import { useState, useMemo, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette } from "lucide-react";
+import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,16 @@ import { ImageCardGrid } from "./ImageCardGrid";
 import { genreImages, voiceImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
 import { PreviewBanner } from "@/components/PreviewBanner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 // Preload critical images on module load
 const preloadImages = () => {
@@ -67,6 +77,7 @@ const QuickCreationComponent = ({
   const [showAdditionalGenre, setShowAdditionalGenre] = useState(false);
   const [voiceType, setVoiceType] = useState("");
   const [songName, setSongName] = useState("");
+  const [showNoTitleConfirm, setShowNoTitleConfirm] = useState(false);
 
   // Map style options with images
   const styleOptionsWithImages = useMemo(() => {
@@ -93,9 +104,7 @@ const QuickCreationComponent = ({
       }));
   }, [voiceOptions]);
 
-  const handleSubmit = () => {
-    if (!prompt.trim() || !style) return;
-    
+  const doSubmit = () => {
     onSubmit({
       prompt: prompt.trim(),
       isInstrumental,
@@ -104,6 +113,23 @@ const QuickCreationComponent = ({
       voiceType: isInstrumental ? undefined : voiceType,
       songName: songName.trim() || undefined,
     });
+  };
+
+  const handleSubmit = () => {
+    if (!prompt.trim() || !style) return;
+    
+    // Se não tem título, mostrar confirmação
+    if (!songName.trim()) {
+      setShowNoTitleConfirm(true);
+      return;
+    }
+    
+    doSubmit();
+  };
+
+  const handleConfirmNoTitle = () => {
+    setShowNoTitleConfirm(false);
+    doSubmit();
   };
 
   const handleReset = () => {
@@ -338,6 +364,29 @@ const QuickCreationComponent = ({
           </button>
         </div>
       </div>
+
+      {/* No Title Confirmation Dialog */}
+      <AlertDialog open={showNoTitleConfirm} onOpenChange={setShowNoTitleConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              {t('quickCreation.noTitleConfirm.title', 'Criar música sem título?')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('quickCreation.noTitleConfirm.description', 'Você não definiu um nome para sua música. Deseja que a IA gere um título automaticamente?')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t('quickCreation.noTitleConfirm.cancel', 'Voltar e adicionar título')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmNoTitle}>
+              {t('quickCreation.noTitleConfirm.confirm', 'Sim, gerar automaticamente')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

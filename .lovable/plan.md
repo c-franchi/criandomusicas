@@ -1,27 +1,34 @@
 
-# ✅ Correção Aplicada: Fluxo de Créditos Preview
+# ✅ Correções de Créditos Preview - CONCLUÍDO
 
-## Status: CONCLUÍDO
+## Correções Aplicadas
 
-A correção foi aplicada no `Briefing.tsx` linha 2222.
-
-**De:**
+### 1. Verificação de créditos no modo detalhado (linha 2222)
 ```javascript
-if (creditsData?.has_credits && creditsData?.total_available > 0) {
+// De:
+if (creditsData?.has_credits && creditsData?.total_available > 0)
+// Para:
+if (creditsData?.has_credits && (creditsData?.total_available > 0 || creditsData?.preview_credit_available))
 ```
 
-**Para:**
+### 2. Verificação de créditos no modo rápido (linha 2661)
 ```javascript
-if (creditsData?.has_credits && (creditsData?.total_available > 0 || creditsData?.preview_credit_available)) {
+// Mesma correção aplicada no fluxo finishBriefingWithData
 ```
 
-## Resultado
+### 3. Confirmação de título no modo rápido
+- Adicionado AlertDialog no QuickCreation.tsx
+- Pergunta ao usuário se deseja gerar título automaticamente
+- Opções: "Voltar e adicionar título" ou "Sim, gerar automaticamente"
 
-Agora usuários com apenas crédito preview conseguirão:
-1. Completar o briefing normalmente
-2. Ter o crédito preview consumido automaticamente
-3. Gerar sua música de 40s de teste
+## Status Final
 
-A priorização de créditos continua funcionando:
-- Créditos normais são usados primeiro
-- Preview credit só é usado quando não há créditos regulares
+✅ Crédito preview funciona em AMBOS os modos:
+- Criação Rápida (QuickCreation)
+- Criação Detalhada (Briefing completo)
+
+✅ Modal de confirmação de título adicionado no modo rápido
+
+## Priorização de Créditos (inalterada)
+1. Créditos normais (pacotes/assinaturas)
+2. Preview credit (fallback)
