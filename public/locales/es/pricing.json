@@ -94,9 +94,9 @@
     },
     "creator_studio": {
       "name": "Creator Studio",
-      "description": "300 canciones/mes para estudios profesionales",
+      "description": "230 canciones/mes para estudios profesionales",
       "features": [
-        "300 canciones por mes",
+        "230 canciones por mes",
         "Letras curadas profesionalmente",
         "Portadas listas para miniaturas",
         "Uso comercial y monetización",
@@ -130,9 +130,9 @@
     },
     "creator_studio_instrumental": {
       "name": "Creator Studio Instrumental",
-      "description": "300 instrumentales/mes para estudios profesionales",
+      "description": "230 instrumentales/mes para estudios profesionales",
       "features": [
-        "300 instrumentales por mes",
+        "230 instrumentales por mes",
         "Arreglos personalizados",
         "Portadas listas para miniaturas",
         "Uso comercial y monetización",
