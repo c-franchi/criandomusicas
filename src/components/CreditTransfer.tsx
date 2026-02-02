@@ -143,10 +143,29 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         },
       });
 
-      if (error) throw error;
+      // Handle edge function errors - extract message from response
+      if (error) {
+        // Try to parse error context for detailed message
+        const errorContext = (error as any)?.context;
+        if (errorContext?.body) {
+          try {
+            const parsed = JSON.parse(errorContext.body);
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
+          } catch (parseErr) {
+            // If parsing fails, use original error
+          }
+        }
+        throw error;
+      }
 
-      if (!data.success) {
-        throw new Error(data.error || 'Erro ao transferir créditos');
+      if (!data?.success) {
+        // Check for rate limit info
+        if (data?.daysRemaining) {
+          throw new Error(`Você só pode transferir 1 crédito a cada 15 dias. Próxima transferência em ${data.daysRemaining} dia(s).`);
+        }
+        throw new Error(data?.error || 'Erro ao transferir créditos');
       }
 
       if (shareMode === 'code') {
