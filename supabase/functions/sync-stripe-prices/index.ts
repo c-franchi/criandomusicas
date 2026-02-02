@@ -19,10 +19,10 @@ const PLAN_PRODUCT_CONFIG: Record<string, { name: string; description: string; t
   'package': { name: '3 Créditos Universais', description: 'Pacote com 3 créditos para criação de músicas', type: 'one_time', credits: 3 },
   'subscription': { name: '5 Créditos Universais', description: 'Pacote com 5 créditos para criação de músicas', type: 'one_time', credits: 5 },
   // Creator subscriptions
-  'creator_start': { name: 'Creator Start', description: 'Plano mensal com 50 créditos para criadores', type: 'recurring', credits: 50 },
+  'creator_start': { name: 'Creator Start', description: 'Plano mensal com 40 créditos para criadores', type: 'recurring', credits: 40 },
   'creator_pro': { name: 'Creator Pro', description: 'Plano mensal com 150 créditos para criadores profissionais', type: 'recurring', credits: 150 },
-  'creator_studio': { name: 'Creator Studio', description: 'Plano mensal com 300 créditos para estúdios', type: 'recurring', credits: 300 },
-  // Instrumental variants
+  'creator_studio': { name: 'Creator Studio', description: 'Plano mensal com 230 créditos para estúdios', type: 'recurring', credits: 230 },
+  // Instrumental variants (legacy - inactive)
   'creator_start_instrumental': { name: 'Creator Start Instrumental', description: 'Plano mensal com 50 créditos instrumentais', type: 'recurring', credits: 50 },
   'creator_pro_instrumental': { name: 'Creator Pro Instrumental', description: 'Plano mensal com 150 créditos instrumentais', type: 'recurring', credits: 150 },
   'creator_studio_instrumental': { name: 'Creator Studio Instrumental', description: 'Plano mensal com 300 créditos instrumentais', type: 'recurring', credits: 300 },

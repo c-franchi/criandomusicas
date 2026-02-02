@@ -14,9 +14,9 @@ const logStep = (step: string, details?: Record<string, unknown>) => {
 
 // Fallback map for plan credits (used when DB doesn't have the info)
 const PLAN_CREDITS: Record<string, { credits: number; name: string }> = {
-  'creator_start': { credits: 50, name: 'Creator Start' },
+  'creator_start': { credits: 40, name: 'Creator Start' },
   'creator_pro': { credits: 150, name: 'Creator Pro' },
-  'creator_studio': { credits: 300, name: 'Creator Studio' },
+  'creator_studio': { credits: 230, name: 'Creator Studio' },
   'creator_start_instrumental': { credits: 50, name: 'Creator Start Instrumental' },
   'creator_pro_instrumental': { credits: 150, name: 'Creator Pro Instrumental' },
   'creator_studio_instrumental': { credits: 300, name: 'Creator Studio Instrumental' },
@@ -43,10 +43,10 @@ serve(async (req) => {
       throw new Error("Invalid plan ID");
     }
 
-    // Fetch stripe_price_id from database
+    // Fetch stripe_price_id and credits from database
     const { data: pricingConfig, error: pricingError } = await supabaseClient
       .from('pricing_config')
-      .select('stripe_price_id, price_cents, price_promo_cents, name')
+      .select('stripe_price_id, price_cents, price_promo_cents, name, credits')
       .eq('id', planId)
       .eq('is_active', true)
       .maybeSingle();
@@ -61,13 +61,15 @@ serve(async (req) => {
       throw new Error("Este plano não está configurado corretamente. Por favor, contate o suporte.");
     }
 
+    // Use credits from database, fallback to hardcoded values
+    const dbCredits = pricingConfig.credits ?? planCredits.credits;
     const planConfig = {
       priceId: pricingConfig.stripe_price_id,
-      credits: planCredits.credits,
+      credits: dbCredits,
       name: pricingConfig.name || planCredits.name,
     };
     
-    logStep("Plan selected", { planId, ...planConfig, voucherCode: voucherCode || 'none' });
+    logStep("Plan selected from database", { planId, ...planConfig, voucherCode: voucherCode || 'none' });
 
     // Retrieve authenticated user
     const authHeader = req.headers.get("Authorization");
