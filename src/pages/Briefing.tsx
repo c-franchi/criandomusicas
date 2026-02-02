@@ -1996,7 +1996,10 @@ const Briefing = () => {
     // Check credits immediately and show modal if none available
     try {
       const { data: creditsData } = await supabase.functions.invoke('check-credits');
-      if (!creditsData?.has_credits || creditsData?.total_available <= 0) {
+      const hasAnyCredit = creditsData?.has_credits || 
+                           creditsData?.total_available > 0 || 
+                           creditsData?.preview_credit_available === true;
+      if (!hasAnyCredit) {
         // No credits - show modal immediately with confirmation screen
         setIsTyping(false);
         setShowConfirmation(true);

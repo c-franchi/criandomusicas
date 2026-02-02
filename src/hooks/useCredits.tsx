@@ -110,7 +110,7 @@ export function useCredits() {
 
       setState({
         loading: false,
-        hasCredits: totalCredits > 0,
+        hasCredits: totalCredits > 0 || (data.preview_credit_available === true),
         totalCredits: totalCredits,
         // Backwards compatibility - all fields show the same universal total
         totalAvailable: totalCredits,
