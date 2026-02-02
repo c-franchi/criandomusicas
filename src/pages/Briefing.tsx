@@ -2264,55 +2264,39 @@ const Briefing = () => {
         clearSavedBriefing();
         navigate('/dashboard');
       } else if (isQuickMode) {
-        // MODO RÁPIDO: gerar letra + aprovar automaticamente
-        toast({
-          title: '✨ ' + t('quickCreation.generatingLyrics', 'Gerando letra...'),
-          description: t('quickCreation.wait', 'Aguarde alguns segundos.'),
-        });
+        // MODO RÁPIDO: Enviar pedido e ir pro dashboard imediatamente
+        // O admin gera a música depois e envia pro usuário
         
-        // 1. Gerar letras
-        console.log('Generating lyrics for quick mode...');
-        await supabase.functions.invoke('generate-lyrics', {
-          body: {
-            orderId,
-            story: briefing.story,
-            briefing
-          }
-        });
-        
-        // 2. Mostrar progresso e aguardar
-        toast({
-          title: '📝 ' + t('quickCreation.approvingAuto', 'Aprovando automaticamente...'),
-          description: t('quickCreation.almostThere', 'Quase lá!'),
-        });
-        
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        const { data: lyricsData } = await supabase
-          .from('lyrics')
-          .select('*')
-          .eq('order_id', orderId)
-          .order('created_at', { ascending: true })
-          .limit(1);
-        
-        if (lyricsData?.[0]) {
-          // 3. Aprovar automaticamente
-          console.log('Auto-approving first lyric...');
-          await supabase.functions.invoke('generate-style-prompt', {
+        try {
+          // Atualizar status do pedido
+          await supabase
+            .from('orders')
+            .update({ 
+              status: 'LYRICS_PENDING',
+              payment_status: 'PAID'
+            })
+            .eq('id', orderId);
+          
+          // Disparar geração de letra em background (não esperar)
+          console.log('Starting background lyrics generation for quick mode...');
+          supabase.functions.invoke('generate-lyrics', {
             body: {
               orderId,
-              lyricId: lyricsData[0].id,
-              approvedLyrics: lyricsData[0].body,
-              songTitle: lyricsData[0].title || 'Música Personalizada',
-              briefing
+              story: briefing.story,
+              briefing,
+              autoApprove: true
             }
+          }).catch(err => {
+            console.error('Background lyrics generation error:', err);
           });
-        } else {
-          console.log('No lyrics found yet, redirecting to dashboard anyway...');
+          
+        } catch (err) {
+          console.error('Quick mode processing error:', err);
         }
         
+        // Redirecionar imediatamente para o dashboard
         toast({
-          title: '🎵 ' + t('quickCreation.inProduction', 'Música em produção!'),
+          title: '🎵 ' + t('quickCreation.inProduction', 'Pedido enviado!'),
           description: t('quickCreation.deliveryNotice', 'Você receberá sua música em até 12 horas. Acompanhe no dashboard.'),
         });
         clearSavedBriefing();
