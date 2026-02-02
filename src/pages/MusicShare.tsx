@@ -224,30 +224,30 @@ const MusicShare = () => {
           </Button>
         </div>
 
-          {/* CTA */}
-          <div className="pt-4 sm:pt-6 border-t space-y-3">
-            <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-              <Shield className="w-3 h-3" />
-              <span>Site oficial verificado</span>
-            </div>
-            <p className="text-sm font-medium text-foreground">
-              {t('share.wantToCreate')}
-            </p>
-            <Button 
-              asChild 
-              variant="hero" 
-              className="w-full h-12 sm:h-14 text-base sm:text-lg font-bold shadow-lg"
-              onClick={() => trackEvent('cta_click')}
-            >
-              <Link to="/">
-                <Sparkles className="w-5 h-5 mr-2" />
-                {t('share.createOwn')}
-              </Link>
-            </Button>
-            <p className="text-[10px] text-muted-foreground">
-              Grátis para começar • Sem compromisso
-            </p>
+        {/* CTA */}
+        <div className="pt-4 sm:pt-6 border-t space-y-3">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+            <Shield className="w-3 h-3" />
+            <span>Site oficial verificado</span>
           </div>
+          <p className="text-sm font-medium text-foreground">
+            {t('share.wantToCreate')}
+          </p>
+          <Button 
+            asChild 
+            variant="hero" 
+            className="w-full h-12 sm:h-14 text-base sm:text-lg font-bold shadow-lg"
+            onClick={() => trackEvent('cta_click')}
+          >
+            <Link to="/">
+              <Sparkles className="w-5 h-5 mr-2" />
+              {t('share.createOwn')}
+            </Link>
+          </Button>
+          <p className="text-[10px] text-muted-foreground">
+            Gratis para comecar - Sem compromisso
+          </p>
+        </div>
         </Card>
       </div>
     </>
