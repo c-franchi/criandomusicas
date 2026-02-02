@@ -1,83 +1,69 @@
 
-# Plano: Corrigir Sistema de Crédito Preview para Novos Usuários
 
-## Problema Identificado
+# Plano: Mensagem "Em Breve" para Sistema de Créditos de Vídeo
 
-O usuário `historiasemconto@gmail.com` **TEM** o crédito preview no banco de dados:
-- `plan_id: preview_test`
-- `total_credits: 1`
-- `used_credits: 0`
-- `is_active: true`
+## Diagnóstico Atual
 
-Porém, o sistema mostra "Créditos insuficientes" porque:
+O sistema de vídeos **NÃO** utiliza créditos atualmente:
 
-1. **Edge Function `check-credits`** (linha 104): O crédito preview é **excluído** do `total_credits`
-2. **Hook `useCredits`** (linha 113): Define `hasCredits: totalCredits > 0` = `false`
-3. **Briefing.tsx** (linha 1999): Verifica `!has_credits` e mostra modal de erro
+| Aspecto | Implementação Atual |
+|---------|---------------------|
+| Pagamento | R$ 50,00 via Stripe ou PIX |
+| Créditos | Não implementado |
+| Fluxo | VideoCheckout → Pagamento → VideoUpload |
 
-## Solução
-
-Modificar a lógica para considerar o crédito preview como válido para criação de música.
-
-### Mudança 1: Hook `useCredits.tsx`
-
-Atualizar a linha 113 para incluir preview:
+### Código relevante encontrado:
 
 ```typescript
-// ANTES
-hasCredits: totalCredits > 0,
-
-// DEPOIS  
-hasCredits: totalCredits > 0 || (data.preview_credit_available === true),
+// VideoCheckout.tsx - linha 121
+amount: 5000, // R$ 50 (valor fixo)
+status: 'AWAITING_PAYMENT',
+payment_status: 'PENDING'
 ```
 
-### Mudança 2: Verificação no Briefing.tsx
+O sistema de vídeos funciona **separadamente** do sistema de créditos de música.
 
-Atualizar a verificação na linha 1999:
+## Solução Proposta
 
-```typescript
-// ANTES
-if (!creditsData?.has_credits || creditsData?.total_available <= 0) {
+Adicionar uma mensagem informativa na seção de vídeos indicando que o sistema de créditos para vídeos está **em desenvolvimento**.
 
-// DEPOIS
-const hasAnyCredit = creditsData?.has_credits || 
-                     creditsData?.total_available > 0 || 
-                     creditsData?.preview_credit_available === true;
-if (!hasAnyCredit) {
-```
-
-### Mudança 3: Exibição de Créditos no Dashboard/Perfil
-
-No `CreditsManagement.tsx` e `CreditsBanner.tsx`, mostrar que o usuário tem 1 crédito preview disponível quando `previewCreditAvailable` é true.
-
-## Arquivos a Modificar
+### Arquivo a Modificar
 
 | Arquivo | Mudança |
 |---------|---------|
-| `src/hooks/useCredits.tsx` | Incluir preview no `hasCredits` |
-| `src/pages/Briefing.tsx` | Verificar `preview_credit_available` |
-| `src/components/CreditsBanner.tsx` | Mostrar crédito preview |
-| `src/components/CreditsManagement.tsx` | Exibir crédito preview na listagem |
+| `src/components/VideoServiceSection.tsx` | Adicionar badge "Em breve: use seus créditos!" |
 
-## Fluxo Corrigido
+### Implementação
 
-```text
-Novo Usuário → Login Google
-       ↓
-Trigger banco → Cria crédito preview_test
-       ↓
-check-credits → Retorna preview_credit_available: true
-       ↓
-useCredits → hasCredits: true (inclui preview)
-       ↓
-Briefing → Permite criar música (preview 40s)
-       ↓
-Dashboard → Mostra "1 crédito preview disponível"
+Adicionar um aviso discreto abaixo do preço ou no CTA:
+
+```typescript
+// Adicionar após o card de preço
+<div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 max-w-2xl mx-auto mb-4">
+  <div className="flex items-center gap-2 justify-center">
+    <Sparkles className="w-4 h-4 text-amber-500" />
+    <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+      Em breve: use seus créditos para criar vídeos!
+    </p>
+  </div>
+  <p className="text-xs text-muted-foreground text-center mt-1">
+    Estamos implementando o sistema de créditos para vídeos.
+  </p>
+</div>
 ```
 
-## Resultado Esperado
+## Resultado Visual
 
-- Usuários com apenas crédito preview podem criar músicas
-- UI mostra claramente que é um crédito de preview (40 segundos)
-- Modal "Créditos insuficientes" não aparece para usuários com preview disponível
-- Após usar o preview, sistema redireciona para compra
+O usuário verá:
+- O serviço de vídeo funcionando normalmente (pagamento R$ 50)
+- Um aviso amigável sobre a futura integração com créditos
+- Expectativa clara de que a funcionalidade está em desenvolvimento
+
+## Próximos Passos (Futuro)
+
+Quando decidir implementar créditos para vídeos:
+1. Definir quantos créditos = 1 vídeo
+2. Modificar `VideoCheckout.tsx` para verificar créditos antes do pagamento
+3. Criar opção: "Usar créditos" ou "Pagar R$ 50"
+4. Adaptar Edge Function `use-credit` para aceitar pedidos de vídeo
+
