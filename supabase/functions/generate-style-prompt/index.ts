@@ -149,6 +149,103 @@ function applyPronunciations(text: string, pronunciations: Pronunciation[]): str
   return result;
 }
 
+// ============ FORMATAÇÃO PARA LETRA PRÓPRIA (CUSTOM LYRICS) ============
+// REGRA CRÍTICA: NUNCA remover conteúdo da letra do usuário
+// Apenas adicionar tags estruturais se não existirem
+function formatCustomLyricsForSuno(customLyrics: string): string {
+  // Check if lyrics already have SUNO structural tags
+  const hasStructuralTags = /\[(Intro|Verse|Chorus|Bridge|Outro|Hook|Pre-Chorus|Post-Chorus|Interlude|Break|End)\]/i.test(customLyrics);
+  
+  if (hasStructuralTags) {
+    // Already has structure, just clean up formatting
+    console.log("Custom lyrics already have structural tags, preserving as-is");
+    return customLyrics.trim();
+  }
+  
+  // No structural tags - add basic structure while PRESERVING ALL CONTENT
+  console.log("Custom lyrics missing structural tags, adding basic structure");
+  
+  // Split lyrics into paragraphs/stanzas
+  const paragraphs = customLyrics
+    .split(/\n\s*\n+/) // Split by blank lines
+    .map(p => p.trim())
+    .filter(p => p.length > 0);
+  
+  if (paragraphs.length === 0) {
+    return customLyrics.trim();
+  }
+  
+  // Build structured lyrics preserving ALL original content
+  const structuredParts: string[] = [];
+  
+  // Add intro if first paragraph is short (less than 4 lines)
+  let verseCount = 1;
+  let addedChorus = false;
+  
+  paragraphs.forEach((para, index) => {
+    const lines = para.split('\n').filter(l => l.trim());
+    const lineCount = lines.length;
+    
+    // Detect potential chorus (repeated or shorter sections after verses)
+    const isShortSection = lineCount <= 4;
+    const isAfterVerse = verseCount > 1;
+    
+    if (index === 0 && lineCount <= 3) {
+      // Short first section -> Intro
+      structuredParts.push(`[Intro]\n${para}`);
+    } else if (!addedChorus && isShortSection && isAfterVerse) {
+      // First short section after a verse -> Chorus
+      structuredParts.push(`[Chorus]\n${para}`);
+      addedChorus = true;
+    } else if (addedChorus && para === paragraphs[paragraphs.indexOf(paragraphs.find(p => 
+      structuredParts.some(s => s.includes('[Chorus]') && s.includes(p))
+    ) || '')]) {
+      // Repeated chorus
+      structuredParts.push(`[Chorus]\n${para}`);
+    } else {
+      // Regular verse
+      structuredParts.push(`[Verse ${verseCount}]\n${para}`);
+      verseCount++;
+    }
+  });
+  
+  // Ensure there's at least one [Chorus] if we have multiple sections
+  if (!addedChorus && structuredParts.length > 1) {
+    // Find the shortest section and mark it as chorus
+    let shortestIdx = 1;
+    let shortestLen = Infinity;
+    structuredParts.forEach((part, idx) => {
+      if (idx === 0) return; // Skip intro
+      const len = part.split('\n').length;
+      if (len < shortestLen) {
+        shortestLen = len;
+        shortestIdx = idx;
+      }
+    });
+    
+    if (shortestIdx > 0) {
+      const content = structuredParts[shortestIdx].replace(/\[Verse \d+\]\n/, '');
+      structuredParts[shortestIdx] = `[Chorus]\n${content}`;
+    }
+  }
+  
+  const result = structuredParts.join('\n\n');
+  console.log("Formatted custom lyrics, original length:", customLyrics.length, "formatted length:", result.length);
+  
+  // SAFETY CHECK: Ensure we didn't lose content
+  const originalWords = customLyrics.toLowerCase().replace(/[^a-záàâãéèêíïóôõöúçñ\s]/gi, '').split(/\s+/).filter(w => w.length > 2);
+  const formattedWords = result.toLowerCase().replace(/[^a-záàâãéèêíïóôõöúçñ\s]/gi, '').split(/\s+/).filter(w => w.length > 2);
+  
+  const missingWords = originalWords.filter(w => !formattedWords.includes(w));
+  if (missingWords.length > 0) {
+    console.error("WARNING: Formatting lost some words! Missing:", missingWords.slice(0, 10));
+    // Return original if we lost content
+    return `[Verse 1]\n${customLyrics.trim()}`;
+  }
+  
+  return result;
+}
+
 // Detectar termos críticos sem pronúncia
 function detectCriticalTerms(text: string): string[] {
   const patterns = [
@@ -237,6 +334,11 @@ serve(async (req) => {
           .single();
         lyricsContent = orderWithStory?.story || '';
         console.log("Fetched lyrics from story, length:", lyricsContent?.length || 0);
+        
+        // Format custom lyrics for SUNO structure (preserving ALL content)
+        if (lyricsContent) {
+          lyricsContent = formatCustomLyricsForSuno(lyricsContent);
+        }
       }
       
       // Formatar com tag [Lyrics] para o Admin Dashboard exibir corretamente
@@ -612,8 +714,16 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
       }
 
       // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
-      // Aplicar regras globais de pronúncia a TODA a letra
+      // Para letra própria (custom lyrics), formatar preservando TODO o conteúdo
       let lyricsForGeneration2 = approvedLyrics || '';
+      
+      // Check if this is a custom lyric order by checking the lyricId or order data
+      const isCustomLyricOrder = lyricId === 'custom' || existingOrder?.has_custom_lyric;
+      
+      if (isCustomLyricOrder) {
+        console.log("Processing custom lyrics order - formatting for SUNO while preserving ALL content");
+        lyricsForGeneration2 = formatCustomLyricsForSuno(lyricsForGeneration2);
+      }
       
       // 1. Aplicar regras globais de pronúncia (telefones, URLs, siglas)
       lyricsForGeneration2 = applyGlobalPronunciationRules(lyricsForGeneration2);
