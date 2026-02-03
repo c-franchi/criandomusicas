@@ -393,6 +393,7 @@ export const useBriefingTranslations = () => {
     { id: "forro", label: t('steps.style.forro') },
     { id: "pagode", label: t('steps.style.pagode') },
     { id: "gospel", label: t('steps.style.gospel') },
+    { id: "reggae", label: t('steps.style.reggae') },
     { id: "bossa", label: t('steps.style.bossa') },
     { id: "ambiente", label: t('steps.style.ambiente') },
     { id: "outros", label: t('steps.style.outros') }
@@ -405,6 +406,7 @@ export const useBriefingTranslations = () => {
     { id: "rock", label: t('steps.style.rock') },
     { id: "mpb", label: t('steps.style.mpb') },
     { id: "gospel", label: t('steps.style.gospel') },
+    { id: "reggae", label: t('steps.style.reggae') },
     { id: "bossa", label: t('steps.style.bossa') },
     { id: "outros", label: t('steps.style.outros') }
   ];

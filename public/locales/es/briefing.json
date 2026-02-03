@@ -683,5 +683,57 @@
     "freeStart": "Gratis para empezar - Sin compromiso",
     "downloadAllowed": "Puedes descargar esta vista previa",
     "shareNotice": "Esta es una vista previa de prueba"
+  },
+  "tour": {
+    "buttons": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "done": "¡Entendido!"
+    },
+    "progress": "{{current}} de {{total}}",
+    "quickMode": {
+      "welcome": {
+        "title": "🚀 Modo Creación Rápida",
+        "description": "¡Este es el modo más rápido para crear tu música! Te mostraremos cómo funciona."
+      },
+      "prompt": {
+        "title": "📝 Cuenta tu historia",
+        "description": "Escribe aquí lo que quieres en tu música: la historia, los sentimientos, nombres importantes, momentos especiales... ¡Cuantos más detalles, mejor la letra!"
+      },
+      "genre": {
+        "title": "🎵 Elige el género",
+        "description": "Selecciona el estilo musical que combina con tu música. ¡Toca el ícono de cuadrícula para ver todas las opciones!"
+      },
+      "instrumental": {
+        "title": "🎹 Instrumental",
+        "description": "Activa si quieres una música sin voz, solo instrumental."
+      },
+      "create": {
+        "title": "✨ Crear Música",
+        "description": "Cuando todo esté listo, ¡haz clic aquí! Tu música estará lista en hasta 12 horas, sin necesidad de aprobar la letra."
+      },
+      "detailed": {
+        "title": "📝 ¿Quieres más control?",
+        "description": "Si prefieres elegir voz, instrumentos y aprobar la letra antes, ¡usa el \"Modo Completo\" haciendo clic aquí!"
+      },
+      "finish": {
+        "title": "¡Listo! 🎉",
+        "description": "Ahora solo cuenta tu historia y crea tu música. ¡Buena creación!"
+      }
+    },
+    "detailedMode": {
+      "welcome": {
+        "title": "📝 Modo Completo",
+        "description": "¡Este modo te permite personalizar cada detalle de tu música!"
+      },
+      "steps": {
+        "title": "🎯 Paso a paso",
+        "description": "Responderás preguntas sobre tipo de música, emoción, voz, instrumentos y mucho más. ¡Al final, apruebas la letra antes de la producción!"
+      },
+      "finish": {
+        "title": "¡Vamos a crear! 🎉",
+        "description": "¡Responde las preguntas y crea una música única y personalizada!"
+      }
+    }
   }
 }

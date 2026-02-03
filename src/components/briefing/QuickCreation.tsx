@@ -1,6 +1,6 @@
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle } from "lucide-react";
+import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import { ImageCardGrid } from "./ImageCardGrid";
 import { genreImages, voiceImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
 import { PreviewBanner } from "@/components/PreviewBanner";
+import { useBriefingTour } from "@/hooks/useBriefingTour";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,6 +80,21 @@ const QuickCreationComponent = ({
   const [songName, setSongName] = useState("");
   const [showNoTitleConfirm, setShowNoTitleConfirm] = useState(false);
 
+  // Tour for quick creation mode
+  const { startTour } = useBriefingTour({ mode: 'quick' });
+
+  // Auto-start tour on first visit
+  useEffect(() => {
+    const hasSeenQuickTour = localStorage.getItem('quick_creation_tour_seen');
+    if (!hasSeenQuickTour) {
+      const timer = setTimeout(() => {
+        startTour();
+        localStorage.setItem('quick_creation_tour_seen', 'true');
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [startTour]);
+
   // Map style options with images
   const styleOptionsWithImages = useMemo(() => {
     return styleOptions.slice(0, 15).map(opt => ({
@@ -144,6 +160,10 @@ const QuickCreationComponent = ({
 
   const isValid = prompt.trim().length > 10 && style && (isInstrumental || voiceType);
 
+  const handleStartTour = () => {
+    startTour();
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Header */}
@@ -153,6 +173,13 @@ const QuickCreationComponent = ({
             {t('quickCreation.pageTitle', 'Crie música com IA')}
           </h1>
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleStartTour}
+              className="p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              title={t('quickCreation.helpTour', 'Ver tutorial')}
+            >
+              <HelpCircle className="w-5 h-5 text-muted-foreground" />
+            </button>
             {credits > 0 && (
               <Badge variant="outline" className="gap-1.5 px-2.5 py-1">
                 <Music className="w-3.5 h-3.5" />
