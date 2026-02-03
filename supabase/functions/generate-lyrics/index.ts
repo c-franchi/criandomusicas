@@ -603,6 +603,7 @@ INSTRUÇÕES FINAIS:
     }
 
     // Insert lyrics with phonetic versions - use processedBody for display
+    // autoApprove automatically approves the first version (for quick mode)
     const { data: insertedLyrics, error: insertError } = await supabase
       .from('lyrics')
       .insert([
@@ -612,7 +613,8 @@ INSTRUÇÕES FINAIS:
           title: l1.title, 
           body: processedBody1, // Body já com pronúncias globais aplicadas
           phonetic_body: phonetic1,
-          is_approved: false 
+          is_approved: autoApprove, // Auto-approve first version if in quick mode
+          approved_at: autoApprove ? new Date().toISOString() : null
         },
         { 
           order_id: orderId, 
@@ -629,12 +631,21 @@ INSTRUÇÕES FINAIS:
       console.error("Error inserting lyrics:", insertError);
     }
 
-    // Update order status and save pronunciations
+    // Update order status based on autoApprove
+    // QUICK MODE (autoApprove=true): Skip to LYRICS_APPROVED, trigger style prompt
+    // DETAILED MODE (autoApprove=false): Stay at LYRICS_GENERATED, wait for user approval
+    const newStatus = autoApprove ? 'LYRICS_APPROVED' : 'LYRICS_GENERATED';
+    
     const updateData: Record<string, unknown> = { 
-      status: 'LYRICS_GENERATED', 
+      status: newStatus, 
       updated_at: new Date().toISOString(),
       voice_type: voiceType
     };
+    
+    // Save approved lyric ID if auto-approved
+    if (autoApprove && insertedLyrics?.[0]?.id) {
+      updateData.approved_lyric_id = insertedLyrics[0].id;
+    }
     
     if (pronunciations.length > 0) {
       updateData.pronunciations = pronunciations;
@@ -648,9 +659,38 @@ INSTRUÇÕES FINAIS:
     if (updateError) {
       console.error("Error updating order status:", updateError);
     }
+    
+    // AUTO-APPROVE MODE: Automatically trigger style prompt generation
+    if (autoApprove && insertedLyrics?.[0]) {
+      console.log("Auto-approve mode: Triggering style prompt generation...");
+      try {
+        await fetch(`${supabaseUrl}/functions/v1/generate-style-prompt`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseKey}`
+          },
+          body: JSON.stringify({
+            orderId,
+            lyricId: insertedLyrics[0].id,
+            approvedLyrics: processedBody1,
+            isInstrumental: false,
+            briefing: {
+              ...briefing,
+              voiceType
+            }
+          })
+        });
+        console.log("Style prompt generation triggered successfully");
+      } catch (styleError) {
+        console.error("Style prompt generation error:", styleError);
+        // Don't fail - style prompt can be generated later
+      }
+    }
 
-    // Send push notification that lyrics are ready (use orderInfo from earlier)
-    if (orderInfo?.user_id) {
+    // Send push notification that lyrics are ready (skip for autoApprove mode)
+    // autoApprove = quick mode, user doesn't need to approve lyrics
+    if (orderInfo?.user_id && !autoApprove) {
       try {
         console.log("Sending push notification for lyrics ready...");
         
@@ -673,6 +713,8 @@ INSTRUÇÕES FINAIS:
         console.error("Push notification error:", pushError);
         // Don't fail the main operation if push fails
       }
+    } else if (autoApprove) {
+      console.log("Skipping lyrics notification (autoApprove mode - direct to production)");
     }
 
     console.log("Lyrics saved successfully");
