@@ -2486,10 +2486,21 @@ const Briefing = () => {
       setCurrentStep(22);
       addBotMessage(chatFlow[22]);
     } else {
-      // Para músicas vocais, ir direto para criação rápida
+      // Para músicas vocais, ir para o briefing completo (chat)
       setSelectedPlanId(planId);
-      setCreationMode('quick');
       setShowPlanSelection(false);
+      setIsQuickMode(false); // Modo detalhado
+      setFormData(prev => ({ 
+        ...prev, 
+        isInstrumental: false, 
+        hasCustomLyric: false,
+        // Limpar campos de celebração de sessões anteriores
+        celebrationType: undefined,
+        celebrationName: undefined,
+        celebrationEmoji: undefined,
+      }));
+      setCurrentStep(1);
+      addBotMessage(chatFlow[1]); // musicType
     }
   };
 
