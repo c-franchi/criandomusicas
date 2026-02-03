@@ -87,6 +87,8 @@ interface AdminOrder {
   purpose?: string;
   emotion?: string;
   voice_type?: string;
+  // Track versions uploaded
+  uploadedVersions?: number[];
 }
 
 const AdminDashboard = () => {
@@ -188,14 +190,19 @@ const AdminDashboard = () => {
             lyric_title = latestLyric?.title;
           }
           
-          // Fetch track URL
-          const { data: trackData } = await supabase
+          // Fetch ALL tracks for this order to know which versions are uploaded
+          const { data: tracksData } = await supabase
             .from('tracks')
-            .select('audio_url')
+            .select('audio_url, version')
             .eq('order_id', order.id)
-            .eq('status', 'READY')
-            .maybeSingle();
-          track_url = trackData?.audio_url;
+            .eq('status', 'READY');
+          
+          // Get track URL (use version 1 as primary)
+          const v1Track = tracksData?.find(t => t.version === 1);
+          track_url = v1Track?.audio_url || tracksData?.[0]?.audio_url || null;
+          
+          // Get uploaded versions array
+          const uploadedVersions = tracksData?.map(t => t.version).filter((v): v is number => v !== null) || [];
           
           // Fetch user profile (whatsapp)
           const { data: profileData } = await supabase
@@ -206,7 +213,7 @@ const AdminDashboard = () => {
           user_whatsapp = profileData?.whatsapp;
           user_name = profileData?.name;
           
-          return { ...order, lyric_title, track_url, user_whatsapp, user_name };
+          return { ...order, lyric_title, track_url, user_whatsapp, user_name, uploadedVersions };
         })
       );
 
@@ -690,9 +697,9 @@ const AdminDashboard = () => {
           console.error('Email notification error:', emailError);
         }
 
-        // Update local state
+        // Update local state with COMPLETED and both versions
         setOrders(prev => prev.map(o => 
-          o.id === order.id ? { ...o, status: 'COMPLETED', track_url: audioUrl } : o
+          o.id === order.id ? { ...o, status: 'COMPLETED', track_url: audioUrl, uploadedVersions: [1, 2] } : o
         ));
 
         toast({
@@ -700,18 +707,22 @@ const AdminDashboard = () => {
           description: 'O cliente foi notificado que a música está pronta.',
         });
       } else {
-        // Only one version uploaded
-        // Update status to MUSIC_READY if first version
-        if (uploadedVersions.length === 1) {
-          await supabase
-            .from('orders')
-            .update({ status: 'MUSIC_READY' })
-            .eq('id', order.id);
-          
-          setOrders(prev => prev.map(o => 
-            o.id === order.id ? { ...o, status: 'MUSIC_READY' } : o
-          ));
-        }
+        // Only one version uploaded - keep in MUSIC_READY status to allow uploading the other version
+        const newStatus = 'MUSIC_READY';
+        await supabase
+          .from('orders')
+          .update({ status: newStatus })
+          .eq('id', order.id);
+        
+        // Update local state with new uploaded versions
+        setOrders(prev => prev.map(o => 
+          o.id === order.id ? { 
+            ...o, 
+            status: newStatus, 
+            track_url: audioUrl,
+            uploadedVersions: uploadedVersions
+          } : o
+        ));
         
         toast({
           title: `🎵 Versão ${version} enviada!`,
@@ -1543,7 +1554,7 @@ const AdminDashboard = () => {
                           Iniciar Produção
                         </Button>
                       )}
-                      {order.status === 'MUSIC_GENERATING' && (
+                      {(order.status === 'MUSIC_GENERATING' || order.status === 'MUSIC_READY') && (
                         <>
                           {/* Version 1 Upload */}
                           <input
@@ -1559,13 +1570,22 @@ const AdminDashboard = () => {
                           <Button 
                             onClick={() => musicInputV1Refs.current[order.id]?.click()} 
                             size="sm" 
-                            className="flex-1 sm:flex-none text-xs sm:text-sm bg-blue-600 hover:bg-blue-700"
+                            className={`flex-1 sm:flex-none text-xs sm:text-sm ${
+                              order.uploadedVersions?.includes(1) 
+                                ? 'bg-green-600 hover:bg-green-700' 
+                                : 'bg-blue-600 hover:bg-blue-700'
+                            }`}
                             disabled={uploadingMusic === `${order.id}-v1`}
                           >
                             {uploadingMusic === `${order.id}-v1` ? (
                               <>
                                 <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
                                 V1...
+                              </>
+                            ) : order.uploadedVersions?.includes(1) ? (
+                              <>
+                                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                V1 ✓
                               </>
                             ) : (
                               <>
@@ -1589,13 +1609,22 @@ const AdminDashboard = () => {
                           <Button 
                             onClick={() => musicInputV2Refs.current[order.id]?.click()} 
                             size="sm" 
-                            className="flex-1 sm:flex-none text-xs sm:text-sm bg-purple-600 hover:bg-purple-700"
+                            className={`flex-1 sm:flex-none text-xs sm:text-sm ${
+                              order.uploadedVersions?.includes(2) 
+                                ? 'bg-green-600 hover:bg-green-700' 
+                                : 'bg-purple-600 hover:bg-purple-700'
+                            }`}
                             disabled={uploadingMusic === `${order.id}-v2`}
                           >
                             {uploadingMusic === `${order.id}-v2` ? (
                               <>
                                 <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
                                 V2...
+                              </>
+                            ) : order.uploadedVersions?.includes(2) ? (
+                              <>
+                                <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                V2 ✓
                               </>
                             ) : (
                               <>
@@ -1634,7 +1663,8 @@ const AdminDashboard = () => {
                           </Button>
                         </>
                       )}
-                      {order.status === 'MUSIC_READY' && (
+                      {/* Only show "Marcar Entregue" when both versions are uploaded */}
+                      {order.status === 'MUSIC_READY' && order.uploadedVersions?.includes(1) && order.uploadedVersions?.includes(2) && (
                         <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
                           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Marcar Entregue
