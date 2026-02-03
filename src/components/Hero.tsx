@@ -183,13 +183,13 @@ const Hero = () => {
                   </Button>
                 </Link>
               )}
-              <Link to="/dashboard">
+              <Link to="/dashboard" id="tour-dashboard-link">
                 <Button variant={isAdmin ? "glass" : "hero"} size="lg" className="text-lg px-8 py-7 rounded-xl group">
                   {t('hero.ctaDashboard')}
                   {!isAdmin && <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />}
                 </Button>
               </Link>
-              <Link to="/briefing?type=vocal">
+              <Link to="/briefing?type=vocal" id="tour-hero-cta">
                 <Button 
                   variant="hero" 
                   size="lg" 
@@ -202,7 +202,7 @@ const Hero = () => {
             </>
           ) : (
             <>
-              <Link to="/briefing">
+              <Link to="/briefing" id="tour-hero-cta">
                 <Button variant="hero" size="lg" className="text-lg px-10 py-7 rounded-xl group shadow-2xl">
                   {t('hero.cta')}
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />

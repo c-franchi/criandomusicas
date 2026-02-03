@@ -576,6 +576,7 @@ export type Database = {
           phone: string | null
           plan: string | null
           songs_generated: number | null
+          tour_completed: boolean | null
           updated_at: string
           user_id: string
           whatsapp: string | null
@@ -588,6 +589,7 @@ export type Database = {
           phone?: string | null
           plan?: string | null
           songs_generated?: number | null
+          tour_completed?: boolean | null
           updated_at?: string
           user_id: string
           whatsapp?: string | null
@@ -600,6 +602,7 @@ export type Database = {
           phone?: string | null
           plan?: string | null
           songs_generated?: number | null
+          tour_completed?: boolean | null
           updated_at?: string
           user_id?: string
           whatsapp?: string | null

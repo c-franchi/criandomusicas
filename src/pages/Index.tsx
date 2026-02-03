@@ -116,10 +116,16 @@ const Index = () => {
         />
       )}
       
-      <ProcessSteps />
+      <div id="tour-process">
+        <ProcessSteps />
+      </div>
       
       {/* Pinned Scroll Sections: AudioSamples, PricingPlans, CreatorSection */}
-      <PinnedScrollSections />
+      <div id="tour-examples">
+        <div id="tour-plans">
+          <PinnedScrollSections />
+        </div>
+      </div>
       
       <PlanComparison />
       <InstrumentalShowcase />
