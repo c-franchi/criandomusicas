@@ -2082,6 +2082,12 @@ const Briefing = () => {
   };
 
   const finishBriefing = async () => {
+    // Proteção contra chamadas duplicadas
+    if (isCreatingOrderRef.current) {
+      console.log('Order creation already in progress, skipping duplicate call');
+      return;
+    }
+    isCreatingOrderRef.current = true;
     setIsCreatingOrder(true);
     const data = formData;
     
@@ -2236,6 +2242,7 @@ const Briefing = () => {
           const planId = selectedPlanId || 'single';
           navigate(`/checkout/${orderData.id}?planId=${planId}`);
           setIsCreatingOrder(false);
+          isCreatingOrderRef.current = false; // Reset flag
           return;
         }
         
@@ -2247,12 +2254,14 @@ const Briefing = () => {
         
         await processOrderAfterCredit(orderData.id, briefingData);
         setIsCreatingOrder(false);
+        isCreatingOrderRef.current = false; // Reset flag after success
         return;
       }
 
       // Sem créditos - mostrar modal para ir ao checkout
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
+      isCreatingOrderRef.current = false; // Reset flag
       setHasPreviewCreditForModal(false);
       setShowNoCreditModal(true);
     } catch (error) {
@@ -2263,6 +2272,7 @@ const Briefing = () => {
         variant: 'destructive'
       });
       setIsCreatingOrder(false);
+      isCreatingOrderRef.current = false; // Reset flag on error
     }
   };
 
@@ -2560,8 +2570,17 @@ const Briefing = () => {
     }
   };
   
+  // Ref para evitar criação de pedidos duplicados
+  const isCreatingOrderRef = useRef(false);
+  
   // Função para finalizar briefing com formData específico (para modo rápido)
   const finishBriefingWithData = async (data: BriefingFormData) => {
+    // Proteção contra chamadas duplicadas
+    if (isCreatingOrderRef.current) {
+      console.log('Order creation already in progress, skipping duplicate call');
+      return;
+    }
+    isCreatingOrderRef.current = true;
     setIsCreatingOrder(true);
     setCreationMode(null); // Agora sim, quando loading já está ativo
     clearSavedBriefing();
@@ -2688,6 +2707,7 @@ const Briefing = () => {
           console.error('Error using credit:', result.error || result.data?.error);
           navigate(`/checkout/${orderData.id}?planId=${selectedPlanId || 'single'}`);
           setIsCreatingOrder(false);
+          isCreatingOrderRef.current = false; // Reset flag
           return;
         }
         
@@ -2698,11 +2718,13 @@ const Briefing = () => {
         
         await processOrderAfterCredit(orderData.id, briefingData);
         setIsCreatingOrder(false);
+        isCreatingOrderRef.current = false; // Reset flag after success
         return;
       }
 
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
+      isCreatingOrderRef.current = false; // Reset flag
       setHasPreviewCreditForModal(false);
       setShowNoCreditModal(true);
     } catch (error) {
@@ -2713,6 +2735,7 @@ const Briefing = () => {
         variant: 'destructive'
       });
       setIsCreatingOrder(false);
+      isCreatingOrderRef.current = false; // Reset flag on error
     }
   };
 
