@@ -22,7 +22,8 @@ import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCre
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
-  soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages
+  soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages,
+  parodyEmotionImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -3430,11 +3431,17 @@ const Briefing = () => {
                 {/* Emotion - with circle image cards */}
                 {currentBotMessage.field === 'emotion' && (
                   <ImageCardGrid
-                    options={currentBotMessage.options.map(opt => ({
-                      id: opt.id,
-                      label: opt.label,
-                      imageSrc: emotionImages[opt.id] || emotionImages.alegria
-                    }))}
+                    options={currentBotMessage.options.map(opt => {
+                      // Use parody images for parody type, otherwise default emotions
+                      const imageSrc = formData.musicType === 'parodia' 
+                        ? (parodyEmotionImages[opt.id] || emotionImages.alegria)
+                        : (emotionImages[opt.id] || emotionImages.alegria);
+                      return {
+                        id: opt.id,
+                        label: opt.label,
+                        imageSrc
+                      };
+                    })}
                     selectedId={undefined}
                     variant="circle"
                     title={t('briefing:emotions', 'Emoções')}

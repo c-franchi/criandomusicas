@@ -131,6 +131,13 @@ import motivationalTrabalhoImg from './motivational/trabalho.jpg';
 import motivationalRecomecoImg from './motivational/recomeco.jpg';
 import motivationalDisciplinaImg from './motivational/disciplina.jpg';
 
+// Parody Emotion Images
+import parodyZoeiraImg from './parody/zoeira.jpg';
+import parodySarcasticoImg from './parody/sarcastico.jpg';
+import parodyIronicoImg from './parody/ironico.jpg';
+import parodyCriticaImg from './parody/critica.jpg';
+import parodyAbsurdoImg from './parody/absurdo.jpg';
+
 export const genreImages: Record<string, string> = {
   pop: popImg,
   rock: rockImg,
@@ -287,6 +294,15 @@ export const motivationalMomentImages: Record<string, string> = {
   disciplina: motivationalDisciplinaImg,
 };
 
+// Parody emotion images
+export const parodyEmotionImages: Record<string, string> = {
+  zoeira: parodyZoeiraImg,
+  sarcastico: parodySarcasticoImg,
+  ironico: parodyIronicoImg,
+  critica: parodyCriticaImg,
+  absurdo: parodyAbsurdoImg,
+};
+
 export {
   // Genres
   popImg,
@@ -388,4 +404,10 @@ export {
   motivationalTrabalhoImg,
   motivationalRecomecoImg,
   motivationalDisciplinaImg,
+  // Parody Emotions
+  parodyZoeiraImg,
+  parodySarcasticoImg,
+  parodyIronicoImg,
+  parodyCriticaImg,
+  parodyAbsurdoImg,
 };

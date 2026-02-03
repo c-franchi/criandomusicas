@@ -278,7 +278,7 @@ serve(async (req) => {
       autoApprove?: boolean;
     };
 
-    console.log("generate-lyrics called with orderId:", orderId, "isPreview:", isPreview, "autoApprove:", autoApprove);
+    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove);
 
     if (!orderId || !story) {
       return new Response(
@@ -301,14 +301,26 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // Check if order is a preview order from database
-    const { data: orderInfo } = await supabase
+    // IMPORTANT: The order may have been updated by use-credit function, so we need to get the current state
+    const { data: orderInfo, error: orderFetchError } = await supabase
       .from('orders')
       .select('is_preview, plan_id, user_id')
       .eq('id', orderId)
       .single();
     
-    const isPreviewOrder = isPreview || orderInfo?.is_preview || orderInfo?.plan_id === 'preview_test';
-    console.log("Order preview status:", isPreviewOrder);
+    if (orderFetchError) {
+      console.error("Error fetching order:", orderFetchError);
+    }
+    
+    // CRITICAL: Determine if this is a preview order
+    // Priority: 1) is_preview flag in DB (set by use-credit), 2) plan_id is preview_test, 3) isPreview param
+    const isPreviewOrder = orderInfo?.is_preview === true || orderInfo?.plan_id === 'preview_test' || isPreview;
+    console.log("Order preview determination:", { 
+      dbIsPreview: orderInfo?.is_preview, 
+      planId: orderInfo?.plan_id, 
+      paramIsPreview: isPreview,
+      finalIsPreview: isPreviewOrder 
+    });
 
     const {
       musicType = 'homenagem',
