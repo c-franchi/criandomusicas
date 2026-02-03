@@ -552,7 +552,7 @@ const OrderDetails = () => {
               {isPreview && (
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
                   <p className="text-sm text-amber-700 dark:text-amber-400">
-                    {t('preview.notice', 'Esta é uma prévia de 40 segundos. Para baixar a versão completa com todos os versos e qualidade final, adquira créditos.')}
+                    {t('preview.notice', 'Esta é uma prévia (Verso + Refrão). Para baixar a versão completa com todos os versos e qualidade final, adquira créditos.')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <Button asChild size="sm" className="gap-2">

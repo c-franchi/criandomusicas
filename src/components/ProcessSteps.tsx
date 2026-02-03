@@ -99,7 +99,7 @@ const ProcessSteps = () => {
                     {t('process.preview.title', '🎁 Preview Gratuito')}
                   </h3>
                   <p className="text-foreground/80 mb-4 leading-relaxed">
-                    {t('process.preview.description', 'Crie sua conta e teste o sistema de graça! Você recebe 1 crédito para gerar uma prévia de até 40 segundos da sua música.')}
+                    {t('process.preview.description', 'Crie sua conta e teste o sistema de graça! Você recebe 1 crédito para gerar uma prévia (Verso + Refrão) da sua música.')}
                   </p>
                   
                   <div className="flex flex-wrap gap-3 justify-center md:justify-start text-sm">
