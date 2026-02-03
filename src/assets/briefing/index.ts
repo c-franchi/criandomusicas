@@ -122,6 +122,14 @@ import soundtrackPazImg from './soundtrack/emotions/paz.jpg';
 import soundtrackMisterioImg from './soundtrack/emotions/misterio.jpg';
 import soundtrackAlegriaImg from './soundtrack/emotions/alegria.jpg';
 
+// Motivational Moment Images
+import motivationalTreinoImg from './motivational/treino.jpg';
+import motivationalSuperacaoImg from './motivational/superacao.jpg';
+import motivationalEstudoImg from './motivational/estudo.jpg';
+import motivationalTrabalhoImg from './motivational/trabalho.jpg';
+import motivationalRecomecoImg from './motivational/recomeco.jpg';
+import motivationalDisciplinaImg from './motivational/disciplina.jpg';
+
 export const genreImages: Record<string, string> = {
   pop: popImg,
   rock: rockImg,
@@ -267,6 +275,16 @@ export const soundtrackEmotionImages: Record<string, string> = {
   alegria: soundtrackAlegriaImg,
 };
 
+// Motivational moment images
+export const motivationalMomentImages: Record<string, string> = {
+  treino: motivationalTreinoImg,
+  superacao: motivationalSuperacaoImg,
+  estudo: motivationalEstudoImg,
+  trabalho: motivationalTrabalhoImg,
+  recomeco: motivationalRecomecoImg,
+  disciplina: motivationalDisciplinaImg,
+};
+
 export {
   // Genres
   popImg,
@@ -360,4 +378,11 @@ export {
   vocalImg,
   customLyricImg,
   instrumentalTypeImg,
+  // Motivational Moments
+  motivationalTreinoImg,
+  motivationalSuperacaoImg,
+  motivationalEstudoImg,
+  motivationalTrabalhoImg,
+  motivationalRecomecoImg,
+  motivationalDisciplinaImg,
 };
