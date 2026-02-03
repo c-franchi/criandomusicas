@@ -342,9 +342,9 @@
     "badge": "Anteprima",
     "downloadBlocked": "Download bloccato",
     "downloadBlockedTitle": "🔒 Download non disponibile",
-    "downloadBlockedDesc": "Questa è un'anteprima di prova. Acquista crediti per scaricare la canzone completa.",
+    "downloadBlockedDesc": "Questa è un'anteprima gratuita (Strofa + Ritornello). Puoi scaricare questa versione!",
     "buyCredits": "Acquista Crediti",
     "createFull": "Crea Canzone Completa",
-    "notice": "Questa è un'anteprima (Strofa + Ritornello). Per scaricare la versione completa con tutti i versi e qualità finale, acquista crediti."
+    "notice": "Questa è la tua anteprima gratuita con struttura Strofa + Ritornello. Per creare canzoni complete con tutte le sezioni, acquista crediti."
   }
 }

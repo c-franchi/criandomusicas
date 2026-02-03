@@ -342,9 +342,9 @@
     "badge": "Preview",
     "downloadBlocked": "Download blocked",
     "downloadBlockedTitle": "🔒 Download unavailable",
-    "downloadBlockedDesc": "This is a test preview. Purchase credits to download the full song.",
+    "downloadBlockedDesc": "This is a free preview (Verse + Chorus). You can download this version!",
     "buyCredits": "Buy Credits",
     "createFull": "Create Full Song",
-    "notice": "This is a preview (Verse + Chorus). To download the full version with all verses and final quality, purchase credits."
+    "notice": "This is your free preview with Verse + Chorus structure. To create full songs with all sections, purchase credits."
   }
 }

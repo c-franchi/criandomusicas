@@ -69,8 +69,8 @@
       "description": "Per chi crea molto"
     },
     "creator_start": {
-      "name": "Creator Start",
-      "description": "40 canzoni/mese per creatori principianti",
+      "name": "Creatore Base",
+      "description": "40 canzoni/mese per creator principianti",
       "features": [
         "Fino a 40 canzoni/mese",
         "Testi curati automaticamente",
@@ -81,8 +81,8 @@
       ]
     },
     "creator_pro": {
-      "name": "Creator Pro",
-      "description": "150 canzoni/mese per creatori attivi",
+      "name": "Creatore Pro",
+      "description": "150 canzoni/mese per creator attivi",
       "features": [
         "Fino a 150 canzoni/mese",
         "Tutto del Creator Start",
@@ -92,7 +92,7 @@
       ]
     },
     "creator_studio": {
-      "name": "Creator Studio",
+      "name": "Creatore Studio",
       "description": "230 canzoni/mese per studi professionali",
       "features": [
         "Fino a 230 canzoni/mese",

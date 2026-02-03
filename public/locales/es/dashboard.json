@@ -342,9 +342,9 @@
     "badge": "Vista Previa",
     "downloadBlocked": "Descarga bloqueada",
     "downloadBlockedTitle": "🔒 Descarga no disponible",
-    "downloadBlockedDesc": "Esta es una vista previa de prueba. Adquiere créditos para descargar la canción completa.",
+    "downloadBlockedDesc": "Esta es una vista previa gratuita (Verso + Coro). ¡Puedes descargar esta versión!",
     "buyCredits": "Comprar Créditos",
     "createFull": "Crear Canción Completa",
-    "notice": "Esta es una vista previa (Verso + Coro). Para descargar la versión completa con todos los versos y calidad final, adquiere créditos."
+    "notice": "Esta es tu vista previa gratuita con estructura Verso + Coro. Para crear canciones completas con todas las secciones, adquiere créditos."
   }
 }

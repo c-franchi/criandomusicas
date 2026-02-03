@@ -11,6 +11,7 @@ const PinnedScrollSections = () => {
 
   if (isMobile) {
     // Simplified mobile experience - just fade in
+    // Creator first, then one-time packages
     return (
       <div className="relative">
         <AudioSamples />
@@ -21,7 +22,7 @@ const PinnedScrollSections = () => {
           viewport={{ once: true, margin: "-5%" }}
           transition={{ duration: 0.4 }}
         >
-          <PricingPlans />
+          <CreatorSection />
         </motion.div>
 
         <motion.div
@@ -30,13 +31,14 @@ const PinnedScrollSections = () => {
           viewport={{ once: true, margin: "-5%" }}
           transition={{ duration: 0.4 }}
         >
-          <CreatorSection />
+          <PricingPlans />
         </motion.div>
       </div>
     );
   }
 
   // Desktop: Seções com animações simples e confiáveis
+  // Creator first, then one-time packages
   return (
     <div ref={containerRef} className="relative">
       {/* Section 1: AudioSamples - Estática */}
@@ -44,26 +46,26 @@ const PinnedScrollSections = () => {
         <AudioSamples />
       </div>
 
-      {/* Section 2: PricingPlans - Fade in simples */}
+      {/* Section 2: CreatorSection - Entrada cinematográfica (primeiro) */}
       <motion.div
         className="relative z-20"
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-10%" }}
-        transition={{ duration: 0.5 }}
-      >
-        <PricingPlans />
-      </motion.div>
-
-      {/* Section 3: CreatorSection - Entrada cinematográfica */}
-      <motion.div
-        className="relative z-30"
         initial={{ opacity: 0, y: 60, scale: 0.95 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
         viewport={{ once: true, margin: "-5%" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <CreatorSection />
+      </motion.div>
+
+      {/* Section 3: PricingPlans - Pacotes avulsos (depois) */}
+      <motion.div
+        className="relative z-30"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-10%" }}
+        transition={{ duration: 0.5 }}
+      >
+        <PricingPlans />
       </motion.div>
     </div>
   );
