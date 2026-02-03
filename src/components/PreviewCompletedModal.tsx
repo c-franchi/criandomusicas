@@ -26,7 +26,7 @@ export function PreviewCompletedModal({
 
   const features = [
     { key: 'featureFullLyrics', default: 'Letra completa' },
-    { key: 'featureMoreVerses', default: 'Mais versos e refrao' },
+    { key: 'featureMoreVerses', default: 'Mais versos e estrutura completa' },
     { key: 'featureProStructure', default: 'Estrutura profissional' },
     { key: 'featureFinalQuality', default: 'Qualidade final para uso real' },
   ];

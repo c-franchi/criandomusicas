@@ -18,7 +18,7 @@
       "rating": "Calificación"
     },
     "previewBadge": "🎁 ¡Nuevo! Prueba gratis antes de comprar",
-    "previewSubtext": "Crea una vista previa de 40s de tu canción"
+    "previewSubtext": "Crea una vista previa con verso y estribillo"
   },
   "process": {
     "title": "Cómo",
@@ -47,7 +47,7 @@
     },
     "preview": {
       "title": "🎁 Vista Previa Gratis",
-      "description": "¡Crea tu cuenta y prueba el sistema gratis! Recibes 1 crédito para generar una vista previa de hasta 40 segundos de tu canción.",
+      "description": "¡Crea tu cuenta y prueba el sistema gratis! Recibes 1 crédito para generar una vista previa con verso y estribillo, y puedes descargarla.",
       "benefit1": "Sin compromiso",
       "benefit2": "Conoce el estilo antes de comprar",
       "benefit3": "Registro simple y rápido",

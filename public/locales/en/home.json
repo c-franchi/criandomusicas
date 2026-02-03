@@ -18,7 +18,7 @@
       "rating": "Rating"
     },
     "previewBadge": "🎁 New! Try free before you buy",
-    "previewSubtext": "Create a 40s preview of your song"
+    "previewSubtext": "Create a preview with verse and chorus"
   },
   "process": {
     "title": "How it",
@@ -47,7 +47,7 @@
     },
     "preview": {
       "title": "🎁 Free Preview",
-      "description": "Create your account and test the system for free! You get 1 credit to generate a preview of up to 40 seconds of your song.",
+      "description": "Create your account and test the system for free! You get 1 credit to generate a preview with verse and chorus, and you can download it.",
       "benefit1": "No commitment",
       "benefit2": "Know the style before buying",
       "benefit3": "Quick and easy signup",

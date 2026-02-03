@@ -168,7 +168,7 @@ const QuickCreationComponent = ({
         <div className="max-w-2xl mx-auto p-4 space-y-6">
           {/* Preview Warning Banner */}
           {isPreviewMode && (
-            <PreviewBanner variant="warning" showDuration={true} />
+            <PreviewBanner variant="warning" />
           )}
 
           {/* Prompt Input - Dark Card Style */}

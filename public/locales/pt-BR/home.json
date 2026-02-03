@@ -18,7 +18,7 @@
       "rating": "Avaliação"
     },
     "previewBadge": "🎁 Novo! Teste grátis antes de comprar",
-    "previewSubtext": "Crie uma prévia de 40s da sua música"
+    "previewSubtext": "Crie uma prévia com verso e refrão"
   },
   "process": {
     "title": "Como",
@@ -47,7 +47,7 @@
     },
     "preview": {
       "title": "🎁 Preview Gratuito",
-      "description": "Crie sua conta e teste o sistema de graça! Você recebe 1 crédito para gerar uma prévia de até 40 segundos da sua música.",
+      "description": "Crie sua conta e teste o sistema de graça! Você recebe 1 crédito para gerar uma prévia com verso e refrão da sua música, podendo baixar e ouvir.",
       "benefit1": "Sem compromisso",
       "benefit2": "Conheça o estilo antes de comprar",
       "benefit3": "Cadastro simples e rápido",
