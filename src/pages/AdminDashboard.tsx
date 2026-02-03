@@ -98,9 +98,10 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
-  // Music upload
+  // Music upload - now supports two versions per order
   const [uploadingMusic, setUploadingMusic] = useState<string | null>(null);
-  const musicInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const musicInputV1Refs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const musicInputV2Refs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
   // Confirmation dialogs
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
@@ -584,15 +585,16 @@ const AdminDashboard = () => {
   };
 
   // Upload music file and mark as ready
-  const handleMusicUpload = async (file: File, order: AdminOrder) => {
+  // Version parameter allows uploading V1 and V2 separately
+  const handleMusicUpload = async (file: File, order: AdminOrder, version: number = 1) => {
     if (!file) return;
-    setUploadingMusic(order.id);
+    setUploadingMusic(`${order.id}-v${version}`);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${order.id}-${Date.now()}.${fileExt}`;
+      const fileName = `${order.id}-v${version}-${Date.now()}.${fileExt}`;
       const filePath = `${order.user_id}/${fileName}`;
 
-      console.log('Iniciando upload para:', filePath);
+      console.log('Iniciando upload para:', filePath, 'Versão:', version);
 
       // Upload to storage
       const { error: uploadError, data: uploadData } = await supabase.storage
@@ -613,15 +615,16 @@ const AdminDashboard = () => {
       const audioUrl = publicUrlData.publicUrl;
       console.log('URL pública:', audioUrl);
 
-      // Upsert track record
+      // Insert track record with version
       const { error: trackError } = await supabase
         .from('tracks')
         .upsert({
           order_id: order.id,
           audio_url: audioUrl,
-          status: 'READY'
+          status: 'READY',
+          version: version
         }, {
-          onConflict: 'order_id'
+          onConflict: 'order_id,version'
         });
 
       if (trackError) {
@@ -629,63 +632,92 @@ const AdminDashboard = () => {
         throw new Error(`Erro ao salvar track: ${trackError.message}`);
       }
 
-      console.log('Track salva com sucesso');
+      console.log('Track salva com sucesso - Versão:', version);
 
-      // Update order status to COMPLETED (Entregue)
-      const { error: orderError } = await supabase
-        .from('orders')
-        .update({ 
-          status: 'COMPLETED',
-          music_ready_at: new Date().toISOString()
-        })
-        .eq('id', order.id);
+      // Check if both versions are uploaded
+      const { data: allTracks } = await supabase
+        .from('tracks')
+        .select('version')
+        .eq('order_id', order.id)
+        .eq('status', 'READY');
 
-      if (orderError) {
-        console.error('Erro ao atualizar status:', orderError);
-        throw new Error(`Erro ao atualizar pedido: ${orderError.message}`);
-      }
+      const uploadedVersions = allTracks?.map(t => t.version) || [];
+      const hasBothVersions = uploadedVersions.includes(1) && uploadedVersions.includes(2);
 
-      // Send push notification
-      try {
-        await supabase.functions.invoke('send-push-notification', {
-          body: {
-            user_id: order.user_id,
-            order_id: order.id,
-            title: '🎵 Sua música está pronta!',
-            body: 'A produção da sua música foi concluída. Acesse agora para ouvir e baixar!',
-            url: `/pedido/${order.id}`
-          }
+      // Update order status to COMPLETED only if both versions are uploaded
+      if (hasBothVersions) {
+        const { error: orderError } = await supabase
+          .from('orders')
+          .update({ 
+            status: 'COMPLETED',
+            music_ready_at: new Date().toISOString()
+          })
+          .eq('id', order.id);
+
+        if (orderError) {
+          console.error('Erro ao atualizar status:', orderError);
+          throw new Error(`Erro ao atualizar pedido: ${orderError.message}`);
+        }
+
+        // Send push notification
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              user_id: order.user_id,
+              order_id: order.id,
+              title: '🎵 Suas músicas estão prontas!',
+              body: 'As duas versões da sua música foram concluídas. Acesse agora para ouvir e baixar!',
+              url: `/pedido/${order.id}`
+            }
+          });
+        } catch (pushError) {
+          console.error('Push notification error:', pushError);
+        }
+
+        // Send music ready email notification
+        try {
+          await supabase.functions.invoke('send-music-ready-email', {
+            body: {
+              userId: order.user_id,
+              orderId: order.id,
+              songTitle: order.lyric_title || order.song_title,
+              musicType: order.music_type,
+              isInstrumental: order.is_instrumental
+            }
+          });
+          console.log('Music ready email sent');
+        } catch (emailError) {
+          console.error('Email notification error:', emailError);
+        }
+
+        // Update local state
+        setOrders(prev => prev.map(o => 
+          o.id === order.id ? { ...o, status: 'COMPLETED', track_url: audioUrl } : o
+        ));
+
+        toast({
+          title: '🎵 Ambas versões enviadas!',
+          description: 'O cliente foi notificado que a música está pronta.',
         });
-      } catch (pushError) {
-        console.error('Push notification error:', pushError);
-      }
-
-      // Send music ready email notification (uses userId, Edge Function fetches email via admin API)
-      try {
-        await supabase.functions.invoke('send-music-ready-email', {
-          body: {
-            userId: order.user_id,
-            orderId: order.id,
-            songTitle: order.lyric_title || order.song_title,
-            musicType: order.music_type,
-            isInstrumental: order.is_instrumental
-          }
+      } else {
+        // Only one version uploaded
+        // Update status to MUSIC_READY if first version
+        if (uploadedVersions.length === 1) {
+          await supabase
+            .from('orders')
+            .update({ status: 'MUSIC_READY' })
+            .eq('id', order.id);
+          
+          setOrders(prev => prev.map(o => 
+            o.id === order.id ? { ...o, status: 'MUSIC_READY' } : o
+          ));
+        }
+        
+        toast({
+          title: `🎵 Versão ${version} enviada!`,
+          description: `Falta enviar a Versão ${version === 1 ? 2 : 1} para concluir o pedido.`,
         });
-        console.log('Music ready email sent');
-      } catch (emailError) {
-        console.error('Email notification error:', emailError);
-        // Non-critical - don't show error to admin
       }
-
-      // Update local state
-      setOrders(prev => prev.map(o => 
-        o.id === order.id ? { ...o, status: 'COMPLETED', track_url: audioUrl } : o
-      ));
-
-      toast({
-        title: '🎵 Música enviada!',
-        description: 'O cliente foi notificado por push.',
-      });
     } catch (error) {
       console.error('Erro completo no upload:', error);
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido ao enviar música';
@@ -1513,31 +1545,62 @@ const AdminDashboard = () => {
                       )}
                       {order.status === 'MUSIC_GENERATING' && (
                         <>
+                          {/* Version 1 Upload */}
                           <input
                             type="file"
                             accept="audio/*"
-                            ref={(el) => { musicInputRefs.current[order.id] = el; }}
+                            ref={(el) => { musicInputV1Refs.current[order.id] = el; }}
                             className="hidden"
                             onChange={(e) => {
                               const file = e.target.files?.[0];
-                              if (file) handleMusicUpload(file, order);
+                              if (file) handleMusicUpload(file, order, 1);
                             }}
                           />
                           <Button 
-                            onClick={() => musicInputRefs.current[order.id]?.click()} 
+                            onClick={() => musicInputV1Refs.current[order.id]?.click()} 
                             size="sm" 
-                            className="flex-1 sm:flex-none text-xs sm:text-sm bg-primary"
-                            disabled={uploadingMusic === order.id}
+                            className="flex-1 sm:flex-none text-xs sm:text-sm bg-blue-600 hover:bg-blue-700"
+                            disabled={uploadingMusic === `${order.id}-v1`}
                           >
-                            {uploadingMusic === order.id ? (
+                            {uploadingMusic === `${order.id}-v1` ? (
                               <>
                                 <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
-                                Enviando...
+                                V1...
                               </>
                             ) : (
                               <>
                                 <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                                Enviar Música
+                                Versão 1
+                              </>
+                            )}
+                          </Button>
+                          
+                          {/* Version 2 Upload */}
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            ref={(el) => { musicInputV2Refs.current[order.id] = el; }}
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleMusicUpload(file, order, 2);
+                            }}
+                          />
+                          <Button 
+                            onClick={() => musicInputV2Refs.current[order.id]?.click()} 
+                            size="sm" 
+                            className="flex-1 sm:flex-none text-xs sm:text-sm bg-purple-600 hover:bg-purple-700"
+                            disabled={uploadingMusic === `${order.id}-v2`}
+                          >
+                            {uploadingMusic === `${order.id}-v2` ? (
+                              <>
+                                <Music className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2 animate-spin" />
+                                V2...
+                              </>
+                            ) : (
+                              <>
+                                <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                                Versão 2
                               </>
                             )}
                           </Button>

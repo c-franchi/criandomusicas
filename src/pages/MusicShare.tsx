@@ -24,11 +24,12 @@ interface TrackData {
   music_style: string;
   cover_url: string | null;
   is_preview?: boolean;
+  version?: number;
 }
 
 const MusicShare = () => {
   const { t, i18n } = useTranslation(['common', 'briefing']);
-  const { orderId } = useParams();
+  const { orderId, version } = useParams();
   const [searchParams] = useSearchParams();
   const [track, setTrack] = useState<TrackData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,6 +37,9 @@ const MusicShare = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Parse version from URL (default to 1)
+  const trackVersion = version ? parseInt(version, 10) : 1;
 
   // Apply language from URL parameter if present
   useEffect(() => {
@@ -55,7 +59,7 @@ const MusicShare = () => {
 
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-track?orderId=${orderId}`,
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-public-track?orderId=${orderId}&version=${trackVersion}`,
           {
             headers: {
               'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
@@ -84,7 +88,8 @@ const MusicShare = () => {
           title: data.title || t('common:share.defaultTitle'),
           music_style: data.music_style || '',
           cover_url: data.cover_url || null,
-          is_preview: data.is_preview || false
+          is_preview: data.is_preview || false,
+          version: trackVersion
         });
       } catch (err) {
         console.error('Error fetching track:', err);
@@ -95,7 +100,7 @@ const MusicShare = () => {
     };
 
     fetchTrack();
-  }, [orderId, t]);
+  }, [orderId, trackVersion, t]);
 
   const trackEvent = async (eventType: 'play' | 'cta_click') => {
     if (!orderId) return;
@@ -167,8 +172,9 @@ const MusicShare = () => {
   }
 
   const ogImage = track.cover_url || 'https://criandomusicas.com.br/og-image.jpg';
-  const pageTitle = `${track.title} | Criando Músicas`;
-  const pageDescription = `${t('common:share.listenTo')} "${track.title}" - ${t('common:share.personalizedMusic')}. ${track.music_style ? `${t('common:share.style')}: ${track.music_style}` : ''}`;
+  const versionLabel = trackVersion === 2 ? ' (Versão 2)' : '';
+  const pageTitle = `${track.title}${versionLabel} | Criando Músicas`;
+  const pageDescription = `${t('common:share.listenTo')} "${track.title}"${versionLabel} - ${t('common:share.personalizedMusic')}. ${track.music_style ? `${t('common:share.style')}: ${track.music_style}` : ''}`;
 
   return (
     <>
@@ -205,7 +211,12 @@ const MusicShare = () => {
         </div>
 
         {/* Track Info */}
-        <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 break-words px-2">{track.title}</h1>
+        <h1 className="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 break-words px-2">
+          {track.title}
+          {trackVersion === 2 && (
+            <Badge variant="outline" className="ml-2 text-xs">V2</Badge>
+          )}
+        </h1>
         {track.music_style && (
           <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">{track.music_style}</p>
         )}

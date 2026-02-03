@@ -88,6 +88,7 @@ const App = () => (
               <Route path="/termos" element={<TermsOfUse />} />
               <Route path="/regras" element={<MusicRules />} />
               <Route path="/m/:orderId" element={<MusicShare />} />
+              <Route path="/m/:orderId/:version" element={<MusicShare />} />
               <Route path="/acompanhar/:orderId" element={<OrderTracking />} />
               <Route path="/test-openai" element={<TestOpenAI />} />
               <Route path="/pedido/:orderId/letras" element={<OrderLyricsPage />} />
