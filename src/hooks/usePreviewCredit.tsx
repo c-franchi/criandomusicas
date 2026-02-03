@@ -119,8 +119,8 @@ export function isPreviewOrder(planId: string | null | undefined): boolean {
 
 // Preview credit limitations
 export const PREVIEW_LIMITS = {
-  maxDurationSeconds: 40,
-  allowDownload: false,
+  allowDownload: true, // Users can download since they have a preview credit
   allowCommercialUse: false,
-  structure: ['Intro', 'Chorus'], // Only these sections for preview
+  structure: ['Verse', 'Chorus'], // Limited to verse + chorus structure
+  structureLabel: 'Verso + Refrão',
 };

@@ -510,30 +510,18 @@ const OrderDetails = () => {
                         size="sm"
                         className="gap-2 flex-1 min-w-[100px]"
                       >
-                        {playingTrack === track.version ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                      {playingTrack === track.version ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                         {playingTrack === track.version ? t('orderDetails.music.pause') : t('orderDetails.music.play')}
                       </Button>
-                      {isPreview ? (
-                        <Button 
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 flex-1 min-w-[100px] cursor-not-allowed opacity-60"
-                          disabled
-                        >
-                          <Lock className="w-4 h-4" />
-                          {t('preview.downloadBlocked', 'Bloqueado')}
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={() => downloadTrack(track.version)}
-                          variant="outline"
-                          size="sm"
-                          className="gap-2 flex-1 min-w-[100px]"
-                        >
-                          <Download className="w-4 h-4" />
-                          {t('orderDetails.music.download')}
-                        </Button>
-                      )}
+                      <Button 
+                        onClick={() => downloadTrack(track.version)}
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 flex-1 min-w-[100px]"
+                      >
+                        <Download className="w-4 h-4" />
+                        {t('orderDetails.music.download')}
+                      </Button>
                       <Button 
                         onClick={() => {
                           const shareUrl = `https://criandomusicas.com.br/m/${orderId}/${track.version}?lang=${i18n.language}`;

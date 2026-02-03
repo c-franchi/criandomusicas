@@ -298,6 +298,7 @@ const Briefing = () => {
   const [editingFieldStep, setEditingFieldStep] = useState<number | null>(null);
   const [isQuickMode, setIsQuickMode] = useState(false);
   const [showNoCreditModal, setShowNoCreditModal] = useState(false);
+  const [hasPreviewCreditForModal, setHasPreviewCreditForModal] = useState(false);
   const [quickModeFormData, setQuickModeFormData] = useState<BriefingFormData | null>(null);
   
   const initialFormData: BriefingFormData = {
@@ -2219,7 +2220,11 @@ const Briefing = () => {
         body: { orderType }
       });
       
-      if (creditsData?.has_credits && (creditsData?.total_available > 0 || creditsData?.preview_credit_available)) {
+      // Fix: Check preview credit separately from has_credits flag
+      const hasRegularCredits = creditsData?.total_available > 0;
+      const hasPreviewCredit = creditsData?.preview_credit_available === true;
+      
+      if (hasRegularCredits || hasPreviewCredit) {
         // Consumir crédito automaticamente SEM modal
         const result = await supabase.functions.invoke('use-credit', {
           body: { orderId: orderData.id }
@@ -2248,6 +2253,7 @@ const Briefing = () => {
       // Sem créditos - mostrar modal para ir ao checkout
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
+      setHasPreviewCreditForModal(false);
       setShowNoCreditModal(true);
     } catch (error) {
       console.error('Error creating order:', error);
@@ -2658,7 +2664,11 @@ const Briefing = () => {
         body: { orderType }
       });
       
-      if (creditsData?.has_credits && (creditsData?.total_available > 0 || creditsData?.preview_credit_available)) {
+      // Fix: Check preview credit separately from has_credits flag
+      const hasRegularCredits = creditsData?.total_available > 0;
+      const hasPreviewCredit = creditsData?.preview_credit_available === true;
+      
+      if (hasRegularCredits || hasPreviewCredit) {
         const result = await supabase.functions.invoke('use-credit', {
           body: { orderId: orderData.id }
         });
@@ -2682,6 +2692,7 @@ const Briefing = () => {
 
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
+      setHasPreviewCreditForModal(false);
       setShowNoCreditModal(true);
     } catch (error) {
       console.error('Error creating order:', error);

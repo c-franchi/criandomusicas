@@ -58,13 +58,13 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
         <div className="flex items-baseline gap-2">
           <span className={`text-4xl font-bold ${isOnlyPreview ? 'text-emerald-600' : 'text-primary'}`}>{displayAvailable}</span>
           <span className="text-muted-foreground">
-            {isOnlyPreview ? 'preview (40s)' : `música${displayAvailable !== 1 ? 's' : ''}`}
+            {isOnlyPreview ? 'preview (verso + refrão)' : `música${displayAvailable !== 1 ? 's' : ''}`}
           </span>
         </div>
         {isOnlyPreview && (
           <p className="text-xs text-emerald-600/80 mt-2 flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
-            Crie uma prévia de 40 segundos da sua música gratuitamente!
+            Crie uma prévia com verso e refrão da sua música gratuitamente!
           </p>
         )}
       </div>
