@@ -189,9 +189,6 @@ export const PLAN_LABELS: Record<string, string> = {
   'creator_start': 'Creator Start',
   'creator_pro': 'Creator Pro',
   'creator_studio': 'Creator Studio',
-  'creator_start_instrumental': 'Creator Start',
-  'creator_pro_instrumental': 'Creator Pro',
-  'creator_studio_instrumental': 'Creator Studio',
 };
 
 export const getPlanLabel = (planId: string): string => {
@@ -203,10 +200,8 @@ export const getCreditsForPlan = (planId: string): number => {
   if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
   // Creator plans - values from pricing_config
-  if (planId.includes('creator_studio_instrumental')) return 300;
   if (planId.includes('creator_studio')) return 230;
   if (planId.includes('creator_pro')) return 150;
-  if (planId.includes('creator_start_instrumental')) return 50;
   if (planId.includes('creator_start')) return 40;
   return 1;
 };

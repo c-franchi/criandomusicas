@@ -186,7 +186,7 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
             <p className="text-sm text-muted-foreground">{planDetails?.price}</p>
           </div>
           <Badge variant="default" className={subscription?.cancel_at_period_end ? "bg-amber-500" : "bg-primary"}>
-            {subscription?.cancel_at_period_end ? 'Cancelando' : (planDetails?.isInstrumental ? 'Instrumental' : 'Ativo')}
+            {subscription?.cancel_at_period_end ? 'Cancelando' : 'Ativo'}
           </Badge>
         </div>
 
