@@ -360,9 +360,9 @@
     "badge": "Preview",
     "downloadBlocked": "Download bloqueado",
     "downloadBlockedTitle": "🔒 Download indisponível",
-    "downloadBlockedDesc": "Esta é uma prévia de teste. Adquira créditos para baixar a música completa.",
+    "downloadBlockedDesc": "Esta é uma prévia gratuita (Verso + Refrão). Você pode baixar esta versão!",
     "buyCredits": "Comprar Créditos",
     "createFull": "Criar Música Completa",
-    "notice": "Esta é uma prévia (Verso + Refrão). Para baixar a versão completa com todos os versos e qualidade final, adquira créditos."
+    "notice": "Esta é sua prévia gratuita com estrutura Verso + Refrão. Para criar músicas completas com todas as seções, adquira créditos."
   }
 }

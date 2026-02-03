@@ -140,13 +140,8 @@ const Planos = () => {
     return <Zap className="w-6 h-6" />;
   };
 
-  // Translate plan names based on plan ID
+  // Translate plan names based on plan ID - use localized names from i18n
   const getPlanName = (planId: string, dbName: string): string => {
-    // For creator plans, keep English names
-    if (planId.includes('creator_start')) return 'Creator Start';
-    if (planId.includes('creator_pro')) return 'Creator Pro';
-    if (planId.includes('creator_studio')) return 'Creator Studio';
-    
     // Try to get translated name from pricing.plans
     const translatedName = t(`plans.${planId}.name`, { defaultValue: '' });
     
@@ -298,16 +293,16 @@ const Planos = () => {
         </div>
       </div>
       
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto flex flex-col">
         {/* Credits Banner for logged users */}
         {user && (
-          <div className="mb-8">
+          <div className="mb-8 order-first">
             <CreditsBanner showBuyButton={false} />
           </div>
         )}
 
-        {/* Section: Para Presentes e Homenagens */}
-        <div className="text-center mb-8">
+        {/* Section: Para Presentes e Homenagens (order-2 - AFTER Creator) */}
+        <div className="text-center mb-8 order-2 pt-16 border-t border-border/30">
           <Badge className="mb-4 bg-primary/20 text-primary border-primary/30 px-4 py-2">
             {t('section.giftsTitle')}
           </Badge>
@@ -315,7 +310,7 @@ const Planos = () => {
             <div className="p-3 rounded-xl bg-gradient-to-r from-primary to-accent music-glow">
               <Crown className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h1 className="text-4xl font-bold gradient-text">{t('section.giftsSubtitle')}</h1>
+            <h2 className="text-4xl font-bold gradient-text">{t('section.giftsSubtitle')}</h2>
           </div>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
             {t('section.giftsDescription')}
@@ -327,7 +322,8 @@ const Planos = () => {
           </Badge>
         </div>
 
-        {/* Plans Grid */}
+        {/* Plans Grid (order-2 - AFTER Creator) */}
+        <div className="order-2 mb-16">
         {loading ? (
           <div className="flex justify-center items-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -465,16 +461,17 @@ const Planos = () => {
             })}
           </div>
         )}
+        </div>
 
-        {/* ========== SECTION: Para Criadores de Conteúdo ========== */}
-        <div id="creator" className="mb-16 pt-16 border-t border-border/30">
+        {/* ========== SECTION: Para Criadores de Conteúdo (order-1 - FIRST) ========== */}
+        <div id="creator" className="mb-16 pt-8 order-1">
           <div className="text-center mb-12">
             <Badge className="mb-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 border-purple-500/30 px-4 py-2">
               {t('section.creatorTitle')}
             </Badge>
-            <h2 className="text-4xl font-bold gradient-text mb-4">
+            <h1 className="text-4xl font-bold gradient-text mb-4">
               {t('section.creatorSubtitle')}
-            </h2>
+            </h1>
             <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed mb-6">
               {t('section.creatorDescription')}
             </p>
@@ -680,8 +677,8 @@ const Planos = () => {
           </Card>
         </div>
 
-        {/* How Credits Work Section */}
-        <Card className="mb-16 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5">
+        {/* How Credits Work Section (order-3) */}
+        <Card className="mb-16 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 order-3">
           <CardHeader className="text-center">
             <CardTitle className="flex items-center justify-center gap-2 text-2xl">
               <HelpCircle className="w-6 h-6 text-primary" />
@@ -704,9 +701,9 @@ const Planos = () => {
           </CardContent>
         </Card>
 
-        {/* Custom Lyrics Special Section */}
+        {/* Custom Lyrics Special Section (order-4) */}
         {customLyricPlan && (
-          <div className="mb-16">
+          <div className="mb-16 order-4">
             <div className="text-center mb-8">
               <Badge className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border-green-500/30 mb-4 px-4 py-2">
                 <Sparkles className="w-4 h-4 mr-2 inline" />
@@ -776,8 +773,8 @@ const Planos = () => {
           </div>
         )}
 
-        {/* Footer */}
-        <div className="text-center pt-6">
+        {/* Footer (order-5) */}
+        <div className="text-center pt-6 order-5">
           <p className="text-muted-foreground text-sm mb-2">
             {t('footer.payment')} • {t('footer.satisfaction')}
           </p>
