@@ -134,7 +134,7 @@ const Hero = () => {
           {!user && (
             <Link to="/auth">
               <motion.div 
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 text-sm font-medium text-emerald-400 backdrop-blur-sm cursor-pointer hover:from-emerald-500/30 hover:to-green-500/30 transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 text-sm font-medium text-emerald-700 dark:text-emerald-400 backdrop-blur-sm cursor-pointer hover:from-emerald-500/30 hover:to-green-500/30 transition-all"
                 animate={{ scale: [1, 1.02, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >

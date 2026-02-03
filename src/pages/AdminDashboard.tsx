@@ -23,7 +23,8 @@ import {
   MessageCircle,
   Loader2,
   ImageIcon,
-  DollarSign
+  DollarSign,
+  Home
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -1102,6 +1103,13 @@ const AdminDashboard = () => {
               </div>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
+              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Link to="/">
+                  <Home className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Home</span>
+                </Link>
+              </Button>
+              
               <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/admin/configuracoes">
                   <Settings className="w-4 h-4 sm:mr-2" />
