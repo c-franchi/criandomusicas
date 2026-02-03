@@ -190,9 +190,17 @@
       "title": "Benvenuto su Criando Músicas! 🎵",
       "description": "Facciamo un tour rapido per farti conoscere tutte le funzionalità della piattaforma."
     },
-    "createMusic": {
-      "title": "Crea la tua Musica",
-      "description": "Clicca qui per iniziare a creare la tua canzone personalizzata. È veloce e facile!"
+    "quickMode": {
+      "title": "🚀 Modo Veloce",
+      "description": "Questo pulsante ti porta direttamente alla Creazione Veloce. Basta raccontare la tua storia in un campo di testo e scegliere lo stile. La tua canzone sarà pronta in massimo 12 ore, senza dover approvare il testo!"
+    },
+    "completeMode": {
+      "title": "📝 Modo Completo",
+      "description": "Preferisci più controllo? Il modo completo ti permette di scegliere tipo di voce, strumenti, approvare il testo prima della produzione e molto altro. Ideale per regali speciali e occasioni importanti!"
+    },
+    "modesComparison": {
+      "title": "Quale modo scegliere?",
+      "description": "🚀 Veloce: Semplice e rapido, consegna in massimo 12h\n📝 Completo: Più opzioni di personalizzazione, tu approvi il testo"
     },
     "process": {
       "title": "Come Funziona",

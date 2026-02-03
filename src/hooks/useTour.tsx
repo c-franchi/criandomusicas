@@ -28,8 +28,25 @@ export const useTour = (options?: UseTourOptions) => {
       {
         element: '#tour-hero-cta',
         popover: {
-          title: t('tour.createMusic.title', 'Crie sua Música'),
-          description: t('tour.createMusic.description', 'Clique aqui para começar a criar sua música personalizada. É rápido e fácil!'),
+          title: t('tour.quickMode.title', '🚀 Modo Rápido'),
+          description: t('tour.quickMode.description', 'Este botão leva você direto para a Criação Rápida. Basta contar sua história em um campo de texto e escolher o estilo. Sua música fica pronta em até 12 horas, sem precisar aprovar a letra!'),
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        element: '#tour-hero-secondary-cta',
+        popover: {
+          title: t('tour.completeMode.title', '📝 Modo Completo'),
+          description: t('tour.completeMode.description', 'Prefere mais controle? O modo completo permite escolher tipo de voz, instrumentos, aprovar a letra antes da produção e muito mais. Ideal para presentes especiais e ocasiões importantes!'),
+          side: "bottom",
+          align: "center",
+        },
+      },
+      {
+        popover: {
+          title: t('tour.modesComparison.title', 'Qual modo escolher?'),
+          description: t('tour.modesComparison.description', '🚀 Rápido: Simples e veloz, entrega em até 12h\n📝 Completo: Mais opções de personalização, você aprova a letra'),
           side: "bottom",
           align: "center",
         },

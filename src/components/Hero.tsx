@@ -199,24 +199,35 @@ const Hero = () => {
                   {t('hero.ctaQuickCreate')}
                 </Button>
               </Link>
+              <Link to="/briefing" id="tour-hero-secondary-cta">
+                <Button 
+                  variant="glass" 
+                  size="lg" 
+                  className="text-lg px-6 py-7 rounded-xl group"
+                >
+                  <Music className="w-5 h-5 mr-2" />
+                  {t('hero.ctaComplete', 'Modo Completo')}
+                </Button>
+              </Link>
             </>
           ) : (
             <>
-              <Link to="/briefing" id="tour-hero-cta">
-                <Button variant="hero" size="lg" className="text-lg px-10 py-7 rounded-xl group shadow-2xl">
-                  {t('hero.cta')}
-                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              <Link to="/briefing?type=vocal" id="tour-hero-cta">
+                <Button 
+                  variant="hero" 
+                  size="lg" 
+                  className="text-lg px-8 py-7 rounded-xl group shadow-2xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400"
+                >
+                  <Zap className="w-5 h-5 mr-2" />
+                  {t('hero.ctaQuickCreate', 'Criar Rápido')}
                 </Button>
               </Link>
-              <Button 
-                variant="glass" 
-                size="lg" 
-                className="text-lg px-8 py-7 rounded-xl group"
-                onClick={() => document.getElementById('exemplos')?.scrollIntoView({ behavior: 'smooth' })}
-              >
-                <Play className="w-5 h-5 mr-2" />
-                {t('hero.ctaExamples')}
-              </Button>
+              <Link to="/briefing" id="tour-hero-secondary-cta">
+                <Button variant="glass" size="lg" className="text-lg px-8 py-7 rounded-xl group">
+                  <Music className="w-5 h-5 mr-2" />
+                  {t('hero.ctaComplete', 'Modo Completo')}
+                </Button>
+              </Link>
             </>
           )}
         </motion.div>
