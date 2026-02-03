@@ -25,6 +25,8 @@ serve(async (req) => {
   try {
     const url = new URL(req.url);
     const orderId = url.searchParams.get("orderId");
+    const versionParam = url.searchParams.get("version");
+    const version = versionParam ? parseInt(versionParam, 10) : 1;
 
     if (!orderId) {
       return new Response(
@@ -38,12 +40,13 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch track with READY status for this order
+    // Fetch track with READY status for this order and version
     const { data: trackData, error: trackError } = await supabase
       .from("tracks")
-      .select("audio_url")
+      .select("audio_url, version")
       .eq("order_id", orderId)
       .eq("status", "READY")
+      .eq("version", version)
       .maybeSingle();
 
     if (trackError) {
@@ -55,6 +58,54 @@ serve(async (req) => {
     }
 
     if (!trackData?.audio_url) {
+      // Try to fallback to version 1 if version 2 not found
+      if (version === 2) {
+        const { data: fallbackTrack } = await supabase
+          .from("tracks")
+          .select("audio_url, version")
+          .eq("order_id", orderId)
+          .eq("status", "READY")
+          .eq("version", 1)
+          .maybeSingle();
+        
+        if (fallbackTrack?.audio_url) {
+          // Return version 1 as fallback
+          const { data: orderData } = await supabase
+            .from("orders")
+            .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric, is_preview, plan_id")
+            .eq("id", orderId)
+            .single();
+
+          let title = "Música Personalizada";
+          if (orderData?.song_title) {
+            title = orderData.song_title;
+          } else if (orderData?.approved_lyric_id) {
+            const { data: lyricData } = await supabase
+              .from("lyrics")
+              .select("title")
+              .eq("id", orderData.approved_lyric_id)
+              .maybeSingle();
+            if (lyricData?.title) title = lyricData.title;
+          } else if (orderData?.is_instrumental) {
+            title = `Instrumental ${orderData.music_type || "Personalizado"}`;
+          }
+
+          const isPreview = orderData?.is_preview === true || orderData?.plan_id === 'preview_test';
+
+          return new Response(
+            JSON.stringify({
+              audio_url: fallbackTrack.audio_url,
+              title,
+              music_style: orderData?.music_style || "",
+              cover_url: orderData?.cover_url || null,
+              is_preview: isPreview,
+              version: 1
+            }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+      
       return new Response(
         JSON.stringify({ error: "Track not found or not ready" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -102,9 +153,10 @@ serve(async (req) => {
           referrer,
           user_agent: userAgent,
           ip_hash: ipHash,
-          platform: "direct"
+          platform: "direct",
+          metadata: { version }
         });
-        console.log("View event tracked for order:", orderId);
+        console.log("View event tracked for order:", orderId, "version:", version);
       } catch (err) {
         console.error("Failed to track view:", err);
       }
@@ -119,7 +171,8 @@ serve(async (req) => {
         title,
         music_style: orderData?.music_style || "",
         cover_url: orderData?.cover_url || null,
-        is_preview: isPreview
+        is_preview: isPreview,
+        version: trackData.version || version
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

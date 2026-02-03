@@ -775,6 +775,7 @@ export type Database = {
           order_id: string
           status: Database["public"]["Enums"]["track_status"]
           updated_at: string
+          version: number | null
         }
         Insert: {
           audio_url?: string | null
@@ -784,6 +785,7 @@ export type Database = {
           order_id: string
           status?: Database["public"]["Enums"]["track_status"]
           updated_at?: string
+          version?: number | null
         }
         Update: {
           audio_url?: string | null
@@ -793,6 +795,7 @@ export type Database = {
           order_id?: string
           status?: Database["public"]["Enums"]["track_status"]
           updated_at?: string
+          version?: number | null
         }
         Relationships: [
           {

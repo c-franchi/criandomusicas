@@ -66,6 +66,7 @@ interface TrackData {
   id: string;
   audio_url: string;
   status: string;
+  version: number;
 }
 
 interface ReviewData {
@@ -84,12 +85,12 @@ const OrderDetails = () => {
   const { toast } = useToast();
   const [order, setOrder] = useState<OrderData | null>(null);
   const [lyrics, setLyrics] = useState<LyricData[]>([]);
-  const [track, setTrack] = useState<TrackData | null>(null);
+  const [tracks, setTracks] = useState<TrackData[]>([]);
   const [review, setReview] = useState<ReviewData | null>(null);
   const [hasReactionVideo, setHasReactionVideo] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [playingTrack, setPlayingTrack] = useState<number | null>(null);
+  const [audioElements, setAudioElements] = useState<{ [key: number]: HTMLAudioElement }>({});
 
   const fetchReview = useCallback(async () => {
     if (!orderId) return;
@@ -132,15 +133,15 @@ const OrderDetails = () => {
 
         setLyrics(lyricsData || []);
 
-        // Fetch track
+        // Fetch tracks (both versions)
         const { data: trackData } = await supabase
           .from('tracks')
           .select('*')
           .eq('order_id', orderId)
           .eq('status', 'READY')
-          .maybeSingle();
+          .order('version', { ascending: true });
 
-        setTrack(trackData);
+        setTracks(trackData || []);
 
         // Fetch existing review
         await fetchReview();
@@ -206,7 +207,13 @@ const OrderDetails = () => {
           if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             const newTrack = payload.new as TrackData;
             if (newTrack.status === 'READY') {
-              setTrack(newTrack);
+              setTracks(prev => {
+                const exists = prev.some(t => t.id === newTrack.id);
+                if (exists) {
+                  return prev.map(t => t.id === newTrack.id ? newTrack : t);
+                }
+                return [...prev, newTrack].sort((a, b) => a.version - b.version);
+              });
             }
           }
         }
@@ -219,32 +226,42 @@ const OrderDetails = () => {
     };
   }, [user?.id, orderId]);
 
-  // Audio controls
-  const togglePlay = () => {
-    if (!track?.audio_url) return;
+  // Audio controls - now supports multiple tracks
+  const togglePlay = (version: number) => {
+    const trackToPlay = tracks.find(t => t.version === version);
+    if (!trackToPlay?.audio_url) return;
 
-    if (!audioElement) {
-      const audio = new Audio(track.audio_url);
-      audio.onended = () => setIsPlaying(false);
+    // Stop other tracks
+    Object.entries(audioElements).forEach(([v, audio]) => {
+      if (parseInt(v) !== version) {
+        audio.pause();
+      }
+    });
+
+    if (!audioElements[version]) {
+      const audio = new Audio(trackToPlay.audio_url);
+      audio.onended = () => setPlayingTrack(null);
       audio.play();
-      setAudioElement(audio);
-      setIsPlaying(true);
+      setAudioElements(prev => ({ ...prev, [version]: audio }));
+      setPlayingTrack(version);
     } else {
-      if (isPlaying) {
-        audioElement.pause();
-        setIsPlaying(false);
+      if (playingTrack === version) {
+        audioElements[version].pause();
+        setPlayingTrack(null);
       } else {
-        audioElement.play();
-        setIsPlaying(true);
+        audioElements[version].play();
+        setPlayingTrack(version);
       }
     }
   };
 
-  const downloadTrack = () => {
-    if (!track?.audio_url) return;
+  const downloadTrack = (version: number) => {
+    const trackToDownload = tracks.find(t => t.version === version);
+    if (!trackToDownload?.audio_url) return;
     
     // Get the song title - prioritize approved lyrics title, then instrumental name
     const songTitle = getSongTitle();
+    const versionSuffix = tracks.length > 1 ? `-v${version}` : '';
     
     // Sanitize filename: remove special characters and replace spaces with hyphens
     const sanitizedTitle = songTitle
@@ -256,8 +273,8 @@ const OrderDetails = () => {
       .slice(0, 50); // Limit length
     
     const link = document.createElement('a');
-    link.href = track.audio_url;
-    link.download = `${sanitizedTitle}.mp3`;
+    link.href = trackToDownload.audio_url;
+    link.download = `${sanitizedTitle}${versionSuffix}.mp3`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -449,16 +466,19 @@ const OrderDetails = () => {
         </Card>
 
         {/* Music Player - Show when ready */}
-        {isMusicReady && track?.audio_url && (
+        {isMusicReady && tracks.length > 0 && (
           <Card className="border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-600">
                 <Music className="w-5 h-5" />
                 {t('orderDetails.music.title')}
+                {tracks.length === 2 && (
+                  <Badge variant="outline" className="ml-2 text-xs">2 versões</Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Album Art & Controls */}
+              {/* Album Art */}
               <div className="flex items-center gap-6">
                 {order.cover_url ? (
                   <img 
@@ -473,39 +493,71 @@ const OrderDetails = () => {
                 )}
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-1">{getSongTitle()}</h3>
-                  <p className="text-muted-foreground text-sm mb-3">{order.music_style}</p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button 
-                      onClick={togglePlay}
-                      size="default"
-                      className="gap-2 flex-1 min-w-[120px]"
-                    >
-                      {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                      {isPlaying ? t('orderDetails.music.pause') : t('orderDetails.music.play')}
-                    </Button>
-                    {isPreview ? (
-                      <Button 
-                        variant="outline"
-                        size="default"
-                        className="gap-2 flex-1 min-w-[120px] cursor-not-allowed opacity-60"
-                        disabled
-                      >
-                        <Lock className="w-4 h-4" />
-                        {t('preview.downloadBlocked', 'Download bloqueado')}
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={downloadTrack}
-                        variant="outline"
-                        size="default"
-                        className="gap-2 flex-1 min-w-[120px]"
-                      >
-                        <Download className="w-4 h-4" />
-                        {t('orderDetails.music.download')}
-                      </Button>
-                    )}
-                  </div>
+                  <p className="text-muted-foreground text-sm">{order.music_style}</p>
                 </div>
+              </div>
+
+              {/* Track Versions */}
+              <div className="space-y-3">
+                {tracks.map((track) => (
+                  <div key={track.id} className="flex items-center gap-3 p-3 bg-background/50 rounded-lg border border-border/50">
+                    <Badge variant="outline" className="shrink-0">
+                      V{track.version}
+                    </Badge>
+                    <div className="flex flex-wrap gap-2 flex-1">
+                      <Button 
+                        onClick={() => togglePlay(track.version)}
+                        size="sm"
+                        className="gap-2 flex-1 min-w-[100px]"
+                      >
+                        {playingTrack === track.version ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                        {playingTrack === track.version ? t('orderDetails.music.pause') : t('orderDetails.music.play')}
+                      </Button>
+                      {isPreview ? (
+                        <Button 
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 flex-1 min-w-[100px] cursor-not-allowed opacity-60"
+                          disabled
+                        >
+                          <Lock className="w-4 h-4" />
+                          {t('preview.downloadBlocked', 'Bloqueado')}
+                        </Button>
+                      ) : (
+                        <Button 
+                          onClick={() => downloadTrack(track.version)}
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 flex-1 min-w-[100px]"
+                        >
+                          <Download className="w-4 h-4" />
+                          {t('orderDetails.music.download')}
+                        </Button>
+                      )}
+                      <Button 
+                        onClick={() => {
+                          const shareUrl = `https://criandomusicas.com.br/m/${orderId}/${track.version}?lang=${i18n.language}`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: `🎵 ${getSongTitle()} (V${track.version})`,
+                              text: `${tc('share.listenSong')}: ${getSongTitle()}`,
+                              url: shareUrl
+                            });
+                          } else {
+                            navigator.clipboard.writeText(shareUrl);
+                            toast({ title: t('orderDetails.share.copied') });
+                          }
+                          trackShare(`share-v${track.version}`);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2"
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Preview Notice */}
