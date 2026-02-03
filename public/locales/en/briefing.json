@@ -703,5 +703,57 @@
     "freeStart": "Free to start - No commitment",
     "downloadAllowed": "You can download this preview",
     "shareNotice": "This is a test preview"
+  },
+  "tour": {
+    "buttons": {
+      "next": "Next",
+      "previous": "Previous",
+      "done": "Got it!"
+    },
+    "progress": "{{current}} of {{total}}",
+    "quickMode": {
+      "welcome": {
+        "title": "🚀 Quick Creation Mode",
+        "description": "This is the fastest way to create your music! Let us show you how it works."
+      },
+      "prompt": {
+        "title": "📝 Tell your story",
+        "description": "Write here what you want in your music: the story, the feelings, important names, special moments... The more details, the better the lyrics!"
+      },
+      "genre": {
+        "title": "🎵 Choose the genre",
+        "description": "Select the musical style that matches your music. Tap the grid icon to see all options!"
+      },
+      "instrumental": {
+        "title": "🎹 Instrumental",
+        "description": "Enable if you want a music without vocals, just instrumental."
+      },
+      "create": {
+        "title": "✨ Create Music",
+        "description": "When everything is ready, click here! Your music will be ready in up to 12 hours, without needing to approve lyrics."
+      },
+      "detailed": {
+        "title": "📝 Want more control?",
+        "description": "If you prefer to choose voice, instruments and approve the lyrics first, use \"Complete Mode\" by clicking here!"
+      },
+      "finish": {
+        "title": "Ready! 🎉",
+        "description": "Now just tell your story and create your music. Happy creating!"
+      }
+    },
+    "detailedMode": {
+      "welcome": {
+        "title": "📝 Complete Mode",
+        "description": "This mode allows you to customize every detail of your music!"
+      },
+      "steps": {
+        "title": "🎯 Step by step",
+        "description": "You will answer questions about music type, emotion, voice, instruments and much more. In the end, you approve the lyrics before production!"
+      },
+      "finish": {
+        "title": "Let's create! 🎉",
+        "description": "Answer the questions and create a unique, personalized music!"
+      }
+    }
   }
 }
