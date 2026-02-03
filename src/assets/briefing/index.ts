@@ -14,6 +14,7 @@ import classicoImg from './genres/classico.jpg';
 import lofiImg from './genres/lofi.jpg';
 import ambienteImg from './genres/ambiente.jpg';
 import cinematicoImg from './genres/cinematico.jpg';
+import reggaeImg from './genres/reggae.jpg';
 
 // Music Types Images
 import homenagemImg from './types/homenagem.jpg';
@@ -146,6 +147,7 @@ export const genreImages: Record<string, string> = {
   lofi: lofiImg,
   ambiente: ambienteImg,
   cinematico: cinematicoImg,
+  reggae: reggaeImg,
 };
 
 export const typeImages: Record<string, string> = {
@@ -302,6 +304,7 @@ export {
   lofiImg,
   ambienteImg,
   cinematicoImg,
+  reggaeImg,
   // Types
   homenagemImg,
   romanticaImg,
