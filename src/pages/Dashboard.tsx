@@ -81,11 +81,11 @@ const Dashboard = () => {
         'creator_pro_instrumental': 'Creator Pro Instrumental',
         'creator_studio_instrumental': 'Creator Studio Instrumental',
       };
-      
+      // Creator plan credits - from pricing_config table
       const planCredits: Record<string, number> = {
-        'creator_start': 50,
+        'creator_start': 40,
         'creator_pro': 150,
-        'creator_studio': 300,
+        'creator_studio': 230,
         'creator_start_instrumental': 50,
         'creator_pro_instrumental': 150,
         'creator_studio_instrumental': 300,
