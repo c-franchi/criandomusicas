@@ -15,13 +15,16 @@ export interface CreatorSubscription {
   canceled_at?: string | null;
 }
 
+// Credits are fetched from pricing_config table - these are fallback values
+// Values should match: creator_start=40, creator_pro=150, creator_studio=230
+// Instrumental: start=50, pro=150, studio=300
 const PLAN_DETAILS: Record<string, { name: string; price: string; credits: number; isInstrumental: boolean }> = {
   creator_start: { name: 'Creator Start', price: 'R$ 49,90/mês', credits: 40, isInstrumental: false },
   creator_pro: { name: 'Creator Pro', price: 'R$ 89,90/mês', credits: 150, isInstrumental: false },
   creator_studio: { name: 'Creator Studio', price: 'R$ 119,90/mês', credits: 230, isInstrumental: false },
-  creator_start_instrumental: { name: 'Creator Start Instrumental', price: 'R$ 23,90/mês', credits: 40, isInstrumental: true },
+  creator_start_instrumental: { name: 'Creator Start Instrumental', price: 'R$ 23,90/mês', credits: 50, isInstrumental: true },
   creator_pro_instrumental: { name: 'Creator Pro Instrumental', price: 'R$ 39,90/mês', credits: 150, isInstrumental: true },
-  creator_studio_instrumental: { name: 'Creator Studio Instrumental', price: 'R$ 63,90/mês', credits: 230, isInstrumental: true },
+  creator_studio_instrumental: { name: 'Creator Studio Instrumental', price: 'R$ 63,90/mês', credits: 300, isInstrumental: true },
 };
 
 export function getPlanDetails(planId: string | null) {

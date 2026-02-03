@@ -19,6 +19,7 @@ interface PricingPlan {
   price_display: string;
   features: string[];
   is_popular: boolean;
+  credits: number | null;
 }
 
 interface VoucherValidation {
@@ -35,14 +36,6 @@ interface VoucherValidation {
   is_free: boolean;
   error?: string;
 }
-
-// Get credits for a plan
-const getCreditsForPlan = (planId: string): number => {
-  if (planId.includes('creator_studio')) return 300;
-  if (planId.includes('creator_pro')) return 150;
-  if (planId.includes('creator_start')) return 50;
-  return 1;
-};
 
 // Helper to format cents to BRL
 const formatPrice = (cents: number): string => {
@@ -95,7 +88,8 @@ const CreatorCheckout = () => {
 
         setPlan({
           ...data,
-          features: Array.isArray(data.features) ? data.features as string[] : []
+          features: Array.isArray(data.features) ? data.features as string[] : [],
+          credits: data.credits || 1
         });
       } catch (error) {
         console.error('Error fetching plan:', error);
@@ -207,7 +201,7 @@ const CreatorCheckout = () => {
 
   if (!plan) return null;
 
-  const credits = getCreditsForPlan(plan.id);
+  const credits = plan.credits || 1;
   const PlanIcon = plan.id.includes('studio') ? Crown : plan.id.includes('pro') ? Star : Zap;
   const isPopular = plan.is_popular || plan.id.includes('creator_pro');
   const displayPrice = plan.price_promo_cents || plan.price_cents;

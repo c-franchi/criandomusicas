@@ -42,9 +42,12 @@ const getCreditsForPlan = (plan: PricingPlan): number => {
   const planId = plan.id;
   if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
-  if (planId.includes('creator_studio')) return 300;
+  // Creator plans - values from pricing_config
+  if (planId.includes('creator_studio_instrumental')) return 300;
+  if (planId.includes('creator_studio')) return 230;
   if (planId.includes('creator_pro')) return 150;
-  if (planId.includes('creator_start')) return 50;
+  if (planId.includes('creator_start_instrumental')) return 50;
+  if (planId.includes('creator_start')) return 40;
   return 1;
 };
 

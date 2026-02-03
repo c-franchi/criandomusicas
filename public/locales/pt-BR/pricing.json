@@ -70,74 +70,70 @@
     },
     "creator_start": {
       "name": "Creator Start",
-      "description": "50 músicas/mês para criadores iniciantes",
+      "description": "40 músicas/mês para criadores iniciantes",
       "features": [
-        "50 músicas por mês",
-        "Letras curadas profissionalmente",
-        "Capas prontas para thumbnails",
-        "Uso comercial e monetização",
-        "Entrega em até 24h",
-        "Suporte por email"
+        "Até 40 músicas/mês",
+        "Letras curadas automaticamente",
+        "Música pronta para vídeos",
+        "Uso comercial liberado",
+        "Acesso ao histórico de criações",
+        "Ideal para criadores iniciantes"
       ]
     },
     "creator_pro": {
       "name": "Creator Pro",
       "description": "150 músicas/mês para criadores ativos",
       "features": [
-        "150 músicas por mês",
-        "Letras curadas profissionalmente",
-        "Capas prontas para thumbnails",
-        "Uso comercial e monetização",
-        "Entrega em até 24h",
-        "Suporte VIP dedicado"
+        "Até 150 músicas/mês",
+        "Tudo do Creator Start",
+        "Suporte VIP dedicado",
+        "Prioridade na fila",
+        "Ideal para criadores profissionais"
       ]
     },
     "creator_studio": {
       "name": "Creator Studio",
       "description": "230 músicas/mês para estúdios profissionais",
       "features": [
-        "230 músicas por mês",
-        "Letras curadas profissionalmente",
-        "Capas prontas para thumbnails",
-        "Uso comercial e monetização",
-        "Entrega em até 24h",
-        "Suporte prioritário"
+        "Até 230 músicas/mês",
+        "Tudo do Creator Pro",
+        "Atendimento prioritário",
+        "Organização por projetos/canais",
+        "Ideal para estúdios e agências"
       ]
     },
     "creator_start_instrumental": {
       "name": "Creator Start Instrumental",
       "description": "50 instrumentais/mês para criadores iniciantes",
       "features": [
-        "50 instrumentais por mês",
+        "Até 50 instrumentais/mês",
         "Arranjos personalizados",
-        "Capas prontas para thumbnails",
-        "Uso comercial e monetização",
-        "Entrega em até 24h",
-        "Suporte por email"
+        "Música pronta para vídeos",
+        "Uso comercial liberado",
+        "Acesso ao histórico de criações",
+        "Ideal para criadores iniciantes"
       ]
     },
     "creator_pro_instrumental": {
       "name": "Creator Pro Instrumental",
       "description": "150 instrumentais/mês para criadores ativos",
       "features": [
-        "150 instrumentais por mês",
-        "Arranjos personalizados",
-        "Capas prontas para thumbnails",
-        "Uso comercial e monetização",
-        "Entrega em até 24h",
-        "Suporte VIP dedicado"
+        "Até 150 instrumentais/mês",
+        "Tudo do Creator Start",
+        "Suporte VIP dedicado",
+        "Prioridade na fila",
+        "Ideal para criadores profissionais"
       ]
     },
     "creator_studio_instrumental": {
       "name": "Creator Studio Instrumental",
-      "description": "230 instrumentais/mês para estúdios profissionais",
+      "description": "300 instrumentais/mês para estúdios profissionais",
       "features": [
-        "230 instrumentais por mês",
-        "Arranjos personalizados",
-        "Capas prontas para thumbnails",
-        "Uso comercial e monetização",
-        "Entrega em até 24h",
-        "Suporte prioritário"
+        "Até 300 instrumentais/mês",
+        "Tudo do Creator Pro",
+        "Atendimento prioritário",
+        "Organização por projetos/canais",
+        "Ideal para estúdios e agências"
       ]
     }
   },
