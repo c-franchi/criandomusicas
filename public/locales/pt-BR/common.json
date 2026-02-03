@@ -184,5 +184,48 @@
   "loading": "Carregando...",
   "and": "e",
   "backToHome": "Voltar ao início",
-  "backHome": "Voltar ao Início"
+  "backHome": "Voltar ao Início",
+  "tour": {
+    "welcome": {
+      "title": "Bem-vindo ao Criando Músicas! 🎵",
+      "description": "Vamos fazer um tour rápido para você conhecer todas as funcionalidades da plataforma."
+    },
+    "createMusic": {
+      "title": "Crie sua Música",
+      "description": "Clique aqui para começar a criar sua música personalizada. É rápido e fácil!"
+    },
+    "process": {
+      "title": "Como Funciona",
+      "description": "Entenda o passo a passo: conte sua história, escolha o estilo e receba sua música!"
+    },
+    "examples": {
+      "title": "Ouça Exemplos",
+      "description": "Escute algumas músicas que já criamos para nossos clientes. Inspire-se!"
+    },
+    "plans": {
+      "title": "Escolha seu Plano",
+      "description": "Temos opções para todos os gostos e bolsos. Escolha o plano ideal para você."
+    },
+    "dashboard": {
+      "title": "Seus Pedidos",
+      "description": "Acompanhe o status das suas músicas aqui. Você receberá notificações quando ficarem prontas!"
+    },
+    "profile": {
+      "title": "Seu Perfil",
+      "description": "Gerencie seus dados, créditos e configurações da conta."
+    },
+    "finish": {
+      "title": "Pronto para começar! 🎉",
+      "description": "Agora você conhece a plataforma. Que tal criar sua primeira música?"
+    },
+    "buttons": {
+      "next": "Próximo",
+      "previous": "Anterior",
+      "done": "Concluir",
+      "skip": "Pular"
+    },
+    "progress": "{{current}} de {{total}}",
+    "startTour": "Ver Tour",
+    "startTourDesc": "Conheça a plataforma"
+  }
 }

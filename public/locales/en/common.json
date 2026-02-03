@@ -184,5 +184,48 @@
   "loading": "Loading...",
   "and": "and",
   "backToHome": "Back to home",
-  "backHome": "Back to Home"
+  "backHome": "Back to Home",
+  "tour": {
+    "welcome": {
+      "title": "Welcome to Criando Músicas! 🎵",
+      "description": "Let's take a quick tour to show you all the platform features."
+    },
+    "createMusic": {
+      "title": "Create Your Music",
+      "description": "Click here to start creating your personalized song. It's quick and easy!"
+    },
+    "process": {
+      "title": "How It Works",
+      "description": "Understand the step-by-step: tell your story, choose the style, and receive your music!"
+    },
+    "examples": {
+      "title": "Listen to Examples",
+      "description": "Listen to some songs we've created for our customers. Get inspired!"
+    },
+    "plans": {
+      "title": "Choose Your Plan",
+      "description": "We have options for all tastes and budgets. Choose the ideal plan for you."
+    },
+    "dashboard": {
+      "title": "Your Orders",
+      "description": "Track the status of your songs here. You'll receive notifications when they're ready!"
+    },
+    "profile": {
+      "title": "Your Profile",
+      "description": "Manage your data, credits, and account settings."
+    },
+    "finish": {
+      "title": "Ready to start! 🎉",
+      "description": "Now you know the platform. How about creating your first song?"
+    },
+    "buttons": {
+      "next": "Next",
+      "previous": "Previous",
+      "done": "Done",
+      "skip": "Skip"
+    },
+    "progress": "{{current}} of {{total}}",
+    "startTour": "Start Tour",
+    "startTourDesc": "Discover the platform"
+  }
 }

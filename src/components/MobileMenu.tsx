@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
   Menu, 
   Music, 
@@ -15,7 +15,8 @@ import {
   Play,
   FileText,
   Download,
-  LayoutDashboard
+  LayoutDashboard,
+  Route
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -26,6 +27,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCredits } from "@/hooks/useCredits";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
+import { useTour } from "@/hooks/useTour";
 import ThemeToggle from "@/components/ThemeToggle";
 import RegionSelector from "@/components/RegionSelector";
 
@@ -38,10 +40,12 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
   const { t: tHome } = useTranslation('home');
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, profile, signOut } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
   const { hasActiveSubscription, planDetails, loading: subscriptionLoading } = useCreatorSubscription();
+  const { startTour } = useTour();
 
   const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
   const initials = displayName.slice(0, 2).toUpperCase();
@@ -65,6 +69,15 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
     setIsOpen(false);
     await signOut();
   };
+
+  const handleStartTour = () => {
+    setIsOpen(false);
+    setTimeout(() => {
+      startTour();
+    }, 300);
+  };
+
+  const isHomePage = location.pathname === '/';
 
   const sectionAnchors = [
     { id: 'processo', label: tHome('nav.process', 'Como Funciona'), icon: Sparkles },
@@ -208,6 +221,15 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
                       <Download className="w-4 h-4 text-muted-foreground" />
                       {tCommon('navigation.install', 'Instalar App')}
                     </button>
+                    {isHomePage && (
+                      <button
+                        onClick={handleStartTour}
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors"
+                      >
+                        <Route className="w-4 h-4 text-muted-foreground" />
+                        {tCommon('tour.startTour', 'Ver Tour')}
+                      </button>
+                    )}
                     {isAdmin && (
                       <button
                         onClick={() => handleNavigation('/admin')}

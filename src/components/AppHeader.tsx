@@ -2,12 +2,13 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { User, Zap, Crown, Home, Settings, Download, Music } from "lucide-react";
-import { Link } from "react-router-dom";
+import { User, Zap, Crown, Home, Settings, Download, Music, Route } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useCredits } from "@/hooks/useCredits";
 import { useCreatorSubscription } from "@/hooks/useCreatorSubscription";
+import { useTour } from "@/hooks/useTour";
 import ThemeToggle from "@/components/ThemeToggle";
 import RegionSelector from "@/components/RegionSelector";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -37,6 +38,10 @@ const AppHeader = ({
   const { isAdmin } = useAdminRole(user?.id);
   const { hasCredits, totalAvailable, loading: creditsLoading } = useCredits();
   const { hasActiveSubscription, planDetails, loading: subscriptionLoading } = useCreatorSubscription();
+  const { startTour } = useTour();
+  const location = useLocation();
+
+  const isHomePage = location.pathname === '/';
 
   // Get display name - prefer profile name, fallback to email
   const displayName = profile?.name || user?.email?.split('@')[0] || 'Usuário';
@@ -115,7 +120,7 @@ const AppHeader = ({
                 )}
                 
                 {/* User Profile */}
-                <Link to="/perfil" className="flex items-center gap-2 glass-card rounded-full pl-1 pr-3 py-1 hover:border-primary/40 transition-all">
+                <Link to="/perfil" id="tour-profile-link" className="flex items-center gap-2 glass-card rounded-full pl-1 pr-3 py-1 hover:border-primary/40 transition-all">
                   <Avatar className="w-8 h-8 border-2 border-primary/50 ring-2 ring-primary/20">
                     <AvatarImage src={profile?.avatar_url || undefined} alt={displayName} />
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/20 text-primary text-xs font-medium">
@@ -133,6 +138,19 @@ const AppHeader = ({
                     <Download className="w-4 h-4" />
                   </Link>
                 </Button>
+                
+                {/* Tour Button - Only on home page */}
+                {isHomePage && (
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={startTour}
+                    title={tCommon('tour.startTour', 'Ver Tour')}
+                    className="hover:scale-105 transition-transform hidden sm:flex rounded-xl"
+                  >
+                    <Route className="w-4 h-4" />
+                  </Button>
+                )}
                 
                 {/* Admin Settings */}
                 {isAdmin && (

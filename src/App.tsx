@@ -9,6 +9,7 @@ import { usePWAUpdate } from "@/hooks/usePWAUpdate";
 import PageLoader from "@/components/PageLoader";
 import UpdateBanner from "@/components/UpdateBanner";
 import ProfileOnboardingWrapper from "@/components/ProfileOnboardingWrapper";
+import TourWrapper from "@/components/TourWrapper";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -64,6 +65,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <TourWrapper />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Critical routes - loaded immediately */}

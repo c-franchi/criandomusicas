@@ -184,5 +184,48 @@
   "loading": "Caricamento...",
   "and": "e",
   "backToHome": "Torna alla home",
-  "backHome": "Torna alla Home"
+  "backHome": "Torna alla Home",
+  "tour": {
+    "welcome": {
+      "title": "Benvenuto su Criando Músicas! 🎵",
+      "description": "Facciamo un tour rapido per farti conoscere tutte le funzionalità della piattaforma."
+    },
+    "createMusic": {
+      "title": "Crea la tua Musica",
+      "description": "Clicca qui per iniziare a creare la tua canzone personalizzata. È veloce e facile!"
+    },
+    "process": {
+      "title": "Come Funziona",
+      "description": "Capisci il passo dopo passo: racconta la tua storia, scegli lo stile e ricevi la tua musica!"
+    },
+    "examples": {
+      "title": "Ascolta Esempi",
+      "description": "Ascolta alcune canzoni che abbiamo creato per i nostri clienti. Lasciati ispirare!"
+    },
+    "plans": {
+      "title": "Scegli il tuo Piano",
+      "description": "Abbiamo opzioni per tutti i gusti e budget. Scegli il piano ideale per te."
+    },
+    "dashboard": {
+      "title": "I tuoi Ordini",
+      "description": "Segui lo stato delle tue canzoni qui. Riceverai notifiche quando saranno pronte!"
+    },
+    "profile": {
+      "title": "Il tuo Profilo",
+      "description": "Gestisci i tuoi dati, crediti e impostazioni dell'account."
+    },
+    "finish": {
+      "title": "Pronto per iniziare! 🎉",
+      "description": "Ora conosci la piattaforma. Che ne dici di creare la tua prima canzone?"
+    },
+    "buttons": {
+      "next": "Avanti",
+      "previous": "Indietro",
+      "done": "Fine",
+      "skip": "Salta"
+    },
+    "progress": "{{current}} di {{total}}",
+    "startTour": "Vedi Tour",
+    "startTourDesc": "Scopri la piattaforma"
+  }
 }
