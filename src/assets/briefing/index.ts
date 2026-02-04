@@ -512,6 +512,7 @@ export {
   motivationalNarrativeMistaImg,
   motivationalNarrativeFaladaImg,
   motivationalNarrativeDiscursoImg,
+  motivationalNarrativeSomenteMonologoImg,
   // Motivational Perspective
   motivationalPerspectiveEuImg,
   motivationalPerspectiveMentorImg,
