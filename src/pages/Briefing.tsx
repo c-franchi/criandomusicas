@@ -32,6 +32,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 
 interface ChatMessage {
