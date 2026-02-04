@@ -140,6 +140,12 @@ import motivationalFocoImg from './motivational/foco.jpg';
 import motivationalVitoriaImg from './motivational/vitoria.jpg';
 import motivationalSuperacaoDorImg from './motivational/superacao-dor.jpg';
 
+// Motivational Intensity Images
+import motivationalIntensidadeCalmaImg from './motivational/intensidade-calma.jpg';
+import motivationalIntensidadeCrescenteImg from './motivational/intensidade-crescente.jpg';
+import motivationalIntensidadeIntensaImg from './motivational/intensidade-intensa.jpg';
+import motivationalIntensidadeAgressivaImg from './motivational/intensidade-agressiva.jpg';
+
 // Parody Emotion Images
 import parodyZoeiraImg from './parody/zoeira.jpg';
 import parodySarcasticoImg from './parody/sarcastico.jpg';
@@ -314,6 +320,14 @@ export const motivationalEmotionImages: Record<string, string> = {
   superacao_dor: motivationalSuperacaoDorImg,
 };
 
+// Motivational intensity images
+export const motivationalIntensityImages: Record<string, string> = {
+  calma: motivationalIntensidadeCalmaImg,
+  crescente: motivationalIntensidadeCrescenteImg,
+  intensa: motivationalIntensidadeIntensaImg,
+  agressiva: motivationalIntensidadeAgressivaImg,
+};
+
 // Parody emotion images
 export const parodyEmotionImages: Record<string, string> = {
   zoeira: parodyZoeiraImg,
@@ -432,6 +446,11 @@ export {
   motivationalFocoImg,
   motivationalVitoriaImg,
   motivationalSuperacaoDorImg,
+  // Motivational Intensity
+  motivationalIntensidadeCalmaImg,
+  motivationalIntensidadeCrescenteImg,
+  motivationalIntensidadeIntensaImg,
+  motivationalIntensidadeAgressivaImg,
   // Parody Emotions
   parodyZoeiraImg,
   parodySarcasticoImg,
