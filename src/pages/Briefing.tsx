@@ -23,7 +23,7 @@ import {
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
   soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages,
-  parodyEmotionImages
+  parodyEmotionImages, motivationalEmotionImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -3437,14 +3437,17 @@ const Briefing = () => {
                   />
                 )}
 
-                {/* Emotion - with circle image cards */}
+                {/* Emotion - with square image cards */}
                 {currentBotMessage.field === 'emotion' && (
                   <ImageCardGrid
                     options={currentBotMessage.options.map(opt => {
-                      // Use parody images for parody type, otherwise default emotions
-                      const imageSrc = formData.musicType === 'parodia' 
-                        ? (parodyEmotionImages[opt.id] || emotionImages.alegria)
-                        : (emotionImages[opt.id] || emotionImages.alegria);
+                      // Use appropriate images based on music type
+                      let imageSrc = emotionImages[opt.id] || emotionImages.alegria;
+                      if (formData.musicType === 'parodia') {
+                        imageSrc = parodyEmotionImages[opt.id] || emotionImages.alegria;
+                      } else if (formData.musicType === 'motivacional') {
+                        imageSrc = motivationalEmotionImages[opt.id] || emotionImages.alegria;
+                      }
                       return {
                         id: opt.id,
                         label: opt.label,
@@ -3452,7 +3455,7 @@ const Briefing = () => {
                       };
                     })}
                     selectedId={undefined}
-                    variant="circle"
+                    variant="square"
                     title={t('briefing:emotions', 'Emoções')}
                     onSelect={(id) => {
                       if (id.startsWith('custom:')) {

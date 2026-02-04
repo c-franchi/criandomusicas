@@ -7,7 +7,7 @@ interface ImageCardProps {
   label: string;
   imageSrc: string;
   selected?: boolean;
-  variant?: 'square' | 'circle';
+  variant?: 'square';
   priority?: boolean;
   onClick: () => void;
 }
@@ -26,7 +26,6 @@ export const ImageCard = memo(({
   priority = false,
   onClick,
 }: ImageCardProps) => {
-  const isCircle = variant === 'circle';
   const cleanLabel = stripEmojis(label);
 
   return (
@@ -43,9 +42,7 @@ export const ImageCard = memo(({
       <div
         className={cn(
           "relative overflow-hidden transition-all duration-200",
-          isCircle 
-            ? "w-16 h-16 sm:w-20 sm:h-20 rounded-full" 
-            : "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
+          "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
           "bg-muted/50",
           selected 
             ? "ring-2 ring-primary ring-offset-2 ring-offset-background shadow-lg shadow-primary/30" 

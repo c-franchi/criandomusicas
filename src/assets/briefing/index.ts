@@ -131,6 +131,15 @@ import motivationalTrabalhoImg from './motivational/trabalho.jpg';
 import motivationalRecomecoImg from './motivational/recomeco.jpg';
 import motivationalDisciplinaImg from './motivational/disciplina.jpg';
 
+// Motivational Emotion Images
+import motivationalDeterminacaoImg from './motivational/determinacao.jpg';
+import motivationalConfiancaImg from './motivational/confianca.jpg';
+import motivationalForcaInteriorImg from './motivational/forca-interior.jpg';
+import motivationalCoragemImg from './motivational/coragem.jpg';
+import motivationalFocoImg from './motivational/foco.jpg';
+import motivationalVitoriaImg from './motivational/vitoria.jpg';
+import motivationalSuperacaoDorImg from './motivational/superacao-dor.jpg';
+
 // Parody Emotion Images
 import parodyZoeiraImg from './parody/zoeira.jpg';
 import parodySarcasticoImg from './parody/sarcastico.jpg';
@@ -294,6 +303,17 @@ export const motivationalMomentImages: Record<string, string> = {
   disciplina: motivationalDisciplinaImg,
 };
 
+// Motivational emotion images
+export const motivationalEmotionImages: Record<string, string> = {
+  determinacao: motivationalDeterminacaoImg,
+  confianca: motivationalConfiancaImg,
+  forca_interior: motivationalForcaInteriorImg,
+  coragem: motivationalCoragemImg,
+  foco: motivationalFocoImg,
+  vitoria: motivationalVitoriaImg,
+  superacao_dor: motivationalSuperacaoDorImg,
+};
+
 // Parody emotion images
 export const parodyEmotionImages: Record<string, string> = {
   zoeira: parodyZoeiraImg,
@@ -404,6 +424,14 @@ export {
   motivationalTrabalhoImg,
   motivationalRecomecoImg,
   motivationalDisciplinaImg,
+  // Motivational Emotions
+  motivationalDeterminacaoImg,
+  motivationalConfiancaImg,
+  motivationalForcaInteriorImg,
+  motivationalCoragemImg,
+  motivationalFocoImg,
+  motivationalVitoriaImg,
+  motivationalSuperacaoDorImg,
   // Parody Emotions
   parodyZoeiraImg,
   parodySarcasticoImg,

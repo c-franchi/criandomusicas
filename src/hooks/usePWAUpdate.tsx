@@ -38,7 +38,8 @@ const useSafeRegisterSW = () => {
     if (registration?.waiting) {
       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
     }
-    window.location.reload();
+    // Navigate to home first to avoid black screen, then reload
+    window.location.href = '/';
   }, [registration]);
 
   return { needRefresh, updateServiceWorker };

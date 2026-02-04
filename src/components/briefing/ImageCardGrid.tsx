@@ -20,7 +20,7 @@ interface Option {
 interface ImageCardGridProps {
   options: Option[];
   selectedId?: string;
-  variant?: 'square' | 'circle';
+  variant?: 'square';
   onSelect: (id: string) => void;
   title?: string;
   showOther?: boolean;
@@ -233,9 +233,7 @@ export const ImageCardGrid = ({
                     <div
                       className={cn(
                         "relative overflow-hidden transition-all duration-200 flex items-center justify-center",
-                        variant === 'circle' 
-                          ? "w-16 h-16 sm:w-20 sm:h-20 rounded-full" 
-                          : "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
+                        "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
                         "bg-muted/80 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-muted"
                       )}
                     >
@@ -270,9 +268,7 @@ export const ImageCardGrid = ({
           </DialogHeader>
           <div className={cn(
             "grid gap-3 pt-4",
-            variant === 'circle' 
-              ? "grid-cols-4 sm:grid-cols-5" 
-              : "grid-cols-3 sm:grid-cols-4"
+            "grid-cols-3 sm:grid-cols-4"
           )}>
             {options.map((option) => (
               <ImageCard
@@ -299,9 +295,7 @@ export const ImageCardGrid = ({
                 <div
                   className={cn(
                     "relative overflow-hidden transition-all duration-200 flex items-center justify-center",
-                    variant === 'circle' 
-                      ? "w-16 h-16 sm:w-20 sm:h-20 rounded-full" 
-                      : "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
+                    "w-20 h-20 sm:w-24 sm:h-24 rounded-xl",
                     "bg-muted/80 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50 hover:bg-muted"
                   )}
                 >
