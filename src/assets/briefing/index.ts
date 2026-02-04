@@ -146,6 +146,15 @@ import motivationalIntensidadeCrescenteImg from './motivational/intensidade-cres
 import motivationalIntensidadeIntensaImg from './motivational/intensidade-intensa.jpg';
 import motivationalIntensidadeAgressivaImg from './motivational/intensidade-agressiva.jpg';
 
+// Motivational Style Images
+import motivationalStyleRockImg from './motivational/style-rock.jpg';
+import motivationalStyleRapImg from './motivational/style-rap.jpg';
+import motivationalStyleTrapImg from './motivational/style-trap.jpg';
+import motivationalStyleHiphopImg from './motivational/style-hiphop.jpg';
+import motivationalStyleEletronicaImg from './motivational/style-eletronica.jpg';
+import motivationalStyleLofiImg from './motivational/style-lofi.jpg';
+import motivationalStyleAutoImg from './motivational/style-auto.jpg';
+
 // Parody Emotion Images
 import parodyZoeiraImg from './parody/zoeira.jpg';
 import parodySarcasticoImg from './parody/sarcastico.jpg';
@@ -328,6 +337,17 @@ export const motivationalIntensityImages: Record<string, string> = {
   agressiva: motivationalIntensidadeAgressivaImg,
 };
 
+// Motivational style images
+export const motivationalStyleImages: Record<string, string> = {
+  rock_motivacional: motivationalStyleRockImg,
+  rap_motivacional: motivationalStyleRapImg,
+  trap_motivacional: motivationalStyleTrapImg,
+  hiphop_classico: motivationalStyleHiphopImg,
+  eletronica_epica: motivationalStyleEletronicaImg,
+  lofi_motivacional: motivationalStyleLofiImg,
+  auto: motivationalStyleAutoImg,
+};
+
 // Parody emotion images
 export const parodyEmotionImages: Record<string, string> = {
   zoeira: parodyZoeiraImg,
@@ -451,6 +471,14 @@ export {
   motivationalIntensidadeCrescenteImg,
   motivationalIntensidadeIntensaImg,
   motivationalIntensidadeAgressivaImg,
+  // Motivational Styles
+  motivationalStyleRockImg,
+  motivationalStyleRapImg,
+  motivationalStyleTrapImg,
+  motivationalStyleHiphopImg,
+  motivationalStyleEletronicaImg,
+  motivationalStyleLofiImg,
+  motivationalStyleAutoImg,
   // Parody Emotions
   parodyZoeiraImg,
   parodySarcasticoImg,
