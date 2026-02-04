@@ -23,7 +23,8 @@ import {
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
   soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages,
-  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages, motivationalStyleImages
+  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages, motivationalStyleImages,
+  motivationalNarrativeImages, motivationalPerspectiveImages
 } from "@/assets/briefing";
 import {
   Dialog,
