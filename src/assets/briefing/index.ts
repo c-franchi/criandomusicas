@@ -155,6 +155,17 @@ import motivationalStyleEletronicaImg from './motivational/style-eletronica.jpg'
 import motivationalStyleLofiImg from './motivational/style-lofi.jpg';
 import motivationalStyleAutoImg from './motivational/style-auto.jpg';
 
+// Motivational Narrative Images
+import motivationalNarrativeCantadaImg from './motivational/narrative-cantada.jpg';
+import motivationalNarrativeMistaImg from './motivational/narrative-mista.jpg';
+import motivationalNarrativeFaladaImg from './motivational/narrative-falada.jpg';
+import motivationalNarrativeDiscursoImg from './motivational/narrative-discurso.jpg';
+
+// Motivational Perspective Images
+import motivationalPerspectiveEuImg from './motivational/perspective-eu.jpg';
+import motivationalPerspectiveMentorImg from './motivational/perspective-mentor.jpg';
+import motivationalPerspectiveUniversalImg from './motivational/perspective-universal.jpg';
+
 // Parody Emotion Images
 import parodyZoeiraImg from './parody/zoeira.jpg';
 import parodySarcasticoImg from './parody/sarcastico.jpg';
