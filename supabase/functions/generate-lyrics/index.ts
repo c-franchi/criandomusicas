@@ -340,22 +340,24 @@ serve(async (req) => {
     };
     const perspectiveContext = perspectiveMap[motivationalPerspective] || 'mentor (você)';
 
-    // ========== PROMPT ESPECIAL PARA "SOMENTE MONÓLOGO" ==========
+    // ========== PROMPT ESPECIAL PARA "100% FALADA" (SPOKEN WORD) ==========
     const somenteMonologoPrompt = `Você é um escritor profissional de SPOKEN WORD motivacional brasileiro.
 
-⚠️ ESTRUTURA OBRIGATÓRIA - SOMENTE MONÓLOGO:
+⚠️ ESTRUTURA OBRIGATÓRIA - 100% FALADA:
 Esta música é 100% FALADA/DECLAMADA. NENHUM trecho cantado. Use APENAS a tag [monologue].
 
 ESTRUTURA FIXA:
-1. [Intro] - Monólogo rápido (1-2 frases de abertura impactantes)
-2. [Monologue 1] - Contexto inicial (3-5 frases, apresentando o cenário)
-3. [Monologue 2] - Reforço/Conflito/Reflexão (3-5 frases, aprofundando)
-4. [Monologue 3] - Superação/Virada (3-5 frases, clímax emocional)
+1. [Intro] - Abertura rápida (1-2 frases impactantes)
+2. Bloco 1 - Contexto inicial (3-5 frases, apresentando o cenário)
+3. Bloco 2 - Reforço/Conflito/Reflexão (3-5 frases, aprofundando)
+4. Bloco 3 - Superação/Virada (3-5 frases, clímax emocional)
 5. [Chorus] - Refrão MANTRA (frase forte, curta, repetível, tom afirmativo)
 6. [End]
 
 REGRAS CRÍTICAS:
 - TUDO deve estar em [monologue] tags
+- Use APENAS [monologue], NÃO numere como "Monologue 1", "Monologue 2"
+- Deixe uma linha em branco entre cada bloco de [monologue]
 - Tom de voz: direto, forte, como um mentor/treinador ou voz interior
 - Frases CURTAS e impactantes
 - Vocabulário de DISCIPLINA, CONSTÂNCIA, FORÇA
@@ -377,21 +379,18 @@ TÍTULO DA MÚSICA
 "Respira.
 Esse momento é só seu."
 
-[Monologue 1]
 [monologue]
 "Nem todo mundo vai acreditar em você.
 E tá tudo bem.
 O que importa é que você continue,
 mesmo quando ninguém estiver olhando."
 
-[Monologue 2]
 [monologue]
 "Vai doer.
 Vai cansar.
 Mas cada passo que você dá em silêncio
 está te afastando da versão que desistiu."
 
-[Monologue 3]
 [monologue]
 "Você não chegou até aqui por acaso.
 Você sobreviveu.

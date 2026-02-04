@@ -244,8 +244,8 @@
         "cantadaMonologue": "🎤 Sung + Spoken Parts",
         "maisFalada": "🗣️ More Spoken than Sung",
         "narrador": "📢 Motivational Speech Style",
-        "somenteMonologo": "🎙️ Only Monologue (Spoken Word)",
-        "somenteMonologoDesc": "Only spoken text with mantra chorus"
+        "somenteMonologo": "🎙️ 100% Spoken (Spoken Word)",
+        "somenteMonologoDesc": "All spoken/recited with mantra chorus"
       },
       "perspective": {
         "question": "What's the perspective of the lyrics?",
