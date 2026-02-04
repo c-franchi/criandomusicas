@@ -23,7 +23,8 @@ import {
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
   soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages,
-  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages, motivationalStyleImages
+  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages, motivationalStyleImages,
+  motivationalNarrativeImages, motivationalPerspectiveImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -31,6 +32,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogPortal,
+  DialogOverlay,
 } from "@/components/ui/dialog";
 
 interface ChatMessage {
@@ -3742,6 +3745,44 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Motivational Narrative - with image cards */}
+                {currentBotMessage.field === 'motivationalNarrative' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: motivationalNarrativeImages[opt.id] || motivationalNarrativeImages.cantada
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.motivational.narrative.question', 'Estilo de entrega')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Motivational Perspective - with image cards */}
+                {currentBotMessage.field === 'motivationalPerspective' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: motivationalPerspectiveImages[opt.id] || motivationalPerspectiveImages.eu
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.motivational.perspective.question', 'Perspectiva da letra')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
@@ -3757,7 +3798,9 @@ const Briefing = () => {
                  currentBotMessage.field !== 'soundtrackUsage' &&
                  currentBotMessage.field !== 'soundtrackEmotion' &&
                  currentBotMessage.field !== 'motivationalMoment' &&
-                 currentBotMessage.field !== 'motivationalIntensity' && (
+                 currentBotMessage.field !== 'motivationalIntensity' &&
+                 currentBotMessage.field !== 'motivationalNarrative' &&
+                 currentBotMessage.field !== 'motivationalPerspective' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button
@@ -4159,28 +4202,31 @@ const Briefing = () => {
 
       {/* Modal de Créditos Insuficientes */}
       <Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <AlertCircle className="w-5 h-5 text-amber-500" />
-              {t('noCreditModal.title', 'Créditos insuficientes')}
-            </DialogTitle>
-            <DialogDescription className="pt-2">
-              {t('noCreditModal.description', 'Você não possui créditos disponíveis para criar esta música.')}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              {t('noCreditModal.message', 'Adquira um pacote ou assinatura para continuar criando músicas.')}
-            </p>
+        <DialogPortal>
+          <DialogOverlay className="z-[100]" />
+          <DialogContent className="sm:max-w-md z-[100]" aria-describedby="no-credit-description">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                {t('noCreditModal.title', 'Créditos insuficientes')}
+              </DialogTitle>
+              <DialogDescription className="pt-2" id="no-credit-description">
+                {t('noCreditModal.description', 'Você não possui créditos disponíveis para criar esta música.')}
+              </DialogDescription>
+            </DialogHeader>
             
-            <Button onClick={handleGoToCheckout} className="w-full">
-              <CreditCard className="w-5 h-5 mr-2" />
-              {t('noCreditModal.buyButton', 'Ver opções de compra')}
-            </Button>
-          </div>
-        </DialogContent>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                {t('noCreditModal.message', 'Adquira um pacote ou assinatura para continuar criando músicas.')}
+              </p>
+              
+              <Button onClick={handleGoToCheckout} className="w-full">
+                <CreditCard className="w-5 h-5 mr-2" />
+                {t('noCreditModal.buyButton', 'Ver opções de compra')}
+              </Button>
+            </div>
+          </DialogContent>
+        </DialogPortal>
       </Dialog>
     </div>
   );

@@ -155,6 +155,17 @@ import motivationalStyleEletronicaImg from './motivational/style-eletronica.jpg'
 import motivationalStyleLofiImg from './motivational/style-lofi.jpg';
 import motivationalStyleAutoImg from './motivational/style-auto.jpg';
 
+// Motivational Narrative Images
+import motivationalNarrativeCantadaImg from './motivational/narrative-cantada.jpg';
+import motivationalNarrativeMistaImg from './motivational/narrative-mista.jpg';
+import motivationalNarrativeFaladaImg from './motivational/narrative-falada.jpg';
+import motivationalNarrativeDiscursoImg from './motivational/narrative-discurso.jpg';
+
+// Motivational Perspective Images
+import motivationalPerspectiveEuImg from './motivational/perspective-eu.jpg';
+import motivationalPerspectiveMentorImg from './motivational/perspective-mentor.jpg';
+import motivationalPerspectiveUniversalImg from './motivational/perspective-universal.jpg';
+
 // Parody Emotion Images
 import parodyZoeiraImg from './parody/zoeira.jpg';
 import parodySarcasticoImg from './parody/sarcastico.jpg';
@@ -348,6 +359,21 @@ export const motivationalStyleImages: Record<string, string> = {
   auto: motivationalStyleAutoImg,
 };
 
+// Motivational narrative images
+export const motivationalNarrativeImages: Record<string, string> = {
+  cantada: motivationalNarrativeCantadaImg,
+  cantada_monologue: motivationalNarrativeMistaImg,
+  mais_falada: motivationalNarrativeFaladaImg,
+  narrador: motivationalNarrativeDiscursoImg,
+};
+
+// Motivational perspective images
+export const motivationalPerspectiveImages: Record<string, string> = {
+  eu: motivationalPerspectiveEuImg,
+  voce: motivationalPerspectiveMentorImg,
+  universal: motivationalPerspectiveUniversalImg,
+};
+
 // Parody emotion images
 export const parodyEmotionImages: Record<string, string> = {
   zoeira: parodyZoeiraImg,
@@ -479,6 +505,15 @@ export {
   motivationalStyleEletronicaImg,
   motivationalStyleLofiImg,
   motivationalStyleAutoImg,
+  // Motivational Narrative
+  motivationalNarrativeCantadaImg,
+  motivationalNarrativeMistaImg,
+  motivationalNarrativeFaladaImg,
+  motivationalNarrativeDiscursoImg,
+  // Motivational Perspective
+  motivationalPerspectiveEuImg,
+  motivationalPerspectiveMentorImg,
+  motivationalPerspectiveUniversalImg,
   // Parody Emotions
   parodyZoeiraImg,
   parodySarcasticoImg,
