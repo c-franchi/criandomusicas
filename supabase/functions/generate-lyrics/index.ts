@@ -289,8 +289,16 @@ serve(async (req) => {
       restrictedWords = '',
       songName = '',
       autoGenerateName = true,
-      voiceType = 'feminina'
+      voiceType = 'feminina',
+      motivationalNarrative = '',
+      motivationalMoment = '',
+      motivationalIntensity = '',
+      motivationalPerspective = ''
     } = briefing || {};
+
+    // Detectar se é modo "Somente Monólogo" (spoken word motivacional)
+    const isSomenteMonologo = motivationalNarrative === 'somente_monologo' || monologuePosition === 'full';
+    console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
 
     const criticalTerms = detectCriticalTerms(mandatoryWords);
     const missingPronunciations = criticalTerms.filter(
@@ -313,8 +321,99 @@ serve(async (req) => {
     };
     const voiceDescription = voiceTypeMap[voiceType] || 'voz feminina solo';
 
+    // Map motivational moment to context
+    const momentContextMap: Record<string, string> = {
+      'treino': 'treino físico, academia, esforço corporal',
+      'superacao': 'superação de obstáculos da vida',
+      'estudo': 'foco nos estudos, disciplina mental',
+      'trabalho': 'metas profissionais, carreira',
+      'recomeco': 'levantar após dificuldades, novo começo',
+      'disciplina': 'constância diária, rotina de sucesso'
+    };
+    const momentContext = momentContextMap[motivationalMoment] || 'superação pessoal';
+
+    // Map motivational perspective
+    const perspectiveMap: Record<string, string> = {
+      'primeira_pessoa': 'primeira pessoa (EU) - protagonista da própria história',
+      'mentor': 'mentor (VOCÊ) - falando diretamente ao ouvinte como um coach',
+      'universal': 'universal - mensagem ampla que serve para todos'
+    };
+    const perspectiveContext = perspectiveMap[motivationalPerspective] || 'mentor (você)';
+
+    // ========== PROMPT ESPECIAL PARA "SOMENTE MONÓLOGO" ==========
+    const somenteMonologoPrompt = `Você é um escritor profissional de SPOKEN WORD motivacional brasileiro.
+
+⚠️ ESTRUTURA OBRIGATÓRIA - SOMENTE MONÓLOGO:
+Esta música é 100% FALADA/DECLAMADA. NENHUM trecho cantado. Use APENAS a tag [monologue].
+
+ESTRUTURA FIXA:
+1. [Intro] - Monólogo rápido (1-2 frases de abertura impactantes)
+2. [Monologue 1] - Contexto inicial (3-5 frases, apresentando o cenário)
+3. [Monologue 2] - Reforço/Conflito/Reflexão (3-5 frases, aprofundando)
+4. [Monologue 3] - Superação/Virada (3-5 frases, clímax emocional)
+5. [Chorus] - Refrão MANTRA (frase forte, curta, repetível, tom afirmativo)
+6. [End]
+
+REGRAS CRÍTICAS:
+- TUDO deve estar em [monologue] tags
+- Tom de voz: direto, forte, como um mentor/treinador ou voz interior
+- Frases CURTAS e impactantes
+- Vocabulário de DISCIPLINA, CONSTÂNCIA, FORÇA
+- EVITE: frases filosóficas vagas, clichês motivacionais genéricos
+- O [Chorus] NÃO é cantado tradicionalmente, é uma FRASE-MANTRA falada com força
+
+CONTEXTO PARA ESTA MÚSICA:
+- Momento de uso: ${momentContext}
+- Intensidade: ${motivationalIntensity || 'intensa'}
+- Perspectiva: ${perspectiveContext}
+- Emoção: ${emotion}
+
+EXEMPLO DE ESTRUTURA (não copie literalmente, use como referência):
+
+TÍTULO DA MÚSICA
+
+[Intro]
+[monologue]
+"Respira.
+Esse momento é só seu."
+
+[Monologue 1]
+[monologue]
+"Nem todo mundo vai acreditar em você.
+E tá tudo bem.
+O que importa é que você continue,
+mesmo quando ninguém estiver olhando."
+
+[Monologue 2]
+[monologue]
+"Vai doer.
+Vai cansar.
+Mas cada passo que você dá em silêncio
+está te afastando da versão que desistiu."
+
+[Monologue 3]
+[monologue]
+"Você não chegou até aqui por acaso.
+Você sobreviveu.
+Aprendeu.
+E agora sabe que é mais forte
+do que imaginava ser."
+
+[Chorus]
+[monologue]
+"Continua.
+Mesmo com medo.
+Mesmo cansado.
+Continua."
+
+[End]
+
+${!autoGenerateName && songName ? `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"` : 'CRIE UM TÍTULO FORTE E MOTIVACIONAL'}
+${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
+${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
+
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
-    const systemPrompt = isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
+    const systemPrompt = isSomenteMonologo ? somenteMonologoPrompt : (isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
 REGRAS CRÍTICAS PARA PREVIEW:
 1. Gere APENAS a estrutura: [Verse] + [Pre-Chorus] + [Chorus]
