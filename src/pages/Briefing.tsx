@@ -23,7 +23,7 @@ import {
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
   soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages,
-  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages
+  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages, motivationalStyleImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -3474,11 +3474,18 @@ const Briefing = () => {
                 {/* Style/Genre - with image cards */}
                 {currentBotMessage.field === 'style' && (
                   <ImageCardGrid
-                    options={currentBotMessage.options.map(opt => ({
-                      id: opt.id,
-                      label: opt.label,
-                      imageSrc: genreImages[opt.id] || genreImages.pop
-                    }))}
+                    options={currentBotMessage.options.map(opt => {
+                      // Use appropriate images based on music type
+                      let imageSrc = genreImages[opt.id] || genreImages.pop;
+                      if (formData.musicType === 'motivacional') {
+                        imageSrc = motivationalStyleImages[opt.id] || motivationalStyleImages.rock_motivacional;
+                      }
+                      return {
+                        id: opt.id,
+                        label: opt.label,
+                        imageSrc
+                      };
+                    })}
                     selectedId={undefined}
                     variant="square"
                     title={t('briefing:genres', 'Gêneros musicais')}
