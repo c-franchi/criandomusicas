@@ -95,6 +95,7 @@ export const useBriefingTranslations = () => {
     { id: "cantada_monologue", label: t('steps.motivational.narrative.cantadaMonologue') },
     { id: "mais_falada", label: t('steps.motivational.narrative.maisFalada') },
     { id: "narrador", label: t('steps.motivational.narrative.narrador') },
+    { id: "somente_monologo", label: t('steps.motivational.narrative.somenteMonologo'), description: t('steps.motivational.narrative.somenteMonologoDesc') },
   ];
 
   const motivationalPerspectiveOptions = [
