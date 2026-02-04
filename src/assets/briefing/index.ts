@@ -366,6 +366,7 @@ export const motivationalNarrativeImages: Record<string, string> = {
   cantada_monologue: motivationalNarrativeMistaImg,
   mais_falada: motivationalNarrativeFaladaImg,
   narrador: motivationalNarrativeDiscursoImg,
+  somente_monologo: motivationalNarrativeSomenteMonologoImg,
 };
 
 // Motivational perspective images
