@@ -4200,28 +4200,31 @@ const Briefing = () => {
 
       {/* Modal de Créditos Insuficientes */}
       <Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
-        <DialogContent className="sm:max-w-md z-[100]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <AlertCircle className="w-5 h-5 text-amber-500" />
-              {t('noCreditModal.title', 'Créditos insuficientes')}
-            </DialogTitle>
-            <DialogDescription className="pt-2">
-              {t('noCreditModal.description', 'Você não possui créditos disponíveis para criar esta música.')}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">
-              {t('noCreditModal.message', 'Adquira um pacote ou assinatura para continuar criando músicas.')}
-            </p>
+        <DialogPortal>
+          <DialogOverlay className="z-[100]" />
+          <DialogContent className="sm:max-w-md z-[100]" aria-describedby="no-credit-description">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                {t('noCreditModal.title', 'Créditos insuficientes')}
+              </DialogTitle>
+              <DialogDescription className="pt-2" id="no-credit-description">
+                {t('noCreditModal.description', 'Você não possui créditos disponíveis para criar esta música.')}
+              </DialogDescription>
+            </DialogHeader>
             
-            <Button onClick={handleGoToCheckout} className="w-full">
-              <CreditCard className="w-5 h-5 mr-2" />
-              {t('noCreditModal.buyButton', 'Ver opções de compra')}
-            </Button>
-          </div>
-        </DialogContent>
+            <div className="space-y-4 py-4">
+              <p className="text-sm text-muted-foreground">
+                {t('noCreditModal.message', 'Adquira um pacote ou assinatura para continuar criando músicas.')}
+              </p>
+              
+              <Button onClick={handleGoToCheckout} className="w-full">
+                <CreditCard className="w-5 h-5 mr-2" />
+                {t('noCreditModal.buyButton', 'Ver opções de compra')}
+              </Button>
+            </div>
+          </DialogContent>
+        </DialogPortal>
       </Dialog>
     </div>
   );
