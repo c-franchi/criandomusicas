@@ -21,6 +21,11 @@ interface BriefingData {
   songName?: string;
   autoGenerateName?: boolean;
   voiceType?: string;
+  // Motivational fields
+  motivationalNarrative?: string;
+  motivationalMoment?: string;
+  motivationalIntensity?: string;
+  motivationalPerspective?: string;
 }
 
 interface Pronunciation {
