@@ -505,6 +505,15 @@ export {
   motivationalStyleEletronicaImg,
   motivationalStyleLofiImg,
   motivationalStyleAutoImg,
+  // Motivational Narrative
+  motivationalNarrativeCantadaImg,
+  motivationalNarrativeMistaImg,
+  motivationalNarrativeFaladaImg,
+  motivationalNarrativeDiscursoImg,
+  // Motivational Perspective
+  motivationalPerspectiveEuImg,
+  motivationalPerspectiveMentorImg,
+  motivationalPerspectiveUniversalImg,
   // Parody Emotions
   parodyZoeiraImg,
   parodySarcasticoImg,

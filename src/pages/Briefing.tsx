@@ -4200,7 +4200,7 @@ const Briefing = () => {
 
       {/* Modal de Créditos Insuficientes */}
       <Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md z-[100]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-xl">
               <AlertCircle className="w-5 h-5 text-amber-500" />
