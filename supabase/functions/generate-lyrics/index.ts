@@ -564,7 +564,27 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 [monologue]
 (texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`;
 
-    const userPrompt = `Crie DUAS versões de letra completas para uma música personalizada.
+    const userPrompt = isSomenteMonologo ? `Crie DUAS versões de SPOKEN WORD motivacional completas.
+
+CONTEXTO DA MÚSICA:
+${story}
+
+DADOS ESPECÍFICOS:
+- Momento de uso: ${momentContext}
+- Emoção: ${emotion} (intensidade ${emotionIntensity}/5)
+- Perspectiva: ${perspectiveContext}
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras/assuntos proibidos: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `- Nome obrigatório: ${songName}` : '- Crie títulos motivacionais fortes'}
+
+INSTRUÇÕES:
+- Crie DUAS versões DIFERENTES do spoken word
+- Separe as duas versões com uma linha contendo apenas: ---
+- Siga a estrutura: [Intro] → [Monologue 1] → [Monologue 2] → [Monologue 3] → [Chorus] mantra → [End]
+- TODOS os textos devem estar em [monologue] tags
+- O [Chorus] deve ser uma frase-mantra CURTA, FORTE e REPETÍVEL
+- NÃO inclua partes cantadas, é 100% spoken word
+- Tom direto, frases curtas, vocabulário de força e disciplina` : `Crie DUAS versões de letra completas para uma música personalizada.
 
 DADOS DA MÚSICA:
 - Tipo: ${musicType}
