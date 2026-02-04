@@ -2515,12 +2515,21 @@ const Briefing = () => {
     }
   };
 
-  // Handler para ir para modo detalhado
+  // Handler para ir para modo detalhado - volta para seleção de pacotes com imagens
   const handleSwitchToDetailed = () => {
-    setCreationMode('detailed');
+    setCreationMode(null); // Volta para a tela de seleção de pacote (com imagens)
     setIsQuickMode(false); // Modo detalhado
-    // Iniciar chat normal
-    addBotMessage(chatFlow[0]);
+    // Limpa qualquer dado anterior para começar do zero
+    setFormData(prev => ({
+      ...initialFormData,
+      celebrationType: undefined,
+      celebrationName: undefined,
+      celebrationEmoji: undefined,
+    }));
+    setCurrentStep(0);
+    setMessages([]);
+    // Mostrar seleção de pacote novamente (página com imagens grandes)
+    setShowPlanSelection(true);
   };
 
   // Handler para criação rápida
