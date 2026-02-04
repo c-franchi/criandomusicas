@@ -56,7 +56,6 @@ const dddToText: Record<string, string> = {
 
 // Converter telefone: DDD por extenso + resto com hífens
 function convertPhoneToHyphens(text: string): string {
-  // Padrões de telefone brasileiro
   const phonePatterns = [
     /\(?\d{2}\)?[\s.-]?\d{4,5}[\s.-]?\d{4}/g,
     /\d{10,11}/g,
@@ -67,17 +66,11 @@ function convertPhoneToHyphens(text: string): string {
   
   phonePatterns.forEach(pattern => {
     result = result.replace(pattern, (match) => {
-      // Extrair apenas os dígitos
       const digits = match.replace(/\D/g, '');
-      
-      // Separar DDD (primeiros 2 dígitos) do resto
       const ddd = digits.slice(0, 2);
       const restDigits = digits.slice(2);
-      
-      // DDD por extenso, resto com hífen
       const dddText = dddToText[ddd] || ddd.split('').join('-');
       const restText = restDigits.split('').join('-');
-      
       return `${dddText}, ${restText}`;
     });
   });
@@ -89,35 +82,24 @@ function convertPhoneToHyphens(text: string): string {
 function convertUrlToHyphens(text: string): string {
   let result = text;
   
-  // URLs completas: www.nome.com.br
   result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, 
     (_match, _protocol, hasWww, name, ext1, ext2) => {
       const parts: string[] = [];
-      
-      // www → w-w-w
       if (hasWww) {
         parts.push('w-w-w');
       }
-      
-      // nome do site mantém junto (não soletrar palavras)
       parts.push(`ponto-${name.toLowerCase()}`);
-      
-      // extensão: com → ponto-com, br → ponto-b-r
       const extFormatted = ext1.toLowerCase() === 'br' ? 'b-r' : ext1.toLowerCase();
       parts.push(`ponto-${extFormatted}`);
-      
-      // extensão secundária: .br → ponto-b-r
       if (ext2) {
         const ext2Clean = ext2.replace('.', '').toLowerCase();
         const ext2Formatted = ext2Clean === 'br' ? 'b-r' : ext2Clean;
         parts.push(`ponto-${ext2Formatted}`);
       }
-      
       return parts.join('-');
     }
   );
   
-  // @handles → arroba-nome
   result = result.replace(/@([a-zA-Z0-9_]+)/g, (_match, handle) => {
     return `arroba-${handle.toLowerCase()}`;
   });
@@ -127,19 +109,13 @@ function convertUrlToHyphens(text: string): string {
 
 // Soletrar siglas com hífens entre letras (sem fonética)
 function convertAcronymsToHyphens(text: string): string {
-  // Detectar siglas (2-4 letras maiúsculas seguidas)
   const acronymPattern = /\b([A-Z]{2,4})\b/g;
-  
-  // Lista de siglas que NÃO devem ser soletradas (pronunciadas como palavras)
   const keepAsWord = ['FIFA', 'NASA', 'PIX', 'SUS', 'SAMU', 'ENEM', 'VIP', 'LED'];
   
   return text.replace(acronymPattern, (match) => {
-    // Se está na lista de palavras, manter como está
     if (keepAsWord.includes(match)) {
       return match;
     }
-    
-    // Soletrar letra por letra com hífen: FME → F-M-E
     return match.split('').join('-');
   });
 }
@@ -147,29 +123,19 @@ function convertAcronymsToHyphens(text: string): string {
 // Aplicar TODAS as regras de formatação
 function applyGlobalPronunciationRules(text: string): string {
   let result = text;
-  
-  // 1. Converter telefones para formato com hífens
   result = convertPhoneToHyphens(result);
-  
-  // 2. Converter URLs para formato soletrado
   result = convertUrlToHyphens(result);
-  
-  // 3. Converter siglas para letras com hífen
   result = convertAcronymsToHyphens(result);
-  
   return result;
 }
-
-// Função removida - não usamos mais dicionário de pronúncias
-// As conversões são feitas por regras de formatação com hífens
 
 // Detectar termos que precisam de pronúncia fonética
 function detectCriticalTerms(text: string): string[] {
   const patterns = [
-    /\b[A-Z]{2,}[0-9]*\b/g,                    // Siglas: NYV8, WEB3, ABC
-    /\b[A-Z]+[0-9]+[A-Z0-9]*\b/g,              // Letras+números: NYV8, W3C
-    /\b[A-Z][a-z]*[A-Z][a-zA-Z]*\b/g,          // CamelCase: iPhone, PowerBI
-    /\b[A-Z]{2,}[a-z]+\b/g,                    // Siglas com sufixo: POKERfi
+    /\b[A-Z]{2,}[0-9]*\b/g,
+    /\b[A-Z]+[0-9]+[A-Z0-9]*\b/g,
+    /\b[A-Z][a-z]*[A-Z][a-zA-Z]*\b/g,
+    /\b[A-Z]{2,}[a-z]+\b/g,
   ];
   
   const terms = new Set<string>();
@@ -177,7 +143,6 @@ function detectCriticalTerms(text: string): string[] {
     const matches = text.match(pattern);
     if (matches) {
       matches.forEach(m => {
-        // Filtrar termos comuns que não precisam de pronúncia
         if (!['EU', 'EUA', 'OK', 'TV', 'DVD', 'CD'].includes(m) && m.length >= 2) {
           terms.add(m);
         }
@@ -199,13 +164,11 @@ function applyPronunciations(text: string, pronunciations: Pronunciation[]): str
 }
 
 function splitTwoLyrics(text: string): { v1: string; v2: string } {
-  // Try splitting by delimiter
   const byDelimiter = text.split(/\n\s*---+\s*\n/);
   if (byDelimiter.length >= 2) {
     return { v1: byDelimiter[0].trim(), v2: byDelimiter[1].trim() };
   }
   
-  // Try splitting by version markers
   const versionMatch = text.match(/(?:versão\s*[ab12]|version\s*[ab12])/gi);
   if (versionMatch && versionMatch.length >= 2) {
     const parts = text.split(/versão\s*[ab12]|version\s*[ab12]/gi).filter(p => p.trim());
@@ -214,7 +177,6 @@ function splitTwoLyrics(text: string): { v1: string; v2: string } {
     }
   }
   
-  // Fallback: split by paragraphs
   const paras = text.split(/\n{2,}/);
   const mid = Math.max(1, Math.floor(paras.length / 2));
   return { v1: paras.slice(0, mid).join("\n\n").trim(), v2: paras.slice(mid).join("\n\n").trim() };
@@ -223,28 +185,19 @@ function splitTwoLyrics(text: string): { v1: string; v2: string } {
 function extractTitleAndBody(raw: string, providedTitle?: string): { title: string; body: string } {
   const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
   
-  // If title was provided by user, use it EXACTLY - no extraction from generated text
   if (providedTitle && providedTitle.trim()) {
-    // Remove any AI-generated title from the body to avoid duplication
     let bodyLines = [...lines];
-    
-    // Check if first non-empty, non-tag line looks like an AI-generated title
     for (let i = 0; i < Math.min(5, bodyLines.length); i++) {
       const line = bodyLines[i];
-      // Skip empty lines and structural tags
       if (!line || line.startsWith('[') || line.startsWith('#')) continue;
-      
-      // If this looks like a title line (short, not a verse), remove it
       if (line.length < 100 && !line.includes('\n')) {
         bodyLines = bodyLines.filter((_, idx) => idx !== i);
         break;
       }
     }
-    
     return { title: providedTitle.trim(), body: bodyLines.join('\n').trim() };
   }
   
-  // Auto-generate: Look for a title line (not a tag like [Intro])
   let titleIdx = -1;
   for (let i = 0; i < Math.min(5, lines.length); i++) {
     const line = lines[i];
@@ -295,13 +248,10 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client for order checks
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    // Check if order is a preview order from database
-    // IMPORTANT: The order may have been updated by use-credit function, so we need to get the current state
     const { data: orderInfo, error: orderFetchError } = await supabase
       .from('orders')
       .select('is_preview, plan_id, user_id')
@@ -312,8 +262,6 @@ serve(async (req) => {
       console.error("Error fetching order:", orderFetchError);
     }
     
-    // CRITICAL: Determine if this is a preview order
-    // Priority: 1) is_preview flag in DB (set by use-credit), 2) plan_id is preview_test, 3) isPreview param
     const isPreviewOrder = orderInfo?.is_preview === true || orderInfo?.plan_id === 'preview_test' || isPreview;
     console.log("Order preview determination:", { 
       dbIsPreview: orderInfo?.is_preview, 
@@ -339,22 +287,17 @@ serve(async (req) => {
       voiceType = 'feminina'
     } = briefing || {};
 
-    // Detectar termos críticos nas palavras obrigatórias
     const criticalTerms = detectCriticalTerms(mandatoryWords);
-    
-    // Verificar se há termos sem pronúncia definida
     const missingPronunciations = criticalTerms.filter(
       term => !pronunciations.some(p => p.term === term)
     );
 
-    // For preview orders, use simplified structure
-    const previewStructure = ['intro', 'chorus'];
+    // For preview orders, use simplified structure (verse + pre-chorus + chorus = ~1 minute)
+    const previewStructure = ['verse', 'pre-chorus', 'chorus'];
     const effectiveStructure = isPreviewOrder ? previewStructure : structure;
 
-    // Build structure tags based on user selection
     const structureTags = effectiveStructure.map(s => `[${s.charAt(0).toUpperCase() + s.slice(1)}]`).join(', ');
 
-    // Map voice type to Portuguese description
     const voiceTypeMap: Record<string, string> = {
       'masculina': 'voz masculina solo',
       'feminina': 'voz feminina solo',
@@ -365,30 +308,35 @@ serve(async (req) => {
     };
     const voiceDescription = voiceTypeMap[voiceType] || 'voz feminina solo';
 
-    // PREVIEW: Use special short prompt
-    const systemPrompt = isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA CURTA de música (20-40 segundos).
+    // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
+    const systemPrompt = isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
 REGRAS CRÍTICAS PARA PREVIEW:
-1. Gere APENAS uma estrutura CURTA: [Intro] + [Chorus]
-2. O [Intro] deve ter 2-4 versos instrumentais ou de abertura
-3. O [Chorus] deve ter NO MÁXIMO 4 linhas curtas e memoráveis
-4. NÃO inclua [Verse], [Bridge], [Outro] ou outras seções
-5. A música completa será ~20-40 segundos
-6. Estilo musical: ${style}
-7. Tipo de voz: ${voiceDescription}
-8. Emoção: ${emotion}
+1. Gere APENAS a estrutura: [Verse] + [Pre-Chorus] + [Chorus]
+2. O [Verse] deve ter 4-6 versos narrativos
+3. O [Pre-Chorus] deve ter 2-4 versos de transição que preparam para o refrão
+4. O [Chorus] deve ter 4-6 linhas - refrão memorável e fácil de cantar
+5. NÃO inclua [Intro], [Bridge], [Outro], [Verse 2] ou outras seções
+6. A música completa será ~1 minuto
+7. Estilo musical: ${style}
+8. Tipo de voz: ${voiceDescription}
+9. Emoção: ${emotion}
+10. ${!autoGenerateName && songName ? `TÍTULO OBRIGATÓRIO: "${songName}"` : 'CRIE UM TÍTULO CRIATIVO específico para esta história'}
 
-⚠️ IMPORTANTE: Esta é uma PRÉVIA DE TESTE. Mantenha MUITO curta!
+⚠️ IMPORTANTE: Esta é uma PRÉVIA. Estrutura limitada mas completa!
 
 FORMATO OBRIGATÓRIO:
 
 TÍTULO DA MÚSICA
 
-[Intro]
-(2-4 versos de abertura curtos)
+[Verse]
+(4-6 versos narrativos)
+
+[Pre-Chorus]
+(2-4 versos de preparação para o refrão)
 
 [Chorus]
-(MÁXIMO 4 linhas - refrão curto e impactante)
+(4-6 linhas - refrão principal, memorável)
 
 [End]` : `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
@@ -600,12 +548,10 @@ INSTRUÇÕES FINAIS:
     const l1 = extractTitleAndBody(v1, autoGenerateName ? undefined : songName);
     const l2 = extractTitleAndBody(v2, autoGenerateName ? undefined : songName);
 
-    // APLICAR REGRAS GLOBAIS DE PRONÚNCIA em TODA a letra (todas as seções)
     console.log("Applying global pronunciation rules to all lyrics sections...");
     const processedBody1 = applyGlobalPronunciationRules(l1.body);
     const processedBody2 = applyGlobalPronunciationRules(l2.body);
 
-    // Gerar versões fonéticas com pronúncias customizadas adicionais
     let phonetic1 = processedBody1;
     let phonetic2 = processedBody2;
     
@@ -614,8 +560,6 @@ INSTRUÇÕES FINAIS:
       phonetic2 = applyPronunciations(processedBody2, pronunciations);
     }
 
-    // Insert lyrics with phonetic versions - use processedBody for display
-    // autoApprove automatically approves the first version (for quick mode)
     const { data: insertedLyrics, error: insertError } = await supabase
       .from('lyrics')
       .insert([
@@ -623,16 +567,16 @@ INSTRUÇÕES FINAIS:
           order_id: orderId, 
           version: 'A', 
           title: l1.title, 
-          body: processedBody1, // Body já com pronúncias globais aplicadas
+          body: processedBody1,
           phonetic_body: phonetic1,
-          is_approved: autoApprove, // Auto-approve first version if in quick mode
+          is_approved: autoApprove,
           approved_at: autoApprove ? new Date().toISOString() : null
         },
         { 
           order_id: orderId, 
           version: 'B', 
           title: l2.title, 
-          body: processedBody2, // Body já com pronúncias globais aplicadas
+          body: processedBody2,
           phonetic_body: phonetic2,
           is_approved: false 
         }
@@ -643,9 +587,6 @@ INSTRUÇÕES FINAIS:
       console.error("Error inserting lyrics:", insertError);
     }
 
-    // Update order status based on autoApprove
-    // QUICK MODE (autoApprove=true): Skip to LYRICS_APPROVED, trigger style prompt
-    // DETAILED MODE (autoApprove=false): Stay at LYRICS_GENERATED, wait for user approval
     const newStatus = autoApprove ? 'LYRICS_APPROVED' : 'LYRICS_GENERATED';
     
     const updateData: Record<string, unknown> = { 
@@ -654,9 +595,15 @@ INSTRUÇÕES FINAIS:
       voice_type: voiceType
     };
     
-    // Save approved lyric ID if auto-approved
     if (autoApprove && insertedLyrics?.[0]?.id) {
       updateData.approved_lyric_id = insertedLyrics[0].id;
+    }
+    
+    // IMPORTANT: Save AI-generated title to order.song_title if autoGenerateName was true
+    // This ensures the admin can see the title even when user didn't provide one
+    if (autoGenerateName && l1.title && l1.title !== "Música Personalizada") {
+      updateData.song_title = l1.title;
+      console.log("Saving AI-generated title to order:", l1.title);
     }
     
     if (pronunciations.length > 0) {
@@ -672,7 +619,6 @@ INSTRUÇÕES FINAIS:
       console.error("Error updating order status:", updateError);
     }
     
-    // AUTO-APPROVE MODE: Automatically trigger style prompt generation
     if (autoApprove && insertedLyrics?.[0]) {
       console.log("Auto-approve mode: Triggering style prompt generation...");
       try {
@@ -696,12 +642,9 @@ INSTRUÇÕES FINAIS:
         console.log("Style prompt generation triggered successfully");
       } catch (styleError) {
         console.error("Style prompt generation error:", styleError);
-        // Don't fail - style prompt can be generated later
       }
     }
 
-    // Send push notification that lyrics are ready (skip for autoApprove mode)
-    // autoApprove = quick mode, user doesn't need to approve lyrics
     if (orderInfo?.user_id && !autoApprove) {
       try {
         console.log("Sending push notification for lyrics ready...");
@@ -723,7 +666,6 @@ INSTRUÇÕES FINAIS:
         console.log("Push notification sent successfully");
       } catch (pushError) {
         console.error("Push notification error:", pushError);
-        // Don't fail the main operation if push fails
       }
     } else if (autoApprove) {
       console.log("Skipping lyrics notification (autoApprove mode - direct to production)");
@@ -740,14 +682,14 @@ INSTRUÇÕES FINAIS:
             id: insertedLyrics?.[0]?.id || 'lyric-a', 
             version: 'A', 
             title: l1.title, 
-            text: processedBody1, // Retorna texto já processado
+            text: processedBody1,
             phoneticText: phonetic1
           },
           { 
             id: insertedLyrics?.[1]?.id || 'lyric-b', 
             version: 'B', 
             title: l2.title, 
-            text: processedBody2, // Retorna texto já processado
+            text: processedBody2,
             phoneticText: phonetic2
           }
         ],
