@@ -3743,6 +3743,44 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Motivational Narrative - with image cards */}
+                {currentBotMessage.field === 'motivationalNarrative' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: motivationalNarrativeImages[opt.id] || motivationalNarrativeImages.cantada
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.motivational.narrative.question', 'Estilo de entrega')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
+                {/* Motivational Perspective - with image cards */}
+                {currentBotMessage.field === 'motivationalPerspective' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: motivationalPerspectiveImages[opt.id] || motivationalPerspectiveImages.eu
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.motivational.perspective.question', 'Perspectiva da letra')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
