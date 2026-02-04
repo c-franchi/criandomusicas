@@ -1223,7 +1223,7 @@ const Briefing = () => {
     return uniqueWords.slice(0, 8);
   };
 
-  const addBotMessage = (msg: Omit<ChatMessage, 'id'>, targetStep?: number) => {
+  const addBotMessage = (msg: Omit<ChatMessage, 'id'>, targetStep?: number, updatedFormData?: BriefingFormData) => {
     setIsTyping(true);
     setTimeout(() => {
       setIsTyping(false);
@@ -1232,10 +1232,13 @@ const Briefing = () => {
         id: `msg-${Date.now()}`
       };
       
+      // Use updatedFormData if provided, otherwise fall back to formData
+      const currentFormData = updatedFormData || formData;
+      
       // Se for pergunta de emoção, preencher opções dinamicamente
       if (msg.field === 'emotion') {
-        newMsg.options = getEmotionOptions(formData.musicType);
-        newMsg.content = formData.musicType === 'parodia' 
+        newMsg.options = getEmotionOptions(currentFormData.musicType);
+        newMsg.content = currentFormData.musicType === 'parodia' 
           ? chatMessages.emotionParody
           : chatMessages.emotion;
       }
@@ -1244,7 +1247,7 @@ const Briefing = () => {
       // Usar targetStep se fornecido, senão usar currentStep
       const stepToCheck = targetStep ?? currentStep;
       if (msg.field === 'soloInstrument' && stepToCheck === 5) {
-        const soloInstrumentOptions = formData.instruments.map(instId => {
+        const soloInstrumentOptions = currentFormData.instruments.map(instId => {
           const inst = instrumentOptions.find(i => i.id === instId);
           return { id: instId, label: inst?.label || instId };
         });
@@ -1685,7 +1688,7 @@ const Briefing = () => {
 
     if (nextStep < chatFlow.length) {
       setTimeout(() => {
-        addBotMessage(chatFlow[nextStep], nextStep);
+        addBotMessage(chatFlow[nextStep], nextStep, updatedFormData as BriefingFormData);
       }, 500);
     } else {
       showConfirmationScreen(updatedFormData as BriefingFormData);
