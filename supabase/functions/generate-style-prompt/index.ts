@@ -21,6 +21,12 @@ interface BriefingData {
   soloInstrument?: string;
   soloMoment?: string;
   instrumentationNotes?: string;
+  // Campos motivacionais
+  motivationalNarrative?: string;
+  motivationalMoment?: string;
+  motivationalIntensity?: string;
+  motivationalPerspective?: string;
+  monologuePosition?: string;
 }
 
 interface Pronunciation {
