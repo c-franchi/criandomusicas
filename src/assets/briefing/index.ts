@@ -359,6 +359,21 @@ export const motivationalStyleImages: Record<string, string> = {
   auto: motivationalStyleAutoImg,
 };
 
+// Motivational narrative images
+export const motivationalNarrativeImages: Record<string, string> = {
+  cantada: motivationalNarrativeCantadaImg,
+  cantada_monologue: motivationalNarrativeMistaImg,
+  mais_falada: motivationalNarrativeFaladaImg,
+  narrador: motivationalNarrativeDiscursoImg,
+};
+
+// Motivational perspective images
+export const motivationalPerspectiveImages: Record<string, string> = {
+  eu: motivationalPerspectiveEuImg,
+  voce: motivationalPerspectiveMentorImg,
+  universal: motivationalPerspectiveUniversalImg,
+};
+
 // Parody emotion images
 export const parodyEmotionImages: Record<string, string> = {
   zoeira: parodyZoeiraImg,
