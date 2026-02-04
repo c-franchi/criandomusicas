@@ -244,8 +244,8 @@
         "cantadaMonologue": "🎤 Cantado + Partes Habladas",
         "maisFalada": "🗣️ Más Hablado que Cantado",
         "narrador": "📢 Estilo Discurso Motivacional",
-        "somenteMonologo": "🎙️ Solo Monólogo (Spoken Word)",
-        "somenteMonologoDesc": "Solo texto hablado con estribillo mantra"
+        "somenteMonologo": "🎙️ 100% Hablada (Spoken Word)",
+        "somenteMonologoDesc": "Todo hablado/recitado con estribillo mantra"
       },
       "perspective": {
         "question": "¿Cuál es la perspectiva de la letra?",
