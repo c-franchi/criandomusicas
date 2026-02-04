@@ -1594,12 +1594,13 @@ const Briefing = () => {
 
     // Handle motivationalNarrative - se incluir fala, ativar monólogo automaticamente
     if (field === 'motivationalNarrative') {
-      const hasSpokenParts = ['cantada_monologue', 'mais_falada', 'narrador'].includes(option.id);
+      const hasSpokenParts = ['cantada_monologue', 'mais_falada', 'narrador', 'somente_monologo'].includes(option.id);
+      const isSomenteMonologo = option.id === 'somente_monologo';
       setFormData(prev => ({ 
         ...prev, 
         motivationalNarrative: option.id,
         hasMonologue: hasSpokenParts,
-        monologuePosition: hasSpokenParts ? 'bridge' : ''
+        monologuePosition: isSomenteMonologo ? 'full' : (hasSpokenParts ? 'bridge' : '')
       }));
       addUserMessage(displayValue);
       setStepHistory(prev => [...prev, currentStep]);
@@ -1608,7 +1609,7 @@ const Briefing = () => {
         ...formData, 
         motivationalNarrative: option.id,
         hasMonologue: hasSpokenParts,
-        monologuePosition: hasSpokenParts ? 'bridge' : ''
+        monologuePosition: isSomenteMonologo ? 'full' : (hasSpokenParts ? 'bridge' : '')
       };
       
       if (isEditingSingleField) {
