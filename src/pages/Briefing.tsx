@@ -3796,7 +3796,9 @@ const Briefing = () => {
                  currentBotMessage.field !== 'soundtrackUsage' &&
                  currentBotMessage.field !== 'soundtrackEmotion' &&
                  currentBotMessage.field !== 'motivationalMoment' &&
-                 currentBotMessage.field !== 'motivationalIntensity' && (
+                 currentBotMessage.field !== 'motivationalIntensity' &&
+                 currentBotMessage.field !== 'motivationalNarrative' &&
+                 currentBotMessage.field !== 'motivationalPerspective' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button
