@@ -23,7 +23,7 @@ import {
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
   soundtrackUsageImages, soundtrackEmotionImages, creationModeImages, motivationalMomentImages,
-  parodyEmotionImages, motivationalEmotionImages
+  parodyEmotionImages, motivationalEmotionImages, motivationalIntensityImages
 } from "@/assets/briefing";
 import {
   Dialog,
@@ -3716,6 +3716,25 @@ const Briefing = () => {
                   />
                 )}
 
+                {/* Motivational Intensity - with image cards */}
+                {currentBotMessage.field === 'motivationalIntensity' && (
+                  <ImageCardGrid
+                    options={currentBotMessage.options.map(opt => ({
+                      id: opt.id,
+                      label: opt.label,
+                      imageSrc: motivationalIntensityImages[opt.id] || motivationalIntensityImages.calma
+                    }))}
+                    selectedId={undefined}
+                    variant="square"
+                    title={t('steps.motivational.intensity.question', 'Intensidade')}
+                    showOther={false}
+                    onSelect={(id) => {
+                      const option = currentBotMessage.options?.find(o => o.id === id);
+                      if (option) handleOptionSelect(option);
+                    }}
+                  />
+                )}
+
                 {/* Default options (buttons) for other fields */}
                 {currentBotMessage.field !== 'musicType' && 
                  currentBotMessage.field !== 'emotion' && 
@@ -3730,7 +3749,8 @@ const Briefing = () => {
                  currentBotMessage.field !== 'childStyle' &&
                  currentBotMessage.field !== 'soundtrackUsage' &&
                  currentBotMessage.field !== 'soundtrackEmotion' &&
-                 currentBotMessage.field !== 'motivationalMoment' && (
+                 currentBotMessage.field !== 'motivationalMoment' &&
+                 currentBotMessage.field !== 'motivationalIntensity' && (
                   <div className="flex flex-wrap gap-2">
                     {currentBotMessage.options.map((option) => (
                       <Button
