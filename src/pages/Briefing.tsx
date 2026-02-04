@@ -1594,12 +1594,13 @@ const Briefing = () => {
 
     // Handle motivationalNarrative - se incluir fala, ativar monólogo automaticamente
     if (field === 'motivationalNarrative') {
-      const hasSpokenParts = ['cantada_monologue', 'mais_falada', 'narrador'].includes(option.id);
+      const hasSpokenParts = ['cantada_monologue', 'mais_falada', 'narrador', 'somente_monologo'].includes(option.id);
+      const isSomenteMonologo = option.id === 'somente_monologo';
       setFormData(prev => ({ 
         ...prev, 
         motivationalNarrative: option.id,
         hasMonologue: hasSpokenParts,
-        monologuePosition: hasSpokenParts ? 'bridge' : ''
+        monologuePosition: isSomenteMonologo ? 'full' : (hasSpokenParts ? 'bridge' : '')
       }));
       addUserMessage(displayValue);
       setStepHistory(prev => [...prev, currentStep]);
@@ -1608,7 +1609,7 @@ const Briefing = () => {
         ...formData, 
         motivationalNarrative: option.id,
         hasMonologue: hasSpokenParts,
-        monologuePosition: hasSpokenParts ? 'bridge' : ''
+        monologuePosition: isSomenteMonologo ? 'full' : (hasSpokenParts ? 'bridge' : '')
       };
       
       if (isEditingSingleField) {
@@ -2108,6 +2109,9 @@ const Briefing = () => {
       ? `${data.story}\n\n[INFORMAÇÕES DE CONTATO PARA O JINGLE]\n${data.contactInfo}\n\n[CHAMADA PARA AÇÃO]\n${data.callToAction}`
       : data.story;
     
+    // Detectar se é modo "Somente Monólogo"
+    const isSomenteMonologo = data.motivationalNarrative === 'somente_monologo';
+    
     const briefingData = {
       isInstrumental: data.isInstrumental,
       hasCustomLyric: data.hasCustomLyric,
@@ -2119,9 +2123,11 @@ const Briefing = () => {
       emotion: data.emotion,
       emotionIntensity: data.emotionIntensity,
       story: storyWithJingleInfo,
-      structure: ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
-      hasMonologue: isJingle ? true : data.hasMonologue, // Jingles sempre têm monólogo
-      monologuePosition: isJingle ? 'outro' : (data.monologuePosition || 'bridge'),
+      structure: isSomenteMonologo 
+        ? ['intro', 'monologue1', 'monologue2', 'monologue3', 'chorus', 'end'] 
+        : ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
+      hasMonologue: isJingle ? true : (isSomenteMonologo ? true : data.hasMonologue), // Jingles e somente_monologo sempre têm monólogo
+      monologuePosition: isJingle ? 'outro' : (isSomenteMonologo ? 'full' : (data.monologuePosition || 'bridge')),
       mandatoryWords: data.mandatoryWords,
       restrictedWords: data.restrictedWords,
       voiceType: data.voiceType,
@@ -2139,6 +2145,11 @@ const Briefing = () => {
       corporateFormat: data.corporateFormat,
       contactInfo: data.contactInfo,
       callToAction: data.callToAction,
+      // Campos motivacionais
+      motivationalNarrative: data.motivationalNarrative,
+      motivationalMoment: data.motivationalMoment,
+      motivationalIntensity: data.motivationalIntensity,
+      motivationalPerspective: data.motivationalPerspective,
       plan: userPlan,
       lgpdConsent: true
     };

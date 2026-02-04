@@ -160,6 +160,7 @@ import motivationalNarrativeCantadaImg from './motivational/narrative-cantada.jp
 import motivationalNarrativeMistaImg from './motivational/narrative-mista.jpg';
 import motivationalNarrativeFaladaImg from './motivational/narrative-falada.jpg';
 import motivationalNarrativeDiscursoImg from './motivational/narrative-discurso.jpg';
+import motivationalNarrativeSomenteMonologoImg from './motivational/narrative-somente-monologo.jpg';
 
 // Motivational Perspective Images
 import motivationalPerspectiveEuImg from './motivational/perspective-eu.jpg';
@@ -365,6 +366,7 @@ export const motivationalNarrativeImages: Record<string, string> = {
   cantada_monologue: motivationalNarrativeMistaImg,
   mais_falada: motivationalNarrativeFaladaImg,
   narrador: motivationalNarrativeDiscursoImg,
+  somente_monologo: motivationalNarrativeSomenteMonologoImg,
 };
 
 // Motivational perspective images
@@ -510,6 +512,7 @@ export {
   motivationalNarrativeMistaImg,
   motivationalNarrativeFaladaImg,
   motivationalNarrativeDiscursoImg,
+  motivationalNarrativeSomenteMonologoImg,
   // Motivational Perspective
   motivationalPerspectiveEuImg,
   motivationalPerspectiveMentorImg,

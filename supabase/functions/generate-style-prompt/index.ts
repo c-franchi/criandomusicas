@@ -21,6 +21,12 @@ interface BriefingData {
   soloInstrument?: string;
   soloMoment?: string;
   instrumentationNotes?: string;
+  // Campos motivacionais
+  motivationalNarrative?: string;
+  motivationalMoment?: string;
+  motivationalIntensity?: string;
+  motivationalPerspective?: string;
+  monologuePosition?: string;
 }
 
 interface Pronunciation {
@@ -415,8 +421,17 @@ serve(async (req) => {
       instruments = [],
       soloInstrument,
       soloMoment,
-      instrumentationNotes
+      instrumentationNotes,
+      motivationalNarrative = '',
+      motivationalMoment = '',
+      motivationalIntensity: motivIntensity = '',
+      motivationalPerspective = '',
+      monologuePosition = ''
     } = briefing || {};
+
+    // Detectar se é modo "Somente Monólogo" (spoken word motivacional)
+    const isSomenteMonologo = motivationalNarrative === 'somente_monologo' || monologuePosition === 'full';
+    console.log("Somente Monologo mode in style-prompt:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
 
     // Map rhythm to BPM range
     const bpmMap: Record<string, string> = {
