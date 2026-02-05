@@ -203,8 +203,8 @@ const QuickCreationComponent = ({
             <Textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={t('quickCreation.promptPlaceholder', 'Escreva seu prompt ou letra...')}
-              className="min-h-[100px] resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 text-foreground placeholder:text-muted-foreground"
+              placeholder={t('quickCreation.promptPlaceholderDetailed', 'Ex: Uma música de parabéns para minha mãe Ana, que adora MPB e está fazendo 60 anos. Ela é carinhosa e gosta de flores.\n\nDica: Quanto mais detalhes (nomes, idade, gostos, momentos especiais), melhor será sua música!')}
+              className="min-h-[120px] resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 text-foreground placeholder:text-muted-foreground/70 placeholder:text-sm"
               maxLength={350}
             />
             

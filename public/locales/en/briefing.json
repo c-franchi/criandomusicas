@@ -650,6 +650,7 @@
     "pageTitle": "Create music with AI",
     "promptLabel": "Describe your music",
     "promptPlaceholder": "Write your prompt or lyrics...",
+    "promptPlaceholderDetailed": "E.g.: A birthday song for my mom Ana, who loves MPB and is turning 60. She is loving and likes flowers.\n\nTip: The more details (names, age, tastes, special moments), the better your music will be!",
     "reset": "Reset",
     "instrumental": "Instrumental",
     "genreLabel": "Music Genre",

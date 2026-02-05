@@ -650,6 +650,7 @@
     "pageTitle": "Crie música com IA",
     "promptLabel": "Descreva sua música",
     "promptPlaceholder": "Escreva seu prompt ou letra...",
+    "promptPlaceholderDetailed": "Ex: Uma música de parabéns para minha mãe Ana, que adora MPB e está fazendo 60 anos. Ela é carinhosa e gosta de flores.\n\nDica: Quanto mais detalhes (nomes, idade, gostos, momentos especiais), melhor será sua música!",
     "reset": "Reiniciar",
     "instrumental": "Instrumental",
     "genreLabel": "Gênero Musical",
