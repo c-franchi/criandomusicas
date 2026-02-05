@@ -414,6 +414,20 @@ ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
     const systemPrompt = isSomenteMonologo ? somenteMonologoPrompt : (isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
+🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
+EVITE COMPLETAMENTE estas frases genéricas:
+- "luz da minha vida", "razão do meu ser", "estrela guia", "meu porto seguro"
+- "amor eterno", "sol que me aquece", "anjo da guarda", "meu tudo"
+- "pedaço do céu", "presente de Deus", "benção divina", "tesouro precioso"
+- "coração de ouro", "guerreira/guerreiro", "rainha/rei da minha vida"
+- Qualquer frase que serviria para QUALQUER pessoa sem alteração
+
+PRIORIZE SEMPRE (extraia da história):
+- Detalhes ESPECÍFICOS: nome, idade, profissão, hobbies mencionados
+- Memórias CONCRETAS: momentos, lugares, situações citadas na história
+- Tom CONVERSACIONAL: como se estivesse falando diretamente com a pessoa
+- Rimas CRIATIVAS: evite amor/dor, coração/paixão, vida/querida
+
 REGRAS CRÍTICAS PARA PREVIEW:
 1. Gere APENAS a estrutura: [Verse] + [Pre-Chorus] + [Chorus]
 2. O [Verse] deve ter 4-6 versos narrativos
