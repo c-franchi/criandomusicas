@@ -300,6 +300,13 @@ serve(async (req) => {
     const isSomenteMonologo = motivationalNarrative === 'somente_monologo' || monologuePosition === 'full';
     console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
 
+    // ============ MODO SIMPLES AUTOMÁTICO ============
+    // Ativar quando o texto do usuário for curto (< 120 caracteres) e pouco detalhado
+    // NÃO considerar gênero musical ou tipo de voz - apenas o volume/detalhe do texto
+    const storyLength = story?.trim()?.length || 0;
+    const isSimpleMode = storyLength > 0 && storyLength < 120;
+    console.log("Simple Mode detection:", { storyLength, isSimpleMode, storyPreview: story?.substring(0, 50) });
+
     const criticalTerms = detectCriticalTerms(mandatoryWords);
     const missingPronunciations = criticalTerms.filter(
       term => !pronunciations.some(p => p.term === term)
@@ -411,8 +418,64 @@ ${!autoGenerateName && songName ? `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"` :
 ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
 ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
 
+    // ============ PROMPT MODO SIMPLES (ativado automaticamente para pedidos curtos) ============
+    const simpleModePrompt = `Você deve criar uma letra SIMPLES, BONITA e COERENTE.
+
+⚠️ IMPORTANTE: Este é um pedido SIMPLES de usuário comum.
+NÃO transforme o conteúdo em poesia elaborada.
+NÃO invente histórias paralelas, cenários irrelevantes ou objetos aleatórios.
+
+REGRAS GERAIS:
+- Linguagem CLARA, DIRETA e EMOCIONAL
+- EVITAR metáforas abstratas, simbolismos ou imagens poéticas complexas
+- NÃO exagerar em adjetivos
+- Manter FOCO TOTAL no tema principal solicitado
+- A letra deve soar NATURAL quando cantada
+- Se o usuário forneceu uma frase específica, ela deve ser usada LITERALMENTE no refrão
+
+🚫 EVITE COMPLETAMENTE:
+- "luz da minha vida", "razão do meu ser", "estrela guia"
+- "amor eterno", "sol que me aquece", "anjo da guarda"  
+- "pedaço do céu", "presente de Deus", "meu porto seguro"
+- Qualquer frase genérica que serviria para qualquer pessoa
+
+ESTRUTURA OBRIGATÓRIA PARA MODO SIMPLES:
+
+[Intro]
+→ 2 a 4 linhas simples de ambientação emocional
+
+[Verse 1]
+→ 4 linhas objetivas, diretamente relacionadas ao tema
+
+[Chorus]
+→ Mensagem principal CLARA e FÁCIL de lembrar
+→ 4-6 linhas curtas e diretas
+→ Se houver frase específica do usuário, USE-A aqui
+
+[Outro]
+→ 2 a 4 linhas de encerramento emocional simples
+→ Pode reforçar carinho, gratidão ou desejo positivo
+
+[End]
+
+ORIENTAÇÕES IMPORTANTES:
+- A intro e o outro podem ter mais linhas para ajudar a fluidez musical
+- O refrão deve ser CURTO, FORTE e DIRETO
+- EVITAR repetição de ideias com palavras diferentes
+- SIMPLICIDADE é PRIORIDADE ABSOLUTA
+
+DADOS DA MÚSICA:
+- Estilo musical: ${style}
+- Tipo de voz: ${voiceDescription}
+- Emoção: ${emotion}
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras proibidas: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- Crie um título SIMPLES e DIRETO relacionado ao pedido'}
+
+Se o pedido for simples, a letra DEVE ser simples.`;
+
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
-    const systemPrompt = isSomenteMonologo ? somenteMonologoPrompt : (isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
+    const previewPrompt = `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:
@@ -455,7 +518,9 @@ TÍTULO DA MÚSICA
 [Chorus]
 (4-6 linhas - refrão principal, memorável)
 
-[End]` : `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
+[End]`;
+
+    const fullSystemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:
@@ -602,7 +667,25 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 (2-4 versos de encerramento)${hasMonologue && monologuePosition === 'outro' ? `
 
 [monologue]
-(texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`);
+(texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`;
+
+    // ============ SELEÇÃO DO PROMPT BASEADO NO MODO ============
+    // Prioridade: 1. Somente Monólogo → 2. Modo Simples → 3. Preview → 4. Completo
+    const systemPrompt = isSomenteMonologo 
+      ? somenteMonologoPrompt 
+      : isSimpleMode 
+        ? simpleModePrompt 
+        : isPreviewOrder 
+          ? previewPrompt 
+          : fullSystemPrompt;
+    
+    console.log("Selected prompt mode:", { 
+      isSomenteMonologo, 
+      isSimpleMode, 
+      isPreviewOrder, 
+      selectedMode: isSomenteMonologo ? 'somenteMonologo' : isSimpleMode ? 'simpleMode' : isPreviewOrder ? 'preview' : 'full'
+    });
+
     const userPrompt = isSomenteMonologo ? `Crie DUAS versões de SPOKEN WORD motivacional completas.
 
 CONTEXTO DA MÚSICA:
@@ -623,7 +706,30 @@ INSTRUÇÕES:
 - TODOS os textos devem estar em [monologue] tags
 - O [Chorus] deve ser uma frase-mantra CURTA, FORTE e REPETÍVEL
 - NÃO inclua partes cantadas, é 100% spoken word
-- Tom direto, frases curtas, vocabulário de força e disciplina` : `Crie DUAS versões de letra completas para uma música personalizada.
+- Tom direto, frases curtas, vocabulário de força e disciplina` : isSimpleMode ? `Crie DUAS versões de letra SIMPLES para uma música personalizada.
+
+⚠️ MODO SIMPLES ATIVADO - Pedido curto do usuário
+
+PEDIDO DO USUÁRIO:
+${story}
+
+DADOS DA MÚSICA:
+- Estilo musical: ${style}
+- Tipo de voz: ${voiceDescription}
+- Emoção: ${emotion}
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras proibidas: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- Crie um título simples e direto'}
+
+INSTRUÇÕES PARA MODO SIMPLES:
+- Crie DUAS versões DIFERENTES mas AMBAS devem ser SIMPLES
+- Separe as duas versões com uma linha contendo apenas: ---
+- NÃO invente histórias, cenários ou detalhes que o usuário não mencionou
+- Se o pedido é "música de parabéns para minha mãe", a letra deve falar de parabéns para a mãe
+- FOCO TOTAL no que foi pedido
+- Letras CURTAS (máximo 100-150 palavras cada)
+- Refrão DIRETO e MEMORÁVEL
+- NÃO inclua comentários ou explicações` : `Crie DUAS versões de letra completas para uma música personalizada.
 
 DADOS DA MÚSICA:
 - Tipo: ${musicType}
