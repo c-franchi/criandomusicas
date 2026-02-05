@@ -49,6 +49,49 @@ interface Pronunciation {
 
 type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
 
+// Animated progress bar for lyric generation
+const GeneratingProgressBar = ({ t }: { t: (key: string) => string }) => {
+  const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState("");
+  
+  useEffect(() => {
+    const statuses = [
+      t('createSong.statusAnalyzing'),
+      t('createSong.statusCreatingVerses'),
+      t('createSong.statusRefiningLyrics'),
+      t('createSong.statusAlmostDone'),
+    ];
+    
+    let currentIdx = 0;
+    setStatusText(statuses[0]);
+    
+    const statusInterval = setInterval(() => {
+      currentIdx = (currentIdx + 1) % statuses.length;
+      setStatusText(statuses[currentIdx]);
+    }, 12000);
+    
+    // Progress bar animation (0 to 95% over ~60 seconds)
+    const progressInterval = setInterval(() => {
+      setProgress(prev => Math.min(prev + 1.5, 95));
+    }, 1000);
+    
+    return () => {
+      clearInterval(statusInterval);
+      clearInterval(progressInterval);
+    };
+  }, [t]);
+  
+  return (
+    <div className="mt-6 space-y-3">
+      <Progress value={progress} className="h-2" />
+      <p className="text-sm text-muted-foreground animate-pulse">{statusText}</p>
+      <p className="text-xs text-muted-foreground/70">
+        {t('createSong.generationTimeWarning')}
+      </p>
+    </div>
+  );
+};
+
 // Auto-redirect effect for complete step
 const useAutoRedirect = (step: Step, navigate: ReturnType<typeof useNavigate>) => {
   useEffect(() => {
