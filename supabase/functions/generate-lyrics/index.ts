@@ -670,7 +670,6 @@ INSTRUÇÕES FINAIS:
           { role: "user", content: userPrompt }
         ],
         max_completion_tokens: 3000,
-        temperature: 0.9,
       }),
     });
 
