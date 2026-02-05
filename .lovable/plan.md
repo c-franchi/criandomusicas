@@ -3,6 +3,47 @@
 
 ✅ **IMPLEMENTADO**
 
+---
+
+# Plano: Modo Simples Automático para Letras
+
+✅ **IMPLEMENTADO** (2026-02-05)
+
+## Objetivo
+Ajustar o sistema para que pedidos simples gerem letras simples, bonitas e coerentes, sem exigir que o usuário saiba escrever prompts elaborados.
+
+## Problema Identificado
+- A IA gerava letras longas, poéticas demais e desconexas para pedidos simples
+- Usuários leigos enviavam textos curtos como "música de parabéns para minha mãe"
+- Sistema produzia letras exageradas com metáforas e histórias inventadas
+
+## Solução Implementada
+
+### Modo Simples Automático (invisível ao usuário)
+- **Ativação**: Quando o texto do usuário < 120 caracteres
+- **Critério**: Volume/detalhe do texto (NÃO gênero musical ou voz)
+
+### Comportamento do Modo Simples
+1. Linguagem clara, direta e emocional
+2. Evita metáforas abstratas e simbolismos complexos
+3. Não inventa histórias paralelas ou cenários irrelevantes
+4. Foco total no tema principal solicitado
+5. Estrutura simplificada: [Intro] + [Verse 1] + [Chorus] + [Outro]
+
+### Prioridade dos Modos
+1. Somente Monólogo (spoken word motivacional)
+2. **Modo Simples** (pedidos curtos < 120 chars)
+3. Preview (música de ~1 minuto)
+4. Completo (briefing detalhado)
+
+## Arquivos Modificados
+- `supabase/functions/generate-lyrics/index.ts`
+  - Adicionada detecção de `isSimpleMode`
+  - Criado `simpleModePrompt` com regras anti-poesia
+  - Criado `userPrompt` simplificado para modo simples
+
+---
+
 ## Objetivo
 Melhorar a qualidade das letras geradas trocando o modelo Gemini por GPT e refinando o prompt para evitar clichês e usar mais o contexto específico da história.
 
