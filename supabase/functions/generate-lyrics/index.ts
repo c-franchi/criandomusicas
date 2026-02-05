@@ -657,21 +657,52 @@ INSTRUÇÕES FINAIS:
 
     console.log("Calling AI Gateway for lyrics generation...");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "openai/gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        max_completion_tokens: 3000,
-      }),
-    });
+    // GPT-5 is a reasoning model - needs high max_completion_tokens (includes internal reasoning)
+    // Timeout after 90 seconds to avoid hanging indefinitely
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      console.error("AI Gateway request timeout after 90 seconds");
+      controller.abort();
+    }, 90000);
+    
+    let response: Response;
+    try {
+      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-5",
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt }
+          ],
+          max_completion_tokens: 16000,
+        }),
+        signal: controller.signal,
+      });
+    } catch (fetchError: unknown) {
+      clearTimeout(timeoutId);
+      const errorMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
+      console.error("AI Gateway fetch error:", errorMsg);
+      
+      if (errorMsg.includes('abort')) {
+        return new Response(
+          JSON.stringify({ ok: false, error: "Tempo limite excedido. A IA demorou muito para responder. Tente novamente." }),
+          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      return new Response(
+        JSON.stringify({ ok: false, error: `Erro de conexão com IA: ${errorMsg}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    clearTimeout(timeoutId);
+    console.log("AI Gateway response status:", response.status);
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -856,7 +887,7 @@ INSTRUÇÕES FINAIS:
           }
         ],
         criticalTerms: missingPronunciations,
-        usedModel: "gemini-3-flash-preview"
+        usedModel: "openai/gpt-5"
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
