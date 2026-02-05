@@ -677,6 +677,9 @@ const CreateSong = () => {
               : t('createSong.loadingBriefing')
             }
           />
+          {step === "generating" && (
+            <GeneratingProgressBar t={t} />
+          )}
         </Card>
       </div>
     );
