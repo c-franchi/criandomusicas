@@ -418,8 +418,64 @@ ${!autoGenerateName && songName ? `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"` :
 ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
 ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
 
+    // ============ PROMPT MODO SIMPLES (ativado automaticamente para pedidos curtos) ============
+    const simpleModePrompt = `Você deve criar uma letra SIMPLES, BONITA e COERENTE.
+
+⚠️ IMPORTANTE: Este é um pedido SIMPLES de usuário comum.
+NÃO transforme o conteúdo em poesia elaborada.
+NÃO invente histórias paralelas, cenários irrelevantes ou objetos aleatórios.
+
+REGRAS GERAIS:
+- Linguagem CLARA, DIRETA e EMOCIONAL
+- EVITAR metáforas abstratas, simbolismos ou imagens poéticas complexas
+- NÃO exagerar em adjetivos
+- Manter FOCO TOTAL no tema principal solicitado
+- A letra deve soar NATURAL quando cantada
+- Se o usuário forneceu uma frase específica, ela deve ser usada LITERALMENTE no refrão
+
+🚫 EVITE COMPLETAMENTE:
+- "luz da minha vida", "razão do meu ser", "estrela guia"
+- "amor eterno", "sol que me aquece", "anjo da guarda"  
+- "pedaço do céu", "presente de Deus", "meu porto seguro"
+- Qualquer frase genérica que serviria para qualquer pessoa
+
+ESTRUTURA OBRIGATÓRIA PARA MODO SIMPLES:
+
+[Intro]
+→ 2 a 4 linhas simples de ambientação emocional
+
+[Verse 1]
+→ 4 linhas objetivas, diretamente relacionadas ao tema
+
+[Chorus]
+→ Mensagem principal CLARA e FÁCIL de lembrar
+→ 4-6 linhas curtas e diretas
+→ Se houver frase específica do usuário, USE-A aqui
+
+[Outro]
+→ 2 a 4 linhas de encerramento emocional simples
+→ Pode reforçar carinho, gratidão ou desejo positivo
+
+[End]
+
+ORIENTAÇÕES IMPORTANTES:
+- A intro e o outro podem ter mais linhas para ajudar a fluidez musical
+- O refrão deve ser CURTO, FORTE e DIRETO
+- EVITAR repetição de ideias com palavras diferentes
+- SIMPLICIDADE é PRIORIDADE ABSOLUTA
+
+DADOS DA MÚSICA:
+- Estilo musical: ${style}
+- Tipo de voz: ${voiceDescription}
+- Emoção: ${emotion}
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras proibidas: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- Crie um título SIMPLES e DIRETO relacionado ao pedido'}
+
+Se o pedido for simples, a letra DEVE ser simples.`;
+
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
-    const systemPrompt = isSomenteMonologo ? somenteMonologoPrompt : (isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
+    const previewPrompt = `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:
@@ -462,7 +518,9 @@ TÍTULO DA MÚSICA
 [Chorus]
 (4-6 linhas - refrão principal, memorável)
 
-[End]` : `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
+[End]`;
+
+    const fullSystemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:
