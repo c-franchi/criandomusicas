@@ -301,10 +301,10 @@ serve(async (req) => {
     console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
 
     // ============ MODO SIMPLES AUTOMÁTICO ============
-    // Ativar quando o texto do usuário for curto (< 120 caracteres) e pouco detalhado
+    // Ativar quando o texto do usuário for curto (< 240 caracteres) e pouco detalhado
     // NÃO considerar gênero musical ou tipo de voz - apenas o volume/detalhe do texto
     const storyLength = story?.trim()?.length || 0;
-    const isSimpleMode = storyLength > 0 && storyLength < 120;
+    const isSimpleMode = storyLength > 0 && storyLength < 240;
     console.log("Simple Mode detection:", { storyLength, isSimpleMode, storyPreview: story?.substring(0, 50) });
 
     const criticalTerms = detectCriticalTerms(mandatoryWords);

@@ -20,7 +20,7 @@ Ajustar o sistema para que pedidos simples gerem letras simples, bonitas e coere
 ## Solução Implementada
 
 ### Modo Simples Automático (invisível ao usuário)
-- **Ativação**: Quando o texto do usuário < 120 caracteres
+- **Ativação**: Quando o texto do usuário < 240 caracteres
 - **Critério**: Volume/detalhe do texto (NÃO gênero musical ou voz)
 
 ### Comportamento do Modo Simples
@@ -32,7 +32,7 @@ Ajustar o sistema para que pedidos simples gerem letras simples, bonitas e coere
 
 ### Prioridade dos Modos
 1. Somente Monólogo (spoken word motivacional)
-2. **Modo Simples** (pedidos curtos < 120 chars)
+2. **Modo Simples** (pedidos curtos < 240 chars)
 3. Preview (música de ~1 minuto)
 4. Completo (briefing detalhado)
 
@@ -44,55 +44,34 @@ Ajustar o sistema para que pedidos simples gerem letras simples, bonitas e coere
 
 ---
 
-## Objetivo
-Melhorar a qualidade das letras geradas trocando o modelo Gemini por GPT e refinando o prompt para evitar clichês e usar mais o contexto específico da história.
+# Plano: Correção CORS e UX de Geração (2026-02-05)
 
-## Problema Identificado
-As letras atuais estão:
-- Muito genéricas e clichês ("razão do meu ser", "luz da minha vida", "estrela guia")
-- Sem contexto específico da história fornecida
-- Exageradas emocionalmente
+✅ **IMPLEMENTADO**
 
-## Mudanças Técnicas
+## Problemas Corrigidos
 
-### 1. Trocar modelo no generate-lyrics
-**Arquivo:** `supabase/functions/generate-lyrics/index.ts`
+### 1. Erro de CORS em Edge Functions
+- **Problema**: Headers CORS incompletos bloqueavam requisições do SDK Supabase
+- **Solução**: Adicionados headers faltantes em 3 edge functions
+- **Arquivos**: `check-credits`, `validate-voucher`, `notify-admin-order`
 
-- Linha 626: Mudar de `google/gemini-3-flash-preview` para `openai/gpt-5`
-- O GPT-5 tem melhor capacidade de seguir instruções complexas e manter contexto
+### 2. Feedback Visual na Geração de Letras
+- **Problema**: Usuário não tinha feedback de progresso durante geração (até 2 min)
+- **Solução**: Adicionada barra de progresso animada + mensagens de status
+- **Arquivo**: `src/pages/CreateSong.tsx`
 
-### 2. Refinar o Prompt de Sistema
-Adicionar instruções específicas para:
-- EVITAR clichês musicais genéricos
-- USAR detalhes específicos da história (nomes, momentos, características)
-- Manter tom natural e conversacional
-- Criar letras que pareçam escritas especificamente para aquela pessoa/ocasião
+## Detalhes Técnicos
 
-### 3. Exemplo de Melhoria no Prompt
+### Headers CORS Atualizados
 ```
-EVITE OBRIGATORIAMENTE:
-- Clichês como: "luz da minha vida", "razão do meu ser", "estrela guia", "amor eterno"
-- Frases genéricas que servem para qualquer pessoa
-- Tom excessivamente dramático ou exagerado
-
-PRIORIZE:
-- Detalhes específicos mencionados na história (nome, idade, hobbies, momentos marcantes)
-- Tom conversacional e natural
-- Rimas criativas, não óbvias
-- Referências concretas às memórias/características da pessoa homenageada
+Access-Control-Allow-Headers: authorization, x-client-info, apikey, content-type, 
+  x-supabase-client-platform, x-supabase-client-platform-version, 
+  x-supabase-client-runtime, x-supabase-client-runtime-version
 ```
 
-## Resultado Esperado
-Letras mais personalizadas como:
-- "Mãe, lembra daquele bolo que você faz no domingo?"
-- "Seus 60 anos chegaram com aquele sorriso de sempre"
+### Componente GeneratingProgressBar
+- Barra de progresso de 0% a 95% em ~60 segundos
+- 4 mensagens de status rotativas a cada 12 segundos
+- Aviso de tempo estimado (até 2 minutos)
 
-Em vez de:
-- "Feliz aniversário, razão do meu ser"
-- "Você é a luz que me guia"
-
-## Implementação
-1. ✅ Atualizar modelo para `openai/gpt-5`
-2. ✅ Adicionar seção anti-clichê no prompt
-3. ✅ Aumentar ênfase no uso do contexto específico
-4. Testar com o mesmo briefing de aniversário para comparar resultados
+---
