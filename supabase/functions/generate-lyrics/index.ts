@@ -706,7 +706,30 @@ INSTRUÇÕES:
 - TODOS os textos devem estar em [monologue] tags
 - O [Chorus] deve ser uma frase-mantra CURTA, FORTE e REPETÍVEL
 - NÃO inclua partes cantadas, é 100% spoken word
-- Tom direto, frases curtas, vocabulário de força e disciplina` : `Crie DUAS versões de letra completas para uma música personalizada.
+- Tom direto, frases curtas, vocabulário de força e disciplina` : isSimpleMode ? `Crie DUAS versões de letra SIMPLES para uma música personalizada.
+
+⚠️ MODO SIMPLES ATIVADO - Pedido curto do usuário
+
+PEDIDO DO USUÁRIO:
+${story}
+
+DADOS DA MÚSICA:
+- Estilo musical: ${style}
+- Tipo de voz: ${voiceDescription}
+- Emoção: ${emotion}
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras proibidas: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- Crie um título simples e direto'}
+
+INSTRUÇÕES PARA MODO SIMPLES:
+- Crie DUAS versões DIFERENTES mas AMBAS devem ser SIMPLES
+- Separe as duas versões com uma linha contendo apenas: ---
+- NÃO invente histórias, cenários ou detalhes que o usuário não mencionou
+- Se o pedido é "música de parabéns para minha mãe", a letra deve falar de parabéns para a mãe
+- FOCO TOTAL no que foi pedido
+- Letras CURTAS (máximo 100-150 palavras cada)
+- Refrão DIRETO e MEMORÁVEL
+- NÃO inclua comentários ou explicações` : `Crie DUAS versões de letra completas para uma música personalizada.
 
 DADOS DA MÚSICA:
 - Tipo: ${musicType}
