@@ -414,6 +414,20 @@ ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
     const systemPrompt = isSomenteMonologo ? somenteMonologoPrompt : (isPreviewOrder ? `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
+🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
+EVITE COMPLETAMENTE estas frases genéricas:
+- "luz da minha vida", "razão do meu ser", "estrela guia", "meu porto seguro"
+- "amor eterno", "sol que me aquece", "anjo da guarda", "meu tudo"
+- "pedaço do céu", "presente de Deus", "benção divina", "tesouro precioso"
+- "coração de ouro", "guerreira/guerreiro", "rainha/rei da minha vida"
+- Qualquer frase que serviria para QUALQUER pessoa sem alteração
+
+PRIORIZE SEMPRE (extraia da história):
+- Detalhes ESPECÍFICOS: nome, idade, profissão, hobbies mencionados
+- Memórias CONCRETAS: momentos, lugares, situações citadas na história
+- Tom CONVERSACIONAL: como se estivesse falando diretamente com a pessoa
+- Rimas CRIATIVAS: evite amor/dor, coração/paixão, vida/querida
+
 REGRAS CRÍTICAS PARA PREVIEW:
 1. Gere APENAS a estrutura: [Verse] + [Pre-Chorus] + [Chorus]
 2. O [Verse] deve ter 4-6 versos narrativos
@@ -442,6 +456,33 @@ TÍTULO DA MÚSICA
 (4-6 linhas - refrão principal, memorável)
 
 [End]` : `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
+
+🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
+EVITE COMPLETAMENTE estas frases genéricas:
+- "luz da minha vida", "razão do meu ser", "estrela guia", "meu porto seguro"
+- "amor eterno", "sol que me aquece", "anjo da guarda", "meu tudo"
+- "pedaço do céu", "presente de Deus", "benção divina", "tesouro precioso"
+- "coração de ouro", "guerreira/guerreiro", "rainha/rei da minha vida"
+- "sempre ao meu lado", "minha fortaleza", "meu refúgio"
+- Qualquer frase que serviria para QUALQUER pessoa sem alteração
+
+PRIORIZE SEMPRE (extraia informações da história):
+- Detalhes ESPECÍFICOS: nome, idade, profissão, hobbies, características únicas
+- Memórias CONCRETAS: "aquele bolo de domingo", "suas plantas na varanda", "seu jeito de rir"
+- Tom CONVERSACIONAL: como se estivesse falando diretamente com a pessoa
+- Momentos REAIS: datas, lugares, situações específicas mencionadas
+- Rimas CRIATIVAS: evite amor/dor, coração/paixão, vida/querida
+- Frases que SÓ façam sentido para ESTA pessoa específica
+
+EXEMPLOS DE BOA LETRA (específica):
+✅ "Mãe, lembra quando você ensinou a fazer pão?"
+✅ "Seus 60 anos chegaram com aquele sorriso de sempre"
+✅ "Na cozinha, o cheiro do café que só você sabe fazer"
+
+EXEMPLOS DE LETRA RUIM (genérica):
+❌ "Você é a luz que me guia todos os dias"
+❌ "Razão do meu viver, meu amor eterno"
+❌ "Estrela que brilha no meu céu"
 
 REGRAS OBRIGATÓRIAS:
 1. Gere APENAS a letra final, sem comentários, explicações ou metadados
@@ -623,13 +664,13 @@ INSTRUÇÕES FINAIS:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "openai/gpt-5",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
         max_tokens: 3000,
-        temperature: 0.85,
+        temperature: 0.9,
       }),
     });
 

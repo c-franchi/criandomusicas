@@ -1,6 +1,8 @@
 
 # Plano: Migrar Geração de Letras para GPT
 
+✅ **IMPLEMENTADO**
+
 ## Objetivo
 Melhorar a qualidade das letras geradas trocando o modelo Gemini por GPT e refinando o prompt para evitar clichês e usar mais o contexto específico da história.
 
@@ -49,7 +51,7 @@ Em vez de:
 - "Você é a luz que me guia"
 
 ## Implementação
-1. Atualizar modelo para `openai/gpt-5`
-2. Adicionar seção anti-clichê no prompt
-3. Aumentar ênfase no uso do contexto específico
+1. ✅ Atualizar modelo para `openai/gpt-5`
+2. ✅ Adicionar seção anti-clichê no prompt
+3. ✅ Aumentar ênfase no uso do contexto específico
 4. Testar com o mesmo briefing de aniversário para comparar resultados
