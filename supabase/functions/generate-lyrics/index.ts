@@ -667,7 +667,7 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 (2-4 versos de encerramento)${hasMonologue && monologuePosition === 'outro' ? `
 
 [monologue]
-(texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`);
+(texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`;
 
     // ============ SELEÇÃO DO PROMPT BASEADO NO MODO ============
     // Prioridade: 1. Somente Monólogo → 2. Modo Simples → 3. Preview → 4. Completo
