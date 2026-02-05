@@ -668,6 +668,24 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
 
 [monologue]
 (texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`);
+
+    // ============ SELEÇÃO DO PROMPT BASEADO NO MODO ============
+    // Prioridade: 1. Somente Monólogo → 2. Modo Simples → 3. Preview → 4. Completo
+    const systemPrompt = isSomenteMonologo 
+      ? somenteMonologoPrompt 
+      : isSimpleMode 
+        ? simpleModePrompt 
+        : isPreviewOrder 
+          ? previewPrompt 
+          : fullSystemPrompt;
+    
+    console.log("Selected prompt mode:", { 
+      isSomenteMonologo, 
+      isSimpleMode, 
+      isPreviewOrder, 
+      selectedMode: isSomenteMonologo ? 'somenteMonologo' : isSimpleMode ? 'simpleMode' : isPreviewOrder ? 'preview' : 'full'
+    });
+
     const userPrompt = isSomenteMonologo ? `Crie DUAS versões de SPOKEN WORD motivacional completas.
 
 CONTEXTO DA MÚSICA:
