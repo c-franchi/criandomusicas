@@ -623,13 +623,13 @@ INSTRUÇÕES FINAIS:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "openai/gpt-5",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
         max_tokens: 3000,
-        temperature: 0.85,
+        temperature: 0.9,
       }),
     });
 
