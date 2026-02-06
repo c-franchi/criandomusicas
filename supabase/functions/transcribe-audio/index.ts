@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -15,30 +14,36 @@ serve(async (req) => {
   try {
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
+      console.error('[transcribe-audio] No auth header');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Initialize Supabase client with user's auth
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-    // Verify user
-    const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    // User client for auth verification
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+
+    // Verify user with getUser
+    const { data: userData, error: userError } = await supabaseUser.auth.getUser();
+    if (userError || !userData?.user) {
+      console.error('[transcribe-audio] Auth error:', userError?.message);
       return new Response(JSON.stringify({ error: 'Invalid token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const userId = claimsData.claims.sub;
+    const userId = userData.user.id;
     console.log('[transcribe-audio] User:', userId);
+
+    // Service role client for storage/db operations
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { audio_id, language = 'pt' } = await req.json();
 
@@ -94,16 +99,11 @@ serve(async (req) => {
       });
     }
 
-    // Determine file extension from mime type
     const extMap: Record<string, string> = {
-      'audio/wav': 'wav',
-      'audio/x-wav': 'wav',
-      'audio/mpeg': 'mp3',
-      'audio/mp3': 'mp3',
-      'audio/mp4': 'm4a',
-      'audio/x-m4a': 'm4a',
-      'audio/m4a': 'm4a',
-      'audio/webm': 'webm',
+      'audio/wav': 'wav', 'audio/x-wav': 'wav',
+      'audio/mpeg': 'mp3', 'audio/mp3': 'mp3',
+      'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/m4a': 'm4a',
+      'audio/webm': 'webm', 'audio/webm;codecs=opus': 'webm',
       'audio/ogg': 'ogg',
     };
     const ext = extMap[audioInput.mime_type] || 'wav';
@@ -118,13 +118,11 @@ serve(async (req) => {
     console.log('[transcribe-audio] Calling OpenAI Whisper API...');
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60000); // 60s timeout
+    const timeout = setTimeout(() => controller.abort(), 60000);
 
     const whisperResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
+      headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}` },
       body: formData,
       signal: controller.signal,
     });
@@ -134,10 +132,7 @@ serve(async (req) => {
     if (!whisperResponse.ok) {
       const errorText = await whisperResponse.text();
       console.error('[transcribe-audio] Whisper error:', whisperResponse.status, errorText);
-      return new Response(JSON.stringify({ 
-        error: 'Transcription failed',
-        details: errorText
-      }), {
+      return new Response(JSON.stringify({ error: 'Transcription failed', details: errorText }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -149,16 +144,15 @@ serve(async (req) => {
     const transcriptText = whisperData.text?.trim();
 
     if (!transcriptText) {
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         error: 'Empty transcription',
-        message: 'Não foi possível identificar palavras no áudio. Tente gravar um áudio mais claro.'
+        message: 'Não foi possível identificar palavras no áudio. Tente gravar um áudio mais claro.',
       }), {
         status: 422,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Build segments from Whisper response
     const segments = whisperData.segments?.map((s: any) => ({
       start: s.start,
       end: s.end,
@@ -169,7 +163,7 @@ serve(async (req) => {
     const { data: transcription, error: insertError } = await supabase
       .from('transcriptions')
       .insert({
-        audio_id: audio_id,
+        audio_id,
         user_id: userId,
         transcript_text: transcriptText,
         segments_json: segments,
@@ -190,10 +184,10 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       ok: true,
-      audio_id: audio_id,
+      audio_id,
       transcription_id: transcription.id,
       transcript: transcriptText,
-      segments: segments,
+      segments,
       model: 'whisper-1',
       duration_sec: whisperData.duration || audioInput.duration_sec,
     }), {
