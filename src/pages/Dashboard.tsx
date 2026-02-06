@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Music, User, Settings, Download, Trash2, Home, Mic, Piano, Edit3, Zap } from "lucide-react";
+import { ExternalLink, Music, User, Settings, Download, Trash2, Home, Mic, Piano, Edit3, Zap, Headphones } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
@@ -480,7 +480,7 @@ const Dashboard = () => {
           transition={{ duration: 0.4, delay: 0.1 }}
         >
           <StyledTabs defaultValue="vocal" className="w-full">
-            <StyledTabsList className="grid w-full grid-cols-3 mb-6">
+            <StyledTabsList className="grid w-full grid-cols-4 mb-6">
               <StyledTabsTrigger value="vocal" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Mic className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.vocal')}</span>
@@ -503,6 +503,14 @@ const Dashboard = () => {
                 <span className="xs:hidden">Própria</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {customLyricOrders.length}
+                </Badge>
+              </StyledTabsTrigger>
+              <StyledTabsTrigger value="audio" className="flex items-center gap-1.5 text-xs sm:text-sm">
+                <Headphones className="w-4 h-4" />
+                <span className="hidden xs:inline">Áudio</span>
+                <span className="xs:hidden">🎤</span>
+                <Badge className="ml-1 text-[10px] px-1 bg-emerald-500 text-white border-0">
+                  Novo
                 </Badge>
               </StyledTabsTrigger>
             </StyledTabsList>
@@ -613,6 +621,40 @@ const Dashboard = () => {
                   setDeleteOrderId={setDeleteOrderId}
                 />
               )}
+            </StyledTabsContent>
+
+            {/* Audio Mode Tab */}
+            <StyledTabsContent value="audio" className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                <Button asChild className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
+                  <Link to="/briefing?type=vocal">
+                    <Headphones className="w-4 h-4 mr-2" />
+                    {t('buttons.createAudio', 'Criar por Áudio')}
+                  </Link>
+                </Button>
+              </div>
+              
+              <Card className="p-8 text-center">
+                <Headphones className="w-12 h-12 text-primary mx-auto mb-4" />
+                <h3 className="text-xl font-semibold mb-2">🎤 Modo Áudio</h3>
+                <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                  Grave ou envie um áudio cantando um trecho e nossa IA transcreve e gera uma letra completa no formato Suno.
+                </p>
+                <div className="flex flex-wrap gap-2 justify-center text-sm text-muted-foreground mb-6">
+                  <Badge variant="outline" className="gap-1">
+                    <Mic className="w-3 h-3" /> Grave ou envie áudio
+                  </Badge>
+                  <Badge variant="outline" className="gap-1">
+                    <Edit3 className="w-3 h-3" /> Transcrição automática
+                  </Badge>
+                  <Badge variant="outline" className="gap-1">
+                    <Music className="w-3 h-3" /> Letra no formato Suno
+                  </Badge>
+                </div>
+                <Button asChild>
+                  <Link to="/briefing?type=vocal">Experimentar agora</Link>
+                </Button>
+              </Card>
             </StyledTabsContent>
           </StyledTabs>
         </motion.div>
