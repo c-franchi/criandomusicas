@@ -83,3 +83,6 @@ verify_jwt = false
 
 [functions.admin-update-order]
 verify_jwt = false
+
+[functions.transcribe-audio]
+verify_jwt = false

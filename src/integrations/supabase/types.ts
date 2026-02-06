@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      audio_inputs: {
+        Row: {
+          created_at: string
+          duration_sec: number | null
+          id: string
+          mime_type: string
+          size_bytes: number | null
+          source: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_sec?: number | null
+          id?: string
+          mime_type: string
+          size_bytes?: number | null
+          source?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_sec?: number | null
+          id?: string
+          mime_type?: string
+          size_bytes?: number | null
+          source?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       audio_samples: {
         Row: {
           audio_type: string
@@ -806,6 +839,44 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transcriptions: {
+        Row: {
+          audio_id: string
+          created_at: string
+          id: string
+          model: string | null
+          segments_json: Json | null
+          transcript_text: string
+          user_id: string
+        }
+        Insert: {
+          audio_id: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          segments_json?: Json | null
+          transcript_text: string
+          user_id: string
+        }
+        Update: {
+          audio_id?: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          segments_json?: Json | null
+          transcript_text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transcriptions_audio_id_fkey"
+            columns: ["audio_id"]
+            isOneToOne: false
+            referencedRelation: "audio_inputs"
             referencedColumns: ["id"]
           },
         ]
