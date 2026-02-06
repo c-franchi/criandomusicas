@@ -19,6 +19,7 @@ import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
+import { AudioModeWizard } from "@/components/briefing/AudioModeWizard";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
@@ -249,8 +250,8 @@ const Briefing = () => {
   const [showPlanSelection, setShowPlanSelection] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   
-  // Creation mode state (quick vs detailed)
-  const [creationMode, setCreationMode] = useState<'quick' | 'detailed' | null>(null);
+  // Creation mode state (quick vs detailed vs audio)
+  const [creationMode, setCreationMode] = useState<'quick' | 'detailed' | 'audio' | null>(null);
   
   // Celebration banner state - check localStorage for dismissed state
   const CELEBRATION_DISMISS_KEY = 'celebration_dismissed_date';
@@ -2992,25 +2993,28 @@ const Briefing = () => {
                 </button>
               </div>
 
-              {/* Audio Mode - Coming Soon */}
-              <div className="relative group rounded-xl overflow-hidden border-2 border-dashed border-primary/30 bg-card/50 p-4 mt-3">
+              {/* Audio Mode */}
+              <button
+                onClick={() => setCreationMode('audio')}
+                className="relative group rounded-xl overflow-hidden border-2 border-primary/30 hover:border-primary/60 bg-card/50 p-4 mt-3 w-full text-left transition-all hover:shadow-md"
+              >
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Mic className="w-6 h-6 text-primary/70" />
+                    <Mic className="w-6 h-6 text-primary" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">{t('planSelection.audioMode', '🎤 Criar por Áudio')}</p>
-                      <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-amber-500/50 text-amber-500 bg-amber-500/10 animate-pulse">
-                        {t('planSelection.comingSoon', 'Em breve')}
+                      <p className="font-semibold text-sm">🎤 Criar por Áudio</p>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-green-500/50 text-green-500 bg-green-500/10">
+                        Novo!
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {t('planSelection.audioModeDesc', 'Grave ou envie um áudio cantando e transforme em música completa')}
+                      Grave ou envie um áudio cantando e transforme em música completa
                     </p>
                   </div>
                 </div>
-              </div>
+              </button>
             </div>
 
 
@@ -3020,6 +3024,15 @@ const Briefing = () => {
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Tela de Criação por Áudio
+  if (creationMode === 'audio') {
+    return (
+      <AudioModeWizard
+        onBack={() => setCreationMode(null)}
+      />
     );
   }
 
