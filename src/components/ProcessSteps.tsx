@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Music, Share2, Package, Sparkles, ChevronRight, Gift, Check } from "lucide-react";
+import { FileText, Music, Share2, Package, Sparkles, ChevronRight, Gift, Check, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -128,6 +128,37 @@ const ProcessSteps = () => {
             </Card>
           </motion.div>
         )}
+
+        {/* Audio Mode Coming Soon */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="mb-16"
+        >
+          <Card className="p-6 max-w-4xl mx-auto border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20">
+                <Mic className="w-8 h-8 text-primary" />
+              </div>
+              
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
+                  <h3 className="text-xl font-bold">
+                    {t('process.audioMode.title', '🎤 Modo Áudio')}
+                  </h3>
+                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-amber-500/50 text-amber-500 bg-amber-500/10 animate-pulse">
+                    {t('process.audioMode.badge', 'Lançamento em breve')}
+                  </Badge>
+                </div>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  {t('process.audioMode.description', 'Em breve você poderá gravar ou enviar um áudio cantando um trecho e nossa IA transformará em uma música completa com letra e produção profissional.')}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
 
         {/* Credits Info Section */}
         <motion.div

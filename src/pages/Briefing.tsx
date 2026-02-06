@@ -2991,6 +2991,26 @@ const Briefing = () => {
                   )}
                 </button>
               </div>
+
+              {/* Audio Mode - Coming Soon */}
+              <div className="relative group rounded-xl overflow-hidden border-2 border-dashed border-primary/30 bg-card/50 p-4 mt-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Mic className="w-6 h-6 text-primary/70" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-sm">{t('planSelection.audioMode', '🎤 Criar por Áudio')}</p>
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-amber-500/50 text-amber-500 bg-amber-500/10 animate-pulse">
+                        {t('planSelection.comingSoon', 'Em breve')}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t('planSelection.audioModeDesc', 'Grave ou envie um áudio cantando e transforme em música completa')}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
 
@@ -3321,6 +3341,18 @@ const Briefing = () => {
             )}
           </div>
         </div>
+        {/* Loading overlay for detailed mode during order creation */}
+        {isCreatingOrder && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 text-center px-4">
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                <Music className="w-8 h-8 text-primary animate-spin" />
+              </div>
+              <p className="text-foreground font-medium text-lg">{t('confirmation.creatingOrder', 'Criando seu pedido...')}</p>
+              <p className="text-sm text-muted-foreground">{t('confirmation.consumingCredit', 'Consumindo crédito e preparando sua música')}</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
