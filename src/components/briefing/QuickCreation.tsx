@@ -1,6 +1,6 @@
-import { useState, useMemo, memo, useEffect } from "react";
+import { useState, useMemo, memo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle } from "lucide-react";
+import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle, Copy, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,6 +79,7 @@ const QuickCreationComponent = ({
   const [voiceType, setVoiceType] = useState("");
   const [songName, setSongName] = useState("");
   const [showNoTitleConfirm, setShowNoTitleConfirm] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Tour for quick creation mode
   const { startTour } = useBriefingTour({ mode: 'quick' });
@@ -159,7 +160,19 @@ const QuickCreationComponent = ({
   };
 
   const isValid = prompt.trim().length > 10 && style && (isInstrumental || voiceType);
+  const isAtCharLimit = prompt.length >= 350;
 
+  const handleCopyAndSwitch = useCallback(() => {
+    navigator.clipboard.writeText(prompt).then(() => {
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        onSwitchToDetailed();
+      }, 800);
+    }).catch(() => {
+      onSwitchToDetailed();
+    });
+  }, [prompt, onSwitchToDetailed]);
   const handleStartTour = () => {
     startTour();
   };
@@ -232,6 +245,45 @@ const QuickCreationComponent = ({
                 />
               </div>
             </div>
+
+            {/* Character limit warning */}
+            <AnimatePresence>
+              {isAtCharLimit && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <p className="text-sm text-foreground">
+                        {t('quickCreation.charLimitReached', 'Você atingiu o limite de 350 caracteres. Para textos maiores, use o modo completo!')}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleCopyAndSwitch}
+                        className="gap-1.5 border-amber-500/40 hover:bg-amber-500/10"
+                      >
+                        {copied ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-green-500" />
+                            {t('quickCreation.copied', 'Copiado!')}
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            {t('quickCreation.copyAndSwitch', 'Copiar texto e ir para modo completo')}
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Genre Selection */}
