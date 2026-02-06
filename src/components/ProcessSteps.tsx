@@ -158,7 +158,7 @@ const ProcessSteps = () => {
               </div>
 
               <Button asChild size="lg" className="shrink-0 rounded-xl">
-                <Link to="/briefing?type=vocal">
+                <Link to="/briefing?mode=audio">
                   Experimentar
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Link>

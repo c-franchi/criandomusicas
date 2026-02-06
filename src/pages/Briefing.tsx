@@ -400,7 +400,15 @@ const Briefing = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const planIdFromUrl = urlParams.get('planId');
       const typeFromUrl = urlParams.get('type'); // vocal, instrumental, custom_lyric
+      const modeFromUrl = urlParams.get('mode'); // audio
       const startAsInstrumental = urlParams.get('instrumental') === 'true';
+      
+      // Se tem mode=audio na URL, ir direto para o modo áudio
+      if (modeFromUrl === 'audio') {
+        setShowPlanSelection(false);
+        setCreationMode('audio');
+        return;
+      }
       
       // Se tem type na URL, pular seleção de plano e ir direto
       if (typeFromUrl) {
