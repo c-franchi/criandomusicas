@@ -129,7 +129,7 @@ const ProcessSteps = () => {
           </motion.div>
         )}
 
-        {/* Audio Mode Coming Soon */}
+        {/* Audio Mode - New Feature */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -137,7 +137,7 @@ const ProcessSteps = () => {
           transition={{ duration: 0.6, delay: 0.25 }}
           className="mb-16"
         >
-          <Card className="p-6 max-w-4xl mx-auto border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
+          <Card className="p-6 max-w-4xl mx-auto border-primary/30 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5 hover:border-primary/50 transition-colors">
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20">
                 <Mic className="w-8 h-8 text-primary" />
@@ -148,14 +148,21 @@ const ProcessSteps = () => {
                   <h3 className="text-xl font-bold">
                     {t('process.audioMode.title', '🎤 Modo Áudio')}
                   </h3>
-                  <Badge variant="outline" className="text-xs px-2 py-0.5 border-amber-500/50 text-amber-500 bg-amber-500/10 animate-pulse">
-                    {t('process.audioMode.badge', 'Lançamento em breve')}
+                  <Badge className="text-xs px-2 py-0.5 bg-emerald-500 text-white border-0">
+                    Novo!
                   </Badge>
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  {t('process.audioMode.description', 'Em breve você poderá gravar ou enviar um áudio cantando um trecho e nossa IA transformará em uma música completa com letra e produção profissional.')}
+                  {t('process.audioMode.description', 'Grave ou envie um áudio cantando um trecho e nossa IA transcreve e transforma em uma música completa com letra profissional no formato Suno.')}
                 </p>
               </div>
+
+              <Button asChild size="lg" className="shrink-0 rounded-xl">
+                <Link to="/briefing?type=vocal">
+                  Experimentar
+                  <ChevronRight className="w-4 h-4 ml-1" />
+                </Link>
+              </Button>
             </div>
           </Card>
         </motion.div>
