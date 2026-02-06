@@ -1,12 +1,11 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Simple hash function for IP anonymization
 async function hashIP(ip: string): Promise<string> {
   if (!ip) return '';
   const encoder = new TextEncoder();
@@ -17,9 +16,8 @@ async function hashIP(ip: string): Promise<string> {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
@@ -28,6 +26,8 @@ serve(async (req) => {
     const versionParam = url.searchParams.get("version");
     const version = versionParam ? parseInt(versionParam, 10) : 1;
 
+    console.log("get-public-track called with orderId:", orderId, "version:", version);
+
     if (!orderId) {
       return new Response(
         JSON.stringify({ error: "orderId is required" }),
@@ -35,7 +35,6 @@ serve(async (req) => {
       );
     }
 
-    // Use service role to bypass RLS
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -67,9 +66,8 @@ serve(async (req) => {
           .eq("status", "READY")
           .eq("version", 1)
           .maybeSingle();
-        
+
         if (fallbackTrack?.audio_url) {
-          // Return version 1 as fallback
           const { data: orderData } = await supabase
             .from("orders")
             .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric, is_preview, plan_id")
@@ -105,14 +103,14 @@ serve(async (req) => {
           );
         }
       }
-      
+
       return new Response(
         JSON.stringify({ error: "Track not found or not ready" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Fetch order info for title/style/cover - song_title takes priority
+    // Fetch order info
     const { data: orderData } = await supabase
       .from("orders")
       .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric, is_preview, plan_id")
@@ -120,8 +118,6 @@ serve(async (req) => {
       .single();
 
     let title = "Música Personalizada";
-    
-    // Priority: song_title (user-provided or AI-generated) > lyric title > fallback
     if (orderData?.song_title) {
       title = orderData.song_title;
     } else if (orderData?.approved_lyric_id) {
@@ -130,7 +126,6 @@ serve(async (req) => {
         .select("title")
         .eq("id", orderData.approved_lyric_id)
         .maybeSingle();
-      
       if (lyricData?.title) {
         title = lyricData.title;
       }
@@ -138,31 +133,26 @@ serve(async (req) => {
       title = `Instrumental ${orderData.music_type || "Personalizado"}`;
     }
 
-    // Register view event asynchronously (don't block response)
+    // Track view event asynchronously
     const referrer = req.headers.get("referer") || null;
     const userAgent = req.headers.get("user-agent") || null;
     const forwardedFor = req.headers.get("x-forwarded-for") || "";
     const ipHash = await hashIP(forwardedFor.split(",")[0]?.trim() || "");
 
-    // Insert analytics event asynchronously (don't block response)
-    (async () => {
-      try {
-        await supabase.from("share_analytics").insert({
-          order_id: orderId,
-          event_type: "view",
-          referrer,
-          user_agent: userAgent,
-          ip_hash: ipHash,
-          platform: "direct",
-          metadata: { version }
-        });
-        console.log("View event tracked for order:", orderId, "version:", version);
-      } catch (err) {
-        console.error("Failed to track view:", err);
-      }
-    })();
+    supabase.from("share_analytics").insert({
+      order_id: orderId,
+      event_type: "view",
+      referrer,
+      user_agent: userAgent,
+      ip_hash: ipHash,
+      platform: "direct",
+      metadata: { version }
+    }).then(() => {
+      console.log("View event tracked for order:", orderId, "version:", version);
+    }).catch((err: unknown) => {
+      console.error("Failed to track view:", err);
+    });
 
-    // Determine if this is a preview order
     const isPreview = orderData?.is_preview === true || orderData?.plan_id === 'preview_test';
 
     return new Response(
