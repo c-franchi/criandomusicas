@@ -1328,7 +1328,7 @@ const AdminDashboard = () => {
                         </div>
                         <a
                           href={order.audio_input_url}
-                          download={`audio-${order.id.slice(0, 8)}.webm`}
+                          download={`${(order.lyric_title || order.song_title || 'audio').replace(/[^a-zA-Z0-9À-ÿ\s-]/g, '').replace(/\s+/g, '-')}-referencia.webm`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="shrink-0"

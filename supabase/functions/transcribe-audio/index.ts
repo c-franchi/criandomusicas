@@ -159,7 +159,51 @@ serve(async (req) => {
       text: s.text?.trim(),
     })) || null;
 
-    // 4. Save transcription to database
+    // 4. Detect voice gender using GPT (analyze audio characteristics from transcription context)
+    let detectedVoiceType = 'feminina'; // default
+    try {
+      console.log('[transcribe-audio] Detecting voice gender via GPT...');
+      const genderDetectResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'system',
+              content: 'Você é um especialista em análise vocal. Dado um áudio transcrito e metadados do Whisper, determine se a voz que cantou/falou é masculina ou feminina. Responda APENAS com uma palavra: "masculina" ou "feminina". Se não tiver certeza, responda "feminina".',
+            },
+            {
+              role: 'user',
+              content: `Analise este trecho cantado/falado e determine o gênero da voz:\n\nTranscrição: "${transcriptText}"\n\nDuração do áudio: ${whisperData.duration || audioInput.duration_sec || 'desconhecida'}s\nIdioma detectado: ${whisperData.language || language}\n\nBaseado no contexto linguístico (pronomes, adjetivos, concordância de gênero no texto cantado), determine se a voz é masculina ou feminina.`,
+            },
+          ],
+          max_tokens: 10,
+          temperature: 0,
+        }),
+      });
+
+      if (genderDetectResponse.ok) {
+        const genderData = await genderDetectResponse.json();
+        const genderResult = genderData.choices?.[0]?.message?.content?.trim()?.toLowerCase();
+        if (genderResult?.includes('masculin')) {
+          detectedVoiceType = 'masculina';
+        } else {
+          detectedVoiceType = 'feminina';
+        }
+        console.log('[transcribe-audio] Detected voice type:', detectedVoiceType);
+      } else {
+        console.warn('[transcribe-audio] Gender detection failed, using default');
+      }
+    } catch (genderError) {
+      console.warn('[transcribe-audio] Gender detection error:', genderError);
+      // Continue with default
+    }
+
+    // 5. Save transcription to database
     const { data: transcription, error: insertError } = await supabase
       .from('transcriptions')
       .insert({
@@ -190,6 +234,7 @@ serve(async (req) => {
       segments,
       model: 'whisper-1',
       duration_sec: whisperData.duration || audioInput.duration_sec,
+      detected_voice_type: detectedVoiceType,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

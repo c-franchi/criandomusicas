@@ -2848,7 +2848,7 @@ const Briefing = () => {
       style: audioResult.style.toLowerCase(),
       rhythm: 'moderado',
       atmosphere: 'festivo',
-      voiceType: 'feminina',
+      voiceType: audioResult.detectedVoiceType || 'feminina',
       autoGenerateName: true,
       songName: '',
       hasMonologue: audioResult.section === 'INTRO_MONOLOGUE',

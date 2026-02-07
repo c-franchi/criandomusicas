@@ -20,6 +20,7 @@ export interface AudioModeResult {
   mode: ModeType;
   theme: string;
   style: string;
+  detectedVoiceType: string;
 }
 
 interface AudioModeWizardProps {
@@ -33,6 +34,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
 
   // Transcription
   const [transcript, setTranscript] = useState('');
+  const [detectedVoiceType, setDetectedVoiceType] = useState('feminina');
 
   // Config
   const [section, setSection] = useState<SectionType | ''>('');
@@ -71,6 +73,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
         if (!data?.ok) throw new Error(data?.error || 'Falha na transcrição');
 
         setTranscript(data.transcript);
+        if (data.detected_voice_type) {
+          setDetectedVoiceType(data.detected_voice_type);
+        }
         toast.success('Transcrição concluída!');
         setCurrentStep('config');
       } catch (error: unknown) {
@@ -107,8 +112,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       mode,
       theme,
       style,
+      detectedVoiceType,
     });
-  }, [transcript, section, mode, theme, style, audioId, onComplete]);
+  }, [transcript, section, mode, theme, style, audioId, detectedVoiceType, onComplete]);
 
   return (
     <div className="min-h-screen bg-background">
