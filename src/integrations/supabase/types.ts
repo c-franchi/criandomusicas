@@ -369,6 +369,7 @@ export type Database = {
           amount: number
           approved_lyric_id: string | null
           atmosphere: string | null
+          audio_input_id: string | null
           cover_url: string | null
           created_at: string
           currency: string
@@ -418,6 +419,7 @@ export type Database = {
           amount?: number
           approved_lyric_id?: string | null
           atmosphere?: string | null
+          audio_input_id?: string | null
           cover_url?: string | null
           created_at?: string
           currency?: string
@@ -467,6 +469,7 @@ export type Database = {
           amount?: number
           approved_lyric_id?: string | null
           atmosphere?: string | null
+          audio_input_id?: string | null
           cover_url?: string | null
           created_at?: string
           currency?: string
@@ -518,6 +521,13 @@ export type Database = {
             columns: ["approved_lyric_id"]
             isOneToOne: false
             referencedRelation: "lyrics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_audio_input_id_fkey"
+            columns: ["audio_input_id"]
+            isOneToOne: false
+            referencedRelation: "audio_inputs"
             referencedColumns: ["id"]
           },
         ]

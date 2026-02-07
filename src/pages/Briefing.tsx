@@ -20,6 +20,7 @@ import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
+import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
@@ -2232,6 +2233,17 @@ const Briefing = () => {
           song_title: briefingData.hasCustomLyric ? (briefingData.songName || null) : (briefingData.autoGenerateName ? null : briefingData.songName || null),
           // Style prompt customizado (se usuário fornecer)
           style_prompt: briefingData.hasCustomStylePrompt && briefingData.customStylePrompt ? briefingData.customStylePrompt : null,
+          // Audio input reference (from audio mode)
+          audio_input_id: (() => {
+            try {
+              const raw = localStorage.getItem('audioInsertData');
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                return parsed?.audioId || null;
+              }
+            } catch { /* ignore */ }
+            return null;
+          })(),
         })
         .select()
         .single();
@@ -3132,15 +3144,9 @@ const Briefing = () => {
             </DialogContent>
           </DialogPortal>
         </Dialog>
-        {/* Loading overlay */}
+        {/* Loading overlay with progress bar */}
         {isCreatingOrder && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4 text-center px-4">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <p className="text-foreground font-medium text-lg">Criando seu pedido...</p>
-              <p className="text-sm text-muted-foreground">Gerando a letra da sua música com IA ✨</p>
-            </div>
-          </div>
+          <AudioModeLoadingOverlay />
         )}
       </div>
     );

@@ -88,6 +88,8 @@ interface AdminOrder {
   purpose?: string;
   emotion?: string;
   voice_type?: string;
+  audio_input_id?: string | null;
+  audio_input_url?: string | null;
   // Track versions uploaded
   uploadedVersions?: number[];
 }
@@ -157,7 +159,8 @@ const AdminDashboard = () => {
           amount,
           purpose,
           emotion,
-          voice_type
+          voice_type,
+          audio_input_id
         `)
         .order('created_at', { ascending: false });
 
@@ -214,7 +217,24 @@ const AdminDashboard = () => {
           user_whatsapp = profileData?.whatsapp;
           user_name = profileData?.name;
           
-          return { ...order, lyric_title, track_url, user_whatsapp, user_name, uploadedVersions };
+          // Get audio input URL if audio mode order
+          let audio_input_url = null;
+          if (order.audio_input_id) {
+            const { data: audioInput } = await supabase
+              .from('audio_inputs')
+              .select('storage_path')
+              .eq('id', order.audio_input_id)
+              .maybeSingle();
+            if (audioInput?.storage_path) {
+              // audio-inputs is a private bucket, use signed URL
+              const { data: signedUrlData } = await supabase.storage
+                .from('audio-inputs')
+                .createSignedUrl(audioInput.storage_path, 3600); // 1 hour expiry
+              audio_input_url = signedUrlData?.signedUrl || null;
+            }
+          }
+
+          return { ...order, lyric_title, track_url, user_whatsapp, user_name, uploadedVersions, audio_input_url };
         })
       );
 
@@ -1221,7 +1241,7 @@ const AdminDashboard = () => {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          {/* Type Badge - Vocal vs Instrumental vs Letra Própria */}
+                          {/* Type Badge - Áudio vs Vocal vs Instrumental vs Letra Própria */}
                           <Badge 
                             variant="outline" 
                             className={`text-[10px] sm:text-xs shrink-0 ${
@@ -1229,10 +1249,12 @@ const AdminDashboard = () => {
                                 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
                                 : order.is_instrumental 
                                   ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
-                                  : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                                  : order.audio_input_id
+                                    ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                    : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
                             }`}
                           >
-                            {order.has_custom_lyric ? '📝 Letra Própria' : order.is_instrumental ? '🎹 Instrumental' : '🎤 Vocal'}
+                            {order.has_custom_lyric ? '📝 Letra Própria' : order.is_instrumental ? '🎹 Instrumental' : order.audio_input_id ? '🎙️ Áudio' : '🎤 Vocal'}
                           </Badge>
                           <Badge className={`${getStatusColor(order.status, order.payment_status)} text-[10px] sm:text-xs shrink-0`}>
                             {getStatusIcon(order.status)}
@@ -1291,7 +1313,21 @@ const AdminDashboard = () => {
                       </div>
                     )}
 
-                    {/* Final Prompt with copy buttons - STYLE for music generation */}
+                    {/* Audio Input Player - for audio mode orders */}
+                    {order.audio_input_id && order.audio_input_url && (
+                      <div className="flex items-center gap-3 p-2 bg-green-500/10 border border-green-500/30 rounded-lg">
+                        <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
+                          <Headphones className="w-5 h-5 text-green-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-green-400 mb-1">🎙️ Áudio do Usuário (referência de voz/ritmo)</p>
+                          <audio controls className="w-full h-8" preload="metadata">
+                            <source src={order.audio_input_url} />
+                          </audio>
+                        </div>
+                      </div>
+                    )}
+
                     {order.style_prompt && (
                       <details 
                         className="text-xs sm:text-sm"
