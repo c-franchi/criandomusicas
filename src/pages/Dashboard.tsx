@@ -627,7 +627,7 @@ const Dashboard = () => {
             <StyledTabsContent value="audio" className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                 <Button asChild className="w-full sm:w-auto bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90">
-                  <Link to="/briefing?type=vocal">
+                  <Link to="/briefing?mode=audio">
                     <Headphones className="w-4 h-4 mr-2" />
                     {t('buttons.createAudio', 'Criar por Áudio')}
                   </Link>
@@ -652,7 +652,7 @@ const Dashboard = () => {
                   </Badge>
                 </div>
                 <Button asChild>
-                  <Link to="/briefing?type=vocal">Experimentar agora</Link>
+                  <Link to="/briefing?mode=audio">Experimentar agora</Link>
                 </Button>
               </Card>
             </StyledTabsContent>
