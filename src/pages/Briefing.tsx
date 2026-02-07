@@ -3174,10 +3174,6 @@ const Briefing = () => {
             </DialogContent>
           </DialogPortal>
         </Dialog>
-        {/* Loading overlay with progress bar */}
-        {isCreatingOrder && (
-          <AudioModeLoadingOverlay />
-        )}
       </div>
     );
   }
@@ -4430,6 +4426,11 @@ const Briefing = () => {
           </DialogContent>
         </DialogPortal>
       </Dialog>
+
+      {/* Global Loading overlay - shown for ALL lyric generation flows */}
+      {isCreatingOrder && (
+        <AudioModeLoadingOverlay />
+      )}
     </div>
   );
 };

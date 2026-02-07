@@ -841,17 +841,25 @@ const CreateSong = () => {
             </CardHeader>
             <CardContent>
               <div className="mb-4">
+                {/* Highlighted edit notice */}
+                <div className="mb-3 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-start gap-2">
+                  <Edit3 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-semibold text-primary">
+                      {t('createSong.editableNotice', '✏️ Letra editável — clique no texto para alterar')}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {t('createSong.editableNoticeDesc', 'Altere palavras, frases ou versos diretamente. Suas edições serão salvas ao aprovar.')}
+                    </p>
+                  </div>
+                </div>
                 <Textarea
                   value={editedLyric}
                   onChange={(e) => setEditedLyric(e.target.value)}
                   rows={Math.max(15, editedLyric.split('\n').length + 2)}
-                  className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-muted resize-y min-h-[300px]"
+                  className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-primary/20 focus:border-primary resize-y min-h-[300px] ring-primary/20"
                   placeholder={t('createSong.editLyricPlaceholder', 'Edite a letra diretamente aqui...')}
                 />
-                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                  <Edit3 className="w-3 h-3" />
-                  {t('createSong.directEditHint', 'Você pode editar a letra diretamente no texto acima')}
-                </p>
               </div>
 
               {/* Edit Instructions */}
@@ -1044,10 +1052,10 @@ const CreateSong = () => {
           </div>
 
           {/* Direct Text Editing - Fine tune the selected version */}
-          <Card className="mb-6">
+          <Card className="mb-6 border-primary/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Edit3 className="w-5 h-5" />
+                <Edit3 className="w-5 h-5 text-primary" />
                 {t('createSong.finetuneTitle', 'Ajuste fino da letra selecionada')}
               </CardTitle>
               <CardDescription>
@@ -1055,17 +1063,25 @@ const CreateSong = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Highlighted edit notice */}
+              <div className="mb-3 p-3 bg-primary/10 border border-primary/30 rounded-lg flex items-start gap-2">
+                <Edit3 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-primary">
+                    {t('createSong.editableNotice', '✏️ Letra editável — clique no texto para alterar')}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {t('createSong.editableNoticeDesc', 'Altere palavras, frases ou versos diretamente. Suas edições serão salvas ao aprovar.')}
+                  </p>
+                </div>
+              </div>
               <Textarea
                 value={editedLyric}
                 onChange={(e) => setEditedLyric(e.target.value)}
                 rows={Math.max(15, editedLyric.split('\n').length + 2)}
-                className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-muted resize-y min-h-[300px]"
+                className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-primary/20 focus:border-primary resize-y min-h-[300px] ring-primary/20"
                 placeholder={t('createSong.editLyricPlaceholder', 'Edite a letra diretamente aqui...')}
               />
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <Edit3 className="w-3 h-3" />
-                {t('createSong.directEditHint', 'Você pode editar a letra diretamente no texto acima')}
-              </p>
             </CardContent>
           </Card>
 
