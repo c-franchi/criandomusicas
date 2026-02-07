@@ -153,7 +153,7 @@ const ProcessSteps = () => {
                   </Badge>
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  {t('process.audioMode.description', 'Grave ou envie um áudio cantando um trecho e nossa IA transcreve e transforma em uma música completa com letra profissional no formato Suno.')}
+                  {t('process.audioMode.description', 'Grave ou envie um áudio cantando um trecho e nossa IA transcreve e transforma em uma música completa com letra profissional.')}
                 </p>
               </div>
 

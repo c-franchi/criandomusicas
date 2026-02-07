@@ -638,7 +638,7 @@ const Dashboard = () => {
                 <Headphones className="w-12 h-12 text-primary mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">🎤 Modo Áudio</h3>
                 <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                  Grave ou envie um áudio cantando um trecho e nossa IA transcreve e gera uma letra completa no formato Suno.
+                  Grave ou envie um áudio cantando um trecho e nossa IA transcreve e gera uma letra completa com qualidade profissional.
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center text-sm text-muted-foreground mb-6">
                   <Badge variant="outline" className="gap-1">
@@ -648,7 +648,7 @@ const Dashboard = () => {
                     <Edit3 className="w-3 h-3" /> Transcrição automática
                   </Badge>
                   <Badge variant="outline" className="gap-1">
-                    <Music className="w-3 h-3" /> Letra no formato Suno
+                    <Music className="w-3 h-3" /> Letra profissional completa
                   </Badge>
                 </div>
                 <Button asChild>

@@ -8,15 +8,23 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AudioCapture from "./AudioCapture";
 import { AudioConfigStep } from "./AudioConfigStep";
-import { AudioResultStep } from "./AudioResultStep";
 
-type WizardStep = 'capture' | 'transcribing' | 'config' | 'result';
+type WizardStep = 'capture' | 'transcribing' | 'config';
 type SectionType = 'VERSE' | 'CHORUS' | 'INTRO_MONOLOGUE' | 'BRIDGE';
 type ModeType = 'keep_exact' | 'light_edit';
 
+export interface AudioModeResult {
+  audioId: string;
+  transcript: string;
+  section: SectionType;
+  mode: ModeType;
+  theme: string;
+  style: string;
+}
+
 interface AudioModeWizardProps {
   onBack: () => void;
-  onComplete?: (lyrics: string) => void;
+  onComplete?: (result: AudioModeResult) => void;
 }
 
 export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) => {
@@ -32,16 +40,10 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
   const [theme, setTheme] = useState('');
   const [style, setStyle] = useState('Pop');
 
-  // Result
-  const [finalLyrics, setFinalLyrics] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateProgress, setGenerateProgress] = useState(0);
-
   const steps: { id: WizardStep; label: string; icon: React.ElementType }[] = [
     { id: 'capture', label: 'Áudio', icon: Mic },
     { id: 'transcribing', label: 'Transcrevendo', icon: Loader2 },
     { id: 'config', label: 'Configurar', icon: Settings },
-    { id: 'result', label: 'Resultado', icon: Sparkles },
   ];
 
   const stepIndex = steps.findIndex(s => s.id === currentStep);
@@ -76,7 +78,6 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
         console.error('Transcription error:', error);
         const msg = error instanceof Error ? error.message : 'Erro na transcrição';
         toast.error('Falha na transcrição', { description: msg });
-        // Go back to capture so user can retry
         setCurrentStep('capture');
         setAudioId(null);
       }
@@ -87,81 +88,27 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
     return () => { cancelled = true; };
   }, [currentStep, audioId]);
 
-  const handleGenerate = useCallback(async () => {
+  // When user clicks "Gerar letra completa", pass data back to Briefing for standard flow
+  const handleGenerate = useCallback(() => {
     if (!transcript || !section) {
       toast.error('Selecione a posição do trecho na música');
       return;
     }
-    setIsGenerating(true);
-    setGenerateProgress(0);
-
-    const interval = setInterval(() => {
-      setGenerateProgress(prev => Math.min(prev + 1.5, 95));
-    }, 1000);
-
-    try {
-      const storyText = theme 
-        ? `${theme}. O usuário cantou/gravou o seguinte trecho: "${transcript}"`
-        : `Música baseada no trecho cantado/gravado pelo usuário: "${transcript}"`;
-
-      const { data, error } = await supabase.functions.invoke('generate-lyrics', {
-        body: {
-          // No orderId = standalone mode
-          story: storyText,
-          briefing: {
-            musicType: 'homenagem',
-            emotion: 'alegria',
-            emotionIntensity: 3,
-            style: style.toLowerCase(),
-            rhythm: 'moderado',
-            atmosphere: 'festivo',
-            structure: ['verse', 'chorus', 'verse', 'chorus', 'outro'],
-            hasMonologue: section === 'INTRO_MONOLOGUE',
-            monologuePosition: section === 'INTRO_MONOLOGUE' ? 'intro' : '',
-            mandatoryWords: mode === 'keep_exact' ? transcript : '',
-            restrictedWords: '',
-            songName: '',
-            autoGenerateName: true,
-          },
-          audioInsert: { section, mode, transcript },
-          isPreview: true,
-        },
-      });
-
-      if (error) {
-        const errorStr = String(error?.message || error || '');
-        
-        if (errorStr.includes('429') || errorStr.includes('rate limit')) {
-          throw new Error('Muitas requisições. Aguarde alguns minutos e tente novamente.');
-        }
-        if (errorStr.includes('402') || errorStr.includes('payment')) {
-          throw new Error('Créditos de IA insuficientes. Entre em contato com o suporte.');
-        }
-        throw new Error(errorStr || 'Falha na geração da letra');
-      }
-      
-      if (!data?.ok) {
-        throw new Error(data?.error || 'Falha na geração');
-      }
-
-      const lyricText = data.lyrics?.[0]?.text || data.lyrics?.[0]?.body || '';
-      if (!lyricText) {
-        throw new Error('A IA retornou uma resposta vazia. Tente novamente.');
-      }
-
-      setFinalLyrics(lyricText);
-      setCurrentStep('result');
-      toast.success('Letra gerada com sucesso!');
-    } catch (error: unknown) {
-      console.error('Generate error:', error);
-      const msg = error instanceof Error ? error.message : 'Erro na geração da letra';
-      toast.error('Falha ao gerar letra', { description: msg });
-    } finally {
-      clearInterval(interval);
-      setIsGenerating(false);
-      setGenerateProgress(0);
+    if (!audioId) {
+      toast.error('Áudio não encontrado. Tente novamente.');
+      return;
     }
-  }, [transcript, section, mode, theme, style]);
+
+    // Pass the audio data back to parent (Briefing) for standard order creation
+    onComplete?.({
+      audioId,
+      transcript,
+      section: section as SectionType,
+      mode,
+      theme,
+      style,
+    });
+  }, [transcript, section, mode, theme, style, audioId, onComplete]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -245,8 +192,8 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               mode={mode}
               theme={theme}
               style={style}
-              isGenerating={isGenerating}
-              generateProgress={generateProgress}
+              isGenerating={false}
+              generateProgress={0}
               onSectionChange={setSection}
               onModeChange={setMode}
               onThemeChange={setTheme}
@@ -257,18 +204,6 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
                 setTranscript('');
               }}
               onGenerate={handleGenerate}
-            />
-          )}
-
-          {currentStep === 'result' && (
-            <AudioResultStep
-              lyrics={finalLyrics}
-              onRegenerate={() => {
-                setCurrentStep('config');
-                setFinalLyrics('');
-              }}
-              onBack={onBack}
-              onComplete={onComplete}
             />
           )}
         </AnimatePresence>
