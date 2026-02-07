@@ -227,20 +227,23 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false } = await req.json() as {
-      orderId: string;
+    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert } = await req.json() as {
+      orderId?: string;
       story: string;
       briefing: BriefingData;
       pronunciations?: Pronunciation[];
       isPreview?: boolean;
       autoApprove?: boolean;
+      audioInsert?: { section: string; mode: string; transcript: string };
     };
 
-    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove);
+    // Standalone mode: no orderId needed (used by Audio Mode wizard)
+    const isStandaloneMode = !orderId;
+    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove, "standalone:", isStandaloneMode);
 
-    if (!orderId || !story) {
+    if (!story) {
       return new Response(
-        JSON.stringify({ ok: false, error: "Campos obrigatórios: orderId e story" }),
+        JSON.stringify({ ok: false, error: "Campo obrigatório: story" }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -257,21 +260,27 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const { data: orderInfo, error: orderFetchError } = await supabase
-      .from('orders')
-      .select('is_preview, plan_id, user_id')
-      .eq('id', orderId)
-      .single();
+    let orderInfo: { is_preview?: boolean; plan_id?: string; user_id?: string } | null = null;
     
-    if (orderFetchError) {
-      console.error("Error fetching order:", orderFetchError);
+    if (!isStandaloneMode) {
+      const { data: fetchedOrder, error: orderFetchError } = await supabase
+        .from('orders')
+        .select('is_preview, plan_id, user_id')
+        .eq('id', orderId!)
+        .single();
+      
+      if (orderFetchError) {
+        console.error("Error fetching order:", orderFetchError);
+      }
+      orderInfo = fetchedOrder;
     }
     
-    const isPreviewOrder = orderInfo?.is_preview === true || orderInfo?.plan_id === 'preview_test' || isPreview;
+    const isPreviewOrder = orderInfo?.is_preview === true || orderInfo?.plan_id === 'preview_test' || isPreview || isStandaloneMode;
     console.log("Order preview determination:", { 
       dbIsPreview: orderInfo?.is_preview, 
       planId: orderInfo?.plan_id, 
       paramIsPreview: isPreview,
+      standalone: isStandaloneMode,
       finalIsPreview: isPreviewOrder 
     });
 
@@ -761,7 +770,39 @@ INSTRUÇÕES FINAIS:
 - NÃO inclua comentários, explicações ou metadados
 - APENAS as letras com as tags estruturadas`;
 
-    console.log("Calling AI Gateway for lyrics generation...");
+    // ============ ENRIQUECER PROMPT COM TRECHO DE ÁUDIO (audioInsert) ============
+    let finalUserPrompt = isSomenteMonologo 
+      ? userPrompt  // somente monologo already has its own prompt
+      : isSimpleMode 
+        ? userPrompt 
+        : userPrompt;
+
+    if (audioInsert?.transcript) {
+      const sectionMap: Record<string, string> = {
+        'VERSE': 'Verso',
+        'CHORUS': 'Refrão',
+        'INTRO_MONOLOGUE': 'Introdução falada (monólogo)',
+        'BRIDGE': 'Ponte musical',
+      };
+      const sectionLabel = sectionMap[audioInsert.section] || audioInsert.section;
+      const modeLabel = audioInsert.mode === 'keep_exact' 
+        ? 'EXATAMENTE como transcrito, sem alterações' 
+        : 'com pequenos ajustes de rima e fluidez, mantendo a essência';
+
+      finalUserPrompt += `\n\n⚠️ TRECHO DE ÁUDIO OBRIGATÓRIO:
+O usuário gravou/cantou o seguinte trecho que DEVE ser incorporado na letra:
+"${audioInsert.transcript}"
+
+INSTRUÇÕES SOBRE O TRECHO:
+- Este trecho deve aparecer como: ${sectionLabel}
+- Modo de uso: ${modeLabel}
+- O restante da letra deve ser COESO e COMPLEMENTAR a este trecho
+- NÃO repita o trecho em outras seções (a menos que seja o refrão)
+- A letra completa deve fluir NATURALMENTE com o trecho inserido
+- Mantenha o mesmo tom e tema do trecho ao criar as outras partes`;
+    }
+
+    console.log("Calling AI Gateway for lyrics generation...", audioInsert ? "(with audio insert)" : "");
 
     // GPT-5 is a reasoning model - needs high max_completion_tokens (includes internal reasoning)
     // Timeout after 90 seconds to avoid hanging indefinitely
@@ -783,7 +824,7 @@ INSTRUÇÕES FINAIS:
           model: "openai/gpt-5",
           messages: [
             { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt }
+            { role: "user", content: finalUserPrompt }
           ],
           max_completion_tokens: 16000,
         }),
@@ -859,66 +900,72 @@ INSTRUÇÕES FINAIS:
       phonetic2 = applyPronunciations(processedBody2, pronunciations);
     }
 
-    const { data: insertedLyrics, error: insertError } = await supabase
-      .from('lyrics')
-      .insert([
-        { 
-          order_id: orderId, 
-          version: 'A', 
-          title: l1.title, 
-          body: processedBody1,
-          phonetic_body: phonetic1,
-          is_approved: autoApprove,
-          approved_at: autoApprove ? new Date().toISOString() : null
-        },
-        { 
-          order_id: orderId, 
-          version: 'B', 
-          title: l2.title, 
-          body: processedBody2,
-          phonetic_body: phonetic2,
-          is_approved: false 
-        }
-      ])
-      .select();
+    // ============ DB OPERATIONS (skip in standalone mode) ============
+    let insertedLyrics: { id: string }[] | null = null;
+    
+    if (!isStandaloneMode) {
+      const { data: dbLyrics, error: insertError } = await supabase
+        .from('lyrics')
+        .insert([
+          { 
+            order_id: orderId, 
+            version: 'A', 
+            title: l1.title, 
+            body: processedBody1,
+            phonetic_body: phonetic1,
+            is_approved: autoApprove,
+            approved_at: autoApprove ? new Date().toISOString() : null
+          },
+          { 
+            order_id: orderId, 
+            version: 'B', 
+            title: l2.title, 
+            body: processedBody2,
+            phonetic_body: phonetic2,
+            is_approved: false 
+          }
+        ])
+        .select();
 
-    if (insertError) {
-      console.error("Error inserting lyrics:", insertError);
-    }
+      if (insertError) {
+        console.error("Error inserting lyrics:", insertError);
+      }
+      insertedLyrics = dbLyrics;
 
-    const newStatus = autoApprove ? 'LYRICS_APPROVED' : 'LYRICS_GENERATED';
-    
-    const updateData: Record<string, unknown> = { 
-      status: newStatus, 
-      updated_at: new Date().toISOString(),
-      voice_type: voiceType
-    };
-    
-    if (autoApprove && insertedLyrics?.[0]?.id) {
-      updateData.approved_lyric_id = insertedLyrics[0].id;
-    }
-    
-    // IMPORTANT: Save AI-generated title to order.song_title if autoGenerateName was true
-    // This ensures the admin can see the title even when user didn't provide one
-    if (autoGenerateName && l1.title && l1.title !== "Música Personalizada") {
-      updateData.song_title = l1.title;
-      console.log("Saving AI-generated title to order:", l1.title);
-    }
-    
-    if (pronunciations.length > 0) {
-      updateData.pronunciations = pronunciations;
-    }
+      const newStatus = autoApprove ? 'LYRICS_APPROVED' : 'LYRICS_GENERATED';
+      
+      const updateData: Record<string, unknown> = { 
+        status: newStatus, 
+        updated_at: new Date().toISOString(),
+        voice_type: voiceType
+      };
+      
+      if (autoApprove && insertedLyrics?.[0]?.id) {
+        updateData.approved_lyric_id = insertedLyrics[0].id;
+      }
+      
+      if (autoGenerateName && l1.title && l1.title !== "Música Personalizada") {
+        updateData.song_title = l1.title;
+        console.log("Saving AI-generated title to order:", l1.title);
+      }
+      
+      if (pronunciations.length > 0) {
+        updateData.pronunciations = pronunciations;
+      }
 
-    const { error: updateError } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', orderId);
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', orderId);
 
-    if (updateError) {
-      console.error("Error updating order status:", updateError);
+      if (updateError) {
+        console.error("Error updating order status:", updateError);
+      }
+    } else {
+      console.log("Standalone mode: skipping DB operations (no orderId)");
     }
     
-    if (autoApprove && insertedLyrics?.[0]) {
+    if (!isStandaloneMode && autoApprove && insertedLyrics?.[0]) {
       console.log("Auto-approve mode: Triggering style prompt generation...");
       try {
         await fetch(`${supabaseUrl}/functions/v1/generate-style-prompt`, {
@@ -944,7 +991,7 @@ INSTRUÇÕES FINAIS:
       }
     }
 
-    if (orderInfo?.user_id && !autoApprove) {
+    if (!isStandaloneMode && orderInfo?.user_id && !autoApprove) {
       try {
         console.log("Sending push notification for lyrics ready...");
         
@@ -966,7 +1013,7 @@ INSTRUÇÕES FINAIS:
       } catch (pushError) {
         console.error("Push notification error:", pushError);
       }
-    } else if (autoApprove) {
+    } else if (!isStandaloneMode && autoApprove) {
       console.log("Skipping lyrics notification (autoApprove mode - direct to production)");
     }
 
