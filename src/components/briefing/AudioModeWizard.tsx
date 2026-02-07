@@ -88,7 +88,10 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
   }, [currentStep, audioId]);
 
   const handleGenerate = useCallback(async () => {
-    if (!transcript || !section) return;
+    if (!transcript || !section) {
+      toast.error('Selecione a posição do trecho na música');
+      return;
+    }
     setIsGenerating(true);
     setGenerateProgress(0);
 
@@ -97,9 +100,14 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
     }, 1000);
 
     try {
+      const storyText = theme 
+        ? `${theme}. O usuário cantou/gravou o seguinte trecho: "${transcript}"`
+        : `Música baseada no trecho cantado/gravado pelo usuário: "${transcript}"`;
+
       const { data, error } = await supabase.functions.invoke('generate-lyrics', {
         body: {
-          story: theme || `Música com o trecho: "${transcript}"`,
+          // No orderId = standalone mode
+          story: storyText,
           briefing: {
             musicType: 'homenagem',
             emotion: 'alegria',
@@ -116,19 +124,37 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
             autoGenerateName: true,
           },
           audioInsert: { section, mode, transcript },
+          isPreview: true,
         },
       });
 
-      if (error) throw error;
-      if (!data?.ok) throw new Error(data?.error || 'Falha na geração');
+      if (error) {
+        const errorStr = String(error?.message || error || '');
+        
+        if (errorStr.includes('429') || errorStr.includes('rate limit')) {
+          throw new Error('Muitas requisições. Aguarde alguns minutos e tente novamente.');
+        }
+        if (errorStr.includes('402') || errorStr.includes('payment')) {
+          throw new Error('Créditos de IA insuficientes. Entre em contato com o suporte.');
+        }
+        throw new Error(errorStr || 'Falha na geração da letra');
+      }
+      
+      if (!data?.ok) {
+        throw new Error(data?.error || 'Falha na geração');
+      }
 
       const lyricText = data.lyrics?.[0]?.text || data.lyrics?.[0]?.body || '';
+      if (!lyricText) {
+        throw new Error('A IA retornou uma resposta vazia. Tente novamente.');
+      }
+
       setFinalLyrics(lyricText);
       setCurrentStep('result');
       toast.success('Letra gerada com sucesso!');
     } catch (error: unknown) {
       console.error('Generate error:', error);
-      const msg = error instanceof Error ? error.message : 'Erro na geração';
+      const msg = error instanceof Error ? error.message : 'Erro na geração da letra';
       toast.error('Falha ao gerar letra', { description: msg });
     } finally {
       clearInterval(interval);
