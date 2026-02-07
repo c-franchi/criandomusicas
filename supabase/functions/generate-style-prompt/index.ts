@@ -825,7 +825,7 @@ ${cleanedLyrics}`;
       // Don't throw here - the main operation succeeded
     }
 
-    // Mark lyric as approved and update phonetic body if needed (only for vocal with valid UUID)
+    // Mark lyric as approved and update body/phonetic body (only for vocal with valid UUID)
     if (!isInstrumental && isValidUuid(lyricId)) {
       const lyricUpdateData: Record<string, unknown> = { 
         is_approved: true, 
@@ -834,6 +834,11 @@ ${cleanedLyrics}`;
       
       if (songTitle) {
         lyricUpdateData.title = songTitle;
+      }
+      
+      // CRITICAL: Save the edited lyric body (user may have manually edited the text)
+      if (approvedLyrics) {
+        lyricUpdateData.body = approvedLyrics;
       }
       
       // Save phonetic version in lyrics table

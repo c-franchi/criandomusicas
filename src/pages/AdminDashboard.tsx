@@ -24,7 +24,8 @@ import {
   Loader2,
   ImageIcon,
   DollarSign,
-  Home
+  Home,
+  Download
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -1325,6 +1326,18 @@ const AdminDashboard = () => {
                             <source src={order.audio_input_url} />
                           </audio>
                         </div>
+                        <a
+                          href={order.audio_input_url}
+                          download={`audio-${order.id.slice(0, 8)}.webm`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0"
+                        >
+                          <Button variant="outline" size="sm" className="text-green-400 border-green-500/30 hover:bg-green-500/10">
+                            <Download className="w-3.5 h-3.5 mr-1" />
+                            <span className="hidden sm:inline text-xs">Baixar</span>
+                          </Button>
+                        </a>
                       </div>
                     )}
 
