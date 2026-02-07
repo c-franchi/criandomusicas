@@ -840,10 +840,18 @@ const CreateSong = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="bg-muted/50 p-4 rounded-lg mb-4">
-                <pre className="text-sm whitespace-pre-wrap font-mono">
-                  {editedLyric}
-                </pre>
+              <div className="mb-4">
+                <Textarea
+                  value={editedLyric}
+                  onChange={(e) => setEditedLyric(e.target.value)}
+                  rows={Math.max(15, editedLyric.split('\n').length + 2)}
+                  className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-muted resize-y min-h-[300px]"
+                  placeholder={t('createSong.editLyricPlaceholder', 'Edite a letra diretamente aqui...')}
+                />
+                <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                  <Edit3 className="w-3 h-3" />
+                  {t('createSong.directEditHint', 'Você pode editar a letra diretamente no texto acima')}
+                </p>
               </div>
 
               {/* Edit Instructions */}
@@ -984,7 +992,7 @@ const CreateSong = () => {
                 <CardDescription>{t('createSong.yourInitialChoice')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
+              <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
                   <pre className="text-sm whitespace-pre-wrap font-mono">
                     {originalSelectedLyric?.body}
                   </pre>
@@ -994,6 +1002,9 @@ const CreateSong = () => {
                     <CheckCircle className="w-4 h-4" />
                     <span className="text-sm font-medium">{t('createSong.selected')}</span>
                   </div>
+                )}
+                {!isModifiedSelected && (
+                  <p className="text-xs text-muted-foreground mt-1">{t('createSong.clickToEditBelow', 'Selecionada — edite abaixo antes de aprovar')}</p>
                 )}
               </CardContent>
             </Card>
@@ -1014,7 +1025,7 @@ const CreateSong = () => {
                 <CardDescription>{t('createSong.withYourChanges')}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
+              <div className="bg-muted/50 p-4 rounded-lg max-h-60 overflow-y-auto">
                   <pre className="text-sm whitespace-pre-wrap font-mono">
                     {modifiedLyric?.body}
                   </pre>
@@ -1025,9 +1036,38 @@ const CreateSong = () => {
                     <span className="text-sm font-medium">{t('createSong.selected')}</span>
                   </div>
                 )}
+                {isModifiedSelected && (
+                  <p className="text-xs text-muted-foreground mt-1">{t('createSong.clickToEditBelow', 'Selecionada — edite abaixo antes de aprovar')}</p>
+                )}
               </CardContent>
             </Card>
           </div>
+
+          {/* Direct Text Editing - Fine tune the selected version */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5" />
+                {t('createSong.finetuneTitle', 'Ajuste fino da letra selecionada')}
+              </CardTitle>
+              <CardDescription>
+                {t('createSong.finetuneDescription', 'Edite diretamente o texto abaixo para fazer ajustes pontuais antes de enviar para produção')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={editedLyric}
+                onChange={(e) => setEditedLyric(e.target.value)}
+                rows={Math.max(15, editedLyric.split('\n').length + 2)}
+                className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-muted resize-y min-h-[300px]"
+                placeholder={t('createSong.editLyricPlaceholder', 'Edite a letra diretamente aqui...')}
+              />
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <Edit3 className="w-3 h-3" />
+                {t('createSong.directEditHint', 'Você pode editar a letra diretamente no texto acima')}
+              </p>
+            </CardContent>
+          </Card>
 
           {/* No refunds warning */}
           <Card className="mb-6 border-red-500/30 bg-red-500/5">

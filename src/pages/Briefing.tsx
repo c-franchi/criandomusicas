@@ -2409,7 +2409,7 @@ const Briefing = () => {
           } catch { /* ignore */ }
         }
         
-        await supabase.functions.invoke('generate-lyrics', {
+        const { data: lyricsResult, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
           body: {
             orderId,
             story: briefing.story,
@@ -2417,6 +2417,25 @@ const Briefing = () => {
             ...(audioInsert ? { audioInsert } : {})
           }
         });
+        
+        if (lyricsError) {
+          console.error('Error generating lyrics:', lyricsError);
+          toast({
+            title: 'Erro ao gerar letras',
+            description: 'Tente novamente em alguns instantes.',
+            variant: 'destructive'
+          });
+        }
+        
+        if (!lyricsResult?.ok) {
+          console.error('Lyrics generation failed:', lyricsResult?.error);
+          toast({
+            title: 'Falha na geração',
+            description: lyricsResult?.error || 'Erro ao gerar letras. Tente novamente.',
+            variant: 'destructive'
+          });
+        }
+        
         clearSavedBriefing();
         navigate(`/criar-musica?orderId=${orderId}`);
       }
@@ -2740,6 +2759,17 @@ const Briefing = () => {
           instrumentation_notes: briefingData.instrumentationNotes || null,
           song_title: briefingData.autoGenerateName ? null : (briefingData.songName || null),
           style_prompt: briefingData.hasCustomStylePrompt && briefingData.customStylePrompt ? briefingData.customStylePrompt : null,
+          // Audio input reference (from audio mode)
+          audio_input_id: (() => {
+            try {
+              const raw = localStorage.getItem('audioInsertData');
+              if (raw) {
+                const parsed = JSON.parse(raw);
+                return parsed?.audioId || null;
+              }
+            } catch { /* ignore */ }
+            return null;
+          })(),
         })
         .select()
         .single();
