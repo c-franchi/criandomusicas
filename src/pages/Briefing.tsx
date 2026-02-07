@@ -19,7 +19,7 @@ import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
-import { AudioModeWizard } from "@/components/briefing/AudioModeWizard";
+import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
@@ -2386,11 +2386,23 @@ const Briefing = () => {
       } else {
         // Modo detalhado: gerar letras e ir para página de revisão
         console.log('Generating lyrics for detailed mode...');
+        
+        // Check if there's audioInsert data from Audio Mode
+        const audioInsertRaw = localStorage.getItem('audioInsertData');
+        let audioInsert = null;
+        if (audioInsertRaw) {
+          try {
+            audioInsert = JSON.parse(audioInsertRaw);
+            localStorage.removeItem('audioInsertData');
+          } catch { /* ignore */ }
+        }
+        
         await supabase.functions.invoke('generate-lyrics', {
           body: {
             orderId,
             story: briefing.story,
-            briefing
+            briefing,
+            ...(audioInsert ? { audioInsert } : {})
           }
         });
         clearSavedBriefing();
@@ -2775,6 +2787,48 @@ const Briefing = () => {
     }
   };
 
+  // Handler para quando o modo áudio completa (transcrição + config prontos)
+  const handleAudioModeComplete = async (audioResult: AudioModeResult) => {
+    // Build story text from audio transcription + theme
+    const storyText = audioResult.theme 
+      ? `${audioResult.theme}. O usuário cantou/gravou o seguinte trecho: "${audioResult.transcript}"`
+      : `Música baseada no trecho cantado/gravado pelo usuário: "${audioResult.transcript}"`;
+
+    // Create form data for standard order flow
+    const audioFormData: BriefingFormData = {
+      ...initialFormData,
+      isInstrumental: false,
+      hasCustomLyric: false,
+      musicType: 'homenagem',
+      emotion: 'alegria',
+      emotionIntensity: 3,
+      story: storyText,
+      style: audioResult.style.toLowerCase(),
+      rhythm: 'moderado',
+      atmosphere: 'festivo',
+      voiceType: 'feminina',
+      autoGenerateName: true,
+      songName: '',
+      hasMonologue: audioResult.section === 'INTRO_MONOLOGUE',
+      monologuePosition: audioResult.section === 'INTRO_MONOLOGUE' ? 'intro' : '',
+      mandatoryWords: audioResult.mode === 'keep_exact' ? audioResult.transcript : '',
+      restrictedWords: '',
+    };
+
+    // Store audio insert data for the generate-lyrics function
+    localStorage.setItem('audioInsertData', JSON.stringify({
+      section: audioResult.section,
+      mode: audioResult.mode,
+      transcript: audioResult.transcript,
+      audioId: audioResult.audioId,
+    }));
+
+    // Use the same flow as quick creation (finishBriefingWithData)
+    setSelectedPlanId('single');
+    setIsQuickMode(false); // Not quick mode - we want detailed flow with lyric selection
+    await finishBriefingWithData(audioFormData);
+  };
+
   // Handler para voltar do modo rápido
   const handleQuickCreationBack = () => {
     setCreationMode(null);
@@ -3038,9 +3092,57 @@ const Briefing = () => {
   // Tela de Criação por Áudio
   if (creationMode === 'audio') {
     return (
-      <AudioModeWizard
-        onBack={() => setCreationMode(null)}
-      />
+      <div className="min-h-screen bg-background">
+        <AudioModeWizard
+          onBack={() => setCreationMode(null)}
+          onComplete={handleAudioModeComplete}
+        />
+        {/* WhatsApp Modal for audio creation */}
+        {user?.id && (
+          <WhatsAppModal
+            open={showWhatsAppModal}
+            onOpenChange={setShowWhatsAppModal}
+            onConfirm={handleWhatsAppConfirm}
+            userId={user.id}
+          />
+        )}
+        {/* No Credit Modal */}
+        <Dialog open={showNoCreditModal} onOpenChange={setShowNoCreditModal}>
+          <DialogPortal>
+            <DialogOverlay className="z-[100]" />
+            <DialogContent className="sm:max-w-md z-[100]" aria-describedby="no-credit-audio-description">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-xl">
+                  <AlertCircle className="w-5 h-5 text-amber-500" />
+                  {t('noCreditModal.title', 'Créditos insuficientes')}
+                </DialogTitle>
+                <DialogDescription className="pt-2" id="no-credit-audio-description">
+                  {t('noCreditModal.description', 'Você não possui créditos disponíveis para criar esta música.')}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <p className="text-sm text-muted-foreground">
+                  {t('noCreditModal.message', 'Adquira um pacote ou assinatura para continuar criando músicas.')}
+                </p>
+                <Button onClick={handleGoToCheckout} className="w-full">
+                  <CreditCard className="w-5 h-5 mr-2" />
+                  {t('noCreditModal.buyButton', 'Ver opções de compra')}
+                </Button>
+              </div>
+            </DialogContent>
+          </DialogPortal>
+        </Dialog>
+        {/* Loading overlay */}
+        {isCreatingOrder && (
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+            <div className="flex flex-col items-center gap-4 text-center px-4">
+              <Loader2 className="w-12 h-12 animate-spin text-primary" />
+              <p className="text-foreground font-medium text-lg">Criando seu pedido...</p>
+              <p className="text-sm text-muted-foreground">Gerando a letra da sua música com IA ✨</p>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 

@@ -885,7 +885,7 @@ const AdminDashboard = () => {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast({ title: `${label} copiado!`, description: 'Pronto para colar no Suno/Udio' });
+    toast({ title: `${label} copiado!`, description: 'Pronto para colar na ferramenta de geração' });
   };
 
   if (authLoading || roleLoading) {
@@ -1291,17 +1291,17 @@ const AdminDashboard = () => {
                       </div>
                     )}
 
-                    {/* Final Prompt with copy buttons - ONLY STYLE for Suno */}
+                    {/* Final Prompt with copy buttons - STYLE for music generation */}
                     {order.style_prompt && (
                       <details 
                         className="text-xs sm:text-sm"
                         onToggle={(e) => setDetailsOpen((e.target as HTMLDetailsElement).open)}
                       >
                         <summary className="cursor-pointer text-primary hover:underline font-medium">
-                          📝 Ver Prompt Final (para Suno/Udio)
+                          📝 Ver Prompt Final (para geração)
                         </summary>
                         <div className="mt-2 space-y-3">
-                          {/* STYLE section - the only thing Suno needs */}
+                          {/* STYLE section for music generation */}
                           <div className="relative">
                             <div className="flex items-center justify-between mb-1">
                               <p className="text-[10px] sm:text-xs text-muted-foreground font-semibold">
