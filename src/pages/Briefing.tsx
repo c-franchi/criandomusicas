@@ -2292,8 +2292,7 @@ const Briefing = () => {
         });
         
         await processOrderAfterCredit(orderData.id, briefingData);
-        setIsCreatingOrder(false);
-        isCreatingOrderRef.current = false; // Reset flag after success
+        // Reset is now handled in processOrderAfterCredit's finally block
         return;
       }
 
@@ -2359,7 +2358,6 @@ const Briefing = () => {
         navigate('/dashboard');
       } else if (isQuickMode) {
         // MODO RÁPIDO: Enviar pedido e ir pro dashboard imediatamente
-        // O admin gera a música depois e envia pro usuário
         
         try {
           // Atualizar status do pedido
@@ -2409,31 +2407,58 @@ const Briefing = () => {
           } catch { /* ignore */ }
         }
         
-        const { data: lyricsResult, error: lyricsError } = await supabase.functions.invoke('generate-lyrics', {
-          body: {
-            orderId,
-            story: briefing.story,
-            briefing,
-            ...(audioInsert ? { audioInsert } : {})
+        // Timeout de 120s no cliente para evitar loading infinito
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 120000);
+        
+        let lyricsResult = null;
+        let lyricsError = null;
+        
+        try {
+          const response = await supabase.functions.invoke('generate-lyrics', {
+            body: {
+              orderId,
+              story: briefing.story,
+              briefing,
+              ...(audioInsert ? { audioInsert } : {})
+            }
+          });
+          lyricsResult = response.data;
+          lyricsError = response.error;
+        } catch (invokeErr: any) {
+          if (invokeErr?.name === 'AbortError') {
+            console.error('Lyrics generation timed out after 120s');
+            lyricsError = { message: 'Timeout: geração demorou mais de 2 minutos' };
+          } else {
+            console.error('Lyrics invoke error:', invokeErr);
+            lyricsError = invokeErr;
           }
-        });
+        } finally {
+          clearTimeout(timeoutId);
+        }
         
         if (lyricsError) {
           console.error('Error generating lyrics:', lyricsError);
           toast({
             title: 'Erro ao gerar letras',
-            description: 'Tente novamente em alguns instantes.',
+            description: 'Tente novamente pelo dashboard.',
             variant: 'destructive'
           });
+          clearSavedBriefing();
+          navigate('/dashboard');
+          return; // PARAR execução - não navegar para criar-musica sem letra
         }
         
         if (!lyricsResult?.ok) {
           console.error('Lyrics generation failed:', lyricsResult?.error);
           toast({
             title: 'Falha na geração',
-            description: lyricsResult?.error || 'Erro ao gerar letras. Tente novamente.',
+            description: lyricsResult?.error || 'Erro ao gerar letras. Tente novamente pelo dashboard.',
             variant: 'destructive'
           });
+          clearSavedBriefing();
+          navigate('/dashboard');
+          return; // PARAR execução - não navegar para criar-musica sem letra
         }
         
         clearSavedBriefing();
@@ -2441,13 +2466,17 @@ const Briefing = () => {
       }
     } catch (error) {
       console.error('Error processing order after credit:', error);
-      // Em caso de erro, redirecionar para dashboard ou criar-musica
+      toast({
+        title: 'Erro inesperado',
+        description: 'Ocorreu um erro. Você pode tentar novamente pelo dashboard.',
+        variant: 'destructive'
+      });
       clearSavedBriefing();
-      if (briefing.isInstrumental || isQuickMode) {
-        navigate('/dashboard');
-      } else {
-        navigate(`/criar-musica?orderId=${orderId}`);
-      }
+      navigate('/dashboard');
+    } finally {
+      // SEMPRE resetar estados de loading, independente de sucesso ou falha
+      setIsCreatingOrder(false);
+      isCreatingOrderRef.current = false;
     }
   };
 
@@ -2807,8 +2836,7 @@ const Briefing = () => {
         });
         
         await processOrderAfterCredit(orderData.id, briefingData);
-        setIsCreatingOrder(false);
-        isCreatingOrderRef.current = false; // Reset flag after success
+        // Reset is now handled in processOrderAfterCredit's finally block
         return;
       }
 
