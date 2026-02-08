@@ -181,19 +181,25 @@ serve(async (req) => {
               if (currentPeriodStartTs) {
                 const periodStart = new Date(currentPeriodStartTs * 1000).toISOString();
                 
-                // Count orders in current period
-                const { count: usedCount } = await supabaseClient
+                // Count orders in current period that used subscription credits
+                // Include BRIEFING_COMPLETE to avoid missing orders in transition
+                const { count: usedCount, error: countError } = await supabaseClient
                   .from('orders')
                   .select('*', { count: 'exact', head: true })
                   .eq('user_id', userId)
                   .gte('created_at', periodStart)
-                  .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
+                  .in('status', ['PAID', 'BRIEFING_COMPLETE', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
                   .like('plan_id', 'creator_%');
+
+                if (countError) {
+                  logStep("Error counting subscription usage", { error: countError.message });
+                  throw new Error(`Error counting subscription credits: ${countError.message}`);
+                }
 
                 const creditsUsed = usedCount || 0;
                 const creditsRemaining = creditsTotal - creditsUsed;
                 
-                logStep("Subscription credits check", { creditsTotal, creditsUsed, creditsRemaining });
+                logStep("Subscription credits check", { creditsTotal, creditsUsed, creditsRemaining, periodStart });
                 
                 if (creditsRemaining > 0) {
                   useSubscription = true;
@@ -234,7 +240,7 @@ serve(async (req) => {
     // Use the credit
     if (useSubscription && subscriptionPlanId) {
       // Mark order as paid using subscription credit
-      const { error: orderError } = await supabaseClient
+      const { error: orderError, data: updatedOrder } = await supabaseClient
         .from('orders')
         .update({
           payment_status: 'PAID',
@@ -244,15 +250,24 @@ serve(async (req) => {
           amount: 0,
         })
         .eq('id', orderId)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select('id, status, payment_status, plan_id');
 
       if (orderError) {
         throw new Error(`Error updating order: ${orderError.message}`);
       }
 
+      // Verify the update actually took effect
+      if (!updatedOrder || updatedOrder.length === 0) {
+        logStep("WARNING: Order update returned no rows", { orderId });
+        throw new Error("Order update failed - no rows affected");
+      }
+
       logStep("Subscription credit used successfully", { 
         planId: subscriptionPlanId,
-        orderId 
+        orderId,
+        verifiedStatus: updatedOrder[0]?.status,
+        verifiedPlanId: updatedOrder[0]?.plan_id,
       });
 
       // Notify admin about new order
@@ -294,19 +309,60 @@ serve(async (req) => {
         total: creditToUse.total_credits 
       });
 
-      // Increment used_credits
-      const newUsedCredits = creditToUse.used_credits + 1;
-      const { error: updateError } = await supabaseClient
+      // Increment used_credits atomically
+      const newUsedCredits = (creditToUse.used_credits || 0) + 1;
+      const { error: updateError, data: updateData } = await supabaseClient
         .from('user_credits')
         .update({ 
           used_credits: newUsedCredits,
           // Mark as inactive if all credits used
           is_active: newUsedCredits < creditToUse.total_credits,
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', creditToUse.id);
+        .eq('id', creditToUse.id)
+        .eq('used_credits', creditToUse.used_credits) // Optimistic lock: only update if count hasn't changed
+        .select();
 
       if (updateError) {
         throw new Error(`Error updating credits: ${updateError.message}`);
+      }
+
+      // Check if optimistic lock failed (another request consumed the credit)
+      if (!updateData || updateData.length === 0) {
+        logStep("Optimistic lock failed - credit was consumed by another request, retrying...");
+        // Re-fetch and retry once
+        const { data: freshCredit } = await supabaseClient
+          .from('user_credits')
+          .select('*')
+          .eq('id', creditToUse.id)
+          .single();
+        
+        if (!freshCredit || freshCredit.total_credits <= freshCredit.used_credits) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "Crédito já foi utilizado por outro pedido",
+            needs_purchase: true,
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+        
+        // Retry with fresh data
+        const retryUsed = freshCredit.used_credits + 1;
+        const { error: retryError } = await supabaseClient
+          .from('user_credits')
+          .update({ 
+            used_credits: retryUsed,
+            is_active: retryUsed < freshCredit.total_credits,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', freshCredit.id);
+        
+        if (retryError) {
+          throw new Error(`Error on retry updating credits: ${retryError.message}`);
+        }
+        logStep("Credit consumed on retry", { newUsed: retryUsed });
       }
 
       // Update order to mark as paid via credits

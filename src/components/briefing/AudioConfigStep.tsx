@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ const MODE_OPTIONS = [
   { id: 'light_edit' as const, label: 'Ajustar levemente', emoji: '✨', desc: 'Pequenos ajustes de rima e fluidez' },
 ];
 
-const STYLE_OPTIONS = ['Pop', 'MPB', 'Sertanejo', 'Rock', 'Gospel', 'Pagode', 'Bossa Nova', 'Forró'];
+const STYLE_OPTIONS = ['Pop', 'MPB', 'Sertanejo', 'Rock', 'Gospel', 'Pagode', 'Bossa Nova', 'Forró', 'Reggae'];
 
 interface AudioConfigStepProps {
   transcript: string;
@@ -142,12 +143,28 @@ export const AudioConfigStep = ({
               key={s}
               variant={style === s ? "default" : "outline"}
               className="cursor-pointer"
-              onClick={() => onStyleChange(s)}
+              onClick={() => { onStyleChange(s); }}
             >
               {s}
             </Badge>
           ))}
+          <Badge
+            variant={style !== '' && !STYLE_OPTIONS.includes(style) ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => onStyleChange('__custom__')}
+          >
+            Outro
+          </Badge>
         </div>
+        {(style === '__custom__' || (style !== '' && !STYLE_OPTIONS.includes(style) && style !== '__custom__')) && (
+          <Input
+            value={style === '__custom__' ? '' : style}
+            onChange={(e) => onStyleChange(e.target.value || '__custom__')}
+            placeholder="Digite o estilo musical desejado"
+            className="mt-2"
+            autoFocus
+          />
+        )}
       </div>
 
       {/* Actions */}
