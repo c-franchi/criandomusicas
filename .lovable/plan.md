@@ -1,59 +1,88 @@
 
-# Plano: Migrar Geração de Letras para GPT
+# Plano de Correção: Estabilidade do Modo Áudio e Geração de Letras
 
-✅ **IMPLEMENTADO**
+## Problemas Identificados
+
+Foram encontrados 5 problemas principais que causam a instabilidade relatada:
+
+### 1. Loading infinito (tela travada "Gerando sua letra...")
+O estado de "criando pedido" (`isCreatingOrder`) nunca é resetado dentro da funcao `processOrderAfterCredit`. Quando a geracao de letras falha ou tem timeout, o overlay de loading fica preso na tela para sempre.
+
+### 2. Erros silenciosos na geracao de letras
+Quando a IA falha ao gerar a letra, o sistema mostra um toast de erro mas continua navegando para a pagina de criacao (`/criar-musica`) mesmo sem letra gerada, causando uma experiencia quebrada.
+
+### 3. Dependencia instavel na Edge Function `generate-lyrics`
+A funcao usa `@supabase/supabase-js@2` sem versao fixa, o que causa falhas intermitentes no deploy ("Bundle generation timed out"). A funcao `generate-style-prompt` ja usa a versao fixa `@2.57.2`.
+
+### 4. Dependencia instavel na Edge Function `transcribe-audio`
+Usa `@supabase/supabase-js@2.49.1`, diferente da versao padronizada do projeto (`@2.57.2`).
+
+### 5. Sem timeout no lado do cliente
+A chamada `supabase.functions.invoke('generate-lyrics')` nao tem timeout no frontend. Se a Edge Function travar alem dos 90s do AbortController interno, o SDK pode ficar esperando indefinidamente.
 
 ---
 
-# Plano: Modo Simples Automático para Letras
+## Correcoes Planejadas
 
-✅ **IMPLEMENTADO** (2026-02-05)
+### Correcao 1: Resetar estado de loading corretamente (Briefing.tsx)
+
+Envolver toda a logica de `processOrderAfterCredit` com um `try/finally` que garante que `isCreatingOrder` e `isCreatingOrderRef` sao sempre resetados, independente de sucesso ou falha.
+
+### Correcao 2: Parar execucao em caso de erro na geracao (Briefing.tsx)
+
+Quando `lyricsError` ou `!lyricsResult?.ok`, a funcao deve fazer `return` apos o toast de erro, em vez de continuar navegando para a pagina de criacao com dados incompletos. Nestes casos, navegar para o dashboard com mensagem clara.
+
+### Correcao 3: Fixar versao do Supabase SDK na `generate-lyrics`
+
+Alterar o import de:
+```
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+```
+Para:
+```
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+```
+
+### Correcao 4: Fixar versao do Supabase SDK na `transcribe-audio`
+
+Alterar o import de:
+```
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+```
+Para:
+```
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+```
+
+### Correcao 5: Adicionar timeout no cliente + retry
+
+Implementar um mecanismo de timeout de 120 segundos no frontend para a chamada `generate-lyrics`. Se expirar, mostrar opcao de "Tentar novamente" em vez de travar.
+
+### Correcao 6: Padronizar versao do `std` no `generate-lyrics`
+
+Atualizar de `std@0.168.0` para `std@0.190.0` (mesma versao usada em `generate-style-prompt`).
 
 ---
 
-# Plano: Correção CORS e UX de Geração (2026-02-05)
+## Detalhes Tecnicos
 
-✅ **IMPLEMENTADO**
+### Arquivos modificados:
+1. **`src/pages/Briefing.tsx`** - Correcoes no fluxo de `processOrderAfterCredit`:
+   - Adicionar `try/finally` para garantir reset de estados
+   - Adicionar `return` apos erros na geracao de letras
+   - Adicionar timeout de 120s no frontend com AbortController
+   - Adicionar opcao de retry apos falha
 
----
+2. **`supabase/functions/generate-lyrics/index.ts`** - Estabilidade:
+   - Fixar import `@supabase/supabase-js@2.57.2`
+   - Atualizar `std@0.168.0` para `std@0.190.0`
 
-# Plano: Modo Áudio — Criar Música por Áudio Cantado (2026-02-06)
+3. **`supabase/functions/transcribe-audio/index.ts`** - Estabilidade:
+   - Fixar import `@supabase/supabase-js@2.57.2`
+   - Atualizar `std@0.168.0` para `std@0.190.0`
 
-✅ **IMPLEMENTADO**
-
-## Objetivo
-Permitir que o usuário grave/envie um áudio cantando um trecho, o sistema transcreva via OpenAI, e gere uma letra completa no formato Suno usando o trecho como parte fixa.
-
-## Fases Implementadas
-
-### Fase 1 — Infraestrutura ✅
-- Tabelas `audio_inputs` e `transcriptions` criadas com RLS
-- Bucket `audio-inputs` (privado) criado
-- Edge Function `transcribe-audio` implementada (OpenAI Whisper)
-
-### Fase 2 — Componente de Captura de Áudio ✅
-- Hook `useAudioRecorder` com MediaRecorder API
-- Componente `AudioCapture` com gravação/upload/preview
-- Limite 3s-90s, formatos .wav/.mp3/.m4a
-
-### Fase 3 — Wizard do Modo Áudio ✅
-- `AudioModeWizard` com 4 etapas (Captura → Transcrição → Config → Resultado)
-- Subcomponentes: `AudioTranscriptionStep`, `AudioConfigStep`, `AudioResultStep`
-- Transcrição editável, seleção de seção/modo, geração via `generate-lyrics`
-
-### Fase 4 — Integração com Sistema ✅
-- Homepage: Badge "Novo!" com botão "Experimentar" (ProcessSteps)
-- Dashboard: Aba "Áudio" com explicação e CTA
-- Briefing: Card "Criar por Áudio" funcional no seletor de modo
-- Admin: Badges de tipo já mostram categorização por pedido
-
-### Fase 5 — Polimento ✅
-- Refatoração do AudioModeWizard em subcomponentes menores
-- UX com loading, retry, edição de transcrição
-- Validação MIME type e tamanho no upload
-
-## Stack Técnica
-- **Transcrição**: OpenAI Whisper (OPENAI_API_KEY)
-- **Geração de letras**: Lovable AI Gateway (openai/gpt-5)
-- **Storage**: Supabase Storage (bucket audio-inputs)
-- **Frontend**: React + Framer Motion + shadcn/ui
+### Impacto:
+- Elimina o problema de tela travada no loading
+- Erros na geracao mostram feedback claro ao usuario
+- Deploys das Edge Functions ficam estaveis e consistentes
+- Usuario pode tentar novamente em caso de falha
