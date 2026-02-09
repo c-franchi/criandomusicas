@@ -21,6 +21,7 @@ import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
+import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
@@ -2314,167 +2315,56 @@ const Briefing = () => {
     }
   };
 
-  // Função para processar ordem após consumo do crédito
-  const processOrderAfterCredit = async (orderId: string, briefing: {
-    isInstrumental: boolean;
-    hasCustomLyric?: boolean;
-    story?: string;
-    musicType?: string;
-    emotion?: string;
-    emotionIntensity?: number;
-    style?: string;
-    rhythm?: string;
-    atmosphere?: string;
-    voiceType?: string;
-    hasMonologue?: boolean;
-    monologuePosition?: string;
-    mandatoryWords?: string;
-    restrictedWords?: string;
-    structure?: string[];
-    [key: string]: any;
-  }) => {
+  // Função para processar ordem após consumo do crédito (delegada ao OrderProcessingService)
+  const processOrderAfterCredit = async (orderId: string, briefing: BriefingPayload) => {
     try {
-      if (briefing.isInstrumental) {
-        // Instrumental: gerar style prompt e ir para dashboard
-        console.log('Generating style prompt for instrumental order...');
-        await supabase.functions.invoke('generate-style-prompt', {
-          body: {
-            orderId,
-            isInstrumental: true,
-            briefing: {
-              ...briefing,
-              instruments: formData.instruments || [],
-              soloInstrument: formData.soloInstrument || null,
-              soloMoment: formData.soloMoment || null,
-              instrumentationNotes: formData.instrumentationNotes || ''
-            }
-          }
-        });
-        toast({
-          title: '🎹 Música instrumental em produção!',
-          description: 'Você pode acompanhar o progresso no dashboard.',
-        });
-        clearSavedBriefing();
-        navigate('/dashboard');
-      } else if (isQuickMode) {
-        // MODO RÁPIDO: Enviar pedido e ir pro dashboard imediatamente
-        
+      // Recuperar audioInsert do localStorage se existir
+      let audioInsert = null;
+      const audioInsertRaw = localStorage.getItem('audioInsertData');
+      if (audioInsertRaw) {
         try {
-          // Atualizar status do pedido
-          await supabase
-            .from('orders')
-            .update({ 
-              status: 'LYRICS_PENDING',
-              payment_status: 'PAID'
-            })
-            .eq('id', orderId);
-          
-          // Disparar geração de letra em background (não esperar)
-          console.log('Starting background lyrics generation for quick mode...');
-          supabase.functions.invoke('generate-lyrics', {
-            body: {
-              orderId,
-              story: briefing.story,
-              briefing,
-              autoApprove: true
-            }
-          }).catch(err => {
-            console.error('Background lyrics generation error:', err);
-          });
-          
-        } catch (err) {
-          console.error('Quick mode processing error:', err);
-        }
-        
-        // Redirecionar imediatamente para o dashboard
-        toast({
-          title: '🎵 ' + t('quickCreation.inProduction', 'Pedido enviado!'),
-          description: t('quickCreation.deliveryNotice', 'Você receberá sua música em até 12 horas. Acompanhe no dashboard.'),
-        });
+          audioInsert = JSON.parse(audioInsertRaw);
+          localStorage.removeItem('audioInsertData');
+        } catch { /* ignore */ }
+      }
+
+      const result = await OrderProcessingService.processAfterCredit(orderId, briefing, {
+        isQuickMode,
+        audioInsert,
+      });
+
+      if (result.success) {
         clearSavedBriefing();
-        navigate('/dashboard');
+        if (result.action === 'create-song') {
+          navigate(`/criar-musica?orderId=${orderId}`);
+        } else {
+          toast({
+            title: result.message || '🎵 Pedido enviado!',
+            description: isQuickMode
+              ? t('quickCreation.deliveryNotice', 'Você receberá sua música em até 12 horas. Acompanhe no dashboard.')
+              : 'Você pode acompanhar o progresso no dashboard.',
+          });
+          navigate('/dashboard');
+        }
       } else {
-        // Modo detalhado: gerar letras e ir para página de revisão
-        console.log('Generating lyrics for detailed mode...');
-        
-        // Check if there's audioInsert data from Audio Mode
-        const audioInsertRaw = localStorage.getItem('audioInsertData');
-        let audioInsert = null;
-        if (audioInsertRaw) {
-          try {
-            audioInsert = JSON.parse(audioInsertRaw);
-            localStorage.removeItem('audioInsertData');
-          } catch { /* ignore */ }
-        }
-        
-        // Timeout de 120s no cliente para evitar loading infinito
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 120000);
-        
-        let lyricsResult = null;
-        let lyricsError = null;
-        
-        try {
-          const response = await supabase.functions.invoke('generate-lyrics', {
-            body: {
-              orderId,
-              story: briefing.story,
-              briefing,
-              ...(audioInsert ? { audioInsert } : {})
-            }
-          });
-          lyricsResult = response.data;
-          lyricsError = response.error;
-        } catch (invokeErr: any) {
-          if (invokeErr?.name === 'AbortError') {
-            console.error('Lyrics generation timed out after 120s');
-            lyricsError = { message: 'Timeout: geração demorou mais de 2 minutos' };
-          } else {
-            console.error('Lyrics invoke error:', invokeErr);
-            lyricsError = invokeErr;
-          }
-        } finally {
-          clearTimeout(timeoutId);
-        }
-        
-        if (lyricsError) {
-          console.error('Error generating lyrics:', lyricsError);
-          toast({
-            title: 'Erro ao gerar letras',
-            description: 'Tente novamente pelo dashboard.',
-            variant: 'destructive'
-          });
-          clearSavedBriefing();
-          navigate('/dashboard');
-          return; // PARAR execução - não navegar para criar-musica sem letra
-        }
-        
-        if (!lyricsResult?.ok) {
-          console.error('Lyrics generation failed:', lyricsResult?.error);
-          toast({
-            title: 'Falha na geração',
-            description: lyricsResult?.error || 'Erro ao gerar letras. Tente novamente pelo dashboard.',
-            variant: 'destructive'
-          });
-          clearSavedBriefing();
-          navigate('/dashboard');
-          return; // PARAR execução - não navegar para criar-musica sem letra
-        }
-        
+        toast({
+          title: 'Erro na geração',
+          description: result.message || 'Tente novamente pelo dashboard.',
+          variant: 'destructive',
+        });
         clearSavedBriefing();
-        navigate(`/criar-musica?orderId=${orderId}`);
+        navigate('/dashboard');
       }
     } catch (error) {
       console.error('Error processing order after credit:', error);
       toast({
         title: 'Erro inesperado',
         description: 'Ocorreu um erro. Você pode tentar novamente pelo dashboard.',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       clearSavedBriefing();
       navigate('/dashboard');
     } finally {
-      // SEMPRE resetar estados de loading, independente de sucesso ou falha
       setIsCreatingOrder(false);
       isCreatingOrderRef.current = false;
     }
