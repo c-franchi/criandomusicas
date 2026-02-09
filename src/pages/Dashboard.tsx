@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Navigate, Link, useSearchParams } from "react-router-dom";
+import { Navigate, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import RegionSelector from "@/components/RegionSelector";
 import { StyledTabs, StyledTabsContent, StyledTabsList, StyledTabsTrigger } from "@/components/dashboard/StyledTabs";
 import { OrderAccordion } from "@/components/dashboard/OrderAccordion";
 import ReceivedCreditsNotification from "@/components/ReceivedCreditsNotification";
+import { OrderProcessingService } from "@/services/OrderProcessingService";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -51,11 +52,13 @@ const Dashboard = () => {
   const { isAdmin } = useAdminRole(user?.id);
   const { toast } = useToast();
   const { t } = useTranslation(['dashboard', 'common']);
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const [stuckOrderIds, setStuckOrderIds] = useState<Set<string>>(new Set());
   const { totalVocal, totalInstrumental } = useCredits();
 
   // Filter orders by type
@@ -213,14 +216,91 @@ const Dashboard = () => {
     }
   }, [user?.id, toast]);
 
+  // Detect stuck orders (PAID/LYRICS_PENDING with 0 lyrics)
+  const detectStuckOrders = useCallback(async (ordersList: Order[]) => {
+    const potentiallyStuck = ordersList.filter(
+      o => ['PAID', 'LYRICS_PENDING'].includes(o.status || '') && !o.is_instrumental
+    );
+    if (potentiallyStuck.length === 0) {
+      setStuckOrderIds(new Set());
+      return;
+    }
+
+    const stuckIds = new Set<string>();
+    await Promise.all(
+      potentiallyStuck.map(async (order) => {
+        const { count } = await supabase
+          .from('lyrics')
+          .select('id', { count: 'exact', head: true })
+          .eq('order_id', order.id);
+        
+        if ((count ?? 0) === 0) {
+          // Check if order is older than 3 minutes (give time for generation)
+          const createdAt = new Date(order.created_at || '');
+          const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000);
+          if (createdAt < threeMinutesAgo) {
+            stuckIds.add(order.id);
+          }
+        }
+      })
+    );
+    setStuckOrderIds(stuckIds);
+  }, []);
+
+  // Retry handler for stuck orders
+  const handleRetryOrder = useCallback(async (orderId: string) => {
+    try {
+      const result = await OrderProcessingService.retryLyricsGeneration(orderId);
+      
+      if (result.success) {
+        toast({
+          title: '✅ Letras geradas!',
+          description: 'As letras foram geradas com sucesso.',
+        });
+        // Remove from stuck set
+        setStuckOrderIds(prev => {
+          const next = new Set(prev);
+          next.delete(orderId);
+          return next;
+        });
+        
+        if (result.action === 'create-song') {
+          navigate(`/criar-musica?orderId=${orderId}`);
+        }
+      } else {
+        toast({
+          title: 'Erro ao reprocessar',
+          description: result.error || 'Tente novamente em alguns instantes.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Retry failed:', error);
+      toast({
+        title: 'Erro inesperado',
+        description: 'Não foi possível reprocessar. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  }, [toast, navigate]);
+
   // Initial fetch
   useEffect(() => {
     if (!loading && !user) {
       setShouldRedirect(true);
     } else if (user) {
-      fetchOrders();
+      fetchOrders().then(() => {
+        // Detect stuck orders after fetching
+      });
     }
   }, [user, loading, fetchOrders]);
+
+  // Detect stuck orders whenever orders change
+  useEffect(() => {
+    if (orders.length > 0) {
+      detectStuckOrders(orders);
+    }
+  }, [orders, detectStuckOrders]);
 
   // Real-time subscription for order updates
   useEffect(() => {
@@ -547,6 +627,8 @@ const Dashboard = () => {
                   getStatusColor={getStatusColor}
                   getStatusText={getStatusText}
                   setDeleteOrderId={setDeleteOrderId}
+                  stuckOrderIds={stuckOrderIds}
+                  onRetryOrder={handleRetryOrder}
                 />
               )}
             </StyledTabsContent>
@@ -619,6 +701,8 @@ const Dashboard = () => {
                   getStatusColor={getStatusColor}
                   getStatusText={getStatusText}
                   setDeleteOrderId={setDeleteOrderId}
+                  stuckOrderIds={stuckOrderIds}
+                  onRetryOrder={handleRetryOrder}
                 />
               )}
             </StyledTabsContent>
