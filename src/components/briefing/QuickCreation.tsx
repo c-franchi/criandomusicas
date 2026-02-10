@@ -259,7 +259,7 @@ const QuickCreationComponent = ({
                     <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                     <div className="flex-1 space-y-2">
                       <p className="text-sm text-foreground">
-                        {t('quickCreation.charLimitReached', 'Você atingiu o limite de 350 caracteres. Para textos maiores, use o modo completo!')}
+                        {t('quickCreation.charLimitReached', 'Você atingiu o limite de 500 caracteres. Para textos maiores, use o modo completo!')}
                       </p>
                       <Button
                         variant="outline"
