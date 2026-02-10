@@ -217,7 +217,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
 
           {recorder.status === 'idle' && !recorder.error && (
             <p className="text-sm text-muted-foreground">
-              Toque para gravar (3s a 90s)
+              Toque para gravar (3s a 6min)
             </p>
           )}
 
