@@ -252,17 +252,27 @@ const QuickCreationComponent = ({
               </span>
               
               <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    // Navigate to audio mode
-                    window.location.href = '/briefing?mode=audio';
-                  }}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50"
-                  title={t('quickCreation.recordAudio', 'Gravar áudio')}
-                >
-                  <Mic className="w-3.5 h-3.5" />
-                  {t('quickCreation.record', 'Gravar')}
-                </button>
+                {isSpeechSupported && (
+                  <button
+                    onClick={() => {
+                      if (isListening) {
+                        stopListening();
+                      } else {
+                        startListening();
+                      }
+                    }}
+                    className={cn(
+                      "flex items-center gap-1.5 text-xs transition-colors px-2 py-1 rounded-md",
+                      isListening 
+                        ? "text-red-500 bg-red-500/10 hover:bg-red-500/20 animate-pulse" 
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                    title={isListening ? t('quickCreation.stopRecording', 'Parar gravação') : t('quickCreation.recordAudio', 'Ditar texto')}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                    {isListening ? t('quickCreation.stopRecord', 'Parar') : t('quickCreation.record', 'Ditar')}
+                  </button>
+                )}
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">
                     {t('quickCreation.instrumental', 'Instrumental')}

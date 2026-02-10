@@ -197,7 +197,7 @@ serve(async (req) => {
                 .select('*', { count: 'exact', head: true })
                 .eq('user_id', userId)
                 .gte('created_at', periodStart)
-                .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'])
+                .in('status', ['PAID', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED', 'CANCELLED'])
                 .like('plan_id', 'creator_%');
 
               if (countError) {

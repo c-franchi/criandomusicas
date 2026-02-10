@@ -3054,7 +3054,7 @@ const Briefing = () => {
     return (
       <div className="min-h-screen bg-background">
         <AudioModeWizard
-          onBack={() => setCreationMode(null)}
+          onBack={() => navigate('/dashboard')}
           onComplete={handleAudioModeComplete}
         />
         {/* WhatsApp Modal for audio creation */}
