@@ -235,14 +235,27 @@ const QuickCreationComponent = ({
                 {prompt.length}/500
               </span>
               
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {t('quickCreation.instrumental', 'Instrumental')}
-                </span>
-                <Switch
-                  checked={isInstrumental}
-                  onCheckedChange={setIsInstrumental}
-                />
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    // Navigate to audio mode
+                    window.location.href = '/briefing?mode=audio';
+                  }}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50"
+                  title={t('quickCreation.recordAudio', 'Gravar áudio')}
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  {t('quickCreation.record', 'Gravar')}
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {t('quickCreation.instrumental', 'Instrumental')}
+                  </span>
+                  <Switch
+                    checked={isInstrumental}
+                    onCheckedChange={setIsInstrumental}
+                  />
+                </div>
               </div>
             </div>
 
