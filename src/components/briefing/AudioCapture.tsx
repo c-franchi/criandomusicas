@@ -76,8 +76,8 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
         URL.revokeObjectURL(audioUrl);
         return;
       }
-      if (duration > 90) {
-        toast.error('Áudio muito longo. Máximo 90 segundos.');
+      if (duration > 360) {
+        toast.error('Áudio muito longo. Máximo 6 minutos.');
         URL.revokeObjectURL(audioUrl);
         return;
       }
