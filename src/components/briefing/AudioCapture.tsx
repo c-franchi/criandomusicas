@@ -208,7 +208,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
               <p className="text-2xl font-mono font-bold text-red-500">
                 {formatTime(recorder.duration)}
               </p>
-              <p className="text-xs text-muted-foreground">Gravando... (máx 1:30)</p>
+              <p className="text-xs text-muted-foreground">Gravando... (máx 6:00)</p>
               <div className="w-48 mx-auto">
                 <Progress value={(recorder.duration / 90) * 100} className="h-1" />
               </div>
