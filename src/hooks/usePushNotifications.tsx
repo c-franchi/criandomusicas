@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 
-// Cache for VAPID key
+// Cache da VAPID key
 let cachedVapidKey: string | null = null;
 
 async function getVapidPublicKey(): Promise<string | null> {
@@ -13,22 +13,22 @@ async function getVapidPublicKey(): Promise<string | null> {
     const { data, error } = await supabase.functions.invoke("get-vapid-public-key");
 
     if (error) {
-      console.error("[Push] Error fetching VAPID key:", error);
+      console.error("[Push] Erro ao buscar VAPID key:", error);
       return null;
     }
 
     const key = String(data?.vapidPublicKey || "").trim();
 
     if (!key || key.length < 50) {
-      console.error("[Push] Invalid VAPID key:", key);
+      console.error("[Push] VAPID key inválida:", key);
       return null;
     }
 
     cachedVapidKey = key;
-    console.log("[Push] VAPID key loaded, length:", key.length);
+    console.log("[Push] VAPID key carregada, tamanho:", key.length);
     return key;
   } catch (err) {
-    console.error("[Push] Failed to fetch VAPID key:", err);
+    console.error("[Push] Falha ao buscar VAPID key:", err);
     return null;
   }
 }
@@ -40,9 +40,10 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
 
-  for (let i = 0; i < rawData.length; ++i) {
+  for (let i = 0; i < rawData.length; i++) {
     outputArray[i] = rawData.charCodeAt(i);
   }
+
   return outputArray;
 }
 
@@ -55,7 +56,7 @@ export const usePushNotifications = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [permission, setPermission] = useState<NotificationPermission>("default");
 
-  // Check browser support
+  // Verifica suporte do navegador
   useEffect(() => {
     const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
 
@@ -66,7 +67,7 @@ export const usePushNotifications = () => {
     }
   }, []);
 
-  // Check existing subscription
+  // Verifica se já existe inscrição ativa
   useEffect(() => {
     const checkSubscription = async () => {
       if (!isSupported || !user) return;
@@ -90,7 +91,7 @@ export const usePushNotifications = () => {
 
         setIsSubscribed(!!data);
       } catch (err) {
-        console.error("[Push] Error checking subscription:", err);
+        console.error("[Push] Erro ao checar subscription:", err);
       }
     };
 
@@ -135,18 +136,19 @@ export const usePushNotifications = () => {
 
       const registration = await navigator.serviceWorker.ready;
 
-      const applicationServerKey = urlBase64ToUint8Array(vapidPublicKey);
+      // 🔒 Conversão compatível com o TypeScript do Lovable
+      const vapidKeyUint8 = urlBase64ToUint8Array(vapidPublicKey);
+      const applicationServerKey = vapidKeyUint8.buffer as ArrayBuffer;
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        // ⚠️ IMPORTANTE: Lovable/TS exige ArrayBuffer
-        applicationServerKey: applicationServerKey.buffer,
+        applicationServerKey,
       });
 
       const json = subscription.toJSON();
 
       if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
-        throw new Error("Incomplete subscription data");
+        throw new Error("Dados da subscription incompletos");
       }
 
       const { error } = await supabase.from("push_subscriptions").upsert(
@@ -170,7 +172,7 @@ export const usePushNotifications = () => {
 
       return true;
     } catch (err: any) {
-      console.error("[Push] Subscribe error:", err);
+      console.error("[Push] Erro ao ativar notificações:", err);
       toast({
         title: "Erro ao ativar notificações",
         description: err.message || "Tente novamente.",
@@ -209,7 +211,7 @@ export const usePushNotifications = () => {
 
       return true;
     } catch (err) {
-      console.error("[Push] Unsubscribe error:", err);
+      console.error("[Push] Erro ao desativar:", err);
       toast({
         title: "Erro ao desativar",
         description: "Tente novamente.",
