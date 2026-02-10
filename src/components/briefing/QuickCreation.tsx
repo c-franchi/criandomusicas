@@ -100,6 +100,18 @@ const QuickCreationComponent = ({
     }
   }, [startTour]);
 
+  // Append speech transcript to prompt
+  useEffect(() => {
+    if (transcript) {
+      setPrompt(prev => {
+        const separator = prev ? ' ' : '';
+        const newText = prev + separator + transcript;
+        return newText.slice(0, 500); // Respect char limit
+      });
+      resetTranscript();
+    }
+  }, [transcript, resetTranscript]);
+
   // Map style options with images
   const styleOptionsWithImages = useMemo(() => {
     return styleOptions.slice(0, 15).map(opt => ({
