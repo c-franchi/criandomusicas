@@ -82,6 +82,9 @@ const QuickCreationComponent = ({
   const [showNoTitleConfirm, setShowNoTitleConfirm] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Speech-to-text for inline voice input
+  const { isListening, isSupported: isSpeechSupported, transcript, startListening, stopListening, resetTranscript } = useSpeechToText();
+
   // Tour for quick creation mode
   const { startTour } = useBriefingTour({ mode: 'quick' });
 
