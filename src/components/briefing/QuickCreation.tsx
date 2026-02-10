@@ -160,7 +160,7 @@ const QuickCreationComponent = ({
   };
 
   const isValid = prompt.trim().length > 10 && style && (isInstrumental || voiceType);
-  const isAtCharLimit = prompt.length >= 350;
+  const isAtCharLimit = prompt.length >= 500;
 
   const handleCopyAndSwitch = useCallback(() => {
     navigator.clipboard.writeText(prompt).then(() => {
