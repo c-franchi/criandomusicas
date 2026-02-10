@@ -15,7 +15,7 @@ interface AudioCaptureProps {
   disabled?: boolean;
 }
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ACCEPTED_TYPES = ['audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 'audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/webm', 'audio/ogg'];
 
 const formatTime = (seconds: number) => {
