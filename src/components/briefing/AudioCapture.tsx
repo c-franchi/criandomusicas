@@ -15,7 +15,7 @@ interface AudioCaptureProps {
   disabled?: boolean;
 }
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const ACCEPTED_TYPES = ['audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 'audio/mp4', 'audio/x-m4a', 'audio/m4a', 'audio/webm', 'audio/ogg'];
 
 const formatTime = (seconds: number) => {
@@ -76,8 +76,8 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
         URL.revokeObjectURL(audioUrl);
         return;
       }
-      if (duration > 90) {
-        toast.error('Áudio muito longo. Máximo 90 segundos.');
+      if (duration > 360) {
+        toast.error('Áudio muito longo. Máximo 6 minutos.');
         URL.revokeObjectURL(audioUrl);
         return;
       }
@@ -208,16 +208,16 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
               <p className="text-2xl font-mono font-bold text-red-500">
                 {formatTime(recorder.duration)}
               </p>
-              <p className="text-xs text-muted-foreground">Gravando... (máx 1:30)</p>
+              <p className="text-xs text-muted-foreground">Gravando... (máx 6:00)</p>
               <div className="w-48 mx-auto">
-                <Progress value={(recorder.duration / 90) * 100} className="h-1" />
+                <Progress value={(recorder.duration / 360) * 100} className="h-1" />
               </div>
             </motion.div>
           )}
 
           {recorder.status === 'idle' && !recorder.error && (
             <p className="text-sm text-muted-foreground">
-              Toque para gravar (3s a 90s)
+              Toque para gravar (3s a 6min)
             </p>
           )}
 
@@ -346,7 +346,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
           Enviar arquivo de áudio
         </Button>
         <p className="text-xs text-muted-foreground mt-2">
-          WAV, MP3, M4A, WebM • Máx 20MB • 3s a 90s
+          WAV, MP3, M4A, WebM • Máx 50MB • 3s a 6min
         </p>
       </div>
     </div>

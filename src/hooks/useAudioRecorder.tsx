@@ -16,7 +16,7 @@ interface UseAudioRecorderReturn extends AudioRecorderState {
   isSupported: boolean;
 }
 
-const MAX_DURATION_SEC = 90;
+const MAX_DURATION_SEC = 360; // 6 minutos
 const MIN_DURATION_SEC = 3;
 
 export const useAudioRecorder = (): UseAudioRecorderReturn => {

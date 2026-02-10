@@ -150,9 +150,10 @@ const Dashboard = () => {
   const confirmDeleteOrder = async () => {
     if (!deleteOrderId) return;
     try {
+      // Only update status to CANCELLED instead of deleting — credits must NOT be returned
       const { error } = await supabase
         .from('orders')
-        .delete()
+        .update({ status: 'CANCELLED' })
         .eq('id', deleteOrderId);
 
       if (error) throw error;
@@ -162,7 +163,9 @@ const Dashboard = () => {
         description: t('toasts.deleteSuccessDesc'),
       });
 
-      setOrders(prev => prev.filter(o => o.id !== deleteOrderId));
+      setOrders(prev => prev.map(o => 
+        o.id === deleteOrderId ? { ...o, status: 'CANCELLED' } : o
+      ));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({

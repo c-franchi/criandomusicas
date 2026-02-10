@@ -1,6 +1,6 @@
 import { useState, useMemo, memo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle, Copy, Check } from "lucide-react";
+import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle, Copy, Check, Mic } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -160,7 +160,7 @@ const QuickCreationComponent = ({
   };
 
   const isValid = prompt.trim().length > 10 && style && (isInstrumental || voiceType);
-  const isAtCharLimit = prompt.length >= 350;
+  const isAtCharLimit = prompt.length >= 500;
 
   const handleCopyAndSwitch = useCallback(() => {
     navigator.clipboard.writeText(prompt).then(() => {
@@ -218,7 +218,7 @@ const QuickCreationComponent = ({
               onChange={(e) => setPrompt(e.target.value)}
               placeholder={t('quickCreation.promptPlaceholderDetailed', 'Ex: Uma música de parabéns para minha mãe Ana, que adora MPB e está fazendo 60 anos. Ela é carinhosa e gosta de flores.\n\nDica: Quanto mais detalhes (nomes, idade, gostos, momentos especiais), melhor será sua música!')}
               className="min-h-[120px] resize-none bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 p-0 text-foreground placeholder:text-muted-foreground/70 placeholder:text-sm"
-              maxLength={350}
+              maxLength={500}
             />
             
             {/* Controls row */}
@@ -232,17 +232,30 @@ const QuickCreationComponent = ({
               </button>
               
               <span className="text-xs text-muted-foreground tabular-nums">
-                {prompt.length}/350
+                {prompt.length}/500
               </span>
               
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
-                  {t('quickCreation.instrumental', 'Instrumental')}
-                </span>
-                <Switch
-                  checked={isInstrumental}
-                  onCheckedChange={setIsInstrumental}
-                />
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => {
+                    // Navigate to audio mode
+                    window.location.href = '/briefing?mode=audio';
+                  }}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-md hover:bg-muted/50"
+                  title={t('quickCreation.recordAudio', 'Gravar áudio')}
+                >
+                  <Mic className="w-3.5 h-3.5" />
+                  {t('quickCreation.record', 'Gravar')}
+                </button>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    {t('quickCreation.instrumental', 'Instrumental')}
+                  </span>
+                  <Switch
+                    checked={isInstrumental}
+                    onCheckedChange={setIsInstrumental}
+                  />
+                </div>
               </div>
             </div>
 
@@ -259,7 +272,7 @@ const QuickCreationComponent = ({
                     <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                     <div className="flex-1 space-y-2">
                       <p className="text-sm text-foreground">
-                        {t('quickCreation.charLimitReached', 'Você atingiu o limite de 350 caracteres. Para textos maiores, use o modo completo!')}
+                        {t('quickCreation.charLimitReached', 'Você atingiu o limite de 500 caracteres. Para textos maiores, use o modo completo!')}
                       </p>
                       <Button
                         variant="outline"
