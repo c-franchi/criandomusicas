@@ -232,7 +232,7 @@ const QuickCreationComponent = ({
               </button>
               
               <span className="text-xs text-muted-foreground tabular-nums">
-                {prompt.length}/350
+                {prompt.length}/500
               </span>
               
               <div className="flex items-center gap-2">
