@@ -139,7 +139,8 @@ export const usePushNotifications = () => {
 
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey, // ⚠️ NÃO usar .buffer
+        // ⚠️ IMPORTANTE: Lovable/TS exige ArrayBuffer
+        applicationServerKey: applicationServerKey.buffer,
       });
 
       const json = subscription.toJSON();
