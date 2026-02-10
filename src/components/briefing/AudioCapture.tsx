@@ -346,7 +346,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
           Enviar arquivo de áudio
         </Button>
         <p className="text-xs text-muted-foreground mt-2">
-          WAV, MP3, M4A, WebM • Máx 20MB • 3s a 90s
+          WAV, MP3, M4A, WebM • Máx 50MB • 3s a 6min
         </p>
       </div>
     </div>
