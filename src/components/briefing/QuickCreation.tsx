@@ -1,6 +1,6 @@
 import { useState, useMemo, memo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle, Copy, Check, Mic } from "lucide-react";
+import { Sparkles, RotateCcw, Music, Plus, LayoutGrid, ChevronRight, Palette, AlertTriangle, HelpCircle, Copy, Check, Mic, MicOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -12,6 +12,7 @@ import { genreImages, voiceImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
 import { PreviewBanner } from "@/components/PreviewBanner";
 import { useBriefingTour } from "@/hooks/useBriefingTour";
+import { useSpeechToText } from "@/hooks/useSpeechToText";
 import {
   AlertDialog,
   AlertDialogAction,
