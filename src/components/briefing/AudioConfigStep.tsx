@@ -7,33 +7,36 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
-type SectionType = 'VERSE' | 'CHORUS' | 'INTRO_MONOLOGUE' | 'BRIDGE';
-type ModeType = 'keep_exact' | 'light_edit';
+type SectionType = "VERSE" | "CHORUS" | "INTRO_MONOLOGUE" | "BRIDGE";
+type ModeType = "keep_exact" | "light_edit";
+type VoiceType = "male" | "female"; // ✅ NOVO
 
 const SECTION_OPTIONS = [
-  { id: 'VERSE' as const, label: 'Verso', emoji: '🎵', desc: 'Inserir como verso da música' },
-  { id: 'CHORUS' as const, label: 'Refrão', emoji: '🔁', desc: 'Inserir como refrão (parte principal)' },
-  { id: 'INTRO_MONOLOGUE' as const, label: 'Intro falada', emoji: '🎙️', desc: 'Inserir como monólogo na introdução' },
-  { id: 'BRIDGE' as const, label: 'Ponte', emoji: '🌉', desc: 'Inserir como ponte musical' },
+  { id: "VERSE" as const, label: "Verso", emoji: "🎵", desc: "Inserir como verso da música" },
+  { id: "CHORUS" as const, label: "Refrão", emoji: "🔁", desc: "Inserir como refrão (parte principal)" },
+  { id: "INTRO_MONOLOGUE" as const, label: "Intro falada", emoji: "🎙️", desc: "Inserir como monólogo na introdução" },
+  { id: "BRIDGE" as const, label: "Ponte", emoji: "🌉", desc: "Inserir como ponte musical" },
 ];
 
 const MODE_OPTIONS = [
-  { id: 'keep_exact' as const, label: 'Manter exatamente', emoji: '📌', desc: 'Usar o texto como foi cantado' },
-  { id: 'light_edit' as const, label: 'Ajustar levemente', emoji: '✨', desc: 'Pequenos ajustes de rima e fluidez' },
+  { id: "keep_exact" as const, label: "Manter exatamente", emoji: "📌", desc: "Usar o texto como foi cantado" },
+  { id: "light_edit" as const, label: "Ajustar levemente", emoji: "✨", desc: "Pequenos ajustes de rima e fluidez" },
 ];
 
-const STYLE_OPTIONS = ['Pop', 'MPB', 'Sertanejo', 'Rock', 'Gospel', 'Pagode', 'Bossa Nova', 'Forró', 'Reggae'];
+const STYLE_OPTIONS = ["Pop", "MPB", "Sertanejo", "Rock", "Gospel", "Pagode", "Bossa Nova", "Forró", "Reggae"];
 
 interface AudioConfigStepProps {
   transcript: string;
-  section: SectionType | '';
-  mode: ModeType | '';
+  section: SectionType | "";
+  mode: ModeType | "";
+  voiceType: VoiceType | ""; // ✅ NOVO
   theme: string;
   style: string;
   isGenerating: boolean;
   generateProgress: number;
   onSectionChange: (section: SectionType) => void;
   onModeChange: (mode: ModeType) => void;
+  onVoiceTypeChange: (voice: VoiceType) => void; // ✅ NOVO
   onThemeChange: (theme: string) => void;
   onStyleChange: (style: string) => void;
   onBack: () => void;
@@ -44,18 +47,20 @@ export const AudioConfigStep = ({
   transcript,
   section,
   mode,
+  voiceType, // ✅ NOVO
   theme,
   style,
   isGenerating,
   generateProgress,
   onSectionChange,
   onModeChange,
+  onVoiceTypeChange, // ✅ NOVO
   onThemeChange,
   onStyleChange,
   onBack,
   onGenerate,
 }: AudioConfigStepProps) => {
-  const canAdvance = section && mode;
+  const canAdvance = section && mode && voiceType; // ✅ AGORA VOZ É OBRIGATÓRIA
 
   return (
     <motion.div
@@ -67,9 +72,7 @@ export const AudioConfigStep = ({
     >
       <div className="text-center space-y-2">
         <h2 className="text-xl font-bold">Configure sua música</h2>
-        <p className="text-sm text-muted-foreground">
-          Onde inserir o trecho e como usar o texto transcrito.
-        </p>
+        <p className="text-sm text-muted-foreground">Onde inserir o trecho e como usar o texto transcrito.</p>
       </div>
 
       {/* Transcribed text preview */}
@@ -82,7 +85,7 @@ export const AudioConfigStep = ({
       <div className="space-y-2">
         <label className="text-sm font-semibold">Onde inserir o trecho? *</label>
         <div className="grid grid-cols-2 gap-2">
-          {SECTION_OPTIONS.map(opt => (
+          {SECTION_OPTIONS.map((opt) => (
             <button
               key={opt.id}
               onClick={() => onSectionChange(opt.id)}
@@ -90,7 +93,7 @@ export const AudioConfigStep = ({
                 "p-3 rounded-xl border text-left transition-all",
                 section === opt.id
                   ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                  : "border-border hover:border-primary/30 bg-card"
+                  : "border-border hover:border-primary/30 bg-card",
               )}
             >
               <span className="text-lg">{opt.emoji}</span>
@@ -105,7 +108,7 @@ export const AudioConfigStep = ({
       <div className="space-y-2">
         <label className="text-sm font-semibold">Como usar o texto? *</label>
         <div className="grid grid-cols-2 gap-2">
-          {MODE_OPTIONS.map(opt => (
+          {MODE_OPTIONS.map((opt) => (
             <button
               key={opt.id}
               onClick={() => onModeChange(opt.id)}
@@ -113,7 +116,7 @@ export const AudioConfigStep = ({
                 "p-3 rounded-xl border text-left transition-all",
                 mode === opt.id
                   ? "border-primary bg-primary/10 ring-2 ring-primary/20"
-                  : "border-border hover:border-primary/30 bg-card"
+                  : "border-border hover:border-primary/30 bg-card",
               )}
             >
               <span className="text-lg">{opt.emoji}</span>
@@ -121,6 +124,28 @@ export const AudioConfigStep = ({
               <p className="text-xs text-muted-foreground">{opt.desc}</p>
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* 🎤 VOICE SELECTION (NOVO BLOCO) */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">Tipo de voz desejada *</label>
+        <div className="flex gap-2">
+          <Badge
+            variant={voiceType === "female" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => onVoiceTypeChange("female")}
+          >
+            🎙️ Feminina
+          </Badge>
+
+          <Badge
+            variant={voiceType === "male" ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => onVoiceTypeChange("male")}
+          >
+            🎙️ Masculina
+          </Badge>
         </div>
       </div>
 
@@ -138,28 +163,30 @@ export const AudioConfigStep = ({
       <div className="space-y-2">
         <label className="text-sm font-semibold">Estilo musical</label>
         <div className="flex flex-wrap gap-2">
-          {STYLE_OPTIONS.map(s => (
+          {STYLE_OPTIONS.map((s) => (
             <Badge
               key={s}
               variant={style === s ? "default" : "outline"}
               className="cursor-pointer"
-              onClick={() => { onStyleChange(s); }}
+              onClick={() => {
+                onStyleChange(s);
+              }}
             >
               {s}
             </Badge>
           ))}
           <Badge
-            variant={style !== '' && !STYLE_OPTIONS.includes(style) ? "default" : "outline"}
+            variant={style !== "" && !STYLE_OPTIONS.includes(style) ? "default" : "outline"}
             className="cursor-pointer"
-            onClick={() => onStyleChange('__custom__')}
+            onClick={() => onStyleChange("__custom__")}
           >
             Outro
           </Badge>
         </div>
-        {(style === '__custom__' || (style !== '' && !STYLE_OPTIONS.includes(style) && style !== '__custom__')) && (
+        {(style === "__custom__" || (style !== "" && !STYLE_OPTIONS.includes(style) && style !== "__custom__")) && (
           <Input
-            value={style === '__custom__' ? '' : style}
-            onChange={(e) => onStyleChange(e.target.value || '__custom__')}
+            value={style === "__custom__" ? "" : style}
+            onChange={(e) => onStyleChange(e.target.value || "__custom__")}
             placeholder="Digite o estilo musical desejado"
             className="mt-2"
             autoFocus
@@ -173,11 +200,7 @@ export const AudioConfigStep = ({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar
         </Button>
-        <Button
-          className="flex-1"
-          onClick={onGenerate}
-          disabled={!canAdvance || isGenerating}
-        >
+        <Button className="flex-1" onClick={onGenerate} disabled={!canAdvance || isGenerating}>
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -192,7 +215,6 @@ export const AudioConfigStep = ({
         </Button>
       </div>
 
-      {/* Generate progress */}
       {isGenerating && (
         <div className="space-y-2">
           <Progress value={generateProgress} className="h-2" />
