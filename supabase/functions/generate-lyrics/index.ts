@@ -227,7 +227,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert } = await req.json() as {
+    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false } = await req.json() as {
       orderId?: string;
       story: string;
       briefing: BriefingData;
@@ -235,11 +235,12 @@ serve(async (req) => {
       isPreview?: boolean;
       autoApprove?: boolean;
       audioInsert?: { section: string; mode: string; transcript: string };
+      isModification?: boolean;
     };
 
     // Standalone mode: no orderId needed (used by Audio Mode wizard)
     const isStandaloneMode = !orderId;
-    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove, "standalone:", isStandaloneMode);
+    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove, "standalone:", isStandaloneMode, "isModification:", isModification);
 
     if (!story) {
       return new Response(
@@ -560,13 +561,15 @@ EXEMPLOS DE LETRA RUIM (genérica):
 
 REGRAS OBRIGATÓRIAS:
 1. Gere APENAS a letra final, sem comentários, explicações ou metadados
-2. Use OBRIGATORIAMENTE as tags estruturadas: ${structureTags}
-3. ${hasMonologue ? `INCLUA OBRIGATORIAMENTE a tag [monologue] ou [spoken word] na seção ${monologuePosition}. O texto dentro dessa tag deve ser FALADO/DECLAMADO, NÃO cantado. Nunca misture monólogo com [Verse], [Chorus] ou [Bridge].` : 'NÃO inclua monólogo ou spoken word'}
-4. ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS que devem aparecer: ${mandatoryWords}` : 'Nenhuma palavra obrigatória específica'}
-5. ${restrictedWords ? `Palavras/assuntos PROIBIDOS que NÃO podem aparecer: ${restrictedWords}` : 'Nenhuma restrição específica'}
-6. Mantenha métrica e rima coerentes para canto
-7. A letra deve ter entre 150-300 palavras para ~2-3 minutos de música
-8. Capture a essência emocional da história fornecida
+2. Mantenha coerência narrativa - a história deve progredir logicamente do início ao fim
+3. EVITE repetição excessiva de palavras ou ideias entre seções diferentes
+4. Se o usuário forneceu pouco texto, mantenha simplicidade - NÃO invente fatos absurdos ou cenários irreais
+5. ${hasMonologue ? `INCLUA OBRIGATORIAMENTE a tag [monologue] ou [spoken word] na seção ${monologuePosition}. O texto dentro dessa tag deve ser FALADO/DECLAMADO, NÃO cantado.` : 'NÃO inclua monólogo ou spoken word'}
+6. ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS que devem aparecer: ${mandatoryWords}` : 'Nenhuma palavra obrigatória específica'}
+7. ${restrictedWords ? `Palavras/assuntos PROIBIDOS que NÃO podem aparecer: ${restrictedWords}` : 'Nenhuma restrição específica'}
+8. Mantenha métrica e rima coerentes para canto
+9. A letra deve ter entre 200-350 palavras para ~3-4 minutos de música
+10. Capture a essência emocional da história fornecida
 9. Intensidade emocional: ${emotionIntensity}/5 - ${emotionIntensity <= 2 ? 'sutil' : emotionIntensity <= 3 ? 'moderada' : 'intensa'}
 10. ${autoGenerateName ? `CRIE UM TÍTULO CRIATIVO, ÚNICO E ESPECÍFICO para cada versão baseado na história fornecida. 
     REGRAS PARA O TÍTULO:
@@ -647,36 +650,34 @@ Pizzaria do João, Rua das Flores, 123, Centro.
 Siga no Instagram arroba-pizzariadojoao!"
 ` : ''}
 
-FORMATO DE SAÍDA OBRIGATÓRIO:
+FORMATO DE SAÍDA OBRIGATÓRIO (estrutura para ~4 minutos):
 
 TÍTULO DA MÚSICA (primeira linha, sem colchetes)
 
-[Intro]
-(2-4 versos de abertura)
-
 [Verse 1]
-(4-6 versos narrativos)
+(4-6 versos narrativos, introduzindo a história)
 
 [Chorus]
 (4-6 versos - refrão principal, memorável e fácil de cantar)
 
-${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
-(4-6 versos desenvolvendo a história)
+[Verse 2]
+(4-6 versos desenvolvendo a história, progredindo a narrativa)
 
-`}${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
-(texto declamado/falado COM PRONÚNCIAS FONÉTICAS - 2-4 frases entre aspas)
-
-` : `[Bridge]
-(2-4 versos de transição emocional)
-
-`}[Chorus]
+[Chorus]
 (repetição do refrão)
 
+${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
+(texto declamado/falado - 2-4 frases entre aspas)
+` : `[Bridge]
+(2-4 versos de transição emocional, opcional mas recomendado)
+`}
 [Outro]
-(2-4 versos de encerramento)${hasMonologue && monologuePosition === 'outro' ? `
+(2-4 versos de encerramento curto e emocional)
+
+[End]${hasMonologue && monologuePosition === 'outro' ? `
 
 [monologue]
-(texto declamado final COM PRONÚNCIAS FONÉTICAS entre aspas)` : ''}`;
+(texto declamado final entre aspas)` : ''}`;
 
     // ============ SELEÇÃO DO PROMPT BASEADO NO MODO ============
     // Prioridade: 1. Somente Monólogo → 2. Modo Simples → 3. Preview → 4. Completo
@@ -695,7 +696,17 @@ ${hasMonologue && monologuePosition === 'intro' ? '' : `[Verse 2]
       selectedMode: isSomenteMonologo ? 'somenteMonologo' : isSimpleMode ? 'simpleMode' : isPreviewOrder ? 'preview' : 'full'
     });
 
-    const userPrompt = isSomenteMonologo ? `Crie DUAS versões de SPOKEN WORD motivacional completas.
+    // ============ MODIFICATION MODE: Generate only 1 version ============
+    const versionCount = isModification ? 'UMA versão MODIFICADA' : 'DUAS versões';
+    const versionInstructions = isModification 
+      ? `- Crie APENAS UMA versão modificada baseada nas instruções de ajuste do usuário
+- NÃO use separador "---"
+- NÃO divida em duas versões
+- Retorne APENAS uma letra completa` 
+      : `- Crie DUAS versões DIFERENTES mas baseadas na mesma história
+- Separe as duas versões com uma linha contendo apenas: ---`;
+
+    const userPrompt = isSomenteMonologo ? `Crie ${versionCount} de SPOKEN WORD motivacional.
 
 CONTEXTO DA MÚSICA:
 ${story}
@@ -709,13 +720,12 @@ ${restrictedWords ? `- Palavras/assuntos proibidos: ${restrictedWords}` : ''}
 ${!autoGenerateName && songName ? `- Nome obrigatório: ${songName}` : '- Crie títulos motivacionais fortes'}
 
 INSTRUÇÕES:
-- Crie DUAS versões DIFERENTES do spoken word
-- Separe as duas versões com uma linha contendo apenas: ---
-- Siga a estrutura: [Intro] → [Monologue 1] → [Monologue 2] → [Monologue 3] → [Chorus] mantra → [End]
+${versionInstructions}
+- Siga a estrutura: [Intro] → blocos de [monologue] → [Chorus] mantra → [End]
 - TODOS os textos devem estar em [monologue] tags
 - O [Chorus] deve ser uma frase-mantra CURTA, FORTE e REPETÍVEL
 - NÃO inclua partes cantadas, é 100% spoken word
-- Tom direto, frases curtas, vocabulário de força e disciplina` : isSimpleMode ? `Crie DUAS versões de letra SIMPLES para uma música personalizada.
+- Tom direto, frases curtas, vocabulário de força e disciplina` : isSimpleMode ? `Crie ${versionCount} de letra SIMPLES para uma música personalizada.
 
 ⚠️ MODO SIMPLES ATIVADO - Pedido curto do usuário
 
@@ -731,14 +741,12 @@ ${restrictedWords ? `- Palavras proibidas: ${restrictedWords}` : ''}
 ${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- Crie um título simples e direto'}
 
 INSTRUÇÕES PARA MODO SIMPLES:
-- Crie DUAS versões DIFERENTES mas AMBAS devem ser SIMPLES
-- Separe as duas versões com uma linha contendo apenas: ---
+${versionInstructions}
 - NÃO invente histórias, cenários ou detalhes que o usuário não mencionou
-- Se o pedido é "música de parabéns para minha mãe", a letra deve falar de parabéns para a mãe
 - FOCO TOTAL no que foi pedido
 - Letras CURTAS (máximo 100-150 palavras cada)
 - Refrão DIRETO e MEMORÁVEL
-- NÃO inclua comentários ou explicações` : `Crie DUAS versões de letra completas para uma música personalizada.
+- NÃO inclua comentários ou explicações` : `Crie ${versionCount} de letra completas para uma música personalizada.
 
 DADOS DA MÚSICA:
 - Tipo: ${musicType}
@@ -748,7 +756,7 @@ DADOS DA MÚSICA:
 - Atmosfera: ${atmosphere}
 - Tipo de voz: ${voiceDescription}
 - Estrutura desejada: ${structure.join(', ')}
-- Incluir monólogo/declamação: ${hasMonologue ? `SIM - na seção ${monologuePosition}` : 'NÃO'}
+- Incluir monólogo/declamação: ${hasMonologue ? 'SIM - na seção ' + monologuePosition : 'NÃO'}
 ${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
 ${restrictedWords ? `- Palavras/assuntos proibidos: ${restrictedWords}` : ''}
 ${!autoGenerateName && songName ? `- Nome da música: ${songName}` : '- Crie um título criativo para cada versão'}
@@ -757,16 +765,12 @@ HISTÓRIA/CONTEXTO BASE (use fielmente):
 ${story}
 
 INSTRUÇÕES FINAIS:
-- Crie DUAS versões DIFERENTES mas baseadas na mesma história
-- Separe as duas versões com uma linha contendo apenas: ---
+${versionInstructions}
 - Cada versão deve ser completa e independente
 - ${autoGenerateName ? `IMPORTANTE SOBRE TÍTULOS:
   - Cada versão DEVE ter um título ÚNICO, CRIATIVO e ESPECÍFICO para esta história
-  - Extraia nomes, datas, relações e momentos-chave da história para compor o título
-  - Exemplo: Se a história menciona "minha avó Rosa que faz 80 anos", o título pode ser "Rosa, 80 Primaveras" ou "Vovó Rosa, Eterna Flor"
-  - NÃO use títulos genéricos como "Música Para Você" ou "Homenagem Especial"` : `⚠️ TÍTULO OBRIGATÓRIO EM AMBAS AS VERSÕES: "${songName}"
-  - NÃO invente outro título, use EXATAMENTE "${songName}"
-  - Coloque "${songName}" como primeira linha de cada versão`}
+  - NÃO use títulos genéricos como "Música Para Você" ou "Homenagem Especial"` : `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"
+  - NÃO invente outro título, use EXATAMENTE "${songName}"`}
 - NÃO inclua comentários, explicações ou metadados
 - APENAS as letras com as tags estruturadas`;
 
@@ -821,12 +825,13 @@ INSTRUÇÕES SOBRE O TRECHO:
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "openai/gpt-5",
+          model: "openai/gpt-5.2",
           messages: [
             { role: "system", content: systemPrompt },
             { role: "user", content: finalUserPrompt }
           ],
           max_completion_tokens: 16000,
+          temperature: 0.7,
         }),
         signal: controller.signal,
       });
@@ -884,47 +889,120 @@ INSTRUÇÕES SOBRE O TRECHO:
 
     console.log("AI Response received, processing lyrics...");
 
-    const { v1, v2 } = splitTwoLyrics(content);
-    const l1 = extractTitleAndBody(v1, autoGenerateName ? undefined : songName);
-    const l2 = extractTitleAndBody(v2, autoGenerateName ? undefined : songName);
-
-    console.log("Applying global pronunciation rules to all lyrics sections...");
-    const processedBody1 = applyGlobalPronunciationRules(l1.body);
-    const processedBody2 = applyGlobalPronunciationRules(l2.body);
-
-    let phonetic1 = processedBody1;
-    let phonetic2 = processedBody2;
+    // ============ PROCESS LYRICS BASED ON MODE ============
+    let lyricsToInsert: Array<{
+      order_id: string;
+      version: string;
+      title: string;
+      body: string;
+      phonetic_body: string;
+      is_approved: boolean;
+      approved_at: string | null;
+    }> = [];
     
-    if (pronunciations.length > 0) {
-      phonetic1 = applyPronunciations(processedBody1, pronunciations);
-      phonetic2 = applyPronunciations(processedBody2, pronunciations);
-    }
+    let lyricsResponse: Array<{
+      id: string;
+      version: string;
+      title: string;
+      text: string;
+      phoneticText: string;
+    }> = [];
 
-    // ============ DB OPERATIONS (skip in standalone mode) ============
-    let insertedLyrics: { id: string }[] | null = null;
-    
-    if (!isStandaloneMode) {
-      const { data: dbLyrics, error: insertError } = await supabase
-        .from('lyrics')
-        .insert([
-          { 
-            order_id: orderId, 
-            version: 'A', 
-            title: l1.title, 
+    if (isModification) {
+      // MODIFICATION MODE: Only 1 version, no splitting
+      console.log("Modification mode: processing single version");
+      const l1 = extractTitleAndBody(content, autoGenerateName ? undefined : songName);
+      const processedBody1 = applyGlobalPronunciationRules(l1.body);
+      let phonetic1 = processedBody1;
+      if (pronunciations.length > 0) {
+        phonetic1 = applyPronunciations(processedBody1, pronunciations);
+      }
+      
+      if (!isStandaloneMode && orderId) {
+        lyricsToInsert = [{
+          order_id: orderId,
+          version: 'M',
+          title: l1.title,
+          body: processedBody1,
+          phonetic_body: phonetic1,
+          is_approved: false,
+          approved_at: null
+        }];
+      }
+      
+      lyricsResponse = [{
+        id: 'lyric-modified',
+        version: 'M',
+        title: l1.title,
+        text: processedBody1,
+        phoneticText: phonetic1
+      }];
+    } else {
+      // NORMAL MODE: 2 versions
+      const { v1, v2 } = splitTwoLyrics(content);
+      const l1 = extractTitleAndBody(v1, autoGenerateName ? undefined : songName);
+      const l2 = extractTitleAndBody(v2, autoGenerateName ? undefined : songName);
+
+      console.log("Applying global pronunciation rules to all lyrics sections...");
+      const processedBody1 = applyGlobalPronunciationRules(l1.body);
+      const processedBody2 = applyGlobalPronunciationRules(l2.body);
+
+      let phonetic1 = processedBody1;
+      let phonetic2 = processedBody2;
+      
+      if (pronunciations.length > 0) {
+        phonetic1 = applyPronunciations(processedBody1, pronunciations);
+        phonetic2 = applyPronunciations(processedBody2, pronunciations);
+      }
+      
+      if (!isStandaloneMode && orderId) {
+        lyricsToInsert = [
+          {
+            order_id: orderId,
+            version: 'A',
+            title: l1.title,
             body: processedBody1,
             phonetic_body: phonetic1,
             is_approved: autoApprove,
             approved_at: autoApprove ? new Date().toISOString() : null
           },
-          { 
-            order_id: orderId, 
-            version: 'B', 
-            title: l2.title, 
+          {
+            order_id: orderId,
+            version: 'B',
+            title: l2.title,
             body: processedBody2,
             phonetic_body: phonetic2,
-            is_approved: false 
+            is_approved: false,
+            approved_at: null
           }
-        ])
+        ];
+      }
+      
+      lyricsResponse = [
+        {
+          id: 'lyric-a',
+          version: 'A',
+          title: l1.title,
+          text: processedBody1,
+          phoneticText: phonetic1
+        },
+        {
+          id: 'lyric-b',
+          version: 'B',
+          title: l2.title,
+          text: processedBody2,
+          phoneticText: phonetic2
+        }
+      ];
+    }
+
+    // ============ DB OPERATIONS (skip in standalone mode) ============
+    let insertedLyrics: { id: string }[] | null = null;
+    
+    if (!isStandaloneMode && lyricsToInsert.length > 0) {
+      const { data: dbLyrics, error: insertError } = await supabase
+        .from('lyrics')
+        .insert(lyricsToInsert)
         .select();
 
       if (insertError) {
@@ -932,7 +1010,15 @@ INSTRUÇÕES SOBRE O TRECHO:
       }
       insertedLyrics = dbLyrics;
 
-      const newStatus = autoApprove ? 'LYRICS_APPROVED' : 'LYRICS_GENERATED';
+      // Update response IDs with actual DB IDs
+      if (insertedLyrics) {
+        lyricsResponse = lyricsResponse.map((lr, idx) => ({
+          ...lr,
+          id: insertedLyrics![idx]?.id || lr.id
+        }));
+      }
+
+      const newStatus = autoApprove ? 'LYRICS_APPROVED' : (isModification ? 'LYRICS_GENERATED' : 'LYRICS_GENERATED');
       
       const updateData: Record<string, unknown> = { 
         status: newStatus, 
@@ -944,9 +1030,9 @@ INSTRUÇÕES SOBRE O TRECHO:
         updateData.approved_lyric_id = insertedLyrics[0].id;
       }
       
-      if (autoGenerateName && l1.title && l1.title !== "Música Personalizada") {
-        updateData.song_title = l1.title;
-        console.log("Saving AI-generated title to order:", l1.title);
+      if (!isModification && autoGenerateName && lyricsResponse[0]?.title && lyricsResponse[0].title !== "Música Personalizada") {
+        updateData.song_title = lyricsResponse[0].title;
+        console.log("Saving AI-generated title to order:", lyricsResponse[0].title);
       }
       
       if (pronunciations.length > 0) {
@@ -965,7 +1051,7 @@ INSTRUÇÕES SOBRE O TRECHO:
       console.log("Standalone mode: skipping DB operations (no orderId)");
     }
     
-    if (!isStandaloneMode && autoApprove && insertedLyrics?.[0]) {
+    if (!isStandaloneMode && !isModification && autoApprove && insertedLyrics?.[0]) {
       console.log("Auto-approve mode: Triggering style prompt generation...");
       try {
         await fetch(`${supabaseUrl}/functions/v1/generate-style-prompt`, {
@@ -977,7 +1063,7 @@ INSTRUÇÕES SOBRE O TRECHO:
           body: JSON.stringify({
             orderId,
             lyricId: insertedLyrics[0].id,
-            approvedLyrics: processedBody1,
+            approvedLyrics: lyricsResponse[0].text,
             isInstrumental: false,
             briefing: {
               ...briefing,
@@ -991,7 +1077,7 @@ INSTRUÇÕES SOBRE O TRECHO:
       }
     }
 
-    if (!isStandaloneMode && orderInfo?.user_id && !autoApprove) {
+    if (!isStandaloneMode && !isModification && orderInfo?.user_id && !autoApprove) {
       try {
         console.log("Sending push notification for lyrics ready...");
         
@@ -1017,30 +1103,15 @@ INSTRUÇÕES SOBRE O TRECHO:
       console.log("Skipping lyrics notification (autoApprove mode - direct to production)");
     }
 
-    console.log("Lyrics saved successfully");
+    console.log("Lyrics saved successfully, count:", lyricsResponse.length);
 
     return new Response(
       JSON.stringify({
         ok: true,
-        message: "Letras geradas com sucesso",
-        lyrics: [
-          { 
-            id: insertedLyrics?.[0]?.id || 'lyric-a', 
-            version: 'A', 
-            title: l1.title, 
-            text: processedBody1,
-            phoneticText: phonetic1
-          },
-          { 
-            id: insertedLyrics?.[1]?.id || 'lyric-b', 
-            version: 'B', 
-            title: l2.title, 
-            text: processedBody2,
-            phoneticText: phonetic2
-          }
-        ],
+        message: isModification ? "Letra modificada gerada com sucesso" : "Letras geradas com sucesso",
+        lyrics: lyricsResponse,
         criticalTerms: missingPronunciations,
-        usedModel: "openai/gpt-5"
+        usedModel: "openai/gpt-5.2"
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
