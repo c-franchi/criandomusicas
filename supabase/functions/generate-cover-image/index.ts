@@ -6,9 +6,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Generate contextual visual prompt using GPT-4o-mini
+// Generate contextual visual prompt using Lovable AI
 async function generateContextualPrompt(
-  openaiApiKey: string,
+  lovableApiKey: string,
   story: string | null,
   lyricsBody: string | null,
   musicType: string | null,
@@ -25,8 +25,6 @@ Crie uma descrição visual EXTREMAMENTE detalhada (máximo 200 palavras) para u
 DIRETRIZES PARA PESSOAS (quando apropriado ao contexto):
 - Descreva pessoas de forma MUITO detalhada: idade aproximada, expressão facial, postura, vestimenta, iluminação no rosto
 - Especifique ângulo de câmera (close-up, plano médio, corpo inteiro, de costas, perfil)
-- Descreva interações entre pessoas se houver mais de uma
-- Inclua detalhes como: "mãos entrelaçadas com detalhes das veias", "olhos brilhantes refletindo luz", "sorriso suave com covinhas"
 - Para evitar distorções, seja PRECISO: "mulher de 30 anos, cabelos castanhos ondulados até os ombros, pele clara, vestido azul marinho"
 
 ELEMENTOS VISUAIS ESSENCIAIS:
@@ -52,28 +50,27 @@ ${lyricsSection}
 
 Crie a descrição visual para a capa:`;
 
-    console.log('Calling GPT-4o-mini for contextual prompt generation...');
+    console.log('Calling Lovable AI for contextual prompt generation...');
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'google/gemini-2.5-flash',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        max_tokens: 300,
         temperature: 0.8
       }),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error('GPT-4o-mini API error:', errorData);
+      console.error('Lovable AI API error:', errorData);
       return null;
     }
 
@@ -93,7 +90,6 @@ Crie a descrição visual para a capa:`;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -108,21 +104,20 @@ serve(async (req) => {
       );
     }
 
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')!;
+    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
-    if (!openaiApiKey) {
+    if (!lovableApiKey) {
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        JSON.stringify({ error: 'LOVABLE_API_KEY not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Fetch order data including story and approved_lyric_id
+    // Fetch order data
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental, story, approved_lyric_id, atmosphere')
@@ -156,16 +151,15 @@ serve(async (req) => {
       }
     }
 
-    // Generate contextual prompt using GPT-4o-mini
+    // Generate contextual prompt using Lovable AI
     let basePrompt = customPrompt;
     
     if (!basePrompt) {
-      // Try to generate contextual prompt with story and lyrics
       const hasContextualData = order.story || lyricsBody;
       
       if (hasContextualData) {
         const contextualPrompt = await generateContextualPrompt(
-          openaiApiKey,
+          lovableApiKey,
           order.story,
           lyricsBody,
           order.music_type,
@@ -180,13 +174,12 @@ serve(async (req) => {
         }
       }
       
-      // Fallback to original logic if contextual generation failed
+      // Fallback to original logic
       if (!basePrompt) {
         console.log('Falling back to original prompt logic');
         if (order.style_prompt) {
           basePrompt = order.style_prompt;
         } else {
-          // Build from order details
           const parts = [];
           if (order.music_style) parts.push(order.music_style);
           if (order.emotion) parts.push(`mood: ${order.emotion}`);
@@ -198,82 +191,63 @@ serve(async (req) => {
       }
     }
 
-    // Convert to visual art prompt - RICH DETAILED FOCUS
-    const visualPrompt = `Create a stunning PHOTOREALISTIC album cover art. Theme: ${basePrompt}. 
-    
-    VISUAL EXCELLENCE REQUIREMENTS:
-    - Professional DSLR photography style, 85mm lens, f/1.8 aperture for beautiful bokeh
-    - Cinematic color grading: rich shadows, vibrant highlights, film-like tones
-    - If people are described: render them with EXTREME detail - skin texture, hair strands, fabric folds, natural expressions
-    - Lighting: use Rembrandt lighting, golden hour, or dramatic rim lighting as appropriate
-    - Composition: rule of thirds, clear focal point, intentional negative space
-    - NO text, NO letters, NO words, NO typography whatsoever
-    - ${order.is_instrumental ? 'Focus on atmospheric landscapes, nature, or symbolic objects with dramatic lighting' : 'Capture the emotional essence - can include people if contextually appropriate'}
-    - 8K resolution quality, sharp focus on subject, cinematic depth of field
-    - Commercial quality suitable for Spotify/Apple Music covers
-    - Style: high-end music industry photography, editorial quality`;
+    // Generate image using Lovable AI image model
+    const imagePrompt = `Generate a stunning album cover art. NO TEXT, NO LETTERS, NO WORDS, NO TYPOGRAPHY.
+Theme: ${basePrompt}.
+Style: Professional DSLR photography, cinematic color grading, 8K quality.
+${order.is_instrumental ? 'Focus on atmospheric landscapes or symbolic objects with dramatic lighting.' : 'Capture the emotional essence of the music.'}
+Square format (1:1 aspect ratio), suitable for Spotify/Apple Music covers.`;
 
-    console.log('Generating image with prompt:', visualPrompt.substring(0, 200) + '...');
+    console.log('Generating cover image with Lovable AI...');
 
-    // Call OpenAI DALL-E 3 API
-    const dalleResponse = await fetch('https://api.openai.com/v1/images/generations', {
+    const imageResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${lovableApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: visualPrompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard',
-        response_format: 'url',
+        model: 'google/gemini-2.5-flash-image',
+        messages: [
+          { role: 'user', content: imagePrompt }
+        ],
+        modalities: ['image', 'text']
       }),
     });
 
-    if (!dalleResponse.ok) {
-      const errorData = await dalleResponse.json();
-      console.error('DALL-E API error:', errorData);
+    if (!imageResponse.ok) {
+      const errorData = await imageResponse.text();
+      console.error('Image generation API error:', errorData);
       return new Response(
         JSON.stringify({ error: 'Failed to generate image', details: errorData }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const dalleResult = await dalleResponse.json();
-    const generatedImageUrl = dalleResult.data?.[0]?.url;
+    const imageResult = await imageResponse.json();
+    const generatedImageData = imageResult.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
-    if (!generatedImageUrl) {
+    if (!generatedImageData) {
+      console.error('No image data returned from AI');
       return new Response(
-        JSON.stringify({ error: 'No image URL returned from DALL-E' }),
+        JSON.stringify({ error: 'No image generated' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Image generated successfully, downloading...');
+    console.log('Image generated successfully, uploading to storage...');
 
-    // Download the image
-    const imageResponse = await fetch(generatedImageUrl);
-    if (!imageResponse.ok) {
-      return new Response(
-        JSON.stringify({ error: 'Failed to download generated image' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Convert base64 to binary
+    const base64Data = generatedImageData.replace(/^data:image\/\w+;base64,/, '');
+    const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
-    const imageBlob = await imageResponse.blob();
-    const imageBuffer = await imageBlob.arrayBuffer();
-
-    // Generate filename
-    const filename = `${orderId}/${Date.now()}.png`;
-
-    console.log('Uploading to storage:', filename);
+    // Generate filename - only 1 cover per order
+    const filename = `${orderId}/cover.png`;
 
     // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from('covers')
-      .upload(filename, imageBuffer, {
+      .upload(filename, binaryData, {
         contentType: 'image/png',
         upsert: true,
       });
@@ -292,10 +266,9 @@ serve(async (req) => {
       .getPublicUrl(filename);
 
     const coverUrl = publicUrlData.publicUrl;
-
     console.log('Image uploaded, URL:', coverUrl);
 
-    // Update order with cover_url
+    // Update order with cover_url (single cover for both Suno versions)
     const { error: updateError } = await supabase
       .from('orders')
       .update({ cover_url: coverUrl })
@@ -303,10 +276,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('Order update error:', updateError);
-      // Don't fail - image was still generated and uploaded
     }
-
-    console.log('Order updated with cover_url');
 
     return new Response(
       JSON.stringify({ 
