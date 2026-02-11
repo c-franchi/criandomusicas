@@ -9,9 +9,9 @@ import { toast } from "sonner";
 import AudioCapture from "./AudioCapture";
 import { AudioConfigStep } from "./AudioConfigStep";
 
-type WizardStep = 'capture' | 'transcribing' | 'config';
-type SectionType = 'VERSE' | 'CHORUS' | 'INTRO_MONOLOGUE' | 'BRIDGE';
-type ModeType = 'keep_exact' | 'light_edit';
+type WizardStep = "capture" | "transcribing" | "config";
+type SectionType = "VERSE" | "CHORUS" | "INTRO_MONOLOGUE" | "BRIDGE";
+type ModeType = "keep_exact" | "light_edit";
 
 export interface AudioModeResult {
   audioId: string;
@@ -29,78 +29,83 @@ interface AudioModeWizardProps {
 }
 
 export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) => {
-  const [currentStep, setCurrentStep] = useState<WizardStep>('capture');
+  const [currentStep, setCurrentStep] = useState<WizardStep>("capture");
   const [audioId, setAudioId] = useState<string | null>(null);
 
   // Transcription
-  const [transcript, setTranscript] = useState('');
-  const [detectedVoiceType, setDetectedVoiceType] = useState('feminina');
+  const [transcript, setTranscript] = useState("");
+
+  type VoiceType = "male" | "female";
+
+  const [voiceType, setVoiceType] = useState<VoiceType | "">("");
 
   // Config
-  const [section, setSection] = useState<SectionType | ''>('');
-  const [mode, setMode] = useState<ModeType>('light_edit');
-  const [theme, setTheme] = useState('');
-  const [style, setStyle] = useState('Pop');
+  const [section, setSection] = useState<SectionType | "">("");
+  const [mode, setMode] = useState<ModeType>("light_edit");
+  const [theme, setTheme] = useState("");
+  const [style, setStyle] = useState("Pop");
 
   const steps: { id: WizardStep; label: string; icon: React.ElementType }[] = [
-    { id: 'capture', label: 'Áudio', icon: Mic },
-    { id: 'transcribing', label: 'Transcrevendo', icon: Loader2 },
-    { id: 'config', label: 'Configurar', icon: Settings },
+    { id: "capture", label: "Áudio", icon: Mic },
+    { id: "transcribing", label: "Transcrevendo", icon: Loader2 },
+    { id: "config", label: "Configurar", icon: Settings },
   ];
 
-  const stepIndex = steps.findIndex(s => s.id === currentStep);
+  const stepIndex = steps.findIndex((s) => s.id === currentStep);
 
   // Auto-transcribe when audio is uploaded
   const handleAudioUploaded = useCallback((id: string, _duration: number) => {
     setAudioId(id);
-    setCurrentStep('transcribing');
+    setCurrentStep("transcribing");
   }, []);
 
   // Auto-transcribe effect
   useEffect(() => {
-    if (currentStep !== 'transcribing' || !audioId) return;
+    if (currentStep !== "transcribing" || !audioId) return;
 
     let cancelled = false;
 
     const transcribe = async () => {
       try {
-        console.log('[AudioWizard] Auto-transcribing audio:', audioId);
-        const { data, error } = await supabase.functions.invoke('transcribe-audio', {
-          body: { audio_id: audioId, language: 'pt' },
+        console.log("[AudioWizard] Auto-transcribing audio:", audioId);
+        const { data, error } = await supabase.functions.invoke("transcribe-audio", {
+          body: { audio_id: audioId, language: "pt" },
         });
         if (cancelled) return;
         if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error || 'Falha na transcrição');
+        if (!data?.ok) throw new Error(data?.error || "Falha na transcrição");
 
         setTranscript(data.transcript);
         if (data.detected_voice_type) {
           setDetectedVoiceType(data.detected_voice_type);
         }
-        toast.success('Transcrição concluída!');
-        setCurrentStep('config');
+        toast.success("Transcrição concluída!");
+        setCurrentStep("config");
       } catch (error: unknown) {
         if (cancelled) return;
-        console.error('Transcription error:', error);
-        const msg = error instanceof Error ? error.message : 'Erro na transcrição';
-        toast.error('Falha na transcrição', { description: msg });
-        setCurrentStep('capture');
+        console.error("Transcription error:", error);
+        const msg = error instanceof Error ? error.message : "Erro na transcrição";
+        toast.error("Falha na transcrição", { description: msg });
+        setCurrentStep("capture");
         setAudioId(null);
       }
     };
 
     transcribe();
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [currentStep, audioId]);
 
   // When user clicks "Gerar letra completa", pass data back to Briefing for standard flow
   const handleGenerate = useCallback(() => {
     if (!transcript || !section) {
-      toast.error('Selecione a posição do trecho na música');
+      toast.error("Selecione a posição do trecho na música");
       return;
     }
     if (!audioId) {
-      toast.error('Áudio não encontrado. Tente novamente.');
+      toast.error("Áudio não encontrado. Tente novamente.");
       return;
     }
 
@@ -132,20 +137,23 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
           <div className="flex items-center gap-1">
             {steps.map((step, idx) => (
               <div key={step.id} className="flex items-center flex-1">
-                <div className={cn(
-                  "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors",
-                  idx < stepIndex ? "text-primary" :
-                  idx === stepIndex ? "bg-primary text-primary-foreground" :
-                  "text-muted-foreground"
-                )}>
-                  <step.icon className={cn("w-3.5 h-3.5", idx === stepIndex && step.id === 'transcribing' && "animate-spin")} />
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors",
+                    idx < stepIndex
+                      ? "text-primary"
+                      : idx === stepIndex
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground",
+                  )}
+                >
+                  <step.icon
+                    className={cn("w-3.5 h-3.5", idx === stepIndex && step.id === "transcribing" && "animate-spin")}
+                  />
                   <span className="hidden sm:inline">{step.label}</span>
                 </div>
                 {idx < steps.length - 1 && (
-                  <div className={cn(
-                    "flex-1 h-0.5 mx-1 rounded-full",
-                    idx < stepIndex ? "bg-primary" : "bg-border"
-                  )} />
+                  <div className={cn("flex-1 h-0.5 mx-1 rounded-full", idx < stepIndex ? "bg-primary" : "bg-border")} />
                 )}
               </div>
             ))}
@@ -156,7 +164,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
-          {currentStep === 'capture' && (
+          {currentStep === "capture" && (
             <div key="capture" className="space-y-6">
               <div className="text-center space-y-2">
                 <h2 className="text-xl font-bold">Grave ou envie seu áudio</h2>
@@ -168,7 +176,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
             </div>
           )}
 
-          {currentStep === 'transcribing' && (
+          {currentStep === "transcribing" && (
             <motion.div
               key="transcribing"
               initial={{ opacity: 0, y: 20 }}
@@ -191,7 +199,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
             </motion.div>
           )}
 
-          {currentStep === 'config' && (
+          {currentStep === "config" && (
             <AudioConfigStep
               transcript={transcript}
               section={section}
@@ -205,9 +213,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               onThemeChange={setTheme}
               onStyleChange={setStyle}
               onBack={() => {
-                setCurrentStep('capture');
+                setCurrentStep("capture");
                 setAudioId(null);
-                setTranscript('');
+                setTranscript("");
               }}
               onGenerate={handleGenerate}
             />
