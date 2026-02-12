@@ -128,7 +128,13 @@ const CreateSong = () => {
   const [showPronunciationModal, setShowPronunciationModal] = useState(false);
   const [missingPronunciations, setMissingPronunciations] = useState<string[]>([]);
   const [pronunciations, setPronunciations] = useState<Pronunciation[]>([]);
-
+  
+  // Cover image upload state
+  const [customCoverFile, setCustomCoverFile] = useState<File | null>(null);
+  const [customCoverPreview, setCustomCoverPreview] = useState<string | null>(null);
+  const [coverMode, setCoverMode] = useState<"auto" | "original" | "enhanced">("auto");
+  const [isEnhancingCover, setIsEnhancingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   // Auto-redirect to dashboard after complete
   useAutoRedirect(step, navigate);
 
