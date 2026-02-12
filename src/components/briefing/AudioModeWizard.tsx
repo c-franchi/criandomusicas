@@ -77,9 +77,6 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
         if (!data?.ok) throw new Error(data?.error || "Falha na transcrição");
 
         setTranscript(data.transcript);
-        if (data.detected_voice_type) {
-          setDetectedVoiceType(data.detected_voice_type);
-        }
         toast.success("Transcrição concluída!");
         setCurrentStep("config");
       } catch (error: unknown) {
