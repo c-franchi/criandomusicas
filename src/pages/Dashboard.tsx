@@ -606,7 +606,7 @@ const Dashboard = () => {
                     <Mic className="w-4 h-4 mr-2" />
                     {t('buttons.createVocal')}
                     {totalVocal > 0 && (
-                      <Badge className="ml-2 bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30">
+                      <Badge className="ml-2 bg-white/90 dark:bg-green-500/20 text-green-800 dark:text-green-400 border border-green-600/50 dark:border-green-500/30 font-semibold">
                         {totalVocal} {t('tabs.creditsAvailable')}
                       </Badge>
                     )}
