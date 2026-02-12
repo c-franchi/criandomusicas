@@ -949,6 +949,87 @@ const CreateSong = () => {
             </CardContent>
           </Card>
 
+          {/* Custom Cover Image Upload */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImagePlus className="w-5 h-5" />
+                Capa da música (opcional)
+              </CardTitle>
+              <CardDescription>
+                Envie uma imagem para usar como capa ou deixe a IA gerar automaticamente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                className="hidden"
+              />
+              
+              {!customCoverPreview ? (
+                <button
+                  type="button"
+                  onClick={() => coverInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center gap-3 hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                >
+                  <ImagePlus className="w-10 h-10 text-muted-foreground" />
+                  <div className="text-center">
+                    <p className="text-sm font-medium">Clique para enviar uma imagem</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WEBP • Máx. 10MB</p>
+                  </div>
+                </button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative w-40 h-40 mx-auto rounded-xl overflow-hidden border border-border">
+                    <img
+                      src={customCoverPreview}
+                      alt="Capa personalizada"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveCover}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex gap-2 justify-center">
+                    <Badge
+                      variant={coverMode === "original" ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setCoverMode("original")}
+                    >
+                      📷 Usar original
+                    </Badge>
+                    <Badge
+                      variant={coverMode === "enhanced" ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setCoverMode("enhanced")}
+                    >
+                      <Wand2 className="w-3 h-3 mr-1" />
+                      Melhorar com IA
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground text-center">
+                    {coverMode === "original" 
+                      ? "A imagem será usada como está para a capa da música." 
+                      : "A IA vai aprimorar a imagem para criar uma capa artística."}
+                  </p>
+                  
+                  <p className="text-xs text-center text-muted-foreground/70">
+                    Ao enviar, você autoriza o uso desta imagem como capa da sua música.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* No refunds warning */}
           <Card className="mb-6 border-red-500/30 bg-red-500/5">
             <CardContent className="pt-6">
