@@ -140,7 +140,7 @@ export const usePushNotifications = () => {
       const vapidKeyUint8 = urlBase64ToUint8Array(vapidPublicKey);
       const applicationServerKey = vapidKeyUint8.buffer as ArrayBuffer;
 
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey,
       });
