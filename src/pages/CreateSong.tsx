@@ -496,9 +496,13 @@ const CreateSong = () => {
     setStep("approved");
 
     try {
+      // Upload custom cover if user provided one
+      let customCoverUrl: string | null = null;
+      if (customCoverFile && coverMode !== "auto") {
+        customCoverUrl = await uploadCustomCover();
+      }
+
       // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
-      // Use modified lyric ID if user is approving the modified version, original otherwise
-      // For custom lyrics, use 'custom' as lyricId
       const lyricId = effectiveLyric?.id || 'custom';
       
       const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
@@ -509,6 +513,8 @@ const CreateSong = () => {
           songTitle: editedTitle,
           pronunciations: customPronunciations || pronunciations,
           hasCustomLyric: briefingData.hasCustomLyric || false,
+          customCoverUrl: customCoverUrl,
+          coverMode: coverMode,
           briefing: {
             musicType: briefingData.musicType,
             emotion: briefingData.emotion,
