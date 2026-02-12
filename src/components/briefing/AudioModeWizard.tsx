@@ -205,12 +205,14 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               transcript={transcript}
               section={section}
               mode={mode}
+              voiceType={voiceType}
               theme={theme}
               style={style}
               isGenerating={false}
               generateProgress={0}
               onSectionChange={setSection}
               onModeChange={setMode}
+              onVoiceTypeChange={setVoiceType}
               onThemeChange={setTheme}
               onStyleChange={setStyle}
               onBack={() => {
