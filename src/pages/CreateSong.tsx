@@ -630,6 +630,54 @@ const CreateSong = () => {
     handleApproveLyric(newPronunciations);
   };
 
+  // Cover image upload handler
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione uma imagem válida');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Imagem deve ter no máximo 10MB');
+      return;
+    }
+    
+    setCustomCoverFile(file);
+    setCoverMode("original");
+    const url = URL.createObjectURL(file);
+    setCustomCoverPreview(url);
+  };
+
+  const handleRemoveCover = () => {
+    setCustomCoverFile(null);
+    setCustomCoverPreview(null);
+    setCoverMode("auto");
+    if (coverInputRef.current) coverInputRef.current.value = '';
+  };
+
+  // Upload custom cover to storage before approving
+  const uploadCustomCover = async (): Promise<string | null> => {
+    if (!customCoverFile || !orderId) return null;
+    
+    const ext = customCoverFile.name.split('.').pop() || 'jpg';
+    const path = `${orderId}/custom-cover.${ext}`;
+    
+    const { error } = await supabase.storage
+      .from('covers')
+      .upload(path, customCoverFile, { upsert: true });
+    
+    if (error) {
+      console.error('Cover upload error:', error);
+      toast.error('Erro ao enviar capa');
+      return null;
+    }
+    
+    const { data: publicData } = supabase.storage.from('covers').getPublicUrl(path);
+    return publicData.publicUrl;
+  };
+
   const handleRequestEdit = async () => {
     if (!orderId || !briefingData || !editInstructions.trim()) {
       toast.error(t('createSong.describeChanges'));
