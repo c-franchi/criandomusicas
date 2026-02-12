@@ -38,6 +38,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
   type VoiceType = "male" | "female";
 
   const [voiceType, setVoiceType] = useState<VoiceType | "">("");
+  const [detectedVoiceType, setDetectedVoiceType] = useState<string>("feminina");
 
   // Config
   const [section, setSection] = useState<SectionType | "">("");
@@ -76,9 +77,6 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
         if (!data?.ok) throw new Error(data?.error || "Falha na transcrição");
 
         setTranscript(data.transcript);
-        if (data.detected_voice_type) {
-          setDetectedVoiceType(data.detected_voice_type);
-        }
         toast.success("Transcrição concluída!");
         setCurrentStep("config");
       } catch (error: unknown) {
@@ -108,8 +106,14 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       toast.error("Áudio não encontrado. Tente novamente.");
       return;
     }
+    if (!voiceType) {
+      toast.error("Selecione o tipo de voz desejada");
+      return;
+    }
 
-    // Pass the audio data back to parent (Briefing) for standard order creation
+    // Map voiceType selection to the voice type string used in production
+    const mappedVoiceType = voiceType === "male" ? "masculina" : "feminina";
+
     onComplete?.({
       audioId,
       transcript,
@@ -117,9 +121,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       mode,
       theme,
       style,
-      detectedVoiceType,
+      detectedVoiceType: mappedVoiceType,
     });
-  }, [transcript, section, mode, theme, style, audioId, detectedVoiceType, onComplete]);
+  }, [transcript, section, mode, theme, style, audioId, voiceType, onComplete]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -204,12 +208,14 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               transcript={transcript}
               section={section}
               mode={mode}
+              voiceType={voiceType}
               theme={theme}
               style={style}
               isGenerating={false}
               generateProgress={0}
               onSectionChange={setSection}
               onModeChange={setMode}
+              onVoiceTypeChange={setVoiceType}
               onThemeChange={setTheme}
               onStyleChange={setStyle}
               onBack={() => {

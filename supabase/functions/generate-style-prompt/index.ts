@@ -290,7 +290,9 @@ serve(async (req) => {
       songTitle, 
       briefing, 
       pronunciations = [],
-      isInstrumental = false
+      isInstrumental = false,
+      customCoverUrl = null,
+      coverMode = 'auto'
     } = await req.json() as {
       orderId: string;
       lyricId?: string;
@@ -300,6 +302,8 @@ serve(async (req) => {
       briefing: BriefingData;
       pronunciations?: Pronunciation[];
       isInstrumental?: boolean;
+      customCoverUrl?: string | null;
+      coverMode?: string;
     };
 
     console.log("generate-style-prompt called with orderId:", orderId, "isInstrumental:", isInstrumental);
@@ -781,6 +785,12 @@ ${cleanedLyrics}`;
       final_prompt: finalPrompt,
       updated_at: new Date().toISOString()
     };
+
+    // Save custom cover URL if user provided one
+    if (customCoverUrl && (coverMode === 'original' || coverMode === 'enhanced')) {
+      updateData.cover_url = customCoverUrl;
+      console.log("Saving custom cover URL:", customCoverUrl, "mode:", coverMode);
+    }
     
     // Only update status for vocal tracks (instrumental stays in current status)
     if (!isInstrumental) {

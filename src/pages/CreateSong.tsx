@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle, Info, Undo2, Shield } from "lucide-react";
+import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle, Info, Undo2, Shield, ImagePlus, Wand2, X } from "lucide-react";
 import MusicLoadingSpinner from "@/components/MusicLoadingSpinner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -128,7 +128,13 @@ const CreateSong = () => {
   const [showPronunciationModal, setShowPronunciationModal] = useState(false);
   const [missingPronunciations, setMissingPronunciations] = useState<string[]>([]);
   const [pronunciations, setPronunciations] = useState<Pronunciation[]>([]);
-
+  
+  // Cover image upload state
+  const [customCoverFile, setCustomCoverFile] = useState<File | null>(null);
+  const [customCoverPreview, setCustomCoverPreview] = useState<string | null>(null);
+  const [coverMode, setCoverMode] = useState<"auto" | "original" | "enhanced">("auto");
+  const [isEnhancingCover, setIsEnhancingCover] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
   // Auto-redirect to dashboard after complete
   useAutoRedirect(step, navigate);
 
@@ -490,9 +496,13 @@ const CreateSong = () => {
     setStep("approved");
 
     try {
+      // Upload custom cover if user provided one
+      let customCoverUrl: string | null = null;
+      if (customCoverFile && coverMode !== "auto") {
+        customCoverUrl = await uploadCustomCover();
+      }
+
       // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
-      // Use modified lyric ID if user is approving the modified version, original otherwise
-      // For custom lyrics, use 'custom' as lyricId
       const lyricId = effectiveLyric?.id || 'custom';
       
       const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
@@ -503,6 +513,8 @@ const CreateSong = () => {
           songTitle: editedTitle,
           pronunciations: customPronunciations || pronunciations,
           hasCustomLyric: briefingData.hasCustomLyric || false,
+          customCoverUrl: customCoverUrl,
+          coverMode: coverMode,
           briefing: {
             musicType: briefingData.musicType,
             emotion: briefingData.emotion,
@@ -622,6 +634,54 @@ const CreateSong = () => {
     setPronunciations(newPronunciations);
     setShowPronunciationModal(false);
     handleApproveLyric(newPronunciations);
+  };
+
+  // Cover image upload handler
+  const handleCoverUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecione uma imagem válida');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Imagem deve ter no máximo 10MB');
+      return;
+    }
+    
+    setCustomCoverFile(file);
+    setCoverMode("original");
+    const url = URL.createObjectURL(file);
+    setCustomCoverPreview(url);
+  };
+
+  const handleRemoveCover = () => {
+    setCustomCoverFile(null);
+    setCustomCoverPreview(null);
+    setCoverMode("auto");
+    if (coverInputRef.current) coverInputRef.current.value = '';
+  };
+
+  // Upload custom cover to storage before approving
+  const uploadCustomCover = async (): Promise<string | null> => {
+    if (!customCoverFile || !orderId) return null;
+    
+    const ext = customCoverFile.name.split('.').pop() || 'jpg';
+    const path = `${orderId}/custom-cover.${ext}`;
+    
+    const { error } = await supabase.storage
+      .from('covers')
+      .upload(path, customCoverFile, { upsert: true });
+    
+    if (error) {
+      console.error('Cover upload error:', error);
+      toast.error('Erro ao enviar capa');
+      return null;
+    }
+    
+    const { data: publicData } = supabase.storage.from('covers').getPublicUrl(path);
+    return publicData.publicUrl;
   };
 
   const handleRequestEdit = async () => {
@@ -889,6 +949,87 @@ const CreateSong = () => {
             </CardContent>
           </Card>
 
+          {/* Custom Cover Image Upload */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImagePlus className="w-5 h-5" />
+                Capa da música (opcional)
+              </CardTitle>
+              <CardDescription>
+                Envie uma imagem para usar como capa ou deixe a IA gerar automaticamente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                className="hidden"
+              />
+              
+              {!customCoverPreview ? (
+                <button
+                  type="button"
+                  onClick={() => coverInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center gap-3 hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                >
+                  <ImagePlus className="w-10 h-10 text-muted-foreground" />
+                  <div className="text-center">
+                    <p className="text-sm font-medium">Clique para enviar uma imagem</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WEBP • Máx. 10MB</p>
+                  </div>
+                </button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative w-40 h-40 mx-auto rounded-xl overflow-hidden border border-border">
+                    <img
+                      src={customCoverPreview}
+                      alt="Capa personalizada"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveCover}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex gap-2 justify-center">
+                    <Badge
+                      variant={coverMode === "original" ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setCoverMode("original")}
+                    >
+                      📷 Usar original
+                    </Badge>
+                    <Badge
+                      variant={coverMode === "enhanced" ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setCoverMode("enhanced")}
+                    >
+                      <Wand2 className="w-3 h-3 mr-1" />
+                      Melhorar com IA
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground text-center">
+                    {coverMode === "original" 
+                      ? "A imagem será usada como está para a capa da música." 
+                      : "A IA vai aprimorar a imagem para criar uma capa artística."}
+                  </p>
+                  
+                  <p className="text-xs text-center text-muted-foreground/70">
+                    Ao enviar, você autoriza o uso desta imagem como capa da sua música.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* No refunds warning */}
           <Card className="mb-6 border-red-500/30 bg-red-500/5">
             <CardContent className="pt-6">
@@ -1082,6 +1223,87 @@ const CreateSong = () => {
                 className="font-mono text-sm whitespace-pre-wrap bg-muted/50 border-primary/20 focus:border-primary resize-y min-h-[300px] ring-primary/20"
                 placeholder={t('createSong.editLyricPlaceholder', 'Edite a letra diretamente aqui...')}
               />
+            </CardContent>
+          </Card>
+
+          {/* Custom Cover Image Upload (same as editing step) */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ImagePlus className="w-5 h-5" />
+                Capa da música (opcional)
+              </CardTitle>
+              <CardDescription>
+                Envie uma imagem para usar como capa ou deixe a IA gerar automaticamente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleCoverUpload}
+                className="hidden"
+              />
+              
+              {!customCoverPreview ? (
+                <button
+                  type="button"
+                  onClick={() => coverInputRef.current?.click()}
+                  className="w-full border-2 border-dashed border-border rounded-xl p-8 flex flex-col items-center gap-3 hover:border-primary/50 hover:bg-muted/30 transition-colors"
+                >
+                  <ImagePlus className="w-10 h-10 text-muted-foreground" />
+                  <div className="text-center">
+                    <p className="text-sm font-medium">Clique para enviar uma imagem</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WEBP • Máx. 10MB</p>
+                  </div>
+                </button>
+              ) : (
+                <div className="space-y-4">
+                  <div className="relative w-40 h-40 mx-auto rounded-xl overflow-hidden border border-border">
+                    <img
+                      src={customCoverPreview}
+                      alt="Capa personalizada"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveCover}
+                      className="absolute top-1 right-1 w-6 h-6 rounded-full bg-background/80 flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  
+                  <div className="flex gap-2 justify-center">
+                    <Badge
+                      variant={coverMode === "original" ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setCoverMode("original")}
+                    >
+                      📷 Usar original
+                    </Badge>
+                    <Badge
+                      variant={coverMode === "enhanced" ? "default" : "outline"}
+                      className="cursor-pointer"
+                      onClick={() => setCoverMode("enhanced")}
+                    >
+                      <Wand2 className="w-3 h-3 mr-1" />
+                      Melhorar com IA
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-xs text-muted-foreground text-center">
+                    {coverMode === "original" 
+                      ? "A imagem será usada como está para a capa da música." 
+                      : "A IA vai aprimorar a imagem para criar uma capa artística."}
+                  </p>
+                  
+                  <p className="text-xs text-center text-muted-foreground/70">
+                    Ao enviar, você autoriza o uso desta imagem como capa da sua música.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
