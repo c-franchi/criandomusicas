@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle, Info, Undo2, Shield } from "lucide-react";
+import { Music, Sparkles, ArrowRight, ArrowLeft, CheckCircle, Edit3, RefreshCw, Download, AlertTriangle, Info, Undo2, Shield, ImagePlus, Wand2, X } from "lucide-react";
 import MusicLoadingSpinner from "@/components/MusicLoadingSpinner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
