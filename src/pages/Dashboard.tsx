@@ -644,7 +644,7 @@ const Dashboard = () => {
                     <Piano className="w-4 h-4 mr-2" />
                     {t('buttons.createInstrumental')}
                     {totalInstrumental > 0 && (
-                      <Badge className="ml-2 bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30">
+                      <Badge className="ml-2 bg-white/90 dark:bg-purple-500/20 text-purple-800 dark:text-purple-400 border border-purple-600/50 dark:border-purple-500/30 font-semibold">
                         {totalInstrumental} {t('tabs.creditsAvailable')}
                       </Badge>
                     )}
