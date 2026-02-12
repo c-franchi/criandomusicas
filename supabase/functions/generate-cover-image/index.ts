@@ -89,13 +89,73 @@ Crie a descrição visual para a capa:`;
   }
 }
 
+// Enhance an existing image using AI image editing
+async function enhanceImage(
+  lovableApiKey: string,
+  imageUrl: string,
+  musicType: string | null,
+  emotion: string | null,
+  purpose: string | null
+): Promise<string | null> {
+  try {
+    const editPrompt = `Transform this photo into a stunning, professional album cover art. 
+NO TEXT, NO LETTERS, NO WORDS, NO TYPOGRAPHY.
+Apply cinematic color grading, dramatic lighting, and artistic composition.
+Music genre context: ${musicType || 'pop'}, emotion: ${emotion || 'joy'}, occasion: ${purpose || 'celebration'}.
+Make it look like a premium Spotify/Apple Music album cover. Square format (1:1).
+Enhance colors, add depth, and create an atmospheric, polished look while keeping the main subject recognizable.`;
+
+    console.log('Enhancing image with Lovable AI...');
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${lovableApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash-image',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: editPrompt },
+              { type: 'image_url', image_url: { url: imageUrl } }
+            ]
+          }
+        ],
+        modalities: ['image', 'text']
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('Image enhancement API error:', errorData);
+      return null;
+    }
+
+    const data = await response.json();
+    const enhancedImageData = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+
+    if (enhancedImageData) {
+      console.log('Image enhanced successfully');
+      return enhancedImageData;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error enhancing image:', error);
+    return null;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { orderId, customPrompt } = await req.json();
+    const { orderId, customPrompt, enhanceMode } = await req.json();
 
     if (!orderId) {
       return new Response(
@@ -129,6 +189,55 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Order not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle enhance mode - enhance an existing custom cover
+    if (enhanceMode && order.cover_url) {
+      console.log('Enhance mode: enhancing custom cover image:', order.cover_url);
+      
+      const enhancedImageData = await enhanceImage(
+        lovableApiKey,
+        order.cover_url,
+        order.music_type,
+        order.emotion,
+        order.purpose
+      );
+
+      if (!enhancedImageData) {
+        console.log('Enhancement failed, keeping original cover');
+        return new Response(
+          JSON.stringify({ ok: true, cover_url: order.cover_url, enhanced: false, message: 'Enhancement failed, keeping original' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Convert base64 to binary and upload
+      const base64Data = enhancedImageData.replace(/^data:image\/\w+;base64,/, '');
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const filename = `${orderId}/cover-enhanced.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(filename, binaryData, { contentType: 'image/png', upsert: true });
+
+      if (uploadError) {
+        console.error('Enhanced cover upload error:', uploadError);
+        return new Response(
+          JSON.stringify({ ok: true, cover_url: order.cover_url, enhanced: false, message: 'Upload failed' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(filename);
+      const enhancedUrl = publicUrlData.publicUrl;
+
+      // Update order with enhanced cover
+      await supabase.from('orders').update({ cover_url: enhancedUrl }).eq('id', orderId);
+
+      return new Response(
+        JSON.stringify({ success: true, cover_url: enhancedUrl, enhanced: true, message: 'Cover enhanced successfully' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
