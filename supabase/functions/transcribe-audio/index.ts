@@ -192,7 +192,6 @@ serve(async (req) => {
       segments,
       model: 'whisper-1',
       duration_sec: whisperData.duration || audioInput.duration_sec,
-      detected_voice_type: detectedVoiceType,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
