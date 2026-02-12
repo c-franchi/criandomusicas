@@ -109,8 +109,14 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       toast.error("Áudio não encontrado. Tente novamente.");
       return;
     }
+    if (!voiceType) {
+      toast.error("Selecione o tipo de voz desejada");
+      return;
+    }
 
-    // Pass the audio data back to parent (Briefing) for standard order creation
+    // Map voiceType selection to the voice type string used in production
+    const mappedVoiceType = voiceType === "male" ? "masculina" : "feminina";
+
     onComplete?.({
       audioId,
       transcript,
@@ -118,9 +124,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       mode,
       theme,
       style,
-      detectedVoiceType,
+      detectedVoiceType: mappedVoiceType,
     });
-  }, [transcript, section, mode, theme, style, audioId, detectedVoiceType, onComplete]);
+  }, [transcript, section, mode, theme, style, audioId, voiceType, onComplete]);
 
   return (
     <div className="min-h-screen bg-background">
