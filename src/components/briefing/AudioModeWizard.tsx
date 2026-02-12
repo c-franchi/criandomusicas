@@ -37,7 +37,8 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
 
   type VoiceType = "male" | "female";
 
-  const [voiceType, setVoiceType] = useState<VoiceType | "">("");
+  const [voiceType, setVoiceType] = useState<VoiceType | "">(""):
+  const [detectedVoiceType, setDetectedVoiceType] = useState<string>("feminina");
 
   // Config
   const [section, setSection] = useState<SectionType | "">("");
