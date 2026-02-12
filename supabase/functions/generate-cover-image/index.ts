@@ -120,7 +120,7 @@ serve(async (req) => {
     // Fetch order data
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental, story, approved_lyric_id, atmosphere')
+      .select('id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental, story, approved_lyric_id, atmosphere, cover_url')
       .eq('id', orderId)
       .single();
 
@@ -129,6 +129,15 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'Order not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Skip AI generation if user already uploaded a custom cover
+    if (order.cover_url && order.cover_url.includes('custom-cover')) {
+      console.log('Order already has custom cover, skipping AI generation:', order.cover_url);
+      return new Response(
+        JSON.stringify({ ok: true, cover_url: order.cover_url, skipped: true, message: 'Custom cover already set' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
