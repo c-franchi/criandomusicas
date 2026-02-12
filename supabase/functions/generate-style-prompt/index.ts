@@ -785,6 +785,12 @@ ${cleanedLyrics}`;
       final_prompt: finalPrompt,
       updated_at: new Date().toISOString()
     };
+
+    // Save custom cover URL if user provided one
+    if (customCoverUrl && (coverMode === 'original' || coverMode === 'enhanced')) {
+      updateData.cover_url = customCoverUrl;
+      console.log("Saving custom cover URL:", customCoverUrl, "mode:", coverMode);
+    }
     
     // Only update status for vocal tracks (instrumental stays in current status)
     if (!isInstrumental) {
