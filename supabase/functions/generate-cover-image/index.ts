@@ -192,6 +192,55 @@ serve(async (req) => {
       );
     }
 
+    // Handle enhance mode - enhance an existing custom cover
+    if (enhanceMode && order.cover_url) {
+      console.log('Enhance mode: enhancing custom cover image:', order.cover_url);
+      
+      const enhancedImageData = await enhanceImage(
+        lovableApiKey,
+        order.cover_url,
+        order.music_type,
+        order.emotion,
+        order.purpose
+      );
+
+      if (!enhancedImageData) {
+        console.log('Enhancement failed, keeping original cover');
+        return new Response(
+          JSON.stringify({ ok: true, cover_url: order.cover_url, enhanced: false, message: 'Enhancement failed, keeping original' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Convert base64 to binary and upload
+      const base64Data = enhancedImageData.replace(/^data:image\/\w+;base64,/, '');
+      const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+      const filename = `${orderId}/cover-enhanced.png`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(filename, binaryData, { contentType: 'image/png', upsert: true });
+
+      if (uploadError) {
+        console.error('Enhanced cover upload error:', uploadError);
+        return new Response(
+          JSON.stringify({ ok: true, cover_url: order.cover_url, enhanced: false, message: 'Upload failed' }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { data: publicUrlData } = supabase.storage.from('covers').getPublicUrl(filename);
+      const enhancedUrl = publicUrlData.publicUrl;
+
+      // Update order with enhanced cover
+      await supabase.from('orders').update({ cover_url: enhancedUrl }).eq('id', orderId);
+
+      return new Response(
+        JSON.stringify({ success: true, cover_url: enhancedUrl, enhanced: true, message: 'Cover enhanced successfully' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Skip AI generation if user already uploaded a custom cover
     if (order.cover_url && order.cover_url.includes('custom-cover')) {
       console.log('Order already has custom cover, skipping AI generation:', order.cover_url);

@@ -791,6 +791,21 @@ ${cleanedLyrics}`;
       updateData.cover_url = customCoverUrl;
       console.log("Saving custom cover URL:", customCoverUrl, "mode:", coverMode);
     }
+
+    // Trigger cover enhancement if user selected enhanced mode
+    if (customCoverUrl && coverMode === 'enhanced') {
+      try {
+        const supabaseClient = createClient(supabaseUrl, supabaseKey);
+        // Non-blocking: enhance cover in background after saving the original
+        supabaseClient.functions.invoke('generate-cover-image', {
+          body: { orderId, enhanceMode: true }
+        }).then(result => {
+          console.log("Cover enhancement triggered:", result.data?.enhanced ? 'success' : 'skipped');
+        }).catch(err => console.error("Cover enhancement error (non-blocking):", err));
+      } catch (enhanceError) {
+        console.error("Failed to trigger cover enhancement:", enhanceError);
+      }
+    }
     
     // Only update status for vocal tracks (instrumental stays in current status)
     if (!isInstrumental) {
