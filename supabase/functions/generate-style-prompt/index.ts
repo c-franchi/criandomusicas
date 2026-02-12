@@ -290,7 +290,9 @@ serve(async (req) => {
       songTitle, 
       briefing, 
       pronunciations = [],
-      isInstrumental = false
+      isInstrumental = false,
+      customCoverUrl = null,
+      coverMode = 'auto'
     } = await req.json() as {
       orderId: string;
       lyricId?: string;
@@ -300,6 +302,8 @@ serve(async (req) => {
       briefing: BriefingData;
       pronunciations?: Pronunciation[];
       isInstrumental?: boolean;
+      customCoverUrl?: string | null;
+      coverMode?: string;
     };
 
     console.log("generate-style-prompt called with orderId:", orderId, "isInstrumental:", isInstrumental);
