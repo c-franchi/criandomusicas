@@ -581,6 +581,30 @@ const AdminDashboard = () => {
         console.error('Push notification error:', pushError);
       }
 
+      // Send email notification about rejection
+      try {
+        // Get user email for notification
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        await supabase.functions.invoke('send-contact-email', {
+          body: {
+            to: undefined, // Will use userId to fetch email
+            userId,
+            subject: '⚠️ Problema com seu pagamento PIX - Criando Músicas',
+            type: 'pix_rejection',
+            orderId,
+            reason,
+            userName: profileData?.name || 'Cliente',
+          }
+        });
+      } catch (emailError) {
+        console.error('Email notification error:', emailError);
+      }
+
       toast({
         title: '❌ Pagamento rejeitado',
         description: 'O cliente foi notificado e pode tentar novamente.',

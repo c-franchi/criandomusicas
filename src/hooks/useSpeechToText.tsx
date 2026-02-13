@@ -64,6 +64,8 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
   const { toast } = useToast();
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const processedResultsRef = useRef<Set<string>>(new Set());
+  const intentionalStopRef = useRef(false);
+  const restartTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Check if Web Speech API is supported
   const isSupported = typeof window !== 'undefined' && 
@@ -104,7 +106,14 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error);
+      
+      // Don't stop listening for "no-speech" errors - just let it auto-restart
+      if (event.error === 'no-speech') {
+        return;
+      }
+      
       setIsListening(false);
+      intentionalStopRef.current = true;
       
       if (event.error === 'not-allowed') {
         toast({
@@ -122,10 +131,27 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
     };
 
     recognition.onend = () => {
-      setIsListening(false);
+      // Auto-restart if the user didn't intentionally stop
+      if (!intentionalStopRef.current) {
+        // Small delay before restarting to avoid rapid restart loops
+        restartTimeoutRef.current = setTimeout(() => {
+          if (!intentionalStopRef.current && recognitionRef.current) {
+            try {
+              recognitionRef.current.start();
+            } catch (e) {
+              // Already started or other error - just mark as stopped
+              setIsListening(false);
+            }
+          }
+        }, 300);
+      } else {
+        setIsListening(false);
+      }
     };
 
     return () => {
+      intentionalStopRef.current = true;
+      if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
       if (recognition) {
         recognition.stop();
       }
@@ -137,7 +163,8 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
 
     try {
       setTranscript('');
-      processedResultsRef.current.clear(); // Clear processed results on new recording
+      processedResultsRef.current.clear();
+      intentionalStopRef.current = false;
       recognitionRef.current.start();
       setIsListening(true);
     } catch (error) {
@@ -149,6 +176,8 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
     if (!recognitionRef.current || !isListening) return;
 
     try {
+      intentionalStopRef.current = true;
+      if (restartTimeoutRef.current) clearTimeout(restartTimeoutRef.current);
       recognitionRef.current.stop();
       setIsListening(false);
     } catch (error) {

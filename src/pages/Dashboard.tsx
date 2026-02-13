@@ -45,6 +45,7 @@ interface Order {
   song_title?: string;
   plan_id?: string;
   is_preview?: boolean;
+  pix_rejection_reason?: string | null;
 }
 
 const Dashboard = () => {
