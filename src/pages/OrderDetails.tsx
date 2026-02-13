@@ -52,6 +52,7 @@ interface OrderData {
   has_custom_lyric: boolean | null;
   is_preview: boolean | null;
   plan_id: string | null;
+  pix_rejection_reason: string | null;
 }
 
 interface LyricData {
@@ -464,6 +465,32 @@ const OrderDetails = () => {
             <Progress value={statusInfo.progress} className="h-3" />
           </CardContent>
         </Card>
+
+        {/* PIX Rejection Alert */}
+        {order.pix_rejection_reason && order.status === 'AWAITING_PAYMENT' && (
+          <Card className="border-destructive/50 bg-destructive/10">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
+                  <ShoppingCart className="w-5 h-5 text-destructive" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-destructive mb-1">
+                    Pagamento PIX rejeitado
+                  </h3>
+                  <p className="text-sm text-foreground mb-3">
+                    <strong>Motivo:</strong> {order.pix_rejection_reason}
+                  </p>
+                  <Button asChild size="sm" variant="destructive">
+                    <Link to={`/checkout/${order.id}`}>
+                      Tentar novamente
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Music Player - Show when ready */}
         {isMusicReady && tracks.length > 0 && (

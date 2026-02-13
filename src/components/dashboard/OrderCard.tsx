@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Trash2, Clock } from "lucide-react";
+import { ExternalLink, Trash2, Clock, AlertTriangle } from "lucide-react";
 import { TFunction } from "i18next";
 import { isPreviewOrder } from "@/hooks/usePreviewCredit";
 
@@ -23,6 +23,7 @@ interface Order {
   song_title?: string;
   plan_id?: string;
   is_preview?: boolean;
+  pix_rejection_reason?: string | null;
 }
 
 interface OrderCardProps {
@@ -84,6 +85,12 @@ export const OrderCard = ({
                 {order.is_instrumental && !order.has_custom_lyric && (
                   <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-600 dark:text-purple-400 bg-purple-500/10">
                     {t('badges.instrumental')}
+                  </Badge>
+                )}
+                {order.pix_rejection_reason && (
+                  <Badge variant="outline" className="text-xs border-destructive/50 text-destructive bg-destructive/10 gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    PIX Rejeitado
                   </Badge>
                 )}
                 <span className="text-xs sm:text-sm text-muted-foreground">

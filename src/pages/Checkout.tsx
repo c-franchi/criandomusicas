@@ -35,6 +35,7 @@ interface OrderData {
   payment_method: string | null;
   is_instrumental: boolean | null;
   has_custom_lyric: boolean | null;
+  pix_rejection_reason: string | null;
 }
 
 // Get plan ID from URL params
@@ -931,7 +932,30 @@ export default function Checkout() {
           </CardContent>
         </Card>
 
-        {/* Credits Payment Option - Show if user has credits */}
+        {/* PIX Rejection Alert */}
+        {order.pix_rejection_reason && (
+          <Card className="border-destructive/50 bg-destructive/10">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-destructive/20 flex items-center justify-center shrink-0">
+                  <Tag className="w-5 h-5 text-destructive" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-destructive mb-1">
+                    Pagamento PIX rejeitado
+                  </h3>
+                  <p className="text-sm text-foreground">
+                    <strong>Motivo:</strong> {order.pix_rejection_reason}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Faça um novo pagamento e envie o comprovante novamente.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {!showPixSection && hasCredits && !creditsLoading && (
           <Card className="border-2 border-green-500/50 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent">
             <CardHeader>
