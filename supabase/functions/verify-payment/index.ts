@@ -35,22 +35,14 @@ serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          error: "Não autorizado",
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 401,
-        },
+        JSON.stringify({ success: false, error: "Não autorizado" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 },
       );
     }
 
     const token = authHeader.replace("Bearer ", "");
     const { data: claimsData } = await supabaseClient.auth.getClaims(token);
-
     const userId = claimsData?.claims?.sub as string;
-    const userEmail = claimsData?.claims?.email as string;
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -59,30 +51,28 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status === "paid") {
-      const { data: orderData } = await supabaseClient.from("orders").select("*").eq("id", orderId).single();
+      // Fetch full order data to determine type
+      const { data: orderData, error: orderFetchError } = await supabaseClient
+        .from("orders")
+        .select("*")
+        .eq("id", orderId)
+        .single();
 
-      const { data: profileData } = await supabaseClient.from("profiles").select("name").eq("user_id", userId).single();
+      if (orderFetchError || !orderData) {
+        throw new Error("Order not found");
+      }
+
+      const isInstrumental = orderData.is_instrumental === true;
+      const hasCustomLyric = orderData.has_custom_lyric === true;
+      
+      logStep("Order type detected", { isInstrumental, hasCustomLyric });
 
       const planId = session.metadata?.plan_id || "single";
 
       const PLAN_CREDITS: Record<string, number> = {
-        single: 1,
-        single_instrumental: 1,
-        single_custom_lyric: 1,
-        package: 3,
-        package_instrumental: 3,
-        subscription: 5,
-        subscription_instrumental: 5,
-      };
-
-      const PLAN_NAMES: Record<string, string> = {
-        single: "Música Única",
-        single_instrumental: "Música Única Instrumental",
-        single_custom_lyric: "Música com Letra Personalizada",
-        package: "Pacote 3 Músicas",
-        package_instrumental: "Pacote 3 Músicas Instrumental",
-        subscription: "Pacote 5 Músicas",
-        subscription_instrumental: "Pacote 5 Músicas Instrumental",
+        single: 1, single_instrumental: 1, single_custom_lyric: 1,
+        package: 3, package_instrumental: 3,
+        subscription: 5, subscription_instrumental: 5,
       };
 
       const creditsToAdd = PLAN_CREDITS[planId] || 1;
@@ -98,54 +88,75 @@ serve(async (req) => {
         });
       }
 
+      // Update order status to PAID (valid enum value)
       await supabaseClient
         .from("orders")
-        .update({
-          status: "PROCESSING",
-          payment_status: "PAID",
-        })
+        .update({ status: "PAID", payment_status: "PAID" })
         .eq("id", orderId)
         .eq("user_id", userId);
 
-      logStep("Order updated to PROCESSING");
+      logStep("Order updated to PAID");
 
-      // 🔥 DISPARA GERAÇÃO AUTOMÁTICA
+      // Build briefing from order data for generation
+      const briefing = {
+        musicType: orderData.music_type || 'homenagem',
+        emotion: orderData.emotion || 'alegria',
+        emotionIntensity: orderData.emotion_intensity || 3,
+        style: orderData.music_style || 'pop',
+        rhythm: orderData.rhythm || 'moderado',
+        atmosphere: orderData.atmosphere || 'festivo',
+        structure: orderData.music_structure?.split(',') || ['verse', 'chorus'],
+        hasMonologue: orderData.has_monologue || false,
+        monologuePosition: orderData.monologue_position || 'bridge',
+        mandatoryWords: orderData.mandatory_words || '',
+        restrictedWords: orderData.restricted_words || '',
+        voiceType: orderData.voice_type || 'feminina',
+        instruments: orderData.instruments || [],
+        soloInstrument: orderData.solo_instrument || null,
+        soloMoment: orderData.solo_moment || null,
+        instrumentationNotes: orderData.instrumentation_notes || '',
+      };
+
+      // Route generation based on order type
       try {
-        logStep("Triggering generation");
-
-        const { error: generationError } = await supabaseClient.functions.invoke("generate-lyrics", {
-          body: { orderId },
-        });
-
-        if (generationError) throw generationError;
-
-        logStep("Generation started successfully");
+        if (isInstrumental) {
+          // INSTRUMENTAL: generate style prompt directly, skip lyrics
+          logStep("Triggering instrumental style prompt generation");
+          await supabaseClient.functions.invoke("generate-style-prompt", {
+            body: { orderId, isInstrumental: true, briefing },
+          });
+          logStep("Instrumental style prompt generated");
+        } else if (hasCustomLyric) {
+          // CUSTOM LYRIC: no generation needed, user approves on CreateSong page
+          logStep("Custom lyric order - skipping generation, user will approve");
+        } else {
+          // VOCAL: generate lyrics via AI
+          logStep("Triggering vocal lyrics generation");
+          await supabaseClient.functions.invoke("generate-lyrics", {
+            body: { orderId, story: orderData.story, briefing },
+          });
+          logStep("Vocal lyrics generation started");
+        }
       } catch (e) {
         console.error("Generation failed:", e);
+        // Don't fail the payment verification for generation errors
       }
 
+      // Return order type so frontend can redirect correctly
       return new Response(
         JSON.stringify({
           success: true,
           status: "paid",
-          message: "Pagamento confirmado e geração iniciada.",
+          message: "Pagamento confirmado.",
+          orderType: isInstrumental ? "instrumental" : hasCustomLyric ? "custom_lyric" : "vocal",
         }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        },
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
     }
 
     return new Response(
-      JSON.stringify({
-        success: false,
-        status: session.payment_status,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      },
+      JSON.stringify({ success: false, status: session.payment_status }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);

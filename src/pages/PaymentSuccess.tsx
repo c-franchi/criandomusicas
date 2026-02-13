@@ -18,6 +18,7 @@ const PaymentSuccess = () => {
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(3);
+  const [orderType, setOrderType] = useState<string>("vocal");
 
   const orderId = searchParams.get('order_id');
   const sessionId = searchParams.get('session_id');
@@ -38,6 +39,7 @@ const PaymentSuccess = () => {
 
         if (data?.success) {
           setVerified(true);
+          setOrderType(data.orderType || "vocal");
           toast({
             title: t('toast.paymentConfirmed'),
             description: t('success.confirmedDescription'),
@@ -66,7 +68,13 @@ const PaymentSuccess = () => {
       setCountdown((prev) => {
         if (prev <= 1) {
           clearInterval(timer);
-          navigate('/dashboard');
+          // Redirect based on order type
+          if (orderType === "instrumental") {
+            navigate('/dashboard');
+          } else {
+            // vocal and custom_lyric both go to CreateSong for approval
+            navigate(`/criar-musica?orderId=${orderId}`);
+          }
           return 0;
         }
         return prev - 1;
@@ -74,7 +82,7 @@ const PaymentSuccess = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [verified, navigate]);
+  }, [verified, navigate, orderType, orderId]);
 
   if (authLoading) {
     return (
