@@ -113,7 +113,8 @@ serve(async (req) => {
     formData.append('model', 'whisper-1');
     formData.append('language', language);
     formData.append('response_format', 'verbose_json');
-    formData.append('prompt', 'Trecho cantado de música em português brasileiro. Transcrever as palavras cantadas fielmente.');
+    formData.append('temperature', '0');
+    formData.append('prompt', 'Transcrição fiel em português brasileiro. O áudio pode conter fala, canto, narração ou ditado. Transcrever exatamente cada palavra pronunciada, incluindo nomes próprios, siglas, números e palavras estrangeiras. Manter pontuação adequada.');
 
     console.log('[transcribe-audio] Calling OpenAI Whisper API...');
 

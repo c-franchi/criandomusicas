@@ -1281,10 +1281,24 @@ const AdminDashboard = () => {
                           >
                             {order.has_custom_lyric ? '📝 Letra Própria' : order.is_instrumental ? '🎹 Instrumental' : order.audio_input_id ? '🎙️ Áudio' : '🎤 Vocal'}
                           </Badge>
-                          <Badge className={`${getStatusColor(order.status, order.payment_status)} text-[10px] sm:text-xs shrink-0`}>
-                            {getStatusIcon(order.status)}
-                            <span className="ml-1">{getStatusText(order.status, order.payment_status)}</span>
-                          </Badge>
+                          <select
+                            value={order.status}
+                            onChange={(e) => updateOrderStatus(order.id, e.target.value as any)}
+                            className={`${getStatusColor(order.status, order.payment_status)} text-[10px] sm:text-xs shrink-0 px-2 py-0.5 rounded-full border-0 cursor-pointer font-medium appearance-none bg-opacity-100`}
+                            title="Clique para alterar status manualmente"
+                          >
+                            <option value="DRAFT">Rascunho</option>
+                            <option value="AWAITING_PAYMENT">Aguardando Pagamento</option>
+                            <option value="PAID">Pago</option>
+                            <option value="BRIEFING_COMPLETE">Briefing Completo</option>
+                            <option value="LYRICS_PENDING">Letras Pendentes</option>
+                            <option value="LYRICS_GENERATED">Letras Geradas</option>
+                            <option value="LYRICS_APPROVED">Letras Aprovadas</option>
+                            <option value="MUSIC_GENERATING">Gerando Música</option>
+                            <option value="MUSIC_READY">Música Pronta</option>
+                            <option value="COMPLETED">Concluído</option>
+                            <option value="CANCELLED">Cancelado</option>
+                          </select>
                         </div>
                         {/* Song Title - prominently displayed with copy button */}
                         <div className="flex items-center gap-2">

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, Sparkles, Loader2, Edit3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -29,14 +30,15 @@ interface AudioConfigStepProps {
   transcript: string;
   section: SectionType | "";
   mode: ModeType | "";
-  voiceType: VoiceType | ""; // ✅ NOVO
+  voiceType: VoiceType | "";
   theme: string;
   style: string;
   isGenerating: boolean;
   generateProgress: number;
   onSectionChange: (section: SectionType) => void;
   onModeChange: (mode: ModeType) => void;
-  onVoiceTypeChange: (voice: VoiceType) => void; // ✅ NOVO
+  onVoiceTypeChange: (voice: VoiceType) => void;
+  onTranscriptChange?: (transcript: string) => void;
   onThemeChange: (theme: string) => void;
   onStyleChange: (style: string) => void;
   onBack: () => void;
@@ -47,20 +49,22 @@ export const AudioConfigStep = ({
   transcript,
   section,
   mode,
-  voiceType, // ✅ NOVO
+  voiceType,
   theme,
   style,
   isGenerating,
   generateProgress,
   onSectionChange,
   onModeChange,
-  onVoiceTypeChange, // ✅ NOVO
+  onVoiceTypeChange,
+  onTranscriptChange,
   onThemeChange,
   onStyleChange,
   onBack,
   onGenerate,
 }: AudioConfigStepProps) => {
-  const canAdvance = section && mode && voiceType; // ✅ AGORA VOZ É OBRIGATÓRIA
+  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
+  const canAdvance = section && mode && voiceType;
 
   return (
     <motion.div
@@ -75,10 +79,36 @@ export const AudioConfigStep = ({
         <p className="text-sm text-muted-foreground">Onde inserir o trecho e como usar o texto transcrito.</p>
       </div>
 
-      {/* Transcribed text preview */}
-      <div className="bg-muted/50 p-3 rounded-lg border border-border">
-        <p className="text-xs text-muted-foreground mb-1 font-medium">Trecho transcrito:</p>
-        <p className="text-sm italic">"{transcript}"</p>
+      {/* Transcribed text - editable */}
+      <div className="bg-muted/50 p-3 rounded-lg border border-border space-y-2">
+        <div className="flex items-center justify-between">
+          <p className="text-xs text-muted-foreground font-medium">Trecho transcrito:</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 text-xs gap-1"
+            onClick={() => setIsEditingTranscript(!isEditingTranscript)}
+          >
+            <Edit3 className="w-3 h-3" />
+            {isEditingTranscript ? "Fechar" : "Editar"}
+          </Button>
+        </div>
+        {isEditingTranscript ? (
+          <div className="space-y-1">
+            <Textarea
+              value={transcript}
+              onChange={(e) => onTranscriptChange?.(e.target.value)}
+              rows={4}
+              className="text-sm"
+              placeholder="Edite a transcrição aqui..."
+            />
+            <p className="text-xs text-muted-foreground">
+              💡 Corrija erros de transcrição antes de gerar a letra. Isso evita gastar créditos com resultados incorretos.
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm italic">"{transcript}"</p>
+        )}
       </div>
 
       {/* Section selection */}

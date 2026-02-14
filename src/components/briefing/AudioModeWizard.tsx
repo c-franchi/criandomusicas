@@ -216,6 +216,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               onSectionChange={setSection}
               onModeChange={setMode}
               onVoiceTypeChange={setVoiceType}
+              onTranscriptChange={setTranscript}
               onThemeChange={setTheme}
               onStyleChange={setStyle}
               onBack={() => {
