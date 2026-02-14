@@ -358,7 +358,11 @@ serve(async (req) => {
     const perspectiveContext = perspectiveMap[motivationalPerspective] || 'mentor (você)';
 
     // ========== PROMPT ESPECIAL PARA "100% FALADA" (SPOKEN WORD) ==========
-    const somenteMonologoPrompt = `Você é um escritor profissional de SPOKEN WORD motivacional brasileiro.
+    const isolationIdSpoken = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
+    const somenteMonologoPrompt = `[ISOLATION ID: ${isolationIdSpoken}]
+⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+
+Você é um escritor profissional de SPOKEN WORD motivacional brasileiro.
 
 ⚠️ ESTRUTURA OBRIGATÓRIA - 100% FALADA:
 Esta música é 100% FALADA/DECLAMADA. NENHUM trecho cantado. Use APENAS a tag [monologue].
@@ -429,7 +433,9 @@ ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
 ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
 
     // ============ PROMPT MODO SIMPLES (ativado automaticamente para pedidos curtos) ============
-    const simpleModePrompt = `Você deve criar uma letra SIMPLES, BONITA e COERENTE.
+    const simpleModePrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+
+Você deve criar uma letra SIMPLES, BONITA e COERENTE.
 
 ⚠️ IMPORTANTE: Este é um pedido SIMPLES de usuário comum.
 NÃO transforme o conteúdo em poesia elaborada.
@@ -485,7 +491,9 @@ ${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- C
 Se o pedido for simples, a letra DEVE ser simples.`;
 
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
-    const previewPrompt = `Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
+    const previewPrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+
+Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:
@@ -530,7 +538,18 @@ TÍTULO DA MÚSICA
 
 [End]`;
 
-    const fullSystemPrompt = `Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
+    const isolationId = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
+    
+    const fullSystemPrompt = `[ISOLATION ID: ${isolationId}]
+⚠️ REGRA CRÍTICA DE ISOLAMENTO:
+- Este prompt é 100% INDEPENDENTE de qualquer outro pedido
+- NUNCA reutilize trechos, frases, títulos ou ideias de outras músicas
+- NUNCA referencie informações que NÃO estejam na história abaixo
+- Se você já gerou letras antes nesta sessão, IGNORE-AS completamente
+- Cada música é ÚNICA e baseada EXCLUSIVAMENTE na história fornecida aqui
+- PROIBIDO copiar ou parafrasear conteúdo de pedidos anteriores
+
+Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:

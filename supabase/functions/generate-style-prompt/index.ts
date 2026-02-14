@@ -539,7 +539,9 @@ Return ONLY the title, nothing else.`;
         console.log("Generated instrumental title:", generatedTitle);
       }
 
-      const systemPrompt = `You are a professional music producer creating ULTRA-CONCISE prompts for AI music generation (Suno, Udio).
+      const systemPrompt = `[ISOLATION: ORDER-${orderId}-${Date.now()}]
+You are a professional music producer creating ULTRA-CONCISE prompts for AI music generation (Suno, Udio).
+CRITICAL: This prompt is INDEPENDENT. Do NOT reference any other orders, songs, or previously generated content.
 
 Create a style prompt for an INSTRUMENTAL track (NO VOCALS).
 
@@ -645,7 +647,9 @@ BE VERY CONCISE - under 950 characters total.`;
         lyricsForGeneration = phoneticLyrics;
       }
 
-      const systemPrompt = `You are a music producer creating ULTRA-CONCISE prompts for AI music (Suno, Udio).
+      const systemPrompt = `[ISOLATION: ORDER-${orderId}-${Date.now()}]
+You are a music producer creating ULTRA-CONCISE prompts for AI music (Suno, Udio).
+CRITICAL: This prompt is INDEPENDENT. Do NOT reference any other orders, songs, or previously generated content.
 
 ⚠️ CRITICAL RULES:
 1. OUTPUT MUST BE UNDER 950 CHARACTERS TOTAL. Be extremely concise.
@@ -807,10 +811,8 @@ ${cleanedLyrics}`;
       }
     }
     
-    // Only update status for vocal tracks (instrumental stays in current status)
-    if (!isInstrumental) {
-      updateData.status = 'LYRICS_APPROVED';
-    }
+    // Set status to LYRICS_APPROVED for ALL order types (instrumental and vocal)
+    updateData.status = 'LYRICS_APPROVED';
 
     // CRITICAL: Save song_title to order - USER-PROVIDED title has absolute priority
     // Never overwrite user-provided title with AI-generated content
