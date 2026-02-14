@@ -266,7 +266,7 @@ function detectCriticalTerms(text: string): string[] {
     const matches = text.match(pattern);
     if (matches) {
       matches.forEach(m => {
-        if (!['EU', 'EUA', 'OK', 'TV', 'DVD', 'CD'].includes(m) && m.length >= 2) {
+        if (!['EU', 'EUA', 'OK', 'TV', 'DVD', 'CD', 'DJ', 'MC', 'PC', 'RJ', 'SP', 'MG', 'BA', 'PR', 'RS', 'SC', 'GO', 'PE', 'CE', 'PA', 'MA', 'MT', 'MS', 'PI', 'RN', 'PB', 'SE', 'AL', 'TO', 'RO', 'AC', 'AP', 'RR', 'AM', 'DF', 'ES', 'SENAI', 'SESI', 'SENAC', 'SESC', 'USP', 'PUC', 'UFMG', 'UFRJ', 'UFPR', 'UFSC', 'MPB', 'CPF', 'RG', 'ONG', 'ONU', 'PT', 'MDB', 'PP', 'PSB', 'PSDB', 'PDT', 'PCB', 'GPS', 'USD', 'BRL', 'EUR', 'MBA', 'PhD', 'CEO', 'CTO', 'CFO', 'TI', 'RH', 'AI', 'QI'].includes(m) && m.length >= 2) {
           terms.add(m);
         }
       });
@@ -394,13 +394,14 @@ serve(async (req) => {
       );
 
       if (missingPronunciations.length > 0) {
+        console.log("Missing pronunciations detected:", missingPronunciations);
         return new Response(
           JSON.stringify({ 
             ok: false, 
             error: `Termo(s) detectado(s) sem pronúncia definida: ${missingPronunciations.join(', ')}. Defina a pronúncia antes de gerar a música.`,
             missingPronunciations
           }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     }
