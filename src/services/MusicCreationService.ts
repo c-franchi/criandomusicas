@@ -61,7 +61,7 @@ export interface ApproveLyricsResult {
   error?: unknown;
 }
 
-const getCurrentLanguage = () => i18n.resolvedLanguage || i18n.language;
+const getActiveLanguageCode = () => i18n.resolvedLanguage || i18n.language;
 
 export class MusicCreationService {
   static async createMusic(options: {
@@ -141,7 +141,7 @@ export class MusicCreationService {
       body: {
         orderId,
         story,
-        language: getCurrentLanguage(),
+        language: getActiveLanguageCode(),
         briefing: {
           musicType: briefing.musicType,
           emotion: briefing.emotion,
@@ -251,8 +251,8 @@ export class MusicCreationService {
     if (response.error || !response.data?.ok) {
       const hasMissingPronunciations = response.data?.missingPronunciations?.length;
 
-      // Treat as success only if the edge function failed but the order status was already updated.
-      // If pronunciations are missing, surface the error to allow user correction.
+      // Check if the order was already processed to avoid re-processing.
+      // Only treat as success when pronunciations are not missing and the order was updated.
       if (!hasMissingPronunciations) {
         const alreadyProcessed = await OrderStatusService.checkIfAlreadyProcessed(options.orderId);
 
