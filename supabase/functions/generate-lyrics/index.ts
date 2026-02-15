@@ -227,7 +227,7 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false } = await req.json() as {
+    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false, language = 'pt-BR' } = await req.json() as {
       orderId?: string;
       story: string;
       briefing: BriefingData;
@@ -236,11 +236,12 @@ serve(async (req) => {
       autoApprove?: boolean;
       audioInsert?: { section: string; mode: string; transcript: string };
       isModification?: boolean;
+      language?: string;
     };
 
     // Standalone mode: no orderId needed (used by Audio Mode wizard)
     const isStandaloneMode = !orderId;
-    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove, "standalone:", isStandaloneMode, "isModification:", isModification);
+    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove, "standalone:", isStandaloneMode, "isModification:", isModification, "language:", language);
 
     if (!story) {
       return new Response(
@@ -359,8 +360,14 @@ serve(async (req) => {
 
     // ========== PROMPT ESPECIAL PARA "100% FALADA" (SPOKEN WORD) ==========
     const isolationIdSpoken = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
+    
+    // Language mapping for non-PT prompts
+    const langMapSpoken: Record<string, string> = { 'en': 'inglês', 'es': 'espanhol', 'it': 'italiano' };
+    const langNoteSpoken = language !== 'pt-BR' && langMapSpoken[language] ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${langMapSpoken[language]}.` : '';
+    
     const somenteMonologoPrompt = `[ISOLATION ID: ${isolationIdSpoken}]
 ⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+${langNoteSpoken}
 
 Você é um escritor profissional de SPOKEN WORD motivacional brasileiro.
 
@@ -433,7 +440,9 @@ ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
 ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
 
     // ============ PROMPT MODO SIMPLES (ativado automaticamente para pedidos curtos) ============
+    const langNoteSimple = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const simpleModePrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+${langNoteSimple}
 
 Você deve criar uma letra SIMPLES, BONITA e COERENTE.
 
@@ -491,7 +500,9 @@ ${!autoGenerateName && songName ? `- TÍTULO OBRIGATÓRIO: "${songName}"` : '- C
 Se o pedido for simples, a letra DEVE ser simples.`;
 
     // PREVIEW: Use special prompt for ~1 minute preview (Verse + Pre-Chorus + Chorus)
+    const langNotePreview = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const previewPrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+${langNotePreview}
 
 Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
@@ -538,6 +549,18 @@ TÍTULO DA MÚSICA
 
 [End]`;
 
+    // ============ LANGUAGE MAPPING ============
+    const languageMap: Record<string, string> = {
+      'pt-BR': 'português brasileiro',
+      'en': 'inglês (English)',
+      'es': 'espanhol (Español)',
+      'it': 'italiano (Italiano)',
+    };
+    const targetLanguage = languageMap[language] || 'português brasileiro';
+    const languageInstruction = language !== 'pt-BR' 
+      ? `\n\n⚠️ IDIOMA OBRIGATÓRIO: Escreva TODA a letra em ${targetLanguage}. NÃO use português. A letra INTEIRA deve estar em ${targetLanguage}.`
+      : '';
+    
     const isolationId = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
     
     const fullSystemPrompt = `[ISOLATION ID: ${isolationId}]
@@ -548,8 +571,9 @@ TÍTULO DA MÚSICA
 - Se você já gerou letras antes nesta sessão, IGNORE-AS completamente
 - Cada música é ÚNICA e baseada EXCLUSIVAMENTE na história fornecida aqui
 - PROIBIDO copiar ou parafrasear conteúdo de pedidos anteriores
+${languageInstruction}
 
-Você é um letrista profissional brasileiro especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
+Você é um letrista profissional ${language !== 'pt-BR' ? `que escreve em ${targetLanguage}` : 'brasileiro'} especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
 EVITE COMPLETAMENTE estas frases genéricas:

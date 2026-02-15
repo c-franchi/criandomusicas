@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { MusicCreationService } from "./MusicCreationService";
 
 /**
  * OrderProcessingService
@@ -234,6 +235,7 @@ export class OrderProcessingService {
           orderId,
           story: briefing.story,
           briefing,
+          language: MusicCreationService.getActiveLanguage(),
           ...(audioInsert ? { audioInsert } : {}),
         },
       });
@@ -289,6 +291,7 @@ export class OrderProcessingService {
             story: briefing.story,
             briefing,
             autoApprove: true,
+            language: MusicCreationService.getActiveLanguage(),
           },
         }),
         LYRICS_TIMEOUT_MS,
