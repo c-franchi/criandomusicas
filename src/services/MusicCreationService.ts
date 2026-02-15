@@ -60,7 +60,7 @@ export interface ApproveLyricsResult {
   error?: unknown;
 }
 
-const getActiveLanguage = () => i18n.resolvedLanguage || i18n.language;
+const getActiveI18nLanguage = () => i18n.resolvedLanguage || i18n.language;
 
 export class MusicCreationService {
   static async createMusic(options: {
@@ -134,7 +134,7 @@ export class MusicCreationService {
       body: {
         orderId,
         story,
-        language: getActiveLanguage(),
+        language: getActiveI18nLanguage(),
         briefing: {
           musicType: briefing.musicType,
           emotion: briefing.emotion,
@@ -182,9 +182,9 @@ export class MusicCreationService {
         ...options.briefing,
         isInstrumental: true,
         instruments: options.briefing.instruments || [],
-        soloInstrument: options.briefing.soloInstrument || null,
-        soloMoment: options.briefing.soloMoment || null,
-        instrumentationNotes: options.briefing.instrumentationNotes || "",
+        soloInstrument: options.briefing.soloInstrument ?? null,
+        soloMoment: options.briefing.soloMoment ?? null,
+        instrumentationNotes: options.briefing.instrumentationNotes ?? "",
       },
     });
   }

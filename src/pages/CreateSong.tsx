@@ -736,7 +736,9 @@ const CreateSong = () => {
             message={message}
             description={description}
           />
-          <GeneratingProgressBar t={t} />
+          {(step === "generating" || isFinalizing) && (
+            <GeneratingProgressBar t={t} />
+          )}
         </Card>
       </div>
     );
