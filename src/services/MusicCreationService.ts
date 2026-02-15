@@ -5,7 +5,6 @@ import i18n from "@/lib/i18n";
 /**
  * MusicCreationService
  * Serviço unificado para todas as formas de criação de música.
- * Centraliza a lógica de aprovação, geração de style prompt e proteção contra clique duplo.
  */
 
 export interface ApproveLyricsParams {
@@ -39,32 +38,14 @@ export interface ApprovalResult {
   error?: string;
 }
 
-// Proteção contra clique duplo
 let approvalInFlight = false;
 
 export class MusicCreationService {
-  /**
-   * Método unificado para criação.
-   * Detecta automaticamente se é instrumental ou letra customizada.
-   */
-  static async createMusic(params: ApproveLyricsParams): Promise<ApprovalResult> {
-    if (params.briefing?.isInstrumental) {
-      return this.generateInstrumental(params);
-    }
-
-    if (params.briefing?.hasCustomLyric) {
-      return this.approveLyrics(params);
-    }
-
-    return this.approveLyrics(params);
-  }
-
-  /**
-   * Aprovar letra e gerar style prompt.
-   */
+  /* ================================
+     MÉTODO PRINCIPAL
+  ================================= */
   static async approveLyrics(params: ApproveLyricsParams): Promise<ApprovalResult> {
     if (approvalInFlight) {
-      console.log("[MusicCreation] Approval already in flight");
       return { success: false, error: "Ação já em andamento" };
     }
 
@@ -81,15 +62,18 @@ export class MusicCreationService {
         return { success: false, error: validation?.reason };
       }
 
+      const normalizedCover = this.normalizeCoverUrl(params.customCoverUrl);
+      const autoPronunciations = this.autoFixPronunciations(params.approvedLyrics, params.pronunciations || []);
+
       const { data, error } = await supabase.functions.invoke("generate-style-prompt", {
         body: {
           orderId: params.orderId,
           lyricId: params.lyricId,
           approvedLyrics: params.approvedLyrics,
           songTitle: params.songTitle,
-          pronunciations: params.pronunciations || [],
+          pronunciations: autoPronunciations,
           hasCustomLyric: params.hasCustomLyric || false,
-          customCoverUrl: params.customCoverUrl || null,
+          customCoverUrl: normalizedCover,
           coverMode: params.coverMode || "auto",
           language: this.getActiveLanguage(),
           briefing: params.briefing,
@@ -99,15 +83,16 @@ export class MusicCreationService {
       if (error) {
         const parsed = this.parseEdgeFunctionError(error);
 
+        // 🔥 NÃO bloquear por maiúsculas simples
         if (parsed?.missingPronunciations?.length) {
-          return {
-            success: false,
-            missingPronunciations: parsed.missingPronunciations,
-          };
+          const filtered = parsed.missingPronunciations.filter((word: string) => this.shouldReallyBlock(word));
+
+          if (filtered.length > 0) {
+            return { success: false, missingPronunciations: filtered };
+          }
         }
 
         const postCheck = await OrderStatusService.isAlreadyProcessed(params.orderId);
-
         if (postCheck) {
           return { success: true, alreadyProcessed: true };
         }
@@ -116,29 +101,16 @@ export class MusicCreationService {
       }
 
       if (!data?.ok) {
-        if (data?.missingPronunciations?.length) {
-          return {
-            success: false,
-            missingPronunciations: data.missingPronunciations,
-          };
-        }
-
         const postCheck = await OrderStatusService.isAlreadyProcessed(params.orderId);
-
         if (postCheck) {
           return { success: true, alreadyProcessed: true };
         }
-
-        return {
-          success: false,
-          error: data?.error || "Erro ao gerar música",
-        };
+        return { success: false, error: data?.error || "Erro ao gerar música" };
       }
 
       return { success: true };
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error("[MusicCreation] Unexpected error:", msg);
 
       try {
         const postCheck = await OrderStatusService.isAlreadyProcessed(params.orderId);
@@ -153,50 +125,60 @@ export class MusicCreationService {
     }
   }
 
-  /**
-   * Fluxo exclusivo para instrumental.
-   * Não gera letras.
-   */
-  private static async generateInstrumental(params: ApproveLyricsParams): Promise<ApprovalResult> {
-    const { data, error } = await supabase.functions.invoke("generate-style-prompt", {
-      body: {
-        orderId: params.orderId,
-        lyricId: "instrumental",
-        approvedLyrics: "",
-        songTitle: params.songTitle,
-        pronunciations: [],
-        hasCustomLyric: false,
-        customCoverUrl: params.customCoverUrl || null,
-        coverMode: params.coverMode || "auto",
-        language: this.getActiveLanguage(),
-        briefing: {
-          ...params.briefing,
-          isInstrumental: true,
-        },
-      },
-    });
+  /* ================================
+     NORMALIZAÇÃO DE CAPA
+  ================================= */
+  private static normalizeCoverUrl(url?: string | null): string | null {
+    if (!url) return null;
 
-    if (error) {
-      return { success: false, error: error.message };
+    const trimmed = url.trim();
+
+    if (!trimmed) return null;
+
+    // Não permitir base64 gigantes
+    if (trimmed.startsWith("data:image")) {
+      if (trimmed.length > 2_000_000) {
+        return null;
+      }
     }
 
-    if (!data?.ok) {
-      return { success: false, error: data?.error || "Erro instrumental" };
+    try {
+      new URL(trimmed);
+      return trimmed;
+    } catch {
+      return null;
     }
-
-    return { success: true };
   }
 
-  /**
-   * Idioma ativo para geração
-   */
+  /* ================================
+     CORREÇÃO AUTOMÁTICA DE PRONÚNCIA
+  ================================= */
+  private static autoFixPronunciations(text: string, existing: Array<{ term: string; phonetic: string }>) {
+    const words = text.match(/\b[A-ZÀ-Ú][a-zà-ú]+\b/g) || [];
+
+    const autoGenerated = words.map((word) => ({
+      term: word,
+      phonetic: word.toLowerCase(),
+    }));
+
+    return [...existing, ...autoGenerated];
+  }
+
+  private static shouldReallyBlock(word: string): boolean {
+    // Bloquear apenas se tiver números ou símbolos estranhos
+    return /[^a-zA-ZÀ-ú]/.test(word);
+  }
+
+  /* ================================
+     IDIOMA ATIVO
+  ================================= */
   static getActiveLanguage(): string {
     return i18n.resolvedLanguage || i18n.language || "pt-BR";
   }
 
-  /**
-   * Extrai erro estruturado da Edge Function
-   */
+  /* ================================
+     PARSER DE ERRO
+  ================================= */
   private static parseEdgeFunctionError(error: any): any {
     try {
       const ctx = error?.context;
