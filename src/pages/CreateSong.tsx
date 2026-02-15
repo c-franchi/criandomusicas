@@ -50,6 +50,8 @@ interface Pronunciation {
 
 type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
 
+const LOADING_STEPS = new Set<Step>(["loading", "generating", "approved"]);
+
 // Animated progress bar for lyric generation
 const GeneratingProgressBar = ({ t }: { t: (key: string) => string }) => {
   const [progress, setProgress] = useState(0);
@@ -458,7 +460,7 @@ const CreateSong = () => {
 
     if (isApprovalInProgressRef.current) {
       console.info("approval already in progress");
-      toast.info(t('createSong.approvalInProgress', 'A aprovação já está em andamento.'));
+      toast.info(t('createSong.approvalInProgress'));
       return;
     }
 
@@ -714,7 +716,7 @@ const CreateSong = () => {
   };
 
   // Loading state
-  if (step === "loading" || step === "generating" || step === "approved") {
+  if (LOADING_STEPS.has(step)) {
     const isFinalizing = step === "approved";
     const message = isFinalizing
       ? t('createSong.finalizing')
