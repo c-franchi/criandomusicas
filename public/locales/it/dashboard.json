@@ -307,6 +307,7 @@
     "emptyLyric": "Testo vuoto",
     "lyricNotLoaded": "Il testo non è stato caricato correttamente. Prova a selezionare di nuovo.",
     "approvalError": "Errore nell'approvazione del testo",
+    "approvalInProgress": "L'approvazione è già in corso.",
     "myLetter": "Il Mio Testo",
     "needLogin": "Devi effettuare l'accesso",
     "unknownError": "Errore sconosciuto",

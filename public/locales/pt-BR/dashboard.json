@@ -313,6 +313,7 @@
     "emptyLyric": "Letra vazia",
     "lyricNotLoaded": "A letra da música não foi carregada corretamente. Tente selecionar novamente.",
     "approvalError": "Erro ao aprovar letra",
+    "approvalInProgress": "A aprovação já está em andamento.",
     "myLetter": "Minha Letra",
     "needLogin": "Você precisa estar logado",
     "unknownError": "Erro desconhecido",

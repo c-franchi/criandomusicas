@@ -11,6 +11,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { MusicCreationService } from "@/services/MusicCreationService";
 import PronunciationModal from "@/components/PronunciationModal";
 import { useTranslation } from "react-i18next";
 
@@ -48,6 +49,8 @@ interface Pronunciation {
 }
 
 type Step = "loading" | "generating" | "select" | "editing" | "editing-modified" | "approved" | "complete";
+
+const LOADING_STEPS = new Set<Step>(["loading", "generating", "approved"]);
 
 // Animated progress bar for lyric generation
 const GeneratingProgressBar = ({ t }: { t: (key: string) => string }) => {
@@ -135,6 +138,7 @@ const CreateSong = () => {
   const [coverMode, setCoverMode] = useState<"auto" | "original" | "enhanced">("auto");
   const [isEnhancingCover, setIsEnhancingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const isApprovalInProgressRef = useRef(false);
   // Auto-redirect to dashboard after complete
   useAutoRedirect(step, navigate);
 
@@ -347,60 +351,22 @@ const CreateSong = () => {
     setLoading(true);
 
     try {
-      // Criar order no Supabase
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          status: 'DRAFT',
-          music_style: briefing.style,
-          emotion: briefing.emotion,
-          tone: briefing.rhythm,
-          music_structure: briefing.structure.join(','),
-          story: briefing.story,
-          music_type: briefing.musicType,
-          emotion_intensity: briefing.emotionIntensity,
-          rhythm: briefing.rhythm,
-          atmosphere: briefing.atmosphere,
-          has_monologue: briefing.hasMonologue,
-          monologue_position: briefing.monologuePosition,
-          mandatory_words: briefing.mandatoryWords,
-          restricted_words: briefing.restrictedWords
-        })
-        .select()
-        .single();
-
-      if (orderError) {
-        console.error("Erro ao criar order:", orderError);
-        throw new Error(t('createSong.createOrderError'));
-      }
-
-      setOrderId(orderData.id);
-
-      // Chamar Edge Function para gerar letras
-      const { data, error } = await supabase.functions.invoke('generate-lyrics', {
-        body: {
-          orderId: orderData.id,
-          story: briefing.story,
-          briefing: {
-            musicType: briefing.musicType,
-            emotion: briefing.emotion,
-            emotionIntensity: briefing.emotionIntensity,
-            style: briefing.style,
-            rhythm: briefing.rhythm,
-            atmosphere: briefing.atmosphere,
-            structure: briefing.structure,
-            hasMonologue: briefing.hasMonologue,
-            monologuePosition: briefing.monologuePosition,
-            mandatoryWords: briefing.mandatoryWords,
-            restrictedWords: briefing.restrictedWords,
-            songName: briefing.songName,
-            autoGenerateName: briefing.autoGenerateName
-          }
-        }
+      const { orderId: createdOrderId, data, error } = await MusicCreationService.createLyrics({
+        userId: user.id,
+        story: briefing.story,
+        briefing,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (createdOrderId) {
+          setOrderId(createdOrderId);
+        }
+        throw error;
+      }
+
+      if (createdOrderId) {
+        setOrderId(createdOrderId);
+      }
 
       if (!data?.ok) {
         throw new Error(data?.error || t('createSong.lyricsGenerationError'));
@@ -492,6 +458,13 @@ const CreateSong = () => {
       return;
     }
 
+    if (isApprovalInProgressRef.current) {
+      console.info("approval already in progress");
+      toast.info(t('createSong.approvalInProgress'));
+      return;
+    }
+
+    isApprovalInProgressRef.current = true;
     setLoading(true);
     setStep("approved");
 
@@ -505,26 +478,24 @@ const CreateSong = () => {
       // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
       const lyricId = effectiveLyric?.id || 'custom';
       
-      const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
-        body: {
-          orderId,
-          lyricId: lyricId,
-          approvedLyrics: editedLyric,
-          songTitle: editedTitle,
-          pronunciations: customPronunciations || pronunciations,
-          hasCustomLyric: briefingData.hasCustomLyric || false,
-          customCoverUrl: customCoverUrl,
-          coverMode: coverMode,
-          briefing: {
-            musicType: briefingData.musicType,
-            emotion: briefingData.emotion,
-            emotionIntensity: briefingData.emotionIntensity,
-            style: briefingData.style,
-            rhythm: briefingData.rhythm,
-            atmosphere: briefingData.atmosphere,
-            hasMonologue: briefingData.hasMonologue,
-            voiceType: briefingData.voiceType || 'feminina'
-          }
+      const { data, error } = await MusicCreationService.approveLyrics({
+        orderId,
+        lyricId: lyricId,
+        approvedLyrics: editedLyric,
+        songTitle: editedTitle,
+        pronunciations: customPronunciations || pronunciations,
+        hasCustomLyric: briefingData.hasCustomLyric || false,
+        customCoverUrl: customCoverUrl,
+        coverMode: coverMode,
+        briefing: {
+          musicType: briefingData.musicType,
+          emotion: briefingData.emotion,
+          emotionIntensity: briefingData.emotionIntensity,
+          style: briefingData.style,
+          rhythm: briefingData.rhythm,
+          atmosphere: briefingData.atmosphere,
+          hasMonologue: briefingData.hasMonologue,
+          voiceType: briefingData.voiceType || 'feminina'
         }
       });
 
@@ -627,6 +598,7 @@ const CreateSong = () => {
       setStep(hasUsedModification ? "editing-modified" : "editing");
     } finally {
       setLoading(false);
+      isApprovalInProgressRef.current = false;
     }
   };
 
@@ -700,27 +672,11 @@ const CreateSong = () => {
 
     try {
       // Regenerar com as instruções de edição
-      const { data, error } = await supabase.functions.invoke('generate-lyrics', {
-        body: {
-          orderId,
-          story: `${briefingData.story}\n\n[INSTRUÇÕES DE AJUSTE DO USUÁRIO]: ${editInstructions}\n\n[LETRA ANTERIOR PARA REFERÊNCIA]:\n${editedLyric}`,
-          briefing: {
-            musicType: briefingData.musicType,
-            emotion: briefingData.emotion,
-            emotionIntensity: briefingData.emotionIntensity,
-            style: briefingData.style,
-            rhythm: briefingData.rhythm,
-            atmosphere: briefingData.atmosphere,
-            structure: briefingData.structure,
-            hasMonologue: briefingData.hasMonologue,
-            monologuePosition: briefingData.monologuePosition,
-            mandatoryWords: briefingData.mandatoryWords,
-            restrictedWords: briefingData.restrictedWords,
-            songName: briefingData.songName,
-            autoGenerateName: briefingData.autoGenerateName
-          },
-          isModification: true
-        }
+      const { data, error } = await MusicCreationService.createLyrics({
+        orderId,
+        story: `${briefingData.story}\n\n[INSTRUÇÕES DE AJUSTE DO USUÁRIO]: ${editInstructions}\n\n[LETRA ANTERIOR PARA REFERÊNCIA]:\n${editedLyric}`,
+        briefing: briefingData,
+        isModification: true,
       });
 
       if (error) throw error;
@@ -760,7 +716,19 @@ const CreateSong = () => {
   };
 
   // Loading state
-  if (step === "loading" || step === "generating") {
+  if (LOADING_STEPS.has(step)) {
+    const isFinalizing = step === "approved";
+    const message = isFinalizing
+      ? t('createSong.finalizing')
+      : step === "generating"
+        ? t('createSong.generatingLyrics')
+        : tc('loading');
+    const description = isFinalizing
+      ? t('createSong.preparingForProduction')
+      : step === "generating"
+        ? t('createSong.generatingDescription')
+        : t('createSong.loadingBriefing');
+
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
         {step === "loading" && (
@@ -774,13 +742,10 @@ const CreateSong = () => {
         <Card className="max-w-md w-full text-center p-8">
           <MusicLoadingSpinner
             size="lg" 
-            message={step === "generating" ? t('createSong.generatingLyrics') : tc('loading')}
-            description={step === "generating" 
-              ? t('createSong.generatingDescription')
-              : t('createSong.loadingBriefing')
-            }
+            message={message}
+            description={description}
           />
-          {step === "generating" && (
+          {(step === "generating" || isFinalizing) && (
             <GeneratingProgressBar t={t} />
           )}
         </Card>
@@ -1339,21 +1304,6 @@ const CreateSong = () => {
             </Button>
           </div>
         </div>
-      </div>
-    );
-  }
-
-  // Approved state
-  if (step === "approved") {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center p-8">
-          <MusicLoadingSpinner 
-            size="lg" 
-            message={t('createSong.finalizing')}
-            description={t('createSong.preparingForProduction')}
-          />
-        </Card>
       </div>
     );
   }

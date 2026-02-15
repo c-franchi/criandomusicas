@@ -312,6 +312,7 @@
     "emptyLyric": "Empty lyrics",
     "lyricNotLoaded": "The lyrics were not loaded correctly. Try selecting again.",
     "approvalError": "Error approving lyrics",
+    "approvalInProgress": "Approval is already in progress.",
     "myLetter": "My Lyrics",
     "needLogin": "You need to be logged in",
     "unknownError": "Unknown error",
