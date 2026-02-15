@@ -1,3 +1,4 @@
+import i18n from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface OrderStatusValidation {
@@ -30,7 +31,7 @@ export class OrderStatusService {
     if (error || !order) {
       return {
         isValid: false,
-        error: error?.message || "Pedido não encontrado",
+        error: error?.message || i18n.t("checkout:orderNotFound"),
       };
     }
 
@@ -38,7 +39,7 @@ export class OrderStatusService {
       return {
         isValid: false,
         order,
-        error: "Pedido cancelado",
+        error: i18n.t("dashboard:statuses.CANCELLED"),
       };
     }
 

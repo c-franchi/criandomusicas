@@ -98,7 +98,10 @@ export class MusicCreationService {
 
     if (!orderId) {
       if (!userId) {
-        return { orderId: "", error: new Error("Usuário não informado") };
+        return {
+          orderId: "",
+          error: new Error(i18n.t("dashboard:createSong.needLogin")),
+        };
       }
 
       const { data: orderData, error: orderError } = await supabase
@@ -124,7 +127,10 @@ export class MusicCreationService {
         .single();
 
       if (orderError || !orderData) {
-        return { orderId: "", error: orderError || new Error("Erro ao criar pedido") };
+        return {
+          orderId: "",
+          error: orderError || new Error(i18n.t("dashboard:createSong.createOrderError")),
+        };
       }
 
       orderId = orderData.id;
@@ -168,7 +174,7 @@ export class MusicCreationService {
     briefing: MusicCreationBriefing;
   }): Promise<GenerateStylePromptResult> {
     if (!options.orderId) {
-      return { error: new Error("Pedido não informado") };
+      return { error: new Error(i18n.t("dashboard:createSong.orderDataNotFound")) };
     }
 
     return this.generateStylePrompt({
@@ -195,7 +201,7 @@ export class MusicCreationService {
     briefing: MusicCreationBriefing;
   }): Promise<ApproveLyricsResult> {
     if (!options.orderId) {
-      return { error: new Error("Pedido não informado") };
+      return { error: new Error(i18n.t("dashboard:createSong.orderDataNotFound")) };
     }
 
     return this.approveLyrics({
