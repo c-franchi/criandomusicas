@@ -61,7 +61,7 @@ export interface ApproveLyricsResult {
   error?: unknown;
 }
 
-const getActiveLanguage = () => i18n.resolvedLanguage || i18n.language;
+const getCurrentI18nLanguage = () => i18n.resolvedLanguage || i18n.language;
 
 export class MusicCreationService {
   static async createMusic(options: {
@@ -141,7 +141,7 @@ export class MusicCreationService {
       body: {
         orderId,
         story,
-        language: getActiveLanguage(),
+        language: getCurrentI18nLanguage(),
         briefing: {
           musicType: briefing.musicType,
           emotion: briefing.emotion,

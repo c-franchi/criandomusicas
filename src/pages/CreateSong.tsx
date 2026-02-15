@@ -136,7 +136,7 @@ const CreateSong = () => {
   const [coverMode, setCoverMode] = useState<"auto" | "original" | "enhanced">("auto");
   const [isEnhancingCover, setIsEnhancingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
-  const isApprovingRef = useRef(false);
+  const isApprovalInProgressRef = useRef(false);
   // Auto-redirect to dashboard after complete
   useAutoRedirect(step, navigate);
 
@@ -451,12 +451,12 @@ const CreateSong = () => {
       return;
     }
 
-    if (isApprovingRef.current) {
+    if (isApprovalInProgressRef.current) {
       console.info("Approval already in progress");
       return;
     }
 
-    isApprovingRef.current = true;
+    isApprovalInProgressRef.current = true;
     setLoading(true);
     setStep("approved");
 
@@ -590,7 +590,7 @@ const CreateSong = () => {
       setStep(hasUsedModification ? "editing-modified" : "editing");
     } finally {
       setLoading(false);
-      isApprovingRef.current = false;
+      isApprovalInProgressRef.current = false;
     }
   };
 
