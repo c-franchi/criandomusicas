@@ -458,6 +458,7 @@ const CreateSong = () => {
 
     if (isApprovalInProgressRef.current) {
       console.info("Approval already in progress");
+      toast.info(t('createSong.approvalInProgress', 'A aprovação já está em andamento.'));
       return;
     }
 
