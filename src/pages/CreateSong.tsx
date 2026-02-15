@@ -452,6 +452,7 @@ const CreateSong = () => {
     }
 
     if (isApprovingRef.current) {
+      console.info("Approval already in progress");
       return;
     }
 

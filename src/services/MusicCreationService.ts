@@ -41,6 +41,7 @@ export interface MusicCreationFunctionResponse {
   error?: string;
   lyrics?: LyricPayload[];
   missingPronunciations?: string[];
+  alreadyProcessed?: boolean;
   [key: string]: unknown;
 }
 
@@ -60,7 +61,7 @@ export interface ApproveLyricsResult {
   error?: unknown;
 }
 
-const getActiveI18nLanguage = () => i18n.resolvedLanguage || i18n.language;
+const getActiveLanguage = () => i18n.resolvedLanguage || i18n.language;
 
 export class MusicCreationService {
   static async createMusic(options: {
@@ -140,7 +141,7 @@ export class MusicCreationService {
       body: {
         orderId,
         story,
-        language: getActiveI18nLanguage(),
+        language: getActiveLanguage(),
         briefing: {
           musicType: briefing.musicType,
           emotion: briefing.emotion,
