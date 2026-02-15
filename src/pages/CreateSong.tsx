@@ -355,11 +355,16 @@ const CreateSong = () => {
         briefing,
       });
 
+      if (error) {
+        if (createdOrderId) {
+          setOrderId(createdOrderId);
+        }
+        throw error;
+      }
+
       if (createdOrderId) {
         setOrderId(createdOrderId);
       }
-
-      if (error) throw error;
 
       if (!data?.ok) {
         throw new Error(data?.error || t('createSong.lyricsGenerationError'));

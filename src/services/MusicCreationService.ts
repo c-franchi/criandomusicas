@@ -251,6 +251,8 @@ export class MusicCreationService {
     if (response.error || !response.data?.ok) {
       const hasMissingPronunciations = response.data?.missingPronunciations?.length;
 
+      // Only treat as success when the edge function failed but the order was already updated.
+      // If there are missing pronunciations, we must surface the error so the user can respond.
       if (!hasMissingPronunciations) {
         const alreadyProcessed = await OrderStatusService.checkIfAlreadyProcessed(options.orderId);
 
