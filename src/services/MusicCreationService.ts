@@ -44,89 +44,27 @@ let approvalInFlight = false;
 
 export class MusicCreationService {
   /**
-   * 🔹 Método unificado para criação de música
-   * Decide automaticamente o fluxo:
-   * - Instrumental
-   * - Letra própria
-   * - Futuras expansões
+   * Método unificado para criação.
+   * Detecta automaticamente se é instrumental ou letra customizada.
    */
-  static async createMusic(options: {
-    orderId?: string;
-    story: string;
-    briefing: any;
-    pronunciations?: Array<{ term: string; phonetic: string }>;
-    customCoverUrl?: string | null;
-    coverMode?: string;
-  }): Promise<ApprovalResult> {
-    let { orderId } = options;
-
-    // ==============================
-    // 🔹 Garantir que exista uma order
-    // ==============================
-    if (!orderId) {
-      const { data, error } = await supabase
-        .from("orders")
-        .insert({
-          status: "DRAFT",
-          story: options.story,
-          has_custom_lyric: options.briefing?.hasCustomLyric === true,
-          is_instrumental: options.briefing?.isInstrumental === true,
-        })
-        .select()
-        .single();
-
-      if (error || !data) {
-        return { success: false, error: error?.message || "Erro ao criar pedido" };
-      }
-
-      orderId = data.id;
+  static async createMusic(params: ApproveLyricsParams): Promise<ApprovalResult> {
+    if (params.briefing?.isInstrumental) {
+      return this.generateInstrumental(params);
     }
 
-    // ==============================
-    // 🔹 Instrumental
-    // ==============================
-    if (options.briefing?.isInstrumental === true) {
-      return this.approveLyrics({
-        orderId,
-        lyricId: "instrumental",
-        approvedLyrics: "",
-        songTitle: options.briefing?.songName || "",
-        customCoverUrl: options.customCoverUrl,
-        coverMode: options.coverMode,
-        briefing: options.briefing,
-      });
+    if (params.briefing?.hasCustomLyric) {
+      return this.approveLyrics(params);
     }
 
-    // ==============================
-    // 🔹 Letra própria
-    // ==============================
-    if (options.briefing?.hasCustomLyric === true) {
-      return this.approveLyrics({
-        orderId,
-        lyricId: "custom",
-        approvedLyrics: options.story,
-        songTitle: options.briefing?.songName || "",
-        pronunciations: options.pronunciations || [],
-        hasCustomLyric: true,
-        customCoverUrl: options.customCoverUrl,
-        coverMode: options.coverMode,
-        briefing: options.briefing,
-      });
-    }
-
-    return {
-      success: false,
-      error: "Fluxo inválido ou não implementado",
-    };
+    return this.approveLyrics(params);
   }
 
   /**
-   * 🔹 Aprovar letra e gerar style prompt.
-   * Inclui proteção contra clique duplo e validação de status no banco.
+   * Aprovar letra e gerar style prompt.
    */
   static async approveLyrics(params: ApproveLyricsParams): Promise<ApprovalResult> {
     if (approvalInFlight) {
-      console.log("[MusicCreation] Approval already in flight, ignoring duplicate");
+      console.log("[MusicCreation] Approval already in flight");
       return { success: false, error: "Ação já em andamento" };
     }
 
@@ -135,13 +73,12 @@ export class MusicCreationService {
     try {
       const validation = await OrderStatusService.canApproveLyrics(params.orderId);
 
-      if (validation.alreadyApproved) {
-        console.log("[MusicCreation] Order already approved, treating as success");
+      if (validation?.alreadyApproved) {
         return { success: true, alreadyProcessed: true };
       }
 
-      if (!validation.canApprove) {
-        return { success: false, error: validation.reason };
+      if (!validation?.canApprove) {
+        return { success: false, error: validation?.reason };
       }
 
       const { data, error } = await supabase.functions.invoke("generate-style-prompt", {
@@ -154,36 +91,48 @@ export class MusicCreationService {
           hasCustomLyric: params.hasCustomLyric || false,
           customCoverUrl: params.customCoverUrl || null,
           coverMode: params.coverMode || "auto",
+          language: this.getActiveLanguage(),
           briefing: params.briefing,
         },
       });
 
       if (error) {
-        const errorData = this.parseEdgeFunctionError(error);
+        const parsed = this.parseEdgeFunctionError(error);
 
-        if (errorData?.missingPronunciations?.length) {
-          return { success: false, missingPronunciations: errorData.missingPronunciations };
+        if (parsed?.missingPronunciations?.length) {
+          return {
+            success: false,
+            missingPronunciations: parsed.missingPronunciations,
+          };
         }
 
         const postCheck = await OrderStatusService.isAlreadyProcessed(params.orderId);
+
         if (postCheck) {
           return { success: true, alreadyProcessed: true };
         }
 
-        return { success: false, error: errorData?.error || error.message || "Erro na função" };
+        return { success: false, error: parsed?.error || error.message };
       }
 
       if (!data?.ok) {
         if (data?.missingPronunciations?.length) {
-          return { success: false, missingPronunciations: data.missingPronunciations };
+          return {
+            success: false,
+            missingPronunciations: data.missingPronunciations,
+          };
         }
 
         const postCheck = await OrderStatusService.isAlreadyProcessed(params.orderId);
+
         if (postCheck) {
           return { success: true, alreadyProcessed: true };
         }
 
-        return { success: false, error: data?.error || "Erro ao gerar prompt de estilo" };
+        return {
+          success: false,
+          error: data?.error || "Erro ao gerar música",
+        };
       }
 
       return { success: true };
@@ -205,24 +154,61 @@ export class MusicCreationService {
   }
 
   /**
-   * Idioma ativo
+   * Fluxo exclusivo para instrumental.
+   * Não gera letras.
    */
-  static getActiveLanguage(): string {
-    return i18n.language || "pt-BR";
+  private static async generateInstrumental(params: ApproveLyricsParams): Promise<ApprovalResult> {
+    const { data, error } = await supabase.functions.invoke("generate-style-prompt", {
+      body: {
+        orderId: params.orderId,
+        lyricId: "instrumental",
+        approvedLyrics: "",
+        songTitle: params.songTitle,
+        pronunciations: [],
+        hasCustomLyric: false,
+        customCoverUrl: params.customCoverUrl || null,
+        coverMode: params.coverMode || "auto",
+        language: this.getActiveLanguage(),
+        briefing: {
+          ...params.briefing,
+          isInstrumental: true,
+        },
+      },
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data?.ok) {
+      return { success: false, error: data?.error || "Erro instrumental" };
+    }
+
+    return { success: true };
   }
 
   /**
-   * Parse erro da edge function
+   * Idioma ativo para geração
+   */
+  static getActiveLanguage(): string {
+    return i18n.resolvedLanguage || i18n.language || "pt-BR";
+  }
+
+  /**
+   * Extrai erro estruturado da Edge Function
    */
   private static parseEdgeFunctionError(error: any): any {
     try {
       const ctx = error?.context;
+
       if (ctx?.body) {
         return typeof ctx.body === "string" ? JSON.parse(ctx.body) : ctx.body;
       }
-      const match = error.message?.match(/body\s*({.+})/);
+
+      const match = error?.message?.match(/body\s*({.+})/);
       if (match) return JSON.parse(match[1]);
     } catch {}
+
     return null;
   }
 }
