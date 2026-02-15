@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import PronunciationModal from "@/components/PronunciationModal";
 import { useTranslation } from "react-i18next";
+import { MusicCreationService } from "@/services/MusicCreationService";
 
 interface LyricOption {
   id: string;
@@ -382,6 +383,7 @@ const CreateSong = () => {
         body: {
           orderId: orderData.id,
           story: briefing.story,
+          language: MusicCreationService.getActiveLanguage(),
           briefing: {
             musicType: briefing.musicType,
             emotion: briefing.emotion,
@@ -459,35 +461,19 @@ const CreateSong = () => {
     const isUsingModified = hasUsedModification && modifiedLyric && isModifiedSelected;
     const effectiveLyric = isUsingModified ? modifiedLyric : selectedLyric;
     
-    console.log("handleApproveLyric called", {
-      selectedLyric: selectedLyric?.id,
-      modifiedLyric: modifiedLyric?.id,
-      effectiveLyric: effectiveLyric?.id,
-      isUsingModified,
-      orderId,
-      editedLyric: editedLyric?.substring(0, 50),
-      editedLyricLength: editedLyric?.length,
-      briefingData: briefingData ? 'exists' : 'null',
-      hasCustomLyric: briefingData?.hasCustomLyric
-    });
-    
-    // Para letras customizadas, podemos aprovar mesmo sem selectedLyric já que temos editedLyric
     const isCustomLyric = briefingData?.hasCustomLyric === true;
     
     if (!isCustomLyric && !effectiveLyric) {
-      console.error("Missing effectiveLyric for non-custom lyric");
       toast.error(t('createSong.incompleteData'), { description: t('createSong.selectLyricFirst') });
       return;
     }
     
     if (!orderId || !briefingData) {
-      console.error("Missing required data:", { orderId: !!orderId, briefingData: !!briefingData });
       toast.error(t('createSong.incompleteData'), { description: t('createSong.orderDataNotFound') });
       return;
     }
     
     if (!editedLyric || editedLyric.trim().length === 0) {
-      console.error("editedLyric is empty!");
       toast.error(t('createSong.emptyLyric'), { description: t('createSong.lyricNotLoaded') });
       return;
     }
@@ -502,128 +488,68 @@ const CreateSong = () => {
         customCoverUrl = await uploadCustomCover();
       }
 
-      // Chamar Edge Function para gerar o Style Prompt (sem exibir ao usuário)
       const lyricId = effectiveLyric?.id || 'custom';
-      
-      const { data, error } = await supabase.functions.invoke('generate-style-prompt', {
-        body: {
-          orderId,
-          lyricId: lyricId,
-          approvedLyrics: editedLyric,
-          songTitle: editedTitle,
-          pronunciations: customPronunciations || pronunciations,
-          hasCustomLyric: briefingData.hasCustomLyric || false,
-          customCoverUrl: customCoverUrl,
-          coverMode: coverMode,
-          briefing: {
-            musicType: briefingData.musicType,
-            emotion: briefingData.emotion,
-            emotionIntensity: briefingData.emotionIntensity,
-            style: briefingData.style,
-            rhythm: briefingData.rhythm,
-            atmosphere: briefingData.atmosphere,
-            hasMonologue: briefingData.hasMonologue,
-            voiceType: briefingData.voiceType || 'feminina'
-          }
-        }
+
+      // Use MusicCreationService for unified approval with double-click protection
+      const result = await MusicCreationService.approveLyrics({
+        orderId,
+        lyricId,
+        approvedLyrics: editedLyric,
+        songTitle: editedTitle,
+        pronunciations: customPronunciations || pronunciations,
+        hasCustomLyric: briefingData.hasCustomLyric || false,
+        customCoverUrl,
+        coverMode,
+        briefing: {
+          musicType: briefingData.musicType,
+          emotion: briefingData.emotion,
+          emotionIntensity: briefingData.emotionIntensity,
+          style: briefingData.style,
+          rhythm: briefingData.rhythm,
+          atmosphere: briefingData.atmosphere,
+          hasMonologue: briefingData.hasMonologue,
+          voiceType: briefingData.voiceType || 'feminina',
+        },
       });
 
-      // Handle edge function errors - extract message from response body if available
-      if (error) {
-        // Try to extract error details from the error context
-        const errorContext = (error as any)?.context;
-        let errorData: any = null;
-        
-        // Try to parse error body from context or message
-        try {
-          if (errorContext?.body) {
-            errorData = typeof errorContext.body === 'string' 
-              ? JSON.parse(errorContext.body) 
-              : errorContext.body;
-          } else {
-            // Try to extract JSON from error message (e.g. "status code 400, body {...}")
-            const messageMatch = error.message?.match(/body\s*({.+})/);
-            if (messageMatch) {
-              errorData = JSON.parse(messageMatch[1]);
-            }
-          }
-        } catch (e) {
-          // Parsing failed, continue with original error
-        }
-
-        // Check if it's a pronunciation error from the parsed error data
-        if (errorData?.missingPronunciations && errorData.missingPronunciations.length > 0) {
-          setMissingPronunciations(errorData.missingPronunciations);
-          setShowPronunciationModal(true);
-          setStep(hasUsedModification ? "editing-modified" : "editing");
-          setLoading(false);
-          toast.warning(t('createSong.pronunciationNeeded'), {
-            description: t('createSong.definePronunciation', { terms: errorData.missingPronunciations.join(', ') })
-          });
-          return;
-        }
-
-        // If we have a parsed error message, use it
-        if (errorData?.error) {
-          throw new Error(errorData.error);
-        }
-        
-        throw error;
+      // Handle pronunciation modal
+      if (result.missingPronunciations?.length) {
+        setMissingPronunciations(result.missingPronunciations);
+        setShowPronunciationModal(true);
+        setStep(hasUsedModification ? "editing-modified" : "editing");
+        setLoading(false);
+        toast.warning(t('createSong.pronunciationNeeded'), {
+          description: t('createSong.definePronunciation', { terms: result.missingPronunciations.join(', ') })
+        });
+        return;
       }
 
-      if (!data?.ok) {
-        // Check if it's a pronunciation error
-        if (data?.missingPronunciations && data.missingPronunciations.length > 0) {
-          setMissingPronunciations(data.missingPronunciations);
-          setShowPronunciationModal(true);
-          setStep(hasUsedModification ? "editing-modified" : "editing");
-          setLoading(false);
-          toast.warning(t('createSong.pronunciationNeeded'), {
-            description: t('createSong.definePronunciation', { terms: data.missingPronunciations.join(', ') })
-          });
-          return;
+      if (result.success) {
+        setStep("complete");
+        toast.success(t('createSong.lyricApproved'), {
+          description: result.alreadyProcessed
+            ? t('createSong.alreadyProcessed', { defaultValue: 'Pedido já estava em produção!' })
+            : t('createSong.readyForProduction')
+        });
+      } else {
+        const errorMessage = result.error || t('createSong.unknownError');
+        let userFriendlyMessage = errorMessage;
+        if (errorMessage.includes("Limite de requisições")) {
+          userFriendlyMessage = t('createSong.rateLimitError');
+        } else if (errorMessage.includes("Créditos insuficientes")) {
+          userFriendlyMessage = t('createSong.internalError');
         }
-        throw new Error(data?.error || t('createSong.stylePromptError'));
+        
+        toast.error(t('createSong.approvalError'), { 
+          description: userFriendlyMessage,
+          duration: 5000 
+        });
+        setStep(hasUsedModification ? "editing-modified" : "editing");
       }
-
-      setStep("complete");
-
-      toast.success(t('createSong.lyricApproved'), {
-        description: t('createSong.readyForProduction')
-      });
-
     } catch (error) {
       console.error("Erro:", error);
       const errorMessage = error instanceof Error ? error.message : t('createSong.unknownError');
-      
-      // Check for pronunciation error in the message
-      if (errorMessage.includes("sem pronúncia definida")) {
-        const match = errorMessage.match(/Termo\(s\) detectado\(s\) sem pronúncia definida: ([^.]+)/);
-        if (match) {
-          const terms = match[1].split(', ').map(t => t.trim());
-          setMissingPronunciations(terms);
-          setShowPronunciationModal(true);
-          setStep(hasUsedModification ? "editing-modified" : "editing");
-          setLoading(false);
-          toast.warning(t('createSong.pronunciationNeeded'), {
-            description: t('createSong.definePronunciation', { terms: terms.join(', ') })
-          });
-          return;
-        }
-      }
-      
-      // Better error messages for users
-      let userFriendlyMessage = errorMessage;
-      if (errorMessage.includes("Limite de requisições")) {
-        userFriendlyMessage = t('createSong.rateLimitError');
-      } else if (errorMessage.includes("Créditos insuficientes")) {
-        userFriendlyMessage = t('createSong.internalError');
-      }
-      
-      toast.error(t('createSong.approvalError'), { 
-        description: userFriendlyMessage,
-        duration: 5000 
-      });
+      toast.error(t('createSong.approvalError'), { description: errorMessage });
       setStep(hasUsedModification ? "editing-modified" : "editing");
     } finally {
       setLoading(false);
@@ -703,6 +629,7 @@ const CreateSong = () => {
       const { data, error } = await supabase.functions.invoke('generate-lyrics', {
         body: {
           orderId,
+          language: MusicCreationService.getActiveLanguage(),
           story: `${briefingData.story}\n\n[INSTRUÇÕES DE AJUSTE DO USUÁRIO]: ${editInstructions}\n\n[LETRA ANTERIOR PARA REFERÊNCIA]:\n${editedLyric}`,
           briefing: {
             musicType: briefingData.musicType,
