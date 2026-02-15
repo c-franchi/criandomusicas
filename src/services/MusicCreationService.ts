@@ -182,9 +182,9 @@ export class MusicCreationService {
         ...options.briefing,
         isInstrumental: true,
         instruments: options.briefing.instruments || [],
-        soloInstrument: options.briefing.soloInstrument ?? null,
-        soloMoment: options.briefing.soloMoment ?? null,
-        instrumentationNotes: options.briefing.instrumentationNotes ?? "",
+        soloInstrument: options.briefing.soloInstrument,
+        soloMoment: options.briefing.soloMoment,
+        instrumentationNotes: options.briefing.instrumentationNotes,
       },
     });
   }
