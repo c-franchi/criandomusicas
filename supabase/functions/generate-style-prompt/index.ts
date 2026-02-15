@@ -386,12 +386,52 @@ serve(async (req) => {
       );
     }
 
-    // Detectar termos críticos sem pronúncia (apenas para cantada)
-    if (!isInstrumental && approvedLyrics) {
-      const criticalTerms = detectCriticalTerms(approvedLyrics);
-      const missingPronunciations = criticalTerms.filter(
-        term => !pronunciations.some(p => p.term === term)
-      );
+    // ==============================
+    // PRONÚNCIA AUTOMÁTICA INTELIGENTE
+    // ==============================
+
+    let processedLyrics = approvedLyrics || '';
+
+    if (!isInstrumental && processedLyrics) {
+
+    // 1️⃣ Aplicar regras globais primeiro (telefone, site, siglas)
+    processedLyrics = applyGlobalPronunciationRules(processedLyrics);
+
+    // 2️⃣ Aplicar pronúncias customizadas do usuário
+    if (pronunciations.length > 0) {
+        processedLyrics = applyPronunciations(processedLyrics, pronunciations);
+    }
+
+  // 3️⃣ Palavras seguras que NÃO exigem pronúncia manual
+  const autoSafeWords = [
+    'WhatsApp',
+    'Instagram',
+    'YouTube',
+    'TikTok',
+    'Spotify',
+    'Facebook',
+    'Google'
+  ];
+
+  const criticalTerms = detectCriticalTerms(processedLyrics)
+    .filter(term => !autoSafeWords.includes(term));
+
+  const missingPronunciations = criticalTerms.filter(
+    term => !pronunciations.some(p => p.term === term)
+  );
+
+  if (missingPronunciations.length > 0) {
+    return new Response(
+      JSON.stringify({ 
+        ok: false, 
+        error: `Termo(s) detectado(s) sem pronúncia definida: ${missingPronunciations.join(', ')}.`,
+        missingPronunciations
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+}
+
 
       if (missingPronunciations.length > 0) {
         console.log("Missing pronunciations detected:", missingPronunciations);
@@ -739,7 +779,7 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
 
       // CRÍTICO: O final_prompt usa a LETRA FONÉTICA para geração musical
       // Para letra própria (custom lyrics), formatar preservando TODO o conteúdo
-      let lyricsForGeneration2 = approvedLyrics || '';
+      let lyricsForGeneration2 = processedLyrics || approvedLyrics || '';
       
       // Check if this is a custom lyric order by checking the lyricId or order data
       const isCustomLyricOrder = lyricId === 'custom' || existingOrder?.has_custom_lyric;
@@ -771,8 +811,8 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
 
       finalPrompt = `${stylePrompt}
 
-[Lyrics]
-${cleanedLyrics}`;
+    [Lyrics]
+    ${cleanedLyrics}`;
     }
 
     console.log("Style prompt generated successfully");
@@ -791,11 +831,12 @@ ${cleanedLyrics}`;
       updated_at: new Date().toISOString()
     };
 
-    // Save custom cover URL if user provided one
-    if (customCoverUrl && (coverMode === 'original' || coverMode === 'enhanced')) {
+    // Salvar capa SEM depender do coverMode
+    if (customCoverUrl) {
       updateData.cover_url = customCoverUrl;
       console.log("Saving custom cover URL:", customCoverUrl, "mode:", coverMode);
     }
+
 
     // Trigger cover enhancement if user selected enhanced mode
     if (customCoverUrl && coverMode === 'enhanced') {
