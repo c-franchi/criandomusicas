@@ -305,6 +305,7 @@ export class MusicCreationService {
         hasCustomLyric: options.hasCustomLyric,
         customCoverUrl: options.customCoverUrl,
         coverMode: options.coverMode,
+        language: _getActiveLanguageCode(),
         briefing: options.briefing,
       },
     });
