@@ -512,16 +512,12 @@ const CreateSong = () => {
         },
       });
 
-      // Handle pronunciation modal
+      // Pronunciation is now handled automatically by MusicCreationService
+      // The modal should NOT appear - if we still get missingPronunciations, it means
+      // the auto-retry also failed, so we just show a generic error
       if (result.missingPronunciations?.length) {
-        setMissingPronunciations(result.missingPronunciations);
-        setShowPronunciationModal(true);
-        setStep(hasUsedModification ? "editing-modified" : "editing");
-        setLoading(false);
-        toast.warning(t('createSong.pronunciationNeeded'), {
-          description: t('createSong.definePronunciation', { terms: result.missingPronunciations.join(', ') })
-        });
-        return;
+        console.warn("[CreateSong] Auto-pronunciation handling failed, treating as error");
+        // Don't show pronunciation modal - the service already retried automatically
       }
 
       if (result.success) {
