@@ -357,12 +357,12 @@ const MusicShare = () => {
             <Button 
               asChild 
               variant="hero" 
-              className="w-full h-14 text-lg font-bold shadow-lg"
+              className="w-full h-14 text-sm sm:text-lg font-bold shadow-lg"
               onClick={() => trackEvent('cta_click')}
             >
               <Link to="/auth">
-                <Sparkles className="w-5 h-5 mr-2" />
-                🔥 Transformar minha história em música
+                <Sparkles className="w-5 h-5 mr-2 shrink-0" />
+                <span className="truncate">🔥 Transformar minha história em música</span>
               </Link>
             </Button>
             <p className="text-xs text-muted-foreground">
