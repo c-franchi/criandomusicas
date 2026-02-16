@@ -421,6 +421,7 @@ serve(async (req) => {
   );
 
   if (missingPronunciations.length > 0) {
+    console.log("Missing pronunciations detected (will be auto-handled by frontend):", missingPronunciations);
     return new Response(
       JSON.stringify({ 
         ok: false, 
@@ -431,20 +432,6 @@ serve(async (req) => {
     );
   }
 }
-
-
-      if (missingPronunciations.length > 0) {
-        console.log("Missing pronunciations detected:", missingPronunciations);
-        return new Response(
-          JSON.stringify({ 
-            ok: false, 
-            error: `Termo(s) detectado(s) sem pronúncia definida: ${missingPronunciations.join(', ')}. Defina a pronúncia antes de gerar a música.`,
-            missingPronunciations
-          }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
 
     const AI_GATEWAY_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!AI_GATEWAY_API_KEY) {

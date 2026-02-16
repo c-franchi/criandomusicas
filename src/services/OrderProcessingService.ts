@@ -96,6 +96,12 @@ export class OrderProcessingService {
         return await this.processInstrumental(orderId, briefing);
       }
 
+      // ── CUSTOM LYRIC (letra própria) ──
+      // Não precisa gerar letras — vai direto para aprovação via CreateSong
+      if (briefing.hasCustomLyric) {
+        return await this.processCustomLyric(orderId, briefing);
+      }
+
       // ── QUICK MODE (fire-and-forget com status seguro) ──
       if (isQuickMode) {
         return await this.processQuickMode(orderId, briefing);
@@ -118,6 +124,31 @@ export class OrderProcessingService {
         message: 'Ocorreu um erro. Você pode tentar novamente pelo dashboard.',
       };
     }
+  }
+
+  // ─────────── CUSTOM LYRIC (letra própria) ───────────
+  private static async processCustomLyric(
+    orderId: string,
+    briefing: BriefingPayload
+  ): Promise<ProcessingResult> {
+    console.log('[OrderService] Processing custom lyric order:', orderId);
+
+    // Atualizar status para PAID (o CreateSong vai lidar com a aprovação)
+    await supabase
+      .from('orders')
+      .update({
+        status: 'PAID',
+        payment_status: 'PAID',
+      })
+      .eq('id', orderId);
+
+    // Redirecionar para CreateSong onde o usuário pode revisar e aprovar sua letra
+    return {
+      success: true,
+      action: 'create-song',
+      orderId,
+      message: '📝 Revise e aprove sua letra!',
+    };
   }
 
   // ─────────── INSTRUMENTAL ───────────
