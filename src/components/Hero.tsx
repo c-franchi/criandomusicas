@@ -199,6 +199,16 @@ const Hero = () => {
                   {t('hero.ctaQuickCreate')}
                 </Button>
               </Link>
+              <Link to="/briefing?mode=audio">
+                <Button 
+                  variant="glass" 
+                  size="lg" 
+                  className="text-lg px-6 py-7 rounded-xl group"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  {t('hero.ctaAudio', 'Criar por Áudio')}
+                </Button>
+              </Link>
               <Link to="/briefing" id="tour-hero-secondary-cta">
                 <Button 
                   variant="glass" 
@@ -220,6 +230,12 @@ const Hero = () => {
                 >
                   <Zap className="w-5 h-5 mr-2" />
                   {t('hero.ctaQuickCreate', 'Criar Rápido')}
+                </Button>
+              </Link>
+              <Link to="/briefing?mode=audio">
+                <Button variant="glass" size="lg" className="text-lg px-8 py-7 rounded-xl group">
+                  <Play className="w-5 h-5 mr-2" />
+                  {t('hero.ctaAudio', 'Criar por Áudio')}
                 </Button>
               </Link>
               <Link to="/briefing" id="tour-hero-secondary-cta">

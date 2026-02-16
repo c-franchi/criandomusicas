@@ -155,16 +155,15 @@ Deno.serve(async (req) => {
     // PART 1: 24h inactive users
     // ══════════════════════════════════════════
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
 
-    // Get users who registered 24-48h ago, haven't created music, haven't been emailed
+    // Get users who registered more than 24h ago, haven't created music, haven't been emailed
+    // No upper bound — catches all past users who were never emailed
     const { data: inactiveProfiles, error: profilesError } = await supabase
       .from('profiles')
       .select('user_id, name')
       .eq('has_created_music', false)
       .eq('email_24h_sent', false)
-      .lte('created_at', twentyFourHoursAgo)
-      .gte('created_at', fortyEightHoursAgo);
+      .lte('created_at', twentyFourHoursAgo);
 
     if (profilesError) {
       logStep('Error fetching profiles', { error: profilesError });
