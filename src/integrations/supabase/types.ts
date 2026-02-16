@@ -244,6 +244,44 @@ export type Database = {
           },
         ]
       }
+      email_campaign_logs: {
+        Row: {
+          campaign_id: string | null
+          campaign_type: string
+          email: string
+          id: string
+          sent_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id?: string | null
+          campaign_type: string
+          email: string
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string | null
+          campaign_type?: string
+          email?: string
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_campaign_logs_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "seasonal_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_logs: {
         Row: {
           created_at: string
@@ -614,6 +652,8 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          email_24h_sent: boolean | null
+          has_created_music: boolean | null
           id: string
           name: string | null
           phone: string | null
@@ -627,6 +667,8 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          email_24h_sent?: boolean | null
+          has_created_music?: boolean | null
           id?: string
           name?: string | null
           phone?: string | null
@@ -640,6 +682,8 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          email_24h_sent?: boolean | null
+          has_created_music?: boolean | null
           id?: string
           name?: string | null
           phone?: string | null
@@ -762,6 +806,51 @@ export type Database = {
           rating?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      seasonal_campaigns: {
+        Row: {
+          created_at: string | null
+          cta_text: string | null
+          cta_url: string | null
+          email_body_html: string
+          email_subject: string
+          event_date: string
+          event_name: string
+          id: string
+          is_active: boolean | null
+          last_sent_at: string | null
+          send_days_before: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          cta_text?: string | null
+          cta_url?: string | null
+          email_body_html: string
+          email_subject: string
+          event_date: string
+          event_name: string
+          id?: string
+          is_active?: boolean | null
+          last_sent_at?: string | null
+          send_days_before?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          cta_text?: string | null
+          cta_url?: string | null
+          email_body_html?: string
+          email_subject?: string
+          event_date?: string
+          event_name?: string
+          id?: string
+          is_active?: boolean | null
+          last_sent_at?: string | null
+          send_days_before?: number
+          updated_at?: string | null
         }
         Relationships: []
       }
