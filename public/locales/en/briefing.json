@@ -89,7 +89,9 @@
       "monologoDesc": "Promotional narration over background music",
       "contactInfoQuestion": "Now enter the contact information for the jingle! 📞\n\nInclude: phone, address, website, social media...",
       "callToActionQuestion": "What call to action should appear in the jingle? 📢\n\nExample: \"Call now!\", \"Visit our store!\", \"Follow us on Instagram!\"",
-      "monologoScriptQuestion": "Type the full monologue/voiceover text 🎙️\n\nExample: \"Turn your stories into music. With Criando Músicas, you immortalize your moments in personalized songs.\""
+      "monologoScriptQuestion": "📢 Type your ad/voiceover text 🎙️\n\nWrite exactly what should be spoken in the narration. It can be a store ad, app promo, service announcement, etc.\n\nExample: \"Attention! John's Bakery has an unmissable promotion. Fresh bread for just $0.50. Come visit us at 123 Flower Street. John's Bakery, the taste of your morning!\"",
+      "monologoVoiceQuestion": "Which voice type for the narration? 🎙️\n\nChoose the voice that best fits your ad.",
+      "monologoStyleQuestion": "Which musical style for the background? 🎶\n\nChoose the genre that matches the mood of your ad."
     },
     "style": {
       "question": "Which music style do you prefer?",

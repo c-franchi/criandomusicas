@@ -89,7 +89,9 @@
       "monologoDesc": "Narración promocional sobre fondo musical",
       "contactInfoQuestion": "¡Ahora ingresa la información de contacto para el jingle! 📞\n\nIncluye: teléfono, dirección, sitio web, redes sociales...",
       "callToActionQuestion": "¿Qué llamada a la acción debe aparecer en el jingle? 📢\n\nEjemplo: \"¡Llama ahora!\", \"¡Visita nuestra tienda!\", \"¡Síguenos en Instagram!\"",
-      "monologoScriptQuestion": "Escribe el texto completo del monólogo/locución 🎙️\n\nEjemplo: \"Convierte tus historias en música. Con Criando Músicas inmortalizas tus momentos en canciones personalizadas.\""
+      "monologoScriptQuestion": "📢 Escribe el texto de tu anuncio/locución 🎙️\n\nEscribe exactamente lo que debe ser hablado. Puede ser un anuncio de tienda, app, servicio, etc.\n\nEjemplo: \"¡Atención! La Panadería de Juan tiene una promoción imperdible. Pan francés por solo $0.50. Visítanos en Calle de las Flores, 123. Panadería de Juan, ¡el sabor de tu mañana!\"",
+      "monologoVoiceQuestion": "¿Qué tipo de voz para la narración? 🎙️\n\nElige la voz que mejor combine con tu anuncio.",
+      "monologoStyleQuestion": "¿Qué estilo musical para el fondo? 🎶\n\nElige el género que combine con el clima de tu anuncio."
     },
     "style": {
       "question": "¿Qué estilo musical prefieres?",

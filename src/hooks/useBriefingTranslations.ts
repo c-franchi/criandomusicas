@@ -543,6 +543,8 @@ export const useBriefingTranslations = () => {
     contactInfo: t('steps.corporateFormat.contactInfoQuestion', 'Provide the contact information for the jingle 📞\n\nInclude: phone, address, website, social media...'),
     callToAction: t('steps.corporateFormat.callToActionQuestion', 'What call to action should be in the jingle? 📢\n\nExample: "Call now!", "Visit our store!", "Follow us on Instagram!"'),
     monologoScript: t('steps.corporateFormat.monologoScriptQuestion', 'Type the full text of the monologue/call 🎙️\n\nExample: "Personalize your stories into music..."'),
+    monologoVoice: t('steps.corporateFormat.monologoVoiceQuestion', 'Which voice type for the narration? 🎙️'),
+    monologoStyle: t('steps.corporateFormat.monologoStyleQuestion', 'Which musical style for the background? 🎶\n\nChoose the genre that best fits the mood of your ad.'),
   });
 
   // Restore session messages

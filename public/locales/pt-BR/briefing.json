@@ -85,11 +85,13 @@
       "institucionalDesc": "Trilha, hino da empresa, eventos",
       "jingle": "📢 Jingle/Propaganda",
       "jingleDesc": "Para marketing, com telefone/endereço",
-      "monologo": "🎙️ Monólogo/Chamada",
-      "monologoDesc": "Narração promocional sobre fundo musical",
+      "monologo": "🎙️ Chamada/Propaganda",
+      "monologoDesc": "Carro de som, propaganda de loja, app, serviço",
       "contactInfoQuestion": "Agora digite as informações de contato para o jingle! 📞\n\nInclua: telefone, endereço, site, redes sociais...",
       "callToActionQuestion": "Qual chamada para ação deve aparecer no jingle? 📢\n\nExemplo: \"Ligue agora!\", \"Visite nossa loja!\", \"Siga no Instagram!\"",
-      "monologoScriptQuestion": "Digite o texto completo do monólogo/chamada 🎙️\n\nExemplo: \"Personalize suas histórias em músicas. Com a Criando Músicas você eterniza seus momentos em músicas personalizadas. Acesse agora criandomusicas.com.br\""
+      "monologoScriptQuestion": "📢 Digite o texto da sua chamada/propaganda 🎙️\n\nEscreva exatamente o que deve ser falado na narração. Pode ser uma propaganda de loja, app, serviço, carro de som, etc.\n\nExemplo: \"Atenção moradores! A Padaria do João está com promoção imperdível. Pão francês por apenas R$0,50. Venha conferir na Rua das Flores, 123. Padaria do João, o sabor da sua manhã!\"",
+      "monologoVoiceQuestion": "Qual tipo de voz para a narração? 🎙️\n\nEscolha a voz que melhor combina com sua propaganda.",
+      "monologoStyleQuestion": "Qual estilo musical para o fundo? 🎶\n\nEscolha o gênero que combina com o clima da sua propaganda."
     },
     "style": {
       "question": "Qual estilo musical você prefere?",
