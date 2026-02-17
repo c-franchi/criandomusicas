@@ -198,15 +198,43 @@
       "copied": "Link copied!"
     },
     "review": {
-      "title": "Leave your review",
+      "title": "Rate your Song",
+      "editTitle": "Edit Review",
       "subtitle": "Your feedback is very important to us!",
       "rating": "Rating",
+      "rateQuestion": "How do you rate your song?",
       "comment": "Comment (optional)",
-      "commentPlaceholder": "Tell us about your experience...",
+      "commentLabel": "Leave a comment (optional)",
+      "commentPlaceholder": "Tell us what you thought of your song...",
+      "characters": "characters",
+      "publicLabel": "Allow my review to be displayed publicly",
+      "sampleLabel": "Allow my song to be used as an example on the platform",
+      "sampleDesc": "Your song may be used to inspire other customers",
       "allowSample": "Allow my song to be used as a sample",
-      "submit": "Submit review",
+      "submit": "Submit Review",
+      "update": "Update Review",
+      "submitting": "Submitting...",
+      "submitted": "Review submitted!",
+      "updated": "Review updated!",
+      "updatedDesc": "Thank you for updating your feedback",
+      "thankYou": "Thank you so much for your feedback! 💜",
+      "thankYouTitle": "Thank you for your review!",
+      "feedbackImportant": "Your feedback is very important to us",
+      "error": "Error submitting review",
+      "tryAgain": "Please try again later",
       "thanks": "Thank you for your review!",
-      "alreadyReviewed": "You have already reviewed this order"
+      "alreadyReviewed": "You have already reviewed this order",
+      "ratingLabels": {
+        "click": "Click to rate",
+        "1": "Needs improvement",
+        "2": "Fair",
+        "3": "Good",
+        "4": "Very good!",
+        "5": "Incredible! 🎉"
+      },
+      "profilePromptTitle": "Complete your profile!",
+      "profilePromptDesc": "Add a photo and name so your review appears complete on the homepage.",
+      "goToProfile": "Complete Profile"
     }
   },
   "orderTracking": {

@@ -198,15 +198,43 @@
       "copied": "Link copiado!"
     },
     "review": {
-      "title": "Deixe sua avaliação",
+      "title": "Avalie sua Música",
+      "editTitle": "Editar Avaliação",
       "subtitle": "Sua opinião é muito importante para nós!",
       "rating": "Nota",
+      "rateQuestion": "Como você avalia sua música?",
       "comment": "Comentário (opcional)",
-      "commentPlaceholder": "Conte como foi sua experiência...",
+      "commentLabel": "Deixe um comentário (opcional)",
+      "commentPlaceholder": "Conte-nos o que achou da sua música...",
+      "characters": "caracteres",
+      "publicLabel": "Permitir que minha avaliação seja exibida publicamente",
+      "sampleLabel": "Permitir uso da minha música como exemplo na plataforma",
+      "sampleDesc": "Sua música poderá ser usada para inspirar outros clientes",
       "allowSample": "Permitir que minha música seja usada como exemplo",
-      "submit": "Enviar avaliação",
+      "submit": "Enviar Avaliação",
+      "update": "Atualizar Avaliação",
+      "submitting": "Enviando...",
+      "submitted": "Avaliação enviada!",
+      "updated": "Avaliação atualizada!",
+      "updatedDesc": "Obrigado por atualizar seu feedback",
+      "thankYou": "Muito obrigado pelo seu feedback! 💜",
+      "thankYouTitle": "Obrigado pela sua avaliação!",
+      "feedbackImportant": "Seu feedback é muito importante para nós",
+      "error": "Erro ao enviar avaliação",
+      "tryAgain": "Tente novamente mais tarde",
       "thanks": "Obrigado pela avaliação!",
-      "alreadyReviewed": "Você já avaliou este pedido"
+      "alreadyReviewed": "Você já avaliou este pedido",
+      "ratingLabels": {
+        "click": "Clique para avaliar",
+        "1": "Precisa melhorar",
+        "2": "Regular",
+        "3": "Boa",
+        "4": "Muito boa!",
+        "5": "Incrível! 🎉"
+      },
+      "profilePromptTitle": "Complete seu perfil!",
+      "profilePromptDesc": "Adicione uma foto e nome para que sua avaliação apareça completa na página inicial.",
+      "goToProfile": "Completar Perfil"
     }
   },
   "orderTracking": {

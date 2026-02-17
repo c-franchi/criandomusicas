@@ -155,7 +155,7 @@ const Testimonials = () => {
         // Fetch profile and order data for each review
         if (data && data.length > 0) {
           const enrichedReviews = await Promise.all(
-            data.map(async (review) => {
+            data.map(async (review, index) => {
               // Get order to get user_id and music_type - use maybeSingle to handle RLS restrictions
               const { data: orderData } = await supabase
                 .from('orders')
@@ -173,12 +173,12 @@ const Testimonials = () => {
                 profileData = profile;
               }
 
-              // Only use real data - no placeholders for real reviews
+              // Use placeholder avatar if user doesn't have one
               return {
                 ...review,
                 profiles: { 
                   name: profileData?.name || null,
-                  avatar_url: profileData?.avatar_url || null
+                  avatar_url: profileData?.avatar_url || placeholderAvatars[index % placeholderAvatars.length]
                 },
                 orders: { music_type: orderData?.music_type || null }
               };
@@ -234,8 +234,8 @@ const Testimonials = () => {
 
   return (
     <section className="section-spacing overflow-hidden" id="depoimentos" aria-labelledby="testimonials-heading">
-      <div className="max-w-6xl mx-auto px-0">
-        {/* Stats bar for social proof */}
+      {/* Stats bar for social proof - constrained */}
+      <div className="max-w-6xl mx-auto">
         <motion.div 
           className="flex flex-wrap justify-center gap-8 md:gap-16 mb-16 px-6"
           initial={{ opacity: 0, y: 20 }}
@@ -273,61 +273,61 @@ const Testimonials = () => {
             }
           </p>
         </motion.div>
-        
-        {/* Marquee Row 1 - Left direction */}
-        <div className="mb-6">
-          <Marquee direction="left" speed="fast" pauseOnHover>
-            {row1.map((testimonial, index) => (
-              <TestimonialCard
-                key={`row1-${index}`}
-                name={testimonial.name}
-                role={testimonial.role}
-                content={testimonial.content}
-                rating={testimonial.rating}
-                avatarUrl={testimonial.avatarUrl}
-              />
-            ))}
-          </Marquee>
-        </div>
-        
-        {/* Marquee Row 2 - Right direction */}
-        <div>
-          <Marquee direction="right" speed="normal" pauseOnHover>
-            {row2.map((testimonial, index) => (
-              <TestimonialCard
-                key={`row2-${index}`}
-                name={testimonial.name}
-                role={testimonial.role}
-                content={testimonial.content}
-                rating={testimonial.rating}
-                avatarUrl={testimonial.avatarUrl}
-              />
-            ))}
-          </Marquee>
-        </div>
-
-        {/* Average Rating Display */}
-        {hasRealReviews && (
-          <motion.div 
-            className="mt-12 text-center px-6"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="inline-flex items-center gap-3 glass-card rounded-full px-6 py-3">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
-                ))}
-              </div>
-              <span className="text-muted-foreground">
-                {t('testimonials.basedOn', { count: reviews.length })}
-              </span>
-            </div>
-          </motion.div>
-        )}
       </div>
+        
+      {/* Marquee Row 1 - Left direction (full width, outside constrained container) */}
+      <div className="mb-6">
+        <Marquee direction="left" speed="fast" pauseOnHover>
+          {row1.map((testimonial, index) => (
+            <TestimonialCard
+              key={`row1-${index}`}
+              name={testimonial.name}
+              role={testimonial.role}
+              content={testimonial.content}
+              rating={testimonial.rating}
+              avatarUrl={testimonial.avatarUrl}
+            />
+          ))}
+        </Marquee>
+      </div>
+      
+      {/* Marquee Row 2 - Right direction (full width) */}
+      <div>
+        <Marquee direction="right" speed="normal" pauseOnHover>
+          {row2.map((testimonial, index) => (
+            <TestimonialCard
+              key={`row2-${index}`}
+              name={testimonial.name}
+              role={testimonial.role}
+              content={testimonial.content}
+              rating={testimonial.rating}
+              avatarUrl={testimonial.avatarUrl}
+            />
+          ))}
+        </Marquee>
+      </div>
+
+      {/* Average Rating Display */}
+      {hasRealReviews && (
+        <motion.div 
+          className="mt-12 text-center px-6"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <div className="inline-flex items-center gap-3 glass-card rounded-full px-6 py-3">
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
+              ))}
+            </div>
+            <span className="text-muted-foreground">
+              {t('testimonials.basedOn', { count: reviews.length })}
+            </span>
+          </div>
+        </motion.div>
+      )}
     </section>
   );
 };
