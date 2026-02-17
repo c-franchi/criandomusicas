@@ -35,8 +35,8 @@ interface Pronunciation {
 }
 
 // ============ REGRAS DE FORMATAÇÃO PARA SUNO ============
-// REGRA: Telefones → números separados por hífen (1-6-9-9-7...)
-// REGRA: Sites → w-w-w-ponto-nome-ponto-com-ponto-b-r
+// REGRA: Telefones → DDD por extenso + resto com hífens
+// REGRA: Sites → SEM www, domínio como fala natural, cada parte em linha separada
 // REGRA: Siglas → letras maiúsculas com hífen (F-M-E)
 // REGRA: NUNCA usar fonética explicativa (ésse, éfe, erre)
 
@@ -60,35 +60,43 @@ function convertPhoneToHyphens(text: string): string {
   return result;
 }
 
-// Converter URLs para formato soletrado com hífens
-function convertUrlToHyphens(text: string): string {
+// Converter URLs para fala natural brasileira (sem www, sem hífens)
+// Exemplo: "criandomusicas.com.br" → "criando músicas\nponto com\nponto bê érre"
+function convertUrlToNaturalSpeech(text: string): string {
   let result = text;
   
-  result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, 
-    (_match, _protocol, hasWww, name, ext1, ext2) => {
+  const extPronunciation: Record<string, string> = {
+    'com': 'ponto com',
+    'br': 'ponto bê érre',
+    'net': 'ponto néti',
+    'org': 'ponto órg',
+    'edu': 'ponto êdu',
+    'gov': 'ponto góv',
+    'io': 'ponto í ó',
+    'app': 'ponto épi',
+    'dev': 'ponto dévi',
+    'me': 'ponto mí',
+    'co': 'ponto cô',
+    'info': 'ponto info',
+  };
+  
+  result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2,})?/gi, 
+    (_match, _protocol, _hasWww, name, ext1, ext2) => {
       const parts: string[] = [];
-      
-      if (hasWww) {
-        parts.push('w-w-w');
-      }
-      
-      parts.push(`ponto-${name.toLowerCase()}`);
-      
-      const extFormatted = ext1.toLowerCase() === 'br' ? 'b-r' : ext1.toLowerCase();
-      parts.push(`ponto-${extFormatted}`);
-      
+      const domainName = name.toLowerCase().replace(/-/g, ' ');
+      parts.push(domainName);
+      const ext1Lower = ext1.toLowerCase();
+      parts.push(extPronunciation[ext1Lower] || `ponto ${ext1Lower}`);
       if (ext2) {
         const ext2Clean = ext2.replace('.', '').toLowerCase();
-        const ext2Formatted = ext2Clean === 'br' ? 'b-r' : ext2Clean;
-        parts.push(`ponto-${ext2Formatted}`);
+        parts.push(extPronunciation[ext2Clean] || `ponto ${ext2Clean}`);
       }
-      
-      return parts.join('-');
+      return parts.join('\n');
     }
   );
   
   result = result.replace(/@([a-zA-Z0-9_]+)/g, (_match, handle) => {
-    return `arroba-${handle.toLowerCase()}`;
+    return `arroba ${handle.toLowerCase()}`;
   });
   
   return result;
@@ -110,11 +118,9 @@ function convertAcronymsToHyphens(text: string): string {
 // Aplicar TODAS as regras de formatação
 function applyGlobalPronunciationRules(text: string): string {
   let result = text;
-  
   result = convertPhoneToHyphens(result);
-  result = convertUrlToHyphens(result);
+  result = convertUrlToNaturalSpeech(result);
   result = convertAcronymsToHyphens(result);
-  
   return result;
 }
 
@@ -727,13 +733,14 @@ Vocal: (${vocalStyle.split(',')[0]})
 Tempo: (BPM)
 Key: (key)
 Production: (brief)
-${hasMonologue ? 'Spoken: (brief instruction)' : ''}`;
+${hasMonologue ? `Spoken: (brief instruction)
+Mix: voice-forward mix, minimal instrumental during spoken parts, instrumental very subtle under narration, reduced arrangement during monologue` : ''}`;
 
       const userPrompt = `Create VOCAL track style prompt (UNDER 950 CHARS):
 Type: ${musicType}, Emotion: ${emotion} (${emotionIntensity}/5)
 Style: ${style}, Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
 Atmosphere: ${atmosphere}, Voice: ${vocalStyle}
-${hasMonologue ? 'Has spoken word sections' : ''}
+${isSomenteMonologo ? 'FULLY SPOKEN WORD track - CRITICAL MIX: voice-forward mix, minimal instrumental throughout entire track, instrumental very subtle under narration, reduced arrangement during all monologue sections, spoken voice must be clearly dominant' : hasMonologue ? 'Has spoken word sections - IMPORTANT: voice-forward mix, minimal instrumental during spoken parts, instrumental very subtle under narration, reduced arrangement during monologue' : ''}
 
 Lyrics context (first 500 chars):
 ${lyricsForGeneration.substring(0, 500)}
