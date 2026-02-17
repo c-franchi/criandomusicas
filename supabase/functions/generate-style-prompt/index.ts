@@ -365,6 +365,35 @@ serve(async (req) => {
         })
         .eq('id', orderId);
 
+      // Notify admin about completed order (early return path)
+      try {
+        const { data: orderForNotify } = await supabaseCheck
+          .from('orders')
+          .select('user_id, music_style, music_type, is_instrumental')
+          .eq('id', orderId)
+          .single();
+
+        const { data: profileData } = await supabaseCheck
+          .from('profiles')
+          .select('name')
+          .eq('user_id', orderForNotify?.user_id || '')
+          .single();
+
+        await supabaseCheck.functions.invoke('notify-admin-order', {
+          body: {
+            orderId,
+            userId: orderForNotify?.user_id,
+            orderType: orderForNotify?.is_instrumental ? 'instrumental' : 'vocal',
+            userName: profileData?.name || 'Cliente',
+            musicType: orderForNotify?.music_style || orderForNotify?.music_type || 'personalizada',
+            isPixReceipt: false,
+          },
+        });
+        console.log("Admin notification sent (early return path)");
+      } catch (notifyError) {
+        console.error("Admin notification failed (non-blocking):", notifyError);
+      }
+
       return new Response(
         JSON.stringify({ 
           ok: true, 
@@ -916,6 +945,35 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
     }
 
     console.log("Order updated with style prompt. isInstrumental:", isInstrumental);
+
+    // Notify admin about completed order (after lyrics approval)
+    try {
+      const { data: orderForNotify } = await supabase
+        .from('orders')
+        .select('user_id, music_style, music_type, is_instrumental')
+        .eq('id', orderId)
+        .single();
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('name')
+        .eq('user_id', orderForNotify?.user_id || '')
+        .single();
+
+      await supabase.functions.invoke('notify-admin-order', {
+        body: {
+          orderId,
+          userId: orderForNotify?.user_id,
+          orderType: isInstrumental ? 'instrumental' : 'vocal',
+          userName: profileData?.name || 'Cliente',
+          musicType: orderForNotify?.music_style || orderForNotify?.music_type || 'personalizada',
+          isPixReceipt: false,
+        },
+      });
+      console.log("Admin notification sent after lyrics approval");
+    } catch (notifyError) {
+      console.error("Admin notification failed (non-blocking):", notifyError);
+    }
 
     // Trigger automatic validation (async, non-blocking)
     try {
