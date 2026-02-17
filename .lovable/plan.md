@@ -1,118 +1,66 @@
 
-## Plano: Corrigir falhas de traducao em todo o site
+## Plano: Opcao de capa personalizada na tela de musica recebida
 
-### Problema Identificado
+### O que sera feito
 
-Quando o usuario muda o idioma (ex: italiano), varios textos permanecem em portugues porque estao escritos diretamente no codigo (hardcoded) em vez de usar o sistema de traducao (i18next).
+Quando o usuario receber a musica (status MUSIC_READY ou COMPLETED), ele vera a capa atual (gerada por IA) com duas opcoes:
+1. **Manter a capa atual** (gerada por IA)
+2. **Fazer upload de uma imagem propria** para usar como capa
 
-### Falhas Encontradas
+### Mudancas tecnicas
 
-#### 1. MobileMenu.tsx (menu lateral mobile) - PRIORIDADE ALTA
-O arquivo com mais problemas. Textos hardcoded:
-- **Linha 146**: `'creditos' / 'credito'` - deveria usar `tCommon('credits.credits')` / `tCommon('credits.credit')`
-- **Linha 172**: `"Criar Rapido"` - deveria usar chave de traducao
-- **Linha 183**: `"Navegar"` - deveria usar chave de traducao
-- **Linha 204**: `"Menu"` - deveria usar chave de traducao
-- **Linha 258**: `"Legal"` - deveria usar chave de traducao
-- **Linha 267**: `"Termos de Uso"` - deveria usar chave de traducao
-- **Linha 274**: `"Politica de Privacidade"` - deveria usar chave de traducao
+#### 1. OrderDetails.tsx - Adicionar UI de troca de capa
 
-#### 2. CreditsBanner.tsx - creditos hardcoded
-- **Linha 58**: `'1 preview gratis'` e `'credito' / 'creditos'`
-- **Linha 83**: `'1 preview gratis'`
-- **Linha 90**: `'credito' / 'creditos'`
-- **Linha 97**: `"Criar"` (botao)
+Na secao do player de musica (apos a imagem da capa, linha ~510-526), adicionar:
+- Um botao de camera/editar sobre a imagem da capa
+- Ao clicar, abre um menu com duas opcoes:
+  - "Manter capa atual" (fecha o menu)
+  - "Enviar minha imagem" (abre seletor de arquivo)
+- Ao selecionar arquivo:
+  - Faz upload para o bucket `covers` (ja existe e e publico)
+  - Atualiza `orders.cover_url` com a nova URL publica
+  - Atualiza a UI otimisticamente
+- Input de arquivo aceita apenas imagens (jpg, png, webp) com limite de 5MB
+- Mostra loading durante o upload
 
-#### 3. CreditsManagement.tsx - painel de creditos inteiro em portugues
-- **Linha 43**: `"Meus Creditos de Musica"`
-- **Linha 45**: `"Gerencie seus pacotes e creditos disponiveis"`
-- **Linha 53**: `"Creditos disponiveis"`
-- **Linha 55**: `'Preview Gratis'`, `'Ativo'`, `'Sem creditos'`
-- **Linha 87**: `'Ativo'`
-- **Linha 164**: `'Ativo'` / `'Inativo'`
-- **Linha 198**: `"Ver Pacotes Disponiveis"`
-- **Linha 209**: `'Comprar Mais Creditos'` / `'Comprar Pacote de Musicas'`
+#### 2. Traducoes - Adicionar chaves nos 4 idiomas
 
-#### 4. VideoServiceSection.tsx - aviso em portugues
-- **Linha 122**: `"Em breve: use seus creditos para criar videos!"`
-- **Linha 126**: `"Estamos implementando o sistema de creditos para videos."`
-
-#### 5. Auth.tsx - termos legais hardcoded
-- **Linha 646-653**: `"Ao continuar, voce concorda com os Termos de Uso e a Politica de Privacidade"` - tudo em portugues
-
-#### 6. Order.tsx / VideoCheckout.tsx - navegacao
-- **Linha 219**: `"Meus Pedidos"` (Order.tsx)
-- **Linha 340**: `"Ir para Meus Pedidos"` (VideoCheckout.tsx)
-
-#### 7. SEO.tsx - meta description padrao em portugues
-- **Linha 20**: Description padrao hardcoded em portugues
-
-#### 8. AdminSettings.tsx / PricingManager.tsx - painel admin
-- Varios `'Ativo'` / `'Inativo'` hardcoded (menor prioridade pois e area admin)
-
-### Solucao
-
-#### Etapa 1: Adicionar chaves de traducao faltantes nos 4 idiomas
-
-Adicionar novas chaves nos arquivos `common.json` de cada idioma:
+Adicionar em `public/locales/{pt-BR,en,es,it}/dashboard.json`:
 
 ```text
-"mobileMenu": {
-  "navigate": "Navegar / Navigate / Navegar / Navigare",
-  "menu": "Menu",
-  "quickCreate": "Criar Rapido / Quick Create / Crear Rapido / Crea Veloce",
-  "legal": "Legal / Legal / Legal / Legale",
-  "termsOfUse": "Termos de Uso / Terms of Use / Terminos de Uso / Termini di Utilizzo",
-  "privacyPolicy": "Politica de Privacidade / Privacy Policy / Politica de Privacidad / Informativa sulla Privacy"
-}
-
-"credits": {
-  (adicionar chaves faltantes)
-  "previewFree": "1 preview gratis / 1 free preview / 1 preview gratis / 1 anteprima gratuita",
-  "active": "Ativo / Active / Activo / Attivo",
-  "inactive": "Inativo / Inactive / Inactivo / Inattivo",
-  "noCredits": (ja existe, reutilizar),
-  "myCredits": "Meus Creditos / My Credits / Mis Creditos / I Miei Crediti",
-  "manageCredits": "Gerencie seus creditos / Manage your credits / ...",
-  "availableCredits": "Creditos disponiveis / Available credits / ...",
-  "buyMore": "Comprar Mais / Buy More / ...",
-  "buyPackage": (ja existe, reutilizar),
-  "viewAvailable": "Ver Pacotes / View Packages / ..."
-}
-
-"legal": {
-  "agreementText": "Ao continuar... / By continuing... / Al continuar... / Continuando...",
-  "termsOfUse": "Termos de Uso / ...",
-  "privacyPolicy": "Politica de Privacidade / ..."
-}
-
-"video": {
-  "comingSoon": "Em breve: creditos para videos / Coming soon: credits for videos / ...",
-  "implementing": "Estamos implementando... / We are implementing... / ..."
-}
+orderDetails.cover.change = "Alterar capa / Change cover / Cambiar portada / Cambia copertina"
+orderDetails.cover.upload = "Enviar minha imagem / Upload my image / Subir mi imagen / Carica la mia immagine"  
+orderDetails.cover.keep = "Manter capa atual / Keep current cover / Mantener portada actual / Mantieni copertina attuale"
+orderDetails.cover.uploading = "Enviando... / Uploading... / Subiendo... / Caricamento..."
+orderDetails.cover.success = "Capa atualizada! / Cover updated! / Portada actualizada! / Copertina aggiornata!"
+orderDetails.cover.error = "Erro ao atualizar capa / Error updating cover / Error al actualizar portada / Errore nell'aggiornamento"
+orderDetails.cover.sizeError = "Imagem muito grande (max 5MB) / Image too large (max 5MB) / ..."
 ```
 
-#### Etapa 2: Substituir textos hardcoded nos componentes
+#### 3. Arquivos a modificar
 
-Substituir cada string portuguesa por chamadas `t()` com a chave correspondente, mantendo o fallback em portugues como defaultValue.
+- `src/pages/OrderDetails.tsx` - Adicionar botao de troca de capa e logica de upload
+- `public/locales/pt-BR/dashboard.json` - Novas chaves
+- `public/locales/en/dashboard.json` - Novas chaves
+- `public/locales/es/dashboard.json` - Novas chaves
+- `public/locales/it/dashboard.json` - Novas chaves
 
-**Arquivos a modificar:**
-1. `src/components/MobileMenu.tsx` - 7 substituicoes
-2. `src/components/CreditsBanner.tsx` - 5 substituicoes
-3. `src/components/CreditsManagement.tsx` - ~10 substituicoes
-4. `src/components/VideoServiceSection.tsx` - 2 substituicoes
-5. `src/pages/Auth.tsx` - 1 bloco (termos legais)
-6. `src/pages/Order.tsx` - 1 substituicao
-7. `src/pages/VideoCheckout.tsx` - 1 substituicao
+#### 4. Fluxo do usuario
 
-**Arquivos de traducao a modificar:**
-1. `public/locales/pt-BR/common.json` - adicionar novas chaves
-2. `public/locales/en/common.json` - adicionar novas chaves
-3. `public/locales/es/common.json` - adicionar novas chaves
-4. `public/locales/it/common.json` - adicionar novas chaves
+```text
+[Musica pronta] 
+  -> Ve a capa com icone de camera/editar
+  -> Clica no icone
+  -> Popover com "Manter capa" ou "Enviar imagem"
+  -> Seleciona arquivo
+  -> Upload para bucket 'covers'
+  -> cover_url atualizado no pedido
+  -> Capa nova exibida imediatamente
+```
 
-### Escopo
+### Observacoes
 
-- Foco nos componentes voltados ao usuario (nao admin)
-- Admin (`AdminSettings`, `PricingManager`) ficara para uma fase futura se necessario, pois so admins acessam
-- SEO description sera mantido em portugues como fallback (Google indexa por pagina/idioma)
+- O bucket `covers` ja existe e e publico, nao precisa criar
+- O campo `cover_url` ja existe na tabela `orders`
+- Usuarios ja podem fazer UPDATE nos proprios pedidos (RLS ja permite)
+- O upload usa um nome unico baseado no orderId para evitar conflitos
