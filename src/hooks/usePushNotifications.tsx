@@ -151,6 +151,13 @@ export const usePushNotifications = () => {
         throw new Error("Dados da subscription incompletos");
       }
 
+      // Deactivate any existing subscriptions with the same endpoint (different users on same device)
+      await supabase
+        .from("push_subscriptions")
+        .update({ is_active: false })
+        .eq("endpoint", json.endpoint)
+        .neq("user_id", user.id);
+
       const { error } = await supabase.from("push_subscriptions").upsert(
         {
           user_id: user.id,
