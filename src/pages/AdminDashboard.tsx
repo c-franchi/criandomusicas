@@ -122,8 +122,11 @@ const AdminDashboard = () => {
   const [rejectOrderId, setRejectOrderId] = useState<string | null>(null);
   const [rejectUserId, setRejectUserId] = useState<string | null>(null);
   
-  // Cover generation loading
+  // Cover generation loading & history
   const [generatingCover, setGeneratingCover] = useState<string | null>(null);
+  const [coverHistoryOrderId, setCoverHistoryOrderId] = useState<string | null>(null);
+  const [coverHistoryUrls, setCoverHistoryUrls] = useState<string[]>([]);
+  const [loadingCoverHistory, setLoadingCoverHistory] = useState(false);
 
   // PIX Receipt Modal
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
@@ -788,7 +791,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Generate cover image with DALL-E
+  // Generate cover image with AI
   const generateCoverImage = async (orderId: string) => {
     setGeneratingCover(orderId);
     try {
@@ -818,6 +821,53 @@ const AdminDashboard = () => {
       });
     } finally {
       setGeneratingCover(null);
+    }
+  };
+
+  // Load all cover history for an order from storage
+  const loadCoverHistory = async (orderId: string) => {
+    setLoadingCoverHistory(true);
+    setCoverHistoryOrderId(orderId);
+    try {
+      const { data: files, error } = await supabase.storage
+        .from('covers')
+        .list(orderId, { sortBy: { column: 'created_at', order: 'desc' } });
+
+      if (error) throw error;
+
+      const urls = (files || [])
+        .filter(f => f.name.endsWith('.png') || f.name.endsWith('.jpg'))
+        .map(f => {
+          const { data } = supabase.storage.from('covers').getPublicUrl(`${orderId}/${f.name}`);
+          return data.publicUrl;
+        });
+
+      setCoverHistoryUrls(urls);
+    } catch (err) {
+      console.error('Error loading cover history:', err);
+      setCoverHistoryUrls([]);
+    } finally {
+      setLoadingCoverHistory(false);
+    }
+  };
+
+  // Select a cover from history
+  const selectCover = async (orderId: string, coverUrl: string) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ cover_url: coverUrl })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      setOrders(prev => prev.map(o =>
+        o.id === orderId ? { ...o, cover_url: coverUrl } : o
+      ));
+      setCoverHistoryOrderId(null);
+      toast({ title: '✅ Capa selecionada!' });
+    } catch (err) {
+      toast({ title: 'Erro ao selecionar capa', variant: 'destructive' });
     }
   };
 
@@ -1332,23 +1382,72 @@ const AdminDashboard = () => {
                     
                     {/* Cover Image Preview */}
                     {order.cover_url && (
-                      <div className="flex items-center gap-3 p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg">
-                        <img 
-                          src={order.cover_url} 
-                          alt="Capa da música" 
-                          className="w-16 h-16 rounded-lg object-cover shadow-md"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-medium text-purple-400">🎨 Capa Gerada</p>
-                          <a 
-                            href={order.cover_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
-                            className="text-[10px] text-muted-foreground hover:text-primary truncate block"
-                          >
-                            Ver em tamanho original
-                          </a>
+                      <div className="p-2 bg-purple-500/10 border border-purple-500/30 rounded-lg space-y-2">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={order.cover_url} 
+                            alt="Capa da música" 
+                            className="w-16 h-16 rounded-lg object-cover shadow-md"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-purple-400">🎨 Capa Ativa</p>
+                            <a 
+                              href={order.cover_url} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="text-[10px] text-muted-foreground hover:text-primary truncate block"
+                            >
+                              Ver em tamanho original
+                            </a>
+                            <button
+                              onClick={() => loadCoverHistory(order.id)}
+                              className="text-[10px] text-purple-400 hover:text-purple-300 underline mt-0.5"
+                            >
+                              Ver todas as capas geradas
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Cover History Gallery */}
+                        {coverHistoryOrderId === order.id && (
+                          <div className="space-y-2">
+                            {loadingCoverHistory ? (
+                              <p className="text-xs text-muted-foreground">Carregando...</p>
+                            ) : coverHistoryUrls.length > 1 ? (
+                              <>
+                                <p className="text-[10px] text-muted-foreground">Clique para selecionar:</p>
+                                <div className="flex gap-2 flex-wrap">
+                                  {coverHistoryUrls.map((url, i) => (
+                                    <button
+                                      key={i}
+                                      onClick={() => selectCover(order.id, url)}
+                                      className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                                        order.cover_url === url
+                                          ? 'border-purple-500 ring-2 ring-purple-500/50'
+                                          : 'border-transparent hover:border-purple-500/50'
+                                      }`}
+                                    >
+                                      <img src={url} alt={`Capa ${i + 1}`} className="w-full h-full object-cover" />
+                                      {order.cover_url === url && (
+                                        <div className="absolute inset-0 bg-purple-500/30 flex items-center justify-center">
+                                          <CheckCircle className="w-4 h-4 text-white" />
+                                        </div>
+                                      )}
+                                    </button>
+                                  ))}
+                                </div>
+                              </>
+                            ) : (
+                              <p className="text-[10px] text-muted-foreground">Apenas 1 capa disponível.</p>
+                            )}
+                            <button
+                              onClick={() => setCoverHistoryOrderId(null)}
+                              className="text-[10px] text-muted-foreground hover:text-foreground underline"
+                            >
+                              Fechar
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
 

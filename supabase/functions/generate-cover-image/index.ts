@@ -359,15 +359,15 @@ Square format (1:1 aspect ratio), suitable for Spotify/Apple Music covers.`;
     const base64Data = generatedImageData.replace(/^data:image\/\w+;base64,/, '');
     const binaryData = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
 
-    // Generate filename - only 1 cover per order
-    const filename = `${orderId}/cover.png`;
+    // Generate unique filename so we keep history of all covers
+    const timestamp = Date.now();
+    const filename = `${orderId}/cover-${timestamp}.png`;
 
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage (no upsert needed - always new file)
     const { error: uploadError } = await supabase.storage
       .from('covers')
       .upload(filename, binaryData, {
         contentType: 'image/png',
-        upsert: true,
       });
 
     if (uploadError) {
