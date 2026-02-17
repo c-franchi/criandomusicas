@@ -2265,8 +2265,8 @@ const Briefing = () => {
           song_title: briefingData.hasCustomLyric ? (briefingData.songName || null) : (briefingData.autoGenerateName ? null : briefingData.songName || null),
           // Style prompt customizado (se usuário fornecer)
           style_prompt: briefingData.hasCustomStylePrompt && briefingData.customStylePrompt ? briefingData.customStylePrompt : null,
-          // Audio input reference (from audio mode)
-          audio_input_id: (() => {
+          // Audio input reference (only from audio mode)
+          audio_input_id: creationMode === 'audio' ? (() => {
             try {
               const raw = localStorage.getItem('audioInsertData');
               if (raw) {
@@ -2275,7 +2275,7 @@ const Briefing = () => {
               }
             } catch { /* ignore */ }
             return null;
-          })(),
+          })() : null,
           // Cover URL (uploaded before order creation)
           cover_url: briefingData.customCoverUrl || null,
         })
@@ -2351,14 +2351,19 @@ const Briefing = () => {
   // Função para processar ordem após consumo do crédito (delegada ao OrderProcessingService)
   const processOrderAfterCredit = async (orderId: string, briefing: BriefingPayload) => {
     try {
-      // Recuperar audioInsert do localStorage se existir
+      // Recuperar audioInsert do localStorage SOMENTE se for modo áudio
       let audioInsert = null;
-      const audioInsertRaw = localStorage.getItem('audioInsertData');
-      if (audioInsertRaw) {
-        try {
-          audioInsert = JSON.parse(audioInsertRaw);
-          localStorage.removeItem('audioInsertData');
-        } catch { /* ignore */ }
+      if (creationMode === 'audio') {
+        const audioInsertRaw = localStorage.getItem('audioInsertData');
+        if (audioInsertRaw) {
+          try {
+            audioInsert = JSON.parse(audioInsertRaw);
+            localStorage.removeItem('audioInsertData');
+          } catch { /* ignore */ }
+        }
+      } else {
+        // Limpar dados de áudio residuais para evitar vazamento
+        localStorage.removeItem('audioInsertData');
       }
 
       const result = await OrderProcessingService.processAfterCredit(orderId, briefing, {
@@ -2711,8 +2716,8 @@ const Briefing = () => {
           instrumentation_notes: briefingData.instrumentationNotes || null,
           song_title: briefingData.autoGenerateName ? null : (briefingData.songName || null),
           style_prompt: briefingData.hasCustomStylePrompt && briefingData.customStylePrompt ? briefingData.customStylePrompt : null,
-          // Audio input reference (from audio mode)
-          audio_input_id: (() => {
+          // Audio input reference (only from audio mode)
+          audio_input_id: creationMode === 'audio' ? (() => {
             try {
               const raw = localStorage.getItem('audioInsertData');
               if (raw) {
@@ -2721,7 +2726,7 @@ const Briefing = () => {
               }
             } catch { /* ignore */ }
             return null;
-          })(),
+          })() : null,
         })
         .select()
         .single();
@@ -3171,16 +3176,8 @@ const Briefing = () => {
             </div>
           </DialogContent>
         </Dialog>
-        {/* Loading overlay */}
-        {isCreatingOrder && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4 text-center px-4">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <p className="text-foreground font-medium text-lg">{t('quickCreation.creating', 'Criando sua música...')}</p>
-              <p className="text-sm text-muted-foreground">{t('quickCreation.deliveryTime', 'Sua música será entregue em até 12 horas ⏰')}</p>
-            </div>
-          </div>
-        )}
+        {/* Loading overlay - uses global AudioModeLoadingOverlay */}
+        {isCreatingOrder && <AudioModeLoadingOverlay />}
       </div>
     );
   }
@@ -3494,18 +3491,8 @@ const Briefing = () => {
             )}
           </div>
         </div>
-        {/* Loading overlay for detailed mode during order creation */}
-        {isCreatingOrder && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4 text-center px-4">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
-                <Music className="w-8 h-8 text-primary animate-spin" />
-              </div>
-              <p className="text-foreground font-medium text-lg">{t('confirmation.creatingOrder', 'Criando seu pedido...')}</p>
-              <p className="text-sm text-muted-foreground">{t('confirmation.consumingCredit', 'Consumindo crédito e preparando sua música')}</p>
-            </div>
-          </div>
-        )}
+        {/* Loading overlay - uses global AudioModeLoadingOverlay */}
+        {isCreatingOrder && <AudioModeLoadingOverlay />}
       </div>
     );
   }

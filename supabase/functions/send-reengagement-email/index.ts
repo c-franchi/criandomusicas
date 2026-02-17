@@ -183,6 +183,24 @@ Deno.serve(async (req) => {
 
       for (const profile of inactiveProfiles) {
         try {
+          // Check if preview credit is still available
+          const { data: credit } = await supabase
+            .from('user_credits')
+            .select('used_credits, total_credits')
+            .eq('user_id', profile.user_id)
+            .eq('plan_id', 'preview_test')
+            .maybeSingle();
+
+          if (!credit || (credit.used_credits ?? 0) >= credit.total_credits) {
+            // Credit already used or doesn't exist — mark as sent to avoid re-checking
+            await supabase
+              .from('profiles')
+              .update({ email_24h_sent: true })
+              .eq('user_id', profile.user_id);
+            logStep('Skipping user (credit already used)', { userId: profile.user_id });
+            continue;
+          }
+
           // Get user email from auth
           const { data: { user } } = await supabase.auth.admin.getUserById(profile.user_id);
           if (!user?.email) continue;
