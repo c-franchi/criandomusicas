@@ -26,6 +26,8 @@ interface BriefingData {
   motivationalMoment?: string;
   motivationalIntensity?: string;
   motivationalPerspective?: string;
+  // Corporate fields
+  corporateFormat?: string;
 }
 
 interface Pronunciation {
@@ -304,11 +306,16 @@ serve(async (req) => {
       motivationalNarrative = '',
       motivationalMoment = '',
       motivationalIntensity = '',
-      motivationalPerspective = ''
+      motivationalPerspective = '',
+      corporateFormat = ''
     } = briefing || {};
 
-    // Detectar se é modo "Somente Monólogo" (spoken word motivacional)
-    const isSomenteMonologo = motivationalNarrative === 'somente_monologo' || monologuePosition === 'full';
+    // Detectar se é "Chamada/Propaganda" corporativa (prioridade sobre monólogo motivacional)
+    const isChamadaCorporativa = corporateFormat === 'monologo';
+    console.log("Chamada Corporativa mode:", isChamadaCorporativa, "corporateFormat:", corporateFormat);
+
+    // Detectar se é modo "Somente Monólogo" (spoken word motivacional) - NÃO ativar se for chamada corporativa
+    const isSomenteMonologo = !isChamadaCorporativa && (motivationalNarrative === 'somente_monologo' || monologuePosition === 'full');
     console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
 
     // ============ MODO SIMPLES AUTOMÁTICO ============
@@ -438,6 +445,63 @@ Continua."
 ${!autoGenerateName && songName ? `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"` : 'CRIE UM TÍTULO FORTE E MOTIVACIONAL'}
 ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
 ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}`;
+
+    // ============ PROMPT CHAMADA/PROPAGANDA CORPORATIVA ============
+    const isolationIdChamada = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
+    const langNoteChamada = language !== 'pt-BR' && langMapSpoken[language] ? `\n⚠️ IDIOMA: Escreva TODO o texto em ${langMapSpoken[language]}.` : '';
+    
+    const chamadaCorporativaPrompt = `[ISOLATION ID: ${isolationIdChamada}]
+⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
+${langNoteChamada}
+
+Você é um LOCUTOR PROFISSIONAL de rádio/carro de som brasileiro. Seu trabalho é criar CHAMADAS COMERCIAIS e PROPAGANDAS faladas.
+
+⚠️ REGRA ABSOLUTA: ESTE É UM ANÚNCIO COMERCIAL, NÃO UMA MÚSICA MOTIVACIONAL.
+- NÃO use vocabulário motivacional (superação, disciplina, força interior, jornada, etc.)
+- NÃO transforme o conteúdo em discurso de coaching ou autoajuda
+- NÃO invente histórias emocionais, metáforas ou mensagens filosóficas
+- SEJA 100% COMERCIAL: preços, produtos, endereços, contatos, promoções
+
+TOM DE VOZ:
+- Locutor de rádio comercial / carro de som
+- Animado, direto, persuasivo
+- Frases curtas e chamativas
+- Ênfase em promoções e urgência comercial
+
+ESTRUTURA OBRIGATÓRIA (exatamente esta):
+
+TÍTULO (nome do estabelecimento ou da promoção)
+
+[Intro]
+[monologue]
+(texto COMPLETO da propaganda em UM ÚNICO BLOCO grande)
+
+[End]
+
+REGRAS CRÍTICAS:
+1. 100% FALADO - NENHUM trecho cantado, NENHUMA melodia
+2. UM ÚNICO bloco [monologue] - NÃO dividir em vários blocos
+3. REPRODUZA FIELMENTE o texto/contexto que o usuário forneceu
+4. Adicione apenas conectores naturais de propaganda: "Atenção!", "Aproveite!", "Não perca!", "Venha conferir!", "Corra!"
+5. MANTENHA TODAS as informações de contato (telefone, endereço, Instagram, etc.)
+6. Mantenha CURTO e DIRETO - máximo 15-20 frases
+7. NÃO inclua [Verse], [Chorus], [Bridge] ou qualquer tag de música
+8. NÃO inclua partes cantadas ou poéticas
+
+⚠️⚠️⚠️ REGRAS DE FORMATAÇÃO PARA SUNO (OBRIGATÓRIAS):
+
+🔒 TELEFONES: DDD por extenso + resto com hífens
+   Exemplo: dezesseis, 9-9-7-8-1-3-0-3-8
+
+🌐 SITES: w-w-w-ponto-nome-ponto-com-ponto-b-r
+
+🔠 SIGLAS: letras com hífen (F-M-E)
+
+🎤 REDES SOCIAIS: arroba-nomedoperfil
+
+${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
+${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}
+${!autoGenerateName && songName ? `TÍTULO: "${songName}"` : 'Use o nome do estabelecimento/promoção como título'}`;
 
     // ============ PROMPT MODO SIMPLES (ativado automaticamente para pedidos curtos) ============
     const langNoteSimple = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
@@ -741,20 +805,24 @@ ${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
 (texto declamado final entre aspas)` : ''}`;
 
     // ============ SELEÇÃO DO PROMPT BASEADO NO MODO ============
-    // Prioridade: 1. Somente Monólogo → 2. Modo Simples → 3. Preview → 4. Completo
-    const systemPrompt = isSomenteMonologo 
-      ? somenteMonologoPrompt 
-      : isSimpleMode 
-        ? simpleModePrompt 
-        : isPreviewOrder 
-          ? previewPrompt 
-          : fullSystemPrompt;
+    // Prioridade: 1. Chamada Corporativa → 2. Somente Monólogo → 3. Modo Simples → 4. Preview → 5. Completo
+    const systemPrompt = isChamadaCorporativa
+      ? chamadaCorporativaPrompt
+      : isSomenteMonologo 
+        ? somenteMonologoPrompt 
+        : isSimpleMode 
+          ? simpleModePrompt 
+          : isPreviewOrder 
+            ? previewPrompt 
+            : fullSystemPrompt;
     
+    const selectedMode = isChamadaCorporativa ? 'chamadaCorporativa' : isSomenteMonologo ? 'somenteMonologo' : isSimpleMode ? 'simpleMode' : isPreviewOrder ? 'preview' : 'full';
     console.log("Selected prompt mode:", { 
+      isChamadaCorporativa,
       isSomenteMonologo, 
       isSimpleMode, 
       isPreviewOrder, 
-      selectedMode: isSomenteMonologo ? 'somenteMonologo' : isSimpleMode ? 'simpleMode' : isPreviewOrder ? 'preview' : 'full'
+      selectedMode
     });
 
     // ============ MODIFICATION MODE: Generate only 1 version ============
@@ -767,7 +835,24 @@ ${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
       : `- Crie DUAS versões DIFERENTES mas baseadas na mesma história
 - Separe as duas versões com uma linha contendo apenas: ---`;
 
-    const userPrompt = isSomenteMonologo ? `Crie ${versionCount} de SPOKEN WORD motivacional.
+    const userPrompt = isChamadaCorporativa ? `Crie ${versionCount} de CHAMADA/PROPAGANDA COMERCIAL.
+
+⚠️ ISTO É UMA PROPAGANDA COMERCIAL, NÃO UM DISCURSO MOTIVACIONAL.
+
+SCRIPT/CONTEXTO FORNECIDO PELO CLIENTE:
+${story}
+
+INSTRUÇÕES:
+${versionInstructions}
+- Reproduza FIELMENTE o conteúdo que o cliente forneceu
+- Adicione apenas conectores comerciais naturais ("Atenção!", "Aproveite!", "Não perca!")
+- NÃO invente histórias, emoções, mensagens motivacionais ou filosóficas
+- Mantenha TODAS as informações de contato (telefone, endereço, preços, etc.)
+- Tom de LOCUTOR COMERCIAL: animado, direto, persuasivo
+- Use a estrutura: [Intro] → [monologue] (um único bloco grande) → [End]
+- NENHUM trecho cantado, NENHUMA tag de música ([Verse], [Chorus], etc.)
+${mandatoryWords ? `- Palavras/nomes obrigatórios: ${mandatoryWords}` : ''}
+${restrictedWords ? `- Palavras proibidas: ${restrictedWords}` : ''}` : isSomenteMonologo ? `Crie ${versionCount} de SPOKEN WORD motivacional.
 
 CONTEXTO DA MÚSICA:
 ${story}
@@ -838,10 +923,10 @@ ${versionInstructions}
 - APENAS as letras com as tags estruturadas`;
 
     // ============ ENRIQUECER PROMPT COM TRECHO DE ÁUDIO (audioInsert) ============
-    let finalUserPrompt = isSomenteMonologo 
-      ? userPrompt  // somente monologo already has its own prompt
-      : isSimpleMode 
-        ? userPrompt 
+    let finalUserPrompt = isChamadaCorporativa
+      ? userPrompt  // chamada corporativa has its own complete prompt
+      : isSomenteMonologo 
+        ? userPrompt  // somente monologo already has its own prompt
         : userPrompt;
 
     if (audioInsert?.transcript) {
