@@ -204,31 +204,9 @@ serve(async (req) => {
       throw new Error("Erro ao atualizar pedido");
     }
 
-    // Notify admin about new free order via voucher
+    // Admin notification moved to generate-style-prompt (after lyrics approval)
     if (isFree) {
-      try {
-        // Get user profile for name
-        const { data: profileData } = await supabaseClient
-          .from('profiles')
-          .select('name')
-          .eq('user_id', userId)
-          .single();
-
-        await supabaseClient.functions.invoke('notify-admin-order', {
-          body: {
-            orderId,
-            userId,
-            orderType: order.is_instrumental ? 'instrumental' : 'vocal',
-            userName: profileData?.name || 'Cliente',
-            musicType: planId || 'personalizada',
-            isPixReceipt: false,
-          },
-        });
-        logStep("Admin notified about free voucher order");
-      } catch (notifyError) {
-        logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
-        // Don't fail the whole request for notification errors
-      }
+      logStep("Free voucher order - admin will be notified after lyrics approval");
     }
 
     logStep("Voucher applied successfully", { isFree, finalPrice });

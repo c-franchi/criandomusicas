@@ -270,22 +270,7 @@ serve(async (req) => {
         verifiedPlanId: updatedOrder[0]?.plan_id,
       });
 
-      // Notify admin about new order
-      try {
-        await supabaseClient.functions.invoke('notify-admin-order', {
-          body: {
-            orderId,
-            userId,
-            orderType: orderData.is_instrumental ? 'instrumental' : 'vocal',
-            userName,
-            musicType: orderData.music_style || orderData.music_type || 'personalizada',
-            isPixReceipt: false,
-          },
-        });
-        logStep("Admin notification sent");
-      } catch (notifyError) {
-        logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
-      }
+      // Admin notification moved to generate-style-prompt (after lyrics approval)
 
       // Send push notification to user
       try {
@@ -416,22 +401,7 @@ serve(async (req) => {
         remainingCredits: creditToUse.total_credits - newUsedCredits 
       });
 
-      // Notify admin about new order
-      try {
-        await supabaseClient.functions.invoke('notify-admin-order', {
-          body: {
-            orderId,
-            userId,
-            orderType: orderData.is_instrumental ? 'instrumental' : 'vocal',
-            userName,
-            musicType: orderData.music_style || orderData.music_type || 'personalizada',
-            isPixReceipt: false,
-          },
-        });
-        logStep("Admin notification sent");
-      } catch (notifyError) {
-        logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
-      }
+      // Admin notification moved to generate-style-prompt (after lyrics approval)
 
       // Send push notification to user
       try {
