@@ -142,6 +142,22 @@ serve(async (req) => {
         // Don't fail the payment verification for generation errors
       }
 
+      // Send push notification to user about payment confirmed
+      try {
+        await supabaseClient.functions.invoke("send-push-notification", {
+          body: {
+            user_id: userId,
+            order_id: orderId,
+            title: "✅ Pagamento confirmado!",
+            body: "Seu pagamento foi aprovado. Estamos criando sua música!",
+            url: `/pedido/${orderId}`,
+          },
+        });
+        logStep("User push notification sent");
+      } catch (pushErr) {
+        logStep("User push notification failed (non-blocking)", { error: String(pushErr) });
+      }
+
       // Return order type so frontend can redirect correctly
       return new Response(
         JSON.stringify({

@@ -315,6 +315,21 @@ Deno.serve(async (req) => {
                 email: user.email,
                 status: 'sent',
               });
+
+              // Send push notification for seasonal campaign
+              try {
+                await supabase.functions.invoke('send-push-notification', {
+                  body: {
+                    user_id: profile.user_id,
+                    title: `🎵 ${campaign.event_name}`,
+                    body: campaign.email_subject,
+                    url: campaign.cta_url || '/briefing',
+                  },
+                });
+              } catch (pushErr) {
+                logStep('Push for seasonal failed (non-blocking)', { error: String(pushErr) });
+              }
+
               campaignSent++;
               totalSent++;
             }
