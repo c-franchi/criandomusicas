@@ -2184,7 +2184,7 @@ const Briefing = () => {
     // Criar ordem no Supabase
     try {
       // Upload cover if provided
-      if (coverFile && data.isInstrumental && user?.id) {
+      if (coverFile && (data.isInstrumental || data.hasCustomLyric) && user?.id) {
         const fileExt = coverFile.name.split('.').pop() || 'jpg';
         const filePath = `${user.id}/${Date.now()}.${fileExt}`;
         const { error: uploadError } = await supabase.storage
@@ -3421,6 +3421,55 @@ const Briefing = () => {
                       value={formData.autoGenerateName ? t('confirmation.aiGenerated') : formData.songName} 
                       onEdit={() => handleEditField(18)} 
                     />
+                    {/* Cover Upload for Custom Lyrics */}
+                    {formData.hasCustomLyric && (
+                      <div className="space-y-2 pt-2 border-t border-border/50">
+                        <p className="text-sm font-medium">🖼️ Capa da música (opcional)</p>
+                        {coverPreview ? (
+                          <div className="space-y-2">
+                            <img src={coverPreview} alt="Capa" className="w-24 h-24 rounded-xl object-cover" />
+                            <div className="flex gap-2">
+                              <Badge
+                                variant={coverMode === 'original' ? 'default' : 'outline'}
+                                className="cursor-pointer"
+                                onClick={() => setCoverMode('original')}
+                              >
+                                📌 Manter original
+                              </Badge>
+                              <Badge
+                                variant={coverMode === 'enhanced' ? 'default' : 'outline'}
+                                className="cursor-pointer"
+                                onClick={() => setCoverMode('enhanced')}
+                              >
+                                ✨ Melhorar com IA
+                              </Badge>
+                            </div>
+                            <Button variant="ghost" size="sm" onClick={() => { setCoverFile(null); setCoverPreview(null); }}>
+                              Remover capa
+                            </Button>
+                          </div>
+                        ) : (
+                          <div>
+                            <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                              📷 Escolher imagem
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    setCoverFile(file);
+                                    setCoverPreview(URL.createObjectURL(file));
+                                  }
+                                }}
+                              />
+                            </label>
+                            <p className="text-xs text-muted-foreground mt-1">Deixe vazio para gerar automaticamente com IA</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -4264,12 +4313,6 @@ const Briefing = () => {
                       placeholder="Digite ou use o microfone..."
                       rows={3}
                       className="flex-1 resize-none"
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          handleTextSubmit();
-                        }
-                      }}
                     />
                   ) : (
                     <Input
