@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ImageCardGrid } from "./ImageCardGrid";
-import { genreImages, voiceImages } from "@/assets/briefing";
+import { genreImages, voiceImages, typeImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
 import { PreviewBanner } from "@/components/PreviewBanner";
 import { useBriefingTour } from "@/hooks/useBriefingTour";
@@ -112,13 +112,22 @@ const QuickCreationComponent = ({
     }
   }, [transcript, resetTranscript]);
 
-  // Map style options with images
+  // Map style options with images - include infantil
   const styleOptionsWithImages = useMemo(() => {
-    return styleOptions.slice(0, 15).map(opt => ({
+    const baseOptions = styleOptions.slice(0, 15).map(opt => ({
       id: opt.id,
       label: opt.label,
       imageSrc: genreImages[opt.id as keyof typeof genreImages] || genreImages.pop || ''
     }));
+    // Add infantil if not already present
+    if (!baseOptions.some(o => o.id === 'infantil')) {
+      baseOptions.push({
+        id: 'infantil',
+        label: 'Infantil',
+        imageSrc: typeImages?.infantil || genreImages['pop'] || ''
+      });
+    }
+    return baseOptions;
   }, [styleOptions]);
 
   // Map voice options with images (expanded options including children voices)

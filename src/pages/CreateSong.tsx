@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import PronunciationModal from "@/components/PronunciationModal";
 import { useTranslation } from "react-i18next";
 import { MusicCreationService } from "@/services/MusicCreationService";
+import { findForbiddenWords } from "@/lib/profanity-filter";
 
 interface LyricOption {
   id: string;
@@ -475,6 +476,26 @@ const CreateSong = () => {
     
     if (!editedLyric || editedLyric.trim().length === 0) {
       toast.error(t('createSong.emptyLyric'), { description: t('createSong.lyricNotLoaded') });
+      return;
+    }
+
+    // Check for forbidden words in edited lyrics
+    const forbiddenFound = findForbiddenWords(editedLyric);
+    if (forbiddenFound.length > 0) {
+      toast.error('Conteúdo não permitido', {
+        description: `A letra contém termos proibidos que bloquearão a geração da música: "${forbiddenFound.slice(0, 3).join('", "')}". Por favor, remova ou substitua essas palavras.`,
+        duration: 8000,
+      });
+      return;
+    }
+
+    // Also check the title
+    const titleForbidden = findForbiddenWords(editedTitle);
+    if (titleForbidden.length > 0) {
+      toast.error('Título não permitido', {
+        description: `O título contém termos proibidos: "${titleForbidden.slice(0, 3).join('", "')}". Por favor, altere o título.`,
+        duration: 8000,
+      });
       return;
     }
 

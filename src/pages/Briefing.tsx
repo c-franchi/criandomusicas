@@ -2623,7 +2623,7 @@ const Briefing = () => {
       style: data.style,
       customStyle: data.additionalGenre || '',
       voiceType: data.voiceType || '',
-      musicType: 'homenagem', // Default para criação rápida
+      musicType: data.style === 'infantil' ? 'infantil' : 'homenagem', // Infantil quando selecionado
       emotion: 'amor',        // Default para criação rápida
       rhythm: 'moderado',     // Default - valores válidos: lento, moderado, animado
       atmosphere: 'festivo',  // Default - valores válidos: intimo, festivo, melancolico, epico, leve, misterioso
