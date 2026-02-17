@@ -18,7 +18,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey, musicStyle, musicType, songTitle, voiceType, stylePrompt } = body;
+    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey, musicStyle, musicType, songTitle, voiceType, stylePrompt, coverUrl } = body;
     
     // Allow service role key or admin auth
     const authHeader = req.headers.get("Authorization");
@@ -82,6 +82,7 @@ serve(async (req) => {
     if (songTitle !== undefined) updateData.song_title = songTitle;
     if (voiceType !== undefined) updateData.voice_type = voiceType;
     if (stylePrompt !== undefined) updateData.style_prompt = stylePrompt;
+    if (coverUrl !== undefined) updateData.cover_url = coverUrl;
 
     const { data, error } = await supabaseClient
       .from('orders')
