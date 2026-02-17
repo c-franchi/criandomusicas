@@ -95,11 +95,54 @@
     "vocal": "vocale",
     "vocals": "vocali",
     "instrumental": "strumentale",
-    "instrumentals": "strumentali"
+    "instrumentals": "strumentali",
+    "previewFree": "1 anteprima gratuita",
+    "previewDesc": "anteprima (strofa + ritornello)",
+    "previewHint": "Crea un'anteprima gratuita con strofa e ritornello della tua canzone!",
+    "active": "Attivo",
+    "inactive": "Inattivo",
+    "used": "Utilizzato",
+    "myCredits": "I Miei Crediti Musicali",
+    "manageCredits": "Gestisci i tuoi pacchetti e crediti disponibili",
+    "availableCredits": "Crediti disponibili",
+    "songsCount_one": "canzone",
+    "songsCount_other": "canzoni",
+    "creatorSubscription": "Abbonamento Creator",
+    "remainingOf": "di {{total}} crediti rimanenti",
+    "renewsAt": "Rinnova il:",
+    "songsCreatedMonth": "{{count}} canzoni create questo mese",
+    "autoRenew": "I crediti si rinnovano automaticamente ogni mese",
+    "singlePackages": "Pacchetti Singoli",
+    "songsUsed": "{{used}}/{{total}} canzoni usate",
+    "noPackages": "Non hai ancora acquistato nessun pacchetto musicale",
+    "viewAvailable": "Vedi Pacchetti Disponibili",
+    "buyMore": "Acquista Altri Crediti",
+    "buyMusicPackage": "Acquista Pacchetto Musicale",
+    "createButton": "Crea"
   },
   "subscription": {
     "active": "Attivo",
     "inactive": "Inattivo"
+  },
+  "mobileMenu": {
+    "navigate": "Naviga",
+    "menu": "Menu",
+    "quickCreate": "Crea Veloce",
+    "legal": "Legale",
+    "termsOfUse": "Termini di Utilizzo",
+    "privacyPolicy": "Informativa sulla Privacy"
+  },
+  "legal": {
+    "agreementPrefix": "Continuando, accetti i",
+    "and": "e l'",
+    "termsOfUse": "Termini di Utilizzo",
+    "privacyPolicy": "Informativa sulla Privacy"
+  },
+  "video": {
+    "comingSoon": "Prossimamente: usa i tuoi crediti per creare video!",
+    "implementing": "Stiamo implementando il sistema di crediti per i video.",
+    "myOrders": "I Miei Ordini",
+    "goToOrders": "Vai ai Miei Ordini"
   },
   "notFound": {
     "title": "Pagina non trovata",

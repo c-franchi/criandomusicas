@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 // PIX Configuration
 const PIX_KEY = '14.389.841/0001-47';
@@ -41,6 +42,7 @@ const Order = () => {
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('common');
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -216,7 +218,7 @@ const Order = () => {
           <Button variant="ghost" asChild className="mb-4">
             <Link to="/dashboard">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Meus Pedidos
+              {t('video.myOrders', 'Meus Pedidos')}
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">

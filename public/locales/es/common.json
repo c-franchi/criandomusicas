@@ -95,11 +95,54 @@
     "vocal": "vocal",
     "vocals": "vocales",
     "instrumental": "instrumental",
-    "instrumentals": "instrumentales"
+    "instrumentals": "instrumentales",
+    "previewFree": "1 preview gratis",
+    "previewDesc": "preview (verso + estribillo)",
+    "previewHint": "¡Crea una vista previa con verso y estribillo de tu canción gratis!",
+    "active": "Activo",
+    "inactive": "Inactivo",
+    "used": "Utilizado",
+    "myCredits": "Mis Créditos de Música",
+    "manageCredits": "Gestiona tus paquetes y créditos disponibles",
+    "availableCredits": "Créditos disponibles",
+    "songsCount_one": "canción",
+    "songsCount_other": "canciones",
+    "creatorSubscription": "Suscripción Creator",
+    "remainingOf": "de {{total}} créditos restantes",
+    "renewsAt": "Renueva el:",
+    "songsCreatedMonth": "{{count}} canciones creadas este mes",
+    "autoRenew": "Los créditos se renuevan automáticamente cada mes",
+    "singlePackages": "Paquetes Individuales",
+    "songsUsed": "{{used}}/{{total}} canciones usadas",
+    "noPackages": "Aún no has comprado ningún paquete de música",
+    "viewAvailable": "Ver Paquetes Disponibles",
+    "buyMore": "Comprar Más Créditos",
+    "buyMusicPackage": "Comprar Paquete de Música",
+    "createButton": "Crear"
   },
   "subscription": {
     "active": "Activo",
     "inactive": "Inactivo"
+  },
+  "mobileMenu": {
+    "navigate": "Navegar",
+    "menu": "Menú",
+    "quickCreate": "Crear Rápido",
+    "legal": "Legal",
+    "termsOfUse": "Términos de Uso",
+    "privacyPolicy": "Política de Privacidad"
+  },
+  "legal": {
+    "agreementPrefix": "Al continuar, aceptas los",
+    "and": "y la",
+    "termsOfUse": "Términos de Uso",
+    "privacyPolicy": "Política de Privacidad"
+  },
+  "video": {
+    "comingSoon": "Próximamente: ¡usa tus créditos para crear videos!",
+    "implementing": "Estamos implementando el sistema de créditos para videos.",
+    "myOrders": "Mis Pedidos",
+    "goToOrders": "Ir a Mis Pedidos"
   },
   "notFound": {
     "title": "Página no encontrada",

@@ -23,6 +23,7 @@ const Auth = () => {
   const { user, loading: authLoading, signIn, signUp, isRecoverySession } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation('auth');
+  const { t: tCommon } = useTranslation('common');
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
@@ -643,13 +644,13 @@ const Auth = () => {
           </Tabs>
 
           <p className="text-xs text-center text-muted-foreground mt-6">
-            Ao continuar, você concorda com os{' '}
+            {tCommon('legal.agreementPrefix', 'Ao continuar, você concorda com os')}{' '}
             <Link to="/termos-de-uso" className="text-primary hover:underline">
-              Termos de Uso
+              {tCommon('legal.termsOfUse', 'Termos de Uso')}
             </Link>{' '}
-            e a{' '}
+            {tCommon('legal.and', 'e a')}{' '}
             <Link to="/politica-de-privacidade" className="text-primary hover:underline">
-              Política de Privacidade
+              {tCommon('legal.privacyPolicy', 'Política de Privacidade')}
             </Link>
           </p>
         </CardContent>

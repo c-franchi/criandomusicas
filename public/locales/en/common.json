@@ -95,11 +95,54 @@
     "vocal": "vocal",
     "vocals": "vocals",
     "instrumental": "instrumental",
-    "instrumentals": "instrumentals"
+    "instrumentals": "instrumentals",
+    "previewFree": "1 free preview",
+    "previewDesc": "preview (verse + chorus)",
+    "previewHint": "Create a free preview with verse and chorus of your song!",
+    "active": "Active",
+    "inactive": "Inactive",
+    "used": "Used",
+    "myCredits": "My Music Credits",
+    "manageCredits": "Manage your packages and available credits",
+    "availableCredits": "Available credits",
+    "songsCount_one": "song",
+    "songsCount_other": "songs",
+    "creatorSubscription": "Creator Subscription",
+    "remainingOf": "of {{total}} credits remaining",
+    "renewsAt": "Renews on:",
+    "songsCreatedMonth": "{{count}} songs created this month",
+    "autoRenew": "Credits renew automatically every month",
+    "singlePackages": "Single Packages",
+    "songsUsed": "{{used}}/{{total}} songs used",
+    "noPackages": "You haven't purchased any music packages yet",
+    "viewAvailable": "View Available Packages",
+    "buyMore": "Buy More Credits",
+    "buyMusicPackage": "Buy Music Package",
+    "createButton": "Create"
   },
   "subscription": {
     "active": "Active",
     "inactive": "Inactive"
+  },
+  "mobileMenu": {
+    "navigate": "Navigate",
+    "menu": "Menu",
+    "quickCreate": "Quick Create",
+    "legal": "Legal",
+    "termsOfUse": "Terms of Use",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "legal": {
+    "agreementPrefix": "By continuing, you agree to the",
+    "and": "and the",
+    "termsOfUse": "Terms of Use",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "video": {
+    "comingSoon": "Coming soon: use your credits to create videos!",
+    "implementing": "We are implementing the credit system for videos.",
+    "myOrders": "My Orders",
+    "goToOrders": "Go to My Orders"
   },
   "notFound": {
     "title": "Page not found",
