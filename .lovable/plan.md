@@ -1,88 +1,99 @@
 
-# Plano de Correção: Estabilidade do Modo Áudio e Geração de Letras
+# Plan: Fix Instrumental Title, Cover Upload, Audio Mode Title, and Infantil Themes
 
-## Problemas Identificados
+## Problem Summary
 
-Foram encontrados 5 problemas principais que causam a instabilidade relatada:
-
-### 1. Loading infinito (tela travada "Gerando sua letra...")
-O estado de "criando pedido" (`isCreatingOrder`) nunca é resetado dentro da funcao `processOrderAfterCredit`. Quando a geracao de letras falha ou tem timeout, o overlay de loading fica preso na tela para sempre.
-
-### 2. Erros silenciosos na geracao de letras
-Quando a IA falha ao gerar a letra, o sistema mostra um toast de erro mas continua navegando para a pagina de criacao (`/criar-musica`) mesmo sem letra gerada, causando uma experiencia quebrada.
-
-### 3. Dependencia instavel na Edge Function `generate-lyrics`
-A funcao usa `@supabase/supabase-js@2` sem versao fixa, o que causa falhas intermitentes no deploy ("Bundle generation timed out"). A funcao `generate-style-prompt` ja usa a versao fixa `@2.57.2`.
-
-### 4. Dependencia instavel na Edge Function `transcribe-audio`
-Usa `@supabase/supabase-js@2.49.1`, diferente da versao padronizada do projeto (`@2.57.2`).
-
-### 5. Sem timeout no lado do cliente
-A chamada `supabase.functions.invoke('generate-lyrics')` nao tem timeout no frontend. Se a Edge Function travar alem dos 90s do AbortController interno, o SDK pode ficar esperando indefinidamente.
+1. **Instrumental title not preserved**: The `OrderProcessingService.processInstrumental()` doesn't pass `songTitle` to the `generate-style-prompt` Edge Function, so user-provided titles are lost
+2. **Audio mode ("Criar por Áudio") has no title input**: The `AudioConfigStep` component lacks a song name field entirely
+3. **Instrumental has no cover upload**: Instrumental orders skip `CreateSong.tsx` and go directly to dashboard, bypassing the cover upload UI
+4. **Instrumental infantil uses generic flow**: When `musicType === 'infantil'` and `isInstrumental === true`, the briefing skips the specialized children's theme flow (age, objective, theme, mood, style) and uses the generic instrumental steps instead
 
 ---
 
-## Correcoes Planejadas
+## Changes
 
-### Correcao 1: Resetar estado de loading corretamente (Briefing.tsx)
+### 1. Fix Instrumental Title Passing
 
-Envolver toda a logica de `processOrderAfterCredit` com um `try/finally` que garante que `isCreatingOrder` e `isCreatingOrderRef` sao sempre resetados, independente de sucesso ou falha.
+**File: `src/services/OrderProcessingService.ts`**
 
-### Correcao 2: Parar execucao em caso de erro na geracao (Briefing.tsx)
+- In `processInstrumental()`, add `songTitle` and `coverMode`/`customCoverUrl` to the `generate-style-prompt` call body
+- Read `song_title` from the order in `finishBriefing` where it's already being saved correctly
 
-Quando `lyricsError` ou `!lyricsResult?.ok`, a funcao deve fazer `return` apos o toast de erro, em vez de continuar navegando para a pagina de criacao com dados incompletos. Nestes casos, navegar para o dashboard com mensagem clara.
+### 2. Add Title Input to Audio Mode
 
-### Correcao 3: Fixar versao do Supabase SDK na `generate-lyrics`
+**File: `src/components/briefing/AudioConfigStep.tsx`**
 
-Alterar o import de:
-```
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-```
-Para:
-```
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-```
+- Add a new `songName` prop and `onSongNameChange` callback
+- Add a "Nome da musica (opcional)" input field below the "Tema/Dedicatoria" section
+- Same pattern as QuickCreation: optional field with placeholder "Deixe vazio para gerar automaticamente"
 
-### Correcao 4: Fixar versao do Supabase SDK na `transcribe-audio`
+**File: `src/components/briefing/AudioModeWizard.tsx`**
 
-Alterar o import de:
-```
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
-```
-Para:
-```
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-```
+- Add `songName` state
+- Pass it to `AudioConfigStep`
+- Include `songName` in the `AudioModeResult` interface
 
-### Correcao 5: Adicionar timeout no cliente + retry
+**File: `src/pages/Briefing.tsx`**
 
-Implementar um mecanismo de timeout de 120 segundos no frontend para a chamada `generate-lyrics`. Se expirar, mostrar opcao de "Tentar novamente" em vez de travar.
+- In `handleAudioModeComplete`, use `audioResult.songName` to set `songName` and `autoGenerateName` correctly
 
-### Correcao 6: Padronizar versao do `std` no `generate-lyrics`
+### 3. Add Cover Upload for Instrumental
 
-Atualizar de `std@0.168.0` para `std@0.190.0` (mesma versao usada em `generate-style-prompt`).
+**File: `src/pages/Briefing.tsx`**
+
+- Add cover upload state (file, preview, coverMode) to the Briefing page
+- Show cover upload UI in the confirmation screen when `isInstrumental === true`
+- Before calling `processOrderAfterCredit` for instrumental, upload the cover to Supabase Storage and save the public URL to `orders.cover_url`
+- Pass `customCoverUrl` and `coverMode` through the briefing payload
+
+**File: `src/services/OrderProcessingService.ts`**
+
+- In `processInstrumental()`, pass `customCoverUrl` and `coverMode` to `generate-style-prompt`
+
+### 4. Route Instrumental Infantil Through Children's Themes
+
+**File: `src/pages/Briefing.tsx`**
+
+- In `getNextStep()`, when `current === 1` and `data.musicType === 'infantil'` and `data.isInstrumental`:
+  - Route to a subset of children steps: age (60) -> objective (61) -> theme (62) -> mood (63) -> style (64)
+  - Then skip interaction (65), narrative (66), voiceType (68) (not needed for instrumental)
+  - Go to story (67) -> then to instrumental name step (20)
+- Add conditional logic in the children flow section to handle instrumental path:
+  - After step 64 (childStyle), if instrumental, skip to step 67 (story)
+  - After step 67 (story), if instrumental, skip to step 20 (autoGenerateName for instrumental)
 
 ---
 
-## Detalhes Tecnicos
+## Technical Details
 
-### Arquivos modificados:
-1. **`src/pages/Briefing.tsx`** - Correcoes no fluxo de `processOrderAfterCredit`:
-   - Adicionar `try/finally` para garantir reset de estados
-   - Adicionar `return` apos erros na geracao de letras
-   - Adicionar timeout de 120s no frontend com AbortController
-   - Adicionar opcao de retry apos falha
+### getNextStep changes (Briefing.tsx)
 
-2. **`supabase/functions/generate-lyrics/index.ts`** - Estabilidade:
-   - Fixar import `@supabase/supabase-js@2.57.2`
-   - Atualizar `std@0.168.0` para `std@0.190.0`
+```text
+Step 1 (musicType):
+  if infantil AND isInstrumental -> 60 (start children flow)
 
-3. **`supabase/functions/transcribe-audio/index.ts`** - Estabilidade:
-   - Fixar import `@supabase/supabase-js@2.57.2`
-   - Atualizar `std@0.168.0` para `std@0.190.0`
+Children flow (60-69) additions:
+  if isInstrumental:
+    60 -> 61 -> 62 -> 63 -> 64 -> 67 (skip interaction, narrative, voice)
+    67 -> 20 (instrumental name step)
+```
 
-### Impacto:
-- Elimina o problema de tela travada no loading
-- Erros na geracao mostram feedback claro ao usuario
-- Deploys das Edge Functions ficam estaveis e consistentes
-- Usuario pode tentar novamente em caso de falha
+### OrderProcessingService.processInstrumental changes
+
+```text
+Add to invoke body:
+  songTitle: briefing.songName || null
+  customCoverUrl: briefing.customCoverUrl || null
+  coverMode: briefing.coverMode || 'auto'
+  language: MusicCreationService.getActiveLanguage()
+```
+
+### AudioModeResult interface update
+
+```text
+Add: songName?: string
+```
+
+### Confirmation screen cover upload
+
+The cover upload component already exists in `CreateSong.tsx`. We will replicate the same pattern (file input, preview, original/enhanced modes) in the Briefing confirmation screen, conditionally shown for instrumental orders.
