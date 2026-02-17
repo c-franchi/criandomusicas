@@ -118,12 +118,12 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'marquee-left-slow': 'marquee-left 50s linear infinite',
-				'marquee-left-normal': 'marquee-left 40s linear infinite',
-				'marquee-left-fast': 'marquee-left 30s linear infinite',
-				'marquee-right-slow': 'marquee-right 50s linear infinite',
-				'marquee-right-normal': 'marquee-right 40s linear infinite',
-				'marquee-right-fast': 'marquee-right 30s linear infinite'
+			'marquee-left-slow': 'marquee-left 35s linear infinite',
+				'marquee-left-normal': 'marquee-left 25s linear infinite',
+				'marquee-left-fast': 'marquee-left 18s linear infinite',
+				'marquee-right-slow': 'marquee-right 35s linear infinite',
+				'marquee-right-normal': 'marquee-right 25s linear infinite',
+				'marquee-right-fast': 'marquee-right 18s linear infinite'
 			}
 		}
 	},

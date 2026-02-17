@@ -386,7 +386,8 @@ export const useBriefingTranslations = () => {
 
   // Style options (vocal)
   const styleOptions = [
-    { id: "sertanejo", label: t('steps.style.sertanejo') },
+    { id: "sertanejo_raiz", label: t('steps.style.sertanejo_raiz') },
+    { id: "sertanejo_universitario", label: t('steps.style.sertanejo_universitario') },
     { id: "pop", label: t('steps.style.pop') },
     { id: "rock", label: t('steps.style.rock') },
     { id: "mpb", label: t('steps.style.mpb') },
@@ -402,7 +403,8 @@ export const useBriefingTranslations = () => {
 
   // Style options for custom lyric
   const styleOptionsCustomLyric = [
-    { id: "sertanejo", label: t('steps.style.sertanejo') },
+    { id: "sertanejo_raiz", label: t('steps.style.sertanejo_raiz') },
+    { id: "sertanejo_universitario", label: t('steps.style.sertanejo_universitario') },
     { id: "pop", label: t('steps.style.pop') },
     { id: "rock", label: t('steps.style.rock') },
     { id: "mpb", label: t('steps.style.mpb') },

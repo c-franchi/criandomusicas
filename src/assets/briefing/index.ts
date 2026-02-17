@@ -179,6 +179,8 @@ export const genreImages: Record<string, string> = {
   rock: rockImg,
   rap: rapImg,
   sertanejo: sertanejoImg,
+  sertanejo_raiz: sertanejoImg,
+  sertanejo_universitario: sertanejoImg,
   mpb: mpbImg,
   jazz: jazzImg,
   gospel: gospelImg,
