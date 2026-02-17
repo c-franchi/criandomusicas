@@ -378,10 +378,11 @@ export const useBriefingTranslations = () => {
     { id: "corporativa", label: t('steps.musicType.corporativa'), description: t('steps.musicType.corporativaDesc') }
   ];
 
-  // Corporate format options (institutional vs jingle)
+  // Corporate format options (institutional vs jingle vs monologue)
   const corporateFormatOptions = [
     { id: "institucional", label: t('steps.corporateFormat.institucional'), description: t('steps.corporateFormat.institucionalDesc') },
-    { id: "jingle", label: t('steps.corporateFormat.jingle'), description: t('steps.corporateFormat.jingleDesc') }
+    { id: "jingle", label: t('steps.corporateFormat.jingle'), description: t('steps.corporateFormat.jingleDesc') },
+    { id: "monologo", label: t('steps.corporateFormat.monologo'), description: t('steps.corporateFormat.monologoDesc') }
   ];
 
   // Style options (vocal)
@@ -541,6 +542,7 @@ export const useBriefingTranslations = () => {
     corporateFormat: t('steps.corporateFormat.question', 'Which corporate format do you want? 🏢'),
     contactInfo: t('steps.corporateFormat.contactInfoQuestion', 'Provide the contact information for the jingle 📞\n\nInclude: phone, address, website, social media...'),
     callToAction: t('steps.corporateFormat.callToActionQuestion', 'What call to action should be in the jingle? 📢\n\nExample: "Call now!", "Visit our store!", "Follow us on Instagram!"'),
+    monologoScript: t('steps.corporateFormat.monologoScriptQuestion', 'Type the full text of the monologue/call 🎙️\n\nExample: "Personalize your stories into music..."'),
   });
 
   // Restore session messages

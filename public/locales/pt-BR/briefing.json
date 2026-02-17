@@ -85,8 +85,11 @@
       "institucionalDesc": "Trilha, hino da empresa, eventos",
       "jingle": "📢 Jingle/Propaganda",
       "jingleDesc": "Para marketing, com telefone/endereço",
+      "monologo": "🎙️ Monólogo/Chamada",
+      "monologoDesc": "Narração promocional sobre fundo musical",
       "contactInfoQuestion": "Agora digite as informações de contato para o jingle! 📞\n\nInclua: telefone, endereço, site, redes sociais...",
-      "callToActionQuestion": "Qual chamada para ação deve aparecer no jingle? 📢\n\nExemplo: \"Ligue agora!\", \"Visite nossa loja!\", \"Siga no Instagram!\""
+      "callToActionQuestion": "Qual chamada para ação deve aparecer no jingle? 📢\n\nExemplo: \"Ligue agora!\", \"Visite nossa loja!\", \"Siga no Instagram!\"",
+      "monologoScriptQuestion": "Digite o texto completo do monólogo/chamada 🎙️\n\nExemplo: \"Personalize suas histórias em músicas. Com a Criando Músicas você eterniza seus momentos em músicas personalizadas. Acesse agora criandomusicas.com.br\""
     },
     "style": {
       "question": "Qual estilo musical você prefere?",

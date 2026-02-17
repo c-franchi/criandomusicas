@@ -243,6 +243,7 @@ export const voiceImages: Record<string, string> = {
 export const corporateImages: Record<string, string> = {
   institucional: institucionalImg,
   jingle: jingleImg,
+  monologo: institucionalImg, // Reuse institutional image for monologue
 };
 
 export const gospelContextImages: Record<string, string> = {

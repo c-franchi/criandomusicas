@@ -76,7 +76,7 @@ interface BriefingFormData {
   soloMoment: string;
   instrumentationNotes: string;
   // Campos para jingle/propaganda corporativa
-  corporateFormat: 'institucional' | 'jingle' | '';
+  corporateFormat: 'institucional' | 'jingle' | 'monologo' | '';
   contactInfo: string;
   callToAction: string;
   // Campos para data comemorativa
@@ -1191,6 +1191,20 @@ const Briefing = () => {
       inputType: 'options',
       field: 'autoGenerateName',
       options: nameOptions
+    },
+    // Índice 79: Placeholder (reservado)
+    {
+      type: 'bot',
+      content: '',
+      inputType: 'text',
+      field: 'story'
+    },
+    // Índice 80: Texto do monólogo/chamada corporativa
+    {
+      type: 'bot',
+      content: chatMessages.monologoScript,
+      inputType: 'textarea',
+      field: 'story'
     }
   ];
 
@@ -1327,10 +1341,16 @@ const Briefing = () => {
       if (data.corporateFormat === 'jingle') {
         return 32; // Jingle vai para contactInfo
       }
+      if (data.corporateFormat === 'monologo') {
+        return 80; // Monólogo vai para script do monólogo
+      }
       return 10; // Institucional continua fluxo normal (emotion)
     }
     if (current === 32) return 33; // contactInfo -> callToAction
     if (current === 33) return 10; // callToAction -> emotion (continua fluxo)
+    
+    // FLUXO MONÓLOGO CORPORATIVO (80)
+    if (current === 80) return 10; // monologoScript -> emotion (continua fluxo)
     
     // FLUXO MOTIVACIONAL (34-43)
     // 34: moment, 35: emotion, 36: motivationalIntensity, 37: style, 38: narrative, 39: perspective, 40: story, 41: mandatoryWords, 42: voiceType, 43: autoGenerateName
@@ -1582,23 +1602,24 @@ const Briefing = () => {
       return;
     }
 
-    // Handle corporateFormat - se for jingle, ativar monólogo automaticamente
+    // Handle corporateFormat - se for jingle ou monologo, ativar monólogo automaticamente
     if (field === 'corporateFormat') {
       const isJingle = option.id === 'jingle';
+      const isMonologo = option.id === 'monologo';
       setFormData(prev => ({ 
         ...prev, 
-        corporateFormat: option.id as 'institucional' | 'jingle',
-        hasMonologue: isJingle, // Jingles sempre têm monólogo
-        monologuePosition: isJingle ? 'outro' : '' // Monólogo no final para jingles
+        corporateFormat: option.id as 'institucional' | 'jingle' | 'monologo',
+        hasMonologue: isJingle || isMonologo, // Jingles e monólogos sempre têm monólogo
+        monologuePosition: isJingle ? 'outro' : (isMonologo ? 'full' : '') // Monólogo full para chamadas
       }));
       addUserMessage(displayValue);
       setStepHistory(prev => [...prev, currentStep]);
       
       const updatedFormData = { 
         ...formData, 
-        corporateFormat: option.id as 'institucional' | 'jingle',
-        hasMonologue: isJingle,
-        monologuePosition: isJingle ? 'outro' : ''
+        corporateFormat: option.id as 'institucional' | 'jingle' | 'monologo',
+        hasMonologue: isJingle || isMonologo,
+        monologuePosition: isJingle ? 'outro' : (isMonologo ? 'full' : '')
       };
       
       if (isEditingSingleField) {
@@ -2129,9 +2150,12 @@ const Briefing = () => {
     // Criar ordem no banco primeiro
     // Para jingles, forçar hasMonologue=true e adicionar contactInfo ao story
     const isJingle = data.corporateFormat === 'jingle';
+    const isMonologo = data.corporateFormat === 'monologo';
     const storyWithJingleInfo = isJingle 
       ? `${data.story}\n\n[INFORMAÇÕES DE CONTATO PARA O JINGLE]\n${data.contactInfo}\n\n[CHAMADA PARA AÇÃO]\n${data.callToAction}`
-      : data.story;
+      : isMonologo
+        ? `[TEXTO DO MONÓLOGO/CHAMADA]\n${data.story}`
+        : data.story;
     
     // Detectar se é modo "Somente Monólogo"
     const isSomenteMonologo = data.motivationalNarrative === 'somente_monologo';
@@ -2150,8 +2174,8 @@ const Briefing = () => {
       structure: isSomenteMonologo 
         ? ['intro', 'monologue1', 'monologue2', 'monologue3', 'chorus', 'end'] 
         : ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
-      hasMonologue: isJingle ? true : (isSomenteMonologo ? true : data.hasMonologue), // Jingles e somente_monologo sempre têm monólogo
-      monologuePosition: isJingle ? 'outro' : (isSomenteMonologo ? 'full' : (data.monologuePosition || 'bridge')),
+      hasMonologue: isJingle ? true : (isMonologo ? true : (isSomenteMonologo ? true : data.hasMonologue)),
+      monologuePosition: isJingle ? 'outro' : (isMonologo ? 'full' : (isSomenteMonologo ? 'full' : (data.monologuePosition || 'bridge'))),
       mandatoryWords: data.mandatoryWords,
       restrictedWords: data.restrictedWords,
       voiceType: data.voiceType,

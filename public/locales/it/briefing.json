@@ -85,8 +85,11 @@
       "institucionalDesc": "Colonne sonore, inno aziendale, eventi",
       "jingle": "📢 Jingle/Pubblicità",
       "jingleDesc": "Per marketing, con telefono/indirizzo",
+      "monologo": "🎙️ Monologo/Voce narrante",
+      "monologoDesc": "Narrazione promozionale su sfondo musicale",
       "contactInfoQuestion": "Ora inserisci le informazioni di contatto per il jingle! 📞\n\nIncludi: telefono, indirizzo, sito web, social media...",
-      "callToActionQuestion": "Quale invito all'azione deve apparire nel jingle? 📢\n\nEsempio: \"Chiama ora!\", \"Visita il nostro negozio!\", \"Seguici su Instagram!\""
+      "callToActionQuestion": "Quale invito all'azione deve apparire nel jingle? 📢\n\nEsempio: \"Chiama ora!\", \"Visita il nostro negozio!\", \"Seguici su Instagram!\"",
+      "monologoScriptQuestion": "Scrivi il testo completo del monologo/voce narrante 🎙️\n\nEsempio: \"Trasforma le tue storie in musica. Con Criando Músicas immortali i tuoi momenti in canzoni personalizzate.\""
     },
     "style": {
       "question": "Quale stile musicale preferisci?",
