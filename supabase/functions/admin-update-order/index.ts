@@ -97,6 +97,35 @@ serve(async (req) => {
 
     console.log(`[ADMIN-UPDATE-ORDER] Order ${orderId} updated by admin ${adminUserId}`, updateData);
 
+    // Send push notification to user for important status changes
+    if (status && data?.user_id) {
+      const pushMessages: Record<string, { title: string; body: string }> = {
+        'LYRICS_PENDING': { title: '📝 Letra em criação!', body: 'Estamos criando a letra da sua música.' },
+        'LYRICS_GENERATED': { title: '📝 Letra pronta!', body: 'A letra da sua música está pronta para revisão.' },
+        'MUSIC_GENERATING': { title: '🎶 Música em produção!', body: 'Sua música está sendo produzida. Falta pouco!' },
+        'MUSIC_READY': { title: '🎉 Música pronta!', body: `Sua música ${data.song_title ? `"${data.song_title}" ` : ''}está pronta para ouvir!` },
+        'COMPLETED': { title: '✅ Pedido finalizado!', body: 'Seu pedido foi concluído. Aproveite sua música!' },
+      };
+
+      const pushMsg = pushMessages[status];
+      if (pushMsg) {
+        try {
+          await supabaseClient.functions.invoke("send-push-notification", {
+            body: {
+              user_id: data.user_id,
+              order_id: orderId,
+              title: pushMsg.title,
+              body: pushMsg.body,
+              url: `/pedido/${orderId}`,
+            },
+          });
+          console.log(`[ADMIN-UPDATE-ORDER] Push sent to user for status: ${status}`);
+        } catch (pushErr) {
+          console.error("[ADMIN-UPDATE-ORDER] Push failed (non-blocking):", pushErr);
+        }
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, order: data }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

@@ -287,6 +287,21 @@ serve(async (req) => {
         logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
       }
 
+      // Send push notification to user
+      try {
+        await supabaseClient.functions.invoke("send-push-notification", {
+          body: {
+            user_id: userId,
+            order_id: orderId,
+            title: "🎵 Pedido recebido!",
+            body: "Seu crédito foi utilizado. Estamos criando sua música!",
+            url: `/pedido/${orderId}`,
+          },
+        });
+      } catch (pushErr) {
+        logStep("User push failed (non-blocking)", { error: String(pushErr) });
+      }
+
       return new Response(JSON.stringify({
         success: true,
         message: "Crédito da assinatura utilizado com sucesso",
@@ -416,6 +431,21 @@ serve(async (req) => {
         logStep("Admin notification sent");
       } catch (notifyError) {
         logStep("Admin notification failed (non-blocking)", { error: String(notifyError) });
+      }
+
+      // Send push notification to user
+      try {
+        await supabaseClient.functions.invoke("send-push-notification", {
+          body: {
+            user_id: userId,
+            order_id: orderId,
+            title: "🎵 Pedido recebido!",
+            body: `Seu crédito foi utilizado. ${creditToUse.total_credits - newUsedCredits > 0 ? `Restam ${creditToUse.total_credits - newUsedCredits} crédito(s).` : 'Estamos criando sua música!'}`,
+            url: `/pedido/${orderId}`,
+          },
+        });
+      } catch (pushErr) {
+        logStep("User push failed (non-blocking)", { error: String(pushErr) });
       }
 
       return new Response(JSON.stringify({
