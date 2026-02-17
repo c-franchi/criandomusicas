@@ -1,57 +1,58 @@
 
 
-## Plano: Corrigir Notificações Push e In-App
+## Plano: Corrigir Push Notifications para funcionar com tela apagada
 
-### Problemas Identificados
+### Problema Raiz Identificado
 
-1. **NotificationCenter filtra apenas status `MUSIC_READY`**, mas quando as duas versoes sao enviadas o pedido vai direto para `COMPLETED`. Resultado: a notificacao "Musica pronta!" nunca aparece no sino.
+O problema principal e que existem **DOIS service workers em conflito**:
 
-2. **Push notifications nao estao sendo entregues**: os logs mostram status "sent" no banco, mas a funcao `send-push-notification` nao tem logs de execucao, indicando que a criptografia Web Push customizada pode estar falhando silenciosamente.
+1. **VitePWA** (vite-plugin-pwa) gera automaticamente um service worker Workbox que e registrado pelo navegador
+2. **`public/sw.js`** contem os handlers de push (`push` event, `notificationclick`) mas **NAO e o service worker ativo** - ele nunca e importado pelo SW gerado pelo VitePWA
 
-3. **Nenhum push e enviado quando apenas 1 versao e carregada** - o usuario so recebe quando ambas ficam prontas.
+Resultado: quando o FCM entrega o push ao navegador, o service worker ativo (Workbox) **nao tem nenhum listener de push**, entao a notificacao e descartada silenciosamente. Por isso o "Testar Push" mostra status 201 (entregue ao FCM) mas nada aparece na tela.
 
----
+### Solucao
 
-### Correcoess
+Injetar os handlers de push dentro do service worker gerado pelo VitePWA usando a opcao `importScripts`.
 
-#### 1. Corrigir NotificationCenter para incluir pedidos COMPLETED
+#### Passo 1: Renomear `public/sw.js` para `public/sw-push.js`
 
-Alterar a query para buscar pedidos com status `MUSIC_READY` **OU** `COMPLETED` que tenham `music_ready_at` nos ultimos 7 dias:
+Renomear o arquivo para evitar conflito de nomes com o SW gerado automaticamente pelo VitePWA.
 
-```
-.in('status', ['MUSIC_READY', 'COMPLETED'])
-```
+#### Passo 2: Atualizar `vite.config.ts`
 
-Isso garante que o sino mostre a notificacao de musica pronta independente do status final.
+Adicionar `importScripts: ['/sw-push.js']` na configuracao workbox do VitePWA. Isso faz o SW gerado carregar os handlers de push:
 
-#### 2. Substituir criptografia Web Push customizada pelo `web-push`
-
-A funcao `send-push-notification` usa uma implementacao customizada de criptografia AES-128-GCM + VAPID que provavelmente tem bugs. Substituir pela biblioteca `web-push` (mesma usada no `send-review-reminder`) que ja funciona:
-
-- Importar `web-push` via esm.sh
-- Usar `webPush.setVapidDetails()` e `webPush.sendNotification()`
-- Remover todo o codigo de criptografia manual (~250 linhas)
-- Manter o mesmo fluxo de logging e tratamento de erros
-
-#### 3. Adicionar push para primeira versao carregada
-
-Quando apenas 1 versao e carregada (antes de ambas estarem prontas), enviar um push informando que a primeira versao ja esta disponivel:
-
-```
-"Uma versao da sua musica ja esta disponivel! Estamos finalizando a segunda."
+```typescript
+workbox: {
+  importScripts: ['/sw-push.js'],
+  navigateFallbackDenylist: [/^\/~oauth/],
+  // ... resto da config existente
+}
 ```
 
-#### 4. Adicionar funcao de teste de push
+#### Passo 3: Limpar `public/sw-push.js`
 
-Criar um botao no painel admin que envia um push de teste para o admin verificar se as notificacoes estao funcionando.
+Remover os listeners de `install` e `activate` do arquivo (que conflitam com o Workbox) e manter apenas:
+- `push` event listener
+- `notificationclick` event listener
 
----
+#### Passo 4: Limpar subscricoes duplicadas
+
+O banco de dados mostra o mesmo endpoint FCM registrado para **5 usuarios diferentes** - isso indica que o mesmo dispositivo esta criando subscricoes para cada login sem limpar as anteriores. Adicionar logica para desativar subscricoes antigas do mesmo endpoint ao criar uma nova.
 
 ### Detalhes Tecnicos
 
 **Arquivos modificados:**
-- `supabase/functions/send-push-notification/index.ts` - Reescrever usando `web-push` library
-- `src/components/NotificationCenter.tsx` - Incluir status `COMPLETED` na query de musicas prontas
-- `src/pages/AdminDashboard.tsx` - Adicionar push na primeira versao + botao de teste push
+- `public/sw.js` → renomear para `public/sw-push.js` (remover install/activate)
+- `vite.config.ts` - adicionar `importScripts` e `navigateFallbackDenylist`
+- `src/hooks/usePushNotifications.tsx` - limpar subscricoes duplicadas no subscribe
 
-**Impacto:** Nenhuma mudanca no banco de dados. Apenas correcoess de logica no frontend e reescrita da funcao de push.
+**Por que isso resolve:**
+- O Workbox SW sera o unico registrado (sem conflito)
+- `importScripts` carrega os handlers de push DENTRO do SW ativo
+- Quando o FCM entrega o push, o listener `push` estara presente no SW ativo
+- O `showNotification()` sera chamado corretamente, exibindo a notificacao mesmo com tela apagada
+
+**Impacto:** Nenhuma mudanca no banco de dados. Apenas configuracao de build e ajuste de arquivos estaticos.
+
