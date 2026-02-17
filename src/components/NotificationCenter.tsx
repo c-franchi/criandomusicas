@@ -135,7 +135,8 @@ const NotificationCenter = () => {
         .from('orders')
         .select('id, status, payment_status, music_ready_at, updated_at, song_title')
         .eq('user_id', user.id)
-        .eq('status', 'MUSIC_READY')
+        .in('status', ['MUSIC_READY', 'COMPLETED'])
+        .not('music_ready_at', 'is', null)
         .gte('music_ready_at', sevenDaysAgo.toISOString())
         .order('music_ready_at', { ascending: false });
 

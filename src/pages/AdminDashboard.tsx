@@ -25,7 +25,8 @@ import {
   ImageIcon,
   DollarSign,
   Home,
-  Download
+  Download,
+  Bell
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/hooks/useAuth";
@@ -127,6 +128,7 @@ const AdminDashboard = () => {
   const [coverHistoryOrderId, setCoverHistoryOrderId] = useState<string | null>(null);
   const [coverHistoryUrls, setCoverHistoryUrls] = useState<string[]>([]);
   const [loadingCoverHistory, setLoadingCoverHistory] = useState(false);
+  const [testingPush, setTestingPush] = useState(false);
 
   // PIX Receipt Modal
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
@@ -760,8 +762,23 @@ const AdminDashboard = () => {
         const newStatus = 'MUSIC_READY';
         await supabase
           .from('orders')
-          .update({ status: newStatus })
+          .update({ status: newStatus, music_ready_at: new Date().toISOString() })
           .eq('id', order.id);
+
+        // Send push notification for first version
+        try {
+          await supabase.functions.invoke('send-push-notification', {
+            body: {
+              user_id: order.user_id,
+              order_id: order.id,
+              title: '🎵 Uma versão da sua música está pronta!',
+              body: 'A primeira versão já está disponível para ouvir! Estamos finalizando a segunda.',
+              url: `/pedido/${order.id}`
+            }
+          });
+        } catch (pushError) {
+          console.error('Push notification error:', pushError);
+        }
         
         // Update local state with new uploaded versions
         setOrders(prev => prev.map(o => 
@@ -1218,6 +1235,44 @@ const AdminDashboard = () => {
               <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders} className="flex-1 sm:flex-none text-xs sm:text-sm">
                 <RefreshCw className={`w-4 h-4 sm:mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Atualizar</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={testingPush}
+                className="flex-1 sm:flex-none text-xs sm:text-sm"
+                onClick={async () => {
+                  if (!user) return;
+                  setTestingPush(true);
+                  try {
+                    const { data, error } = await supabase.functions.invoke('send-push-notification', {
+                      body: {
+                        user_id: user.id,
+                        title: '🔔 Teste de Push',
+                        body: 'Se você recebeu esta notificação, o push está funcionando!',
+                        url: '/admin'
+                      }
+                    });
+                    if (error) throw error;
+                    toast({
+                      title: '✅ Push enviado!',
+                      description: `Resultado: ${data?.message || 'OK'}`,
+                    });
+                  } catch (err) {
+                    console.error('Test push error:', err);
+                    toast({
+                      title: 'Erro no teste',
+                      description: err instanceof Error ? err.message : 'Falha ao enviar push de teste',
+                      variant: 'destructive',
+                    });
+                  } finally {
+                    setTestingPush(false);
+                  }
+                }}
+              >
+                {testingPush ? <Loader2 className="w-4 h-4 animate-spin sm:mr-2" /> : <Bell className="w-4 h-4 sm:mr-2" />}
+                <span className="hidden sm:inline">Testar Push</span>
               </Button>
             </div>
           </div>
