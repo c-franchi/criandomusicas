@@ -198,15 +198,43 @@
       "copied": "¡Enlace copiado!"
     },
     "review": {
-      "title": "Deja tu reseña",
+      "title": "Califica tu Canción",
+      "editTitle": "Editar Reseña",
       "subtitle": "¡Tu opinión es muy importante para nosotros!",
       "rating": "Calificación",
+      "rateQuestion": "¿Cómo calificas tu canción?",
       "comment": "Comentario (opcional)",
-      "commentPlaceholder": "Cuéntanos tu experiencia...",
+      "commentLabel": "Deja un comentario (opcional)",
+      "commentPlaceholder": "Cuéntanos qué te pareció tu canción...",
+      "characters": "caracteres",
+      "publicLabel": "Permitir que mi reseña se muestre públicamente",
+      "sampleLabel": "Permitir el uso de mi canción como ejemplo en la plataforma",
+      "sampleDesc": "Tu canción podrá ser usada para inspirar a otros clientes",
       "allowSample": "Permitir que mi canción se use como muestra",
-      "submit": "Enviar reseña",
+      "submit": "Enviar Reseña",
+      "update": "Actualizar Reseña",
+      "submitting": "Enviando...",
+      "submitted": "¡Reseña enviada!",
+      "updated": "¡Reseña actualizada!",
+      "updatedDesc": "Gracias por actualizar tu opinión",
+      "thankYou": "¡Muchas gracias por tu opinión! 💜",
+      "thankYouTitle": "¡Gracias por tu reseña!",
+      "feedbackImportant": "Tu opinión es muy importante para nosotros",
+      "error": "Error al enviar reseña",
+      "tryAgain": "Inténtalo de nuevo más tarde",
       "thanks": "¡Gracias por tu reseña!",
-      "alreadyReviewed": "Ya has reseñado este pedido"
+      "alreadyReviewed": "Ya has reseñado este pedido",
+      "ratingLabels": {
+        "click": "Haz clic para calificar",
+        "1": "Necesita mejorar",
+        "2": "Regular",
+        "3": "Buena",
+        "4": "¡Muy buena!",
+        "5": "¡Increíble! 🎉"
+      },
+      "profilePromptTitle": "¡Completa tu perfil!",
+      "profilePromptDesc": "Agrega una foto y nombre para que tu reseña aparezca completa en la página principal.",
+      "goToProfile": "Completar Perfil"
     }
   },
   "orderTracking": {

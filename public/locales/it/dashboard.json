@@ -198,15 +198,43 @@
       "copied": "Link copiato!"
     },
     "review": {
-      "title": "Lascia la tua recensione",
+      "title": "Valuta la tua Canzone",
+      "editTitle": "Modifica Recensione",
       "subtitle": "Il tuo feedback è molto importante per noi!",
       "rating": "Valutazione",
+      "rateQuestion": "Come valuti la tua canzone?",
       "comment": "Commento (opzionale)",
-      "commentPlaceholder": "Raccontaci la tua esperienza...",
+      "commentLabel": "Lascia un commento (opzionale)",
+      "commentPlaceholder": "Dicci cosa ne pensi della tua canzone...",
+      "characters": "caratteri",
+      "publicLabel": "Consenti che la mia recensione venga mostrata pubblicamente",
+      "sampleLabel": "Consenti l'uso della mia canzone come esempio sulla piattaforma",
+      "sampleDesc": "La tua canzone potrà essere usata per ispirare altri clienti",
       "allowSample": "Permetti che la mia canzone venga usata come esempio",
-      "submit": "Invia recensione",
+      "submit": "Invia Recensione",
+      "update": "Aggiorna Recensione",
+      "submitting": "Invio in corso...",
+      "submitted": "Recensione inviata!",
+      "updated": "Recensione aggiornata!",
+      "updatedDesc": "Grazie per aver aggiornato il tuo feedback",
+      "thankYou": "Grazie mille per il tuo feedback! 💜",
+      "thankYouTitle": "Grazie per la tua recensione!",
+      "feedbackImportant": "Il tuo feedback è molto importante per noi",
+      "error": "Errore nell'invio della recensione",
+      "tryAgain": "Riprova più tardi",
       "thanks": "Grazie per la tua recensione!",
-      "alreadyReviewed": "Hai già recensito questo ordine"
+      "alreadyReviewed": "Hai già recensito questo ordine",
+      "ratingLabels": {
+        "click": "Clicca per valutare",
+        "1": "Da migliorare",
+        "2": "Discreta",
+        "3": "Buona",
+        "4": "Molto buona!",
+        "5": "Incredibile! 🎉"
+      },
+      "profilePromptTitle": "Completa il tuo profilo!",
+      "profilePromptDesc": "Aggiungi una foto e un nome perché la tua recensione appaia completa nella pagina principale.",
+      "goToProfile": "Completa Profilo"
     }
   },
   "orderTracking": {
