@@ -195,11 +195,9 @@ const NotificationCenter = () => {
       // Sort all notifications by date
       allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-      // Filter out dismissed notifications (except credit transfers which are handled by DB status)
+      // Filter out all dismissed notifications
       const currentDismissed = getDismissedIds();
-      const filtered = allNotifications.filter(n => 
-        n.type === 'credit_transfer' || !currentDismissed.includes(n.id)
-      );
+      const filtered = allNotifications.filter(n => !currentDismissed.includes(n.id));
 
       setNotifications(filtered);
     } catch (error) {
@@ -244,12 +242,10 @@ const NotificationCenter = () => {
     }
   };
 
-  const dismissNotification = (notificationId: string, notificationType: Notification['type']) => {
-    // For non-credit notifications, persist the dismissal
-    if (notificationType !== 'credit_transfer') {
-      saveDismissedId(notificationId);
-      setDismissedIds(prev => [...prev, notificationId]);
-    }
+const dismissNotification = (notificationId: string, _notificationType: Notification['type']) => {
+    // Persist ALL dismissals to localStorage so they don't reappear
+    saveDismissedId(notificationId);
+    setDismissedIds(prev => [...prev, notificationId]);
     setNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
 
