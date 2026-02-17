@@ -201,9 +201,9 @@ const Hero = () => {
               </Link>
               <Link to="/briefing?mode=audio">
                 <Button 
-                  variant="glass" 
+                  variant="hero" 
                   size="lg" 
-                  className="text-lg px-6 py-7 rounded-xl group"
+                  className="text-lg px-8 py-7 rounded-xl group shadow-lg"
                 >
                   <Play className="w-5 h-5 mr-2" />
                   {t('hero.ctaAudio', 'Criar por Áudio')}
@@ -211,7 +211,7 @@ const Hero = () => {
               </Link>
               <Link to="/briefing" id="tour-hero-secondary-cta">
                 <Button 
-                  variant="glass" 
+                  variant="outline" 
                   size="lg" 
                   className="text-lg px-6 py-7 rounded-xl group"
                 >
@@ -233,13 +233,13 @@ const Hero = () => {
                 </Button>
               </Link>
               <Link to="/briefing?mode=audio">
-                <Button variant="glass" size="lg" className="text-lg px-8 py-7 rounded-xl group">
+                <Button variant="hero" size="lg" className="text-lg px-8 py-7 rounded-xl group shadow-lg">
                   <Play className="w-5 h-5 mr-2" />
                   {t('hero.ctaAudio', 'Criar por Áudio')}
                 </Button>
               </Link>
               <Link to="/briefing" id="tour-hero-secondary-cta">
-                <Button variant="glass" size="lg" className="text-lg px-8 py-7 rounded-xl group">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-7 rounded-xl group">
                   <Music className="w-5 h-5 mr-2" />
                   {t('hero.ctaComplete', 'Modo Completo')}
                 </Button>

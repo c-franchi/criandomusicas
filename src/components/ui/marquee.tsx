@@ -109,7 +109,7 @@ const Marquee = React.forwardRef<HTMLDivElement, MarqueeProps>(
           ref={contentRef}
           className={cn(
             "flex w-max gap-6",
-            !isPaused && animationClass
+            animationClass
           )}
           style={{ 
             willChange: isPaused ? "auto" : "transform",
