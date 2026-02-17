@@ -95,11 +95,54 @@
     "vocal": "vocal",
     "vocals": "vocais",
     "instrumental": "instrumental",
-    "instrumentals": "instrumentais"
+    "instrumentals": "instrumentais",
+    "previewFree": "1 preview grátis",
+    "previewDesc": "preview (verso + refrão)",
+    "previewHint": "Crie uma prévia com verso e refrão da sua música gratuitamente!",
+    "active": "Ativo",
+    "inactive": "Inativo",
+    "used": "Utilizado",
+    "myCredits": "Meus Créditos de Música",
+    "manageCredits": "Gerencie seus pacotes e créditos disponíveis",
+    "availableCredits": "Créditos disponíveis",
+    "songsCount_one": "música",
+    "songsCount_other": "músicas",
+    "creatorSubscription": "Assinatura Creator",
+    "remainingOf": "de {{total}} créditos restantes",
+    "renewsAt": "Renova em:",
+    "songsCreatedMonth": "{{count}} músicas criadas este mês",
+    "autoRenew": "Créditos renovam automaticamente todo mês",
+    "singlePackages": "Pacotes Avulsos",
+    "songsUsed": "{{used}}/{{total}} músicas usadas",
+    "noPackages": "Você ainda não comprou nenhum pacote de músicas",
+    "viewAvailable": "Ver Pacotes Disponíveis",
+    "buyMore": "Comprar Mais Créditos",
+    "buyMusicPackage": "Comprar Pacote de Músicas",
+    "createButton": "Criar"
   },
   "subscription": {
     "active": "Ativo",
     "inactive": "Inativo"
+  },
+  "mobileMenu": {
+    "navigate": "Navegar",
+    "menu": "Menu",
+    "quickCreate": "Criar Rápido",
+    "legal": "Legal",
+    "termsOfUse": "Termos de Uso",
+    "privacyPolicy": "Política de Privacidade"
+  },
+  "legal": {
+    "agreementPrefix": "Ao continuar, você concorda com os",
+    "and": "e a",
+    "termsOfUse": "Termos de Uso",
+    "privacyPolicy": "Política de Privacidade"
+  },
+  "video": {
+    "comingSoon": "Em breve: use seus créditos para criar vídeos!",
+    "implementing": "Estamos implementando o sistema de créditos para vídeos.",
+    "myOrders": "Meus Pedidos",
+    "goToOrders": "Ir para Meus Pedidos"
   },
   "notFound": {
     "title": "Página não encontrada",

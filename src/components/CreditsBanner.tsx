@@ -55,7 +55,7 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
       <div className={`flex gap-2 flex-wrap items-center ${className}`}>
         <Badge className={`gap-1.5 ${isOnlyPreview ? 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30' : 'bg-primary/20 text-primary border-primary/30'} hover:opacity-80`}>
           <Music className="w-3 h-3" />
-          {isOnlyPreview ? '1 preview grátis' : `${displayCredits} ${displayCredits === 1 ? 'crédito' : 'créditos'}`}
+          {isOnlyPreview ? t('credits.previewFree', '1 preview grátis') : `${displayCredits} ${displayCredits === 1 ? t('credits.credit') : t('credits.credits')}`}
         </Badge>
         {isFromSubscription && (
           <Badge variant="outline" className="gap-1 text-amber-500 border-amber-500/30">
@@ -80,21 +80,21 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
       {isOnlyPreview ? (
         <Badge className="gap-1.5 px-3 py-1.5 bg-emerald-500/20 text-emerald-600 border-emerald-500/30">
           <Sparkles className="w-3.5 h-3.5" />
-          <span className="font-semibold">1 preview grátis</span>
+          <span className="font-semibold">{t('credits.previewFree', '1 preview grátis')}</span>
           <span className="text-xs opacity-80">(40s)</span>
         </Badge>
       ) : (
         <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
           <Music className="w-3.5 h-3.5" />
           <span className="font-semibold">{displayCredits}</span>
-          <span className="text-xs opacity-80">{displayCredits === 1 ? 'crédito' : 'créditos'}</span>
+          <span className="text-xs opacity-80">{displayCredits === 1 ? t('credits.credit') : t('credits.credits')}</span>
         </Badge>
       )}
       
       {showBuyButton && (
         <Button asChild size="sm" variant="default" className="rounded-full h-8 px-4">
           <Link to="/briefing">
-            Criar
+            {t('credits.createButton', 'Criar')}
           </Link>
         </Button>
       )}

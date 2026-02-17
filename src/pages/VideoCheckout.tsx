@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "react-i18next";
 
 interface PixConfigData {
   pix_key: string;
@@ -45,6 +46,7 @@ const VideoCheckout = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('common');
   const [selectedType, setSelectedType] = useState<VideoType>('photos_5');
   const [loading, setLoading] = useState(false);
   const [orderTitle, setOrderTitle] = useState<string>('');
@@ -337,7 +339,7 @@ const VideoCheckout = () => {
                     Você receberá uma notificação quando for aprovado.
                   </p>
                   <Button variant="outline" onClick={() => navigate('/dashboard')}>
-                    Ir para Meus Pedidos
+                    {t('video.goToOrders', 'Ir para Meus Pedidos')}
                   </Button>
                 </div>
               )}

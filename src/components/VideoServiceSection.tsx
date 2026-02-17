@@ -119,11 +119,11 @@ const VideoServiceSection = () => {
           <div className="flex items-center gap-2 justify-center">
             <Sparkles className="w-4 h-4 text-amber-500" />
             <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-              Em breve: use seus créditos para criar vídeos!
+              {t('videoService.comingSoonCredits', 'Em breve: use seus créditos para criar vídeos!')}
             </p>
           </div>
           <p className="text-xs text-muted-foreground text-center mt-1">
-            Estamos implementando o sistema de créditos para vídeos.
+            {t('videoService.implementingCredits', 'Estamos implementando o sistema de créditos para vídeos.')}
           </p>
         </div>
 

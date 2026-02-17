@@ -95,7 +95,9 @@
     "cta": "Quiero mi música en video",
     "otherPlans": "Otros planes de video",
     "whatsappMessage": "¡Hola! Me gustaría saber sobre otros planes de video personalizados.",
-    "specialProjects": "¿Proyectos especiales? Contáctanos por WhatsApp para presupuestos personalizados"
+    "specialProjects": "¿Proyectos especiales? Contáctanos por WhatsApp para presupuestos personalizados",
+    "comingSoonCredits": "Próximamente: ¡usa tus créditos para crear videos!",
+    "implementingCredits": "Estamos implementando el sistema de créditos para videos."
   },
   "testimonials": {
     "title": "Lo Que Dicen Nuestros Clientes",
