@@ -903,6 +903,7 @@ export type Database = {
       }
       tracks: {
         Row: {
+          allow_home_display: boolean | null
           audio_url: string | null
           created_at: string
           error_message: string | null
@@ -913,6 +914,7 @@ export type Database = {
           version: number | null
         }
         Insert: {
+          allow_home_display?: boolean | null
           audio_url?: string | null
           created_at?: string
           error_message?: string | null
@@ -923,6 +925,7 @@ export type Database = {
           version?: number | null
         }
         Update: {
+          allow_home_display?: boolean | null
           audio_url?: string | null
           created_at?: string
           error_message?: string | null

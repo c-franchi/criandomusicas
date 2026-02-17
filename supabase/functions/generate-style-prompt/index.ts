@@ -692,7 +692,11 @@ BE VERY CONCISE - under 950 characters total.`;
         'dueto': 'Male and female duet, harmonizing voices, alternating verses and shared chorus',
         'dupla_masc': 'Two male vocalists, harmony singing, Brazilian dupla sertaneja style',
         'dupla_fem': 'Two female vocalists, harmony singing, blending voices',
-        'coral': 'Choir/group vocals, layered harmonies, anthemic feel'
+        'coral': 'Choir/group vocals, layered harmonies, anthemic feel',
+        'infantil_masc': 'Young boy vocalist, bright and playful children voice, high-pitched and cheerful',
+        'infantil_fem': 'Young girl vocalist, sweet and playful children voice, high-pitched and cheerful',
+        'infantil-masculina': 'Young boy vocalist, bright and playful children voice, high-pitched and cheerful',
+        'infantil-feminina': 'Young girl vocalist, sweet and playful children voice, high-pitched and cheerful',
       };
       const vocalStyle = voiceTypeMap[voiceType] || 'Female solo vocalist';
 
