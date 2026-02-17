@@ -1,58 +1,68 @@
 
 
-## Plano: Corrigir Push Notifications para funcionar com tela apagada
+## Plano: Criar prompt exclusivo para Chamada/Propaganda corporativa
 
-### Problema Raiz Identificado
+### Problema
 
-O problema principal e que existem **DOIS service workers em conflito**:
+Quando o usuario escolhe "Chamada/Propaganda" no briefing corporativo, o sistema define `monologuePosition: 'full'`. Na funcao `generate-lyrics`, a condicao `monologuePosition === 'full'` ativa o prompt de **spoken word motivacional** (com vocabulario de disciplina, superacao, mentor/treinador). Resultado: uma propaganda de padaria vira um discurso motivacional.
 
-1. **VitePWA** (vite-plugin-pwa) gera automaticamente um service worker Workbox que e registrado pelo navegador
-2. **`public/sw.js`** contem os handlers de push (`push` event, `notificationclick`) mas **NAO e o service worker ativo** - ele nunca e importado pelo SW gerado pelo VitePWA
+### Causa Raiz
 
-Resultado: quando o FCM entrega o push ao navegador, o service worker ativo (Workbox) **nao tem nenhum listener de push**, entao a notificacao e descartada silenciosamente. Por isso o "Testar Push" mostra status 201 (entregue ao FCM) mas nada aparece na tela.
+A flag `isSomenteMonologo` nao distingue entre:
+- **Monologo motivacional** (`motivationalNarrative === 'somente_monologo'`)
+- **Chamada/propaganda corporativa** (`corporateFormat === 'monologo'`)
+
+Ambos setam `monologuePosition: 'full'` e caem no mesmo prompt.
 
 ### Solucao
 
-Injetar os handlers de push dentro do service worker gerado pelo VitePWA usando a opcao `importScripts`.
+Criar uma condicao separada para detectar chamada corporativa e usar um prompt especifico para propaganda/anuncio.
 
-#### Passo 1: Renomear `public/sw.js` para `public/sw-push.js`
+#### Mudancas em `supabase/functions/generate-lyrics/index.ts`
 
-Renomear o arquivo para evitar conflito de nomes com o SW gerado automaticamente pelo VitePWA.
+1. **Nova deteccao**: Adicionar flag `isChamadaCorporativa` baseada em `corporateFormat === 'monologo'` (campo ja enviado pelo briefing)
 
-#### Passo 2: Atualizar `vite.config.ts`
+2. **Ajustar prioridade**: A chamada corporativa deve ser verificada ANTES do monologo motivacional:
 
-Adicionar `importScripts: ['/sw-push.js']` na configuracao workbox do VitePWA. Isso faz o SW gerado carregar os handlers de push:
-
-```typescript
-workbox: {
-  importScripts: ['/sw-push.js'],
-  navigateFallbackDenylist: [/^\/~oauth/],
-  // ... resto da config existente
-}
+```text
+if isChamadaCorporativa -> prompt de propaganda
+else if isSomenteMonologo -> prompt motivacional (existente)
+else if isSimpleMode -> prompt simples (existente)
+else -> prompt padrao (existente)
 ```
 
-#### Passo 3: Limpar `public/sw-push.js`
+3. **Novo system prompt para chamada corporativa**: Tom de locutor de radio/carro de som, direto, comercial. Estrutura obrigatoria:
 
-Remover os listeners de `install` e `activate` do arquivo (que conflitam com o Workbox) e manter apenas:
-- `push` event listener
-- `notificationclick` event listener
+```text
+[Intro]
+[monologue]
+(texto completo da propaganda em um unico bloco grande)
 
-#### Passo 4: Limpar subscricoes duplicadas
+[End]
+```
 
-O banco de dados mostra o mesmo endpoint FCM registrado para **5 usuarios diferentes** - isso indica que o mesmo dispositivo esta criando subscricoes para cada login sem limpar as anteriores. Adicionar logica para desativar subscricoes antigas do mesmo endpoint ao criar uma nova.
+Regras do prompt:
+- 100% falado, NENHUM trecho cantado
+- Um unico bloco `[monologue]` grande (nao dividir em varios blocos)
+- Tom de locutor comercial, nao motivacional
+- Reproduzir fielmente o texto/contexto que o usuario forneceu
+- Adicionar apenas conectores naturais e enfase comercial
+- NAO inventar historias, emocoes ou mensagens motivacionais
+- Manter curto e direto como propaganda de carro de som
+- Incluir informacoes de contato se fornecidas
+
+4. **Novo user prompt para chamada corporativa**: Enviar o script do usuario como base principal, com instrucao clara de que e uma propaganda comercial.
 
 ### Detalhes Tecnicos
 
-**Arquivos modificados:**
-- `public/sw.js` → renomear para `public/sw-push.js` (remover install/activate)
-- `vite.config.ts` - adicionar `importScripts` e `navigateFallbackDenylist`
-- `src/hooks/usePushNotifications.tsx` - limpar subscricoes duplicadas no subscribe
+**Arquivo modificado:**
+- `supabase/functions/generate-lyrics/index.ts`
+  - Extrair `corporateFormat` do briefing (ja vem do frontend, so nao e utilizado)
+  - Criar flag `isChamadaCorporativa = corporateFormat === 'monologo'`
+  - Criar `chamadaCorporativaPrompt` (system) e bloco de user prompt dedicado
+  - Ajustar a condicao no `userPrompt` (linha ~770) para priorizar chamada corporativa
+  - Ajustar a condicao no system message (linha ~859) para usar o prompt correto
 
-**Por que isso resolve:**
-- O Workbox SW sera o unico registrado (sem conflito)
-- `importScripts` carrega os handlers de push DENTRO do SW ativo
-- Quando o FCM entrega o push, o listener `push` estara presente no SW ativo
-- O `showNotification()` sera chamado corretamente, exibindo a notificacao mesmo com tela apagada
+**Nenhuma mudanca no frontend** - o briefing ja envia `corporateFormat: 'monologo'` corretamente.
 
-**Impacto:** Nenhuma mudanca no banco de dados. Apenas configuracao de build e ajuste de arquivos estaticos.
-
+**Nenhuma mudanca no banco de dados.**
