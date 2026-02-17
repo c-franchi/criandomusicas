@@ -140,6 +140,15 @@
   "orderDetails": {
     "title": "Order Details",
     "back": "Back",
+    "cover": {
+      "change": "Change cover",
+      "upload": "Upload my image",
+      "keep": "Keep current cover",
+      "uploading": "Uploading...",
+      "success": "Cover updated!",
+      "error": "Error updating cover",
+      "sizeError": "Image too large (max 5MB)"
+    },
     "orderNumber": "Order #{{id}}",
     "createdAt": "Created on {{date}}",
     "sections": {
