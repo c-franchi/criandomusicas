@@ -342,7 +342,11 @@ serve(async (req) => {
       'dueto': 'dueto masculino e feminino',
       'dupla_masc': 'dupla masculina',
       'dupla_fem': 'dupla feminina',
-      'coral': 'coral/grupo vocal'
+      'coral': 'coral/grupo vocal',
+      'infantil_masc': 'voz infantil masculina (criança)',
+      'infantil_fem': 'voz infantil feminina (criança)',
+      'infantil-masculina': 'voz infantil masculina (criança)',
+      'infantil-feminina': 'voz infantil feminina (criança)',
     };
     const voiceDescription = voiceTypeMap[voiceType] || 'voz feminina solo';
 

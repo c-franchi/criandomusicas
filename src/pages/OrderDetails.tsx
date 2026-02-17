@@ -68,6 +68,7 @@ interface TrackData {
   audio_url: string;
   status: string;
   version: number;
+  allow_home_display?: boolean;
 }
 
 interface ReviewData {
@@ -573,6 +574,53 @@ const OrderDetails = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Allow on Home Page */}
+              <div className="pt-4 border-t border-border/50 space-y-3">
+                <p className="text-sm font-medium text-foreground">
+                  🏠 Liberar para exibição na página inicial
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Escolha quais versões podem ser exibidas como exemplo no site
+                </p>
+                <div className="space-y-2">
+                  {tracks.map((track) => (
+                    <label key={`home-${track.id}`} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={track.allow_home_display || false}
+                        onChange={async (e) => {
+                          const newValue = e.target.checked;
+                          // Optimistic update
+                          setTracks(prev => prev.map(t => 
+                            t.id === track.id ? { ...t, allow_home_display: newValue } : t
+                          ));
+                          const { error } = await supabase
+                            .from('tracks')
+                            .update({ allow_home_display: newValue })
+                            .eq('id', track.id);
+                          if (error) {
+                            // Revert on error
+                            setTracks(prev => prev.map(t => 
+                              t.id === track.id ? { ...t, allow_home_display: !newValue } : t
+                            ));
+                            toast({ title: 'Erro ao atualizar permissão', variant: 'destructive' });
+                          } else {
+                            toast({ title: newValue ? `Versão ${track.version} liberada!` : `Versão ${track.version} removida da exibição` });
+                          }
+                        }}
+                        className="w-4 h-4 rounded border-border accent-primary"
+                      />
+                      <span className="text-sm">Versão {track.version}</span>
+                      {track.allow_home_display && (
+                        <Badge variant="outline" className="ml-auto text-xs text-green-600 border-green-500/30">
+                          Liberada
+                        </Badge>
+                      )}
+                    </label>
+                  ))}
+                </div>
               </div>
 
               {/* Preview Notice */}
