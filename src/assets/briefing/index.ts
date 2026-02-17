@@ -55,6 +55,7 @@ import coralImg from './voices/coral.jpg';
 // Corporate Format Images
 import institucionalImg from './corporate/institucional.jpg';
 import jingleImg from './corporate/jingle.jpg';
+import monologoChamadaImg from './corporate/monologo-chamada.jpg';
 
 // Gospel Context Images
 import adoracaoImg from './gospel/adoracao.jpg';
@@ -243,7 +244,7 @@ export const voiceImages: Record<string, string> = {
 export const corporateImages: Record<string, string> = {
   institucional: institucionalImg,
   jingle: jingleImg,
-  monologo: institucionalImg, // Reuse institutional image for monologue
+  monologo: monologoChamadaImg,
 };
 
 export const gospelContextImages: Record<string, string> = {
@@ -437,6 +438,7 @@ export {
   // Corporate
   institucionalImg,
   jingleImg,
+  monologoChamadaImg,
   // Gospel
   adoracaoImg,
   louvorImg,

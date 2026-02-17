@@ -1205,6 +1205,30 @@ const Briefing = () => {
       content: chatMessages.monologoScript,
       inputType: 'textarea',
       field: 'story'
+    },
+    // Índice 81: Tipo de voz para monólogo
+    {
+      type: 'bot',
+      content: chatMessages.monologoVoice,
+      inputType: 'options',
+      field: 'voiceType',
+      options: voiceTypeOptionsSimple
+    },
+    // Índice 82: Gênero/estilo do fundo musical do monólogo
+    {
+      type: 'bot',
+      content: chatMessages.monologoStyle,
+      inputType: 'options-with-other',
+      field: 'style',
+      options: styleOptions
+    },
+    // Índice 83: Nome automático? (monólogo)
+    {
+      type: 'bot',
+      content: chatMessages.songNameAuto,
+      inputType: 'options',
+      field: 'autoGenerateName',
+      options: nameOptions
     }
   ];
 
@@ -1349,8 +1373,15 @@ const Briefing = () => {
     if (current === 32) return 33; // contactInfo -> callToAction
     if (current === 33) return 10; // callToAction -> emotion (continua fluxo)
     
-    // FLUXO MONÓLOGO CORPORATIVO (80)
-    if (current === 80) return 10; // monologoScript -> emotion (continua fluxo)
+    // FLUXO MONÓLOGO CORPORATIVO (80-83)
+    if (data.corporateFormat === 'monologo') {
+      if (current === 80) return 81; // script -> voice
+      if (current === 81) return 82; // voice -> style
+      if (current === 82) return 83; // style -> autoGenerateName
+      if (current === 83) {
+        return data.autoGenerateName ? 100 : 19; // Se auto, confirmação; senão pede nome
+      }
+    }
     
     // FLUXO MOTIVACIONAL (34-43)
     // 34: moment, 35: emotion, 36: motivationalIntensity, 37: style, 38: narrative, 39: perspective, 40: story, 41: mandatoryWords, 42: voiceType, 43: autoGenerateName
@@ -2171,7 +2202,7 @@ const Briefing = () => {
       emotion: data.emotion,
       emotionIntensity: data.emotionIntensity,
       story: storyWithJingleInfo,
-      structure: isSomenteMonologo 
+      structure: isSomenteMonologo || isMonologo
         ? ['intro', 'monologue1', 'monologue2', 'monologue3', 'chorus', 'end'] 
         : ['intro', 'verse', 'chorus', 'verse', 'bridge', 'chorus', 'outro'],
       hasMonologue: isJingle ? true : (isMonologo ? true : (isSomenteMonologo ? true : data.hasMonologue)),
