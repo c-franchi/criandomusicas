@@ -46,6 +46,7 @@ interface Order {
   plan_id?: string;
   is_preview?: boolean;
   pix_rejection_reason?: string | null;
+  audio_input_id?: string | null;
 }
 
 const Dashboard = () => {
@@ -63,8 +64,10 @@ const Dashboard = () => {
   const { totalVocal, totalInstrumental } = useCredits();
 
   // Filter orders by type
+  const audioOrders = useMemo(() => 
+    orders.filter(o => !!o.audio_input_id && !o.is_instrumental), [orders]);
   const vocalOrders = useMemo(() => 
-    orders.filter(o => !o.is_instrumental && !o.has_custom_lyric), [orders]);
+    orders.filter(o => !o.is_instrumental && !o.has_custom_lyric && !o.audio_input_id), [orders]);
   const instrumentalOrders = useMemo(() => 
     orders.filter(o => o.is_instrumental), [orders]);
   const customLyricOrders = useMemo(() => 
@@ -185,7 +188,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental, has_custom_lyric, song_title, plan_id, is_preview')
+        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental, has_custom_lyric, song_title, plan_id, is_preview, audio_input_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -593,8 +596,8 @@ const Dashboard = () => {
                 <Headphones className="w-4 h-4" />
                 <span className="hidden xs:inline">Áudio</span>
                 <span className="xs:hidden">🎤</span>
-                <Badge className="ml-1 text-[10px] px-1 bg-emerald-500 text-white border-0">
-                  Novo
+                <Badge variant="secondary" className="ml-1 text-xs px-1.5">
+                  {audioOrders.length}
                 </Badge>
               </StyledTabsTrigger>
             </StyledTabsList>
@@ -722,27 +725,28 @@ const Dashboard = () => {
                 </Button>
               </div>
               
-              <Card className="p-8 text-center">
-                <Headphones className="w-12 h-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">🎤 Modo Áudio</h3>
-                <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                  Grave ou envie um áudio cantando um trecho e nossa IA transcreve e gera uma letra completa com qualidade profissional.
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center text-sm text-muted-foreground mb-6">
-                  <Badge variant="outline" className="gap-1">
-                    <Mic className="w-3 h-3" /> Grave ou envie áudio
-                  </Badge>
-                  <Badge variant="outline" className="gap-1">
-                    <Edit3 className="w-3 h-3" /> Transcrição automática
-                  </Badge>
-                  <Badge variant="outline" className="gap-1">
-                    <Music className="w-3 h-3" /> Letra profissional completa
-                  </Badge>
-                </div>
-                <Button asChild>
-                  <Link to="/briefing?mode=audio">Experimentar agora</Link>
-                </Button>
-              </Card>
+              {audioOrders.length === 0 ? (
+                <Card className="p-8 text-center">
+                  <Headphones className="w-12 h-12 text-primary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">🎤 Modo Áudio</h3>
+                  <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                    Grave ou envie um áudio cantando um trecho e nossa IA transcreve e gera uma letra completa com qualidade profissional.
+                  </p>
+                  <Button asChild>
+                    <Link to="/briefing?mode=audio">Experimentar agora</Link>
+                  </Button>
+                </Card>
+              ) : (
+                <OrderAccordion 
+                  orders={audioOrders}
+                  t={t}
+                  getStatusColor={getStatusColor}
+                  getStatusText={getStatusText}
+                  setDeleteOrderId={setDeleteOrderId}
+                  stuckOrderIds={stuckOrderIds}
+                  onRetryOrder={handleRetryOrder}
+                />
+              )}
             </StyledTabsContent>
           </StyledTabs>
         </motion.div>
