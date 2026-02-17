@@ -871,17 +871,19 @@ const AdminDashboard = () => {
     }
   };
 
-  // Generate WhatsApp link for notifying user
+  // Generate WhatsApp link for notifying user with both versions
   const getWhatsAppLink = (order: AdminOrder) => {
     if (!order.user_whatsapp) return null;
     const phone = order.user_whatsapp.replace(/\D/g, '');
     const phoneFormatted = phone.startsWith('55') ? phone : `55${phone}`;
-    const songTitle = order.lyric_title || 'sua música personalizada';
+    const songTitle = order.lyric_title || order.song_title || 'sua música personalizada';
+    const origin = window.location.origin;
     const message = encodeURIComponent(
       `🎵 Olá${order.user_name ? ` ${order.user_name.split(' ')[0]}` : ''}! ` +
       `Sua música "${songTitle}" está pronta! 🎉\n\n` +
-      `Acesse agora para ouvir e baixar:\n` +
-      `${window.location.origin}/pedido/${order.id}\n\n` +
+      `🎧 Versão 1:\n${origin}/m/${order.id}/1\n\n` +
+      `🎧 Versão 2:\n${origin}/m/${order.id}/2\n\n` +
+      `Acesse também todos os detalhes:\n${origin}/pedido/${order.id}\n\n` +
       `Obrigado por escolher a Criando Músicas! 💜`
     );
     return `https://wa.me/${phoneFormatted}?text=${message}`;
