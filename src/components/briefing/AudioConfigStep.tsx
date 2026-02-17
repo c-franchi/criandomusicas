@@ -33,6 +33,7 @@ interface AudioConfigStepProps {
   voiceType: VoiceType | "";
   theme: string;
   style: string;
+  songName?: string;
   isGenerating: boolean;
   generateProgress: number;
   onSectionChange: (section: SectionType) => void;
@@ -41,6 +42,7 @@ interface AudioConfigStepProps {
   onTranscriptChange?: (transcript: string) => void;
   onThemeChange: (theme: string) => void;
   onStyleChange: (style: string) => void;
+  onSongNameChange?: (name: string) => void;
   onBack: () => void;
   onGenerate: () => void;
 }
@@ -52,6 +54,7 @@ export const AudioConfigStep = ({
   voiceType,
   theme,
   style,
+  songName,
   isGenerating,
   generateProgress,
   onSectionChange,
@@ -60,6 +63,7 @@ export const AudioConfigStep = ({
   onTranscriptChange,
   onThemeChange,
   onStyleChange,
+  onSongNameChange,
   onBack,
   onGenerate,
 }: AudioConfigStepProps) => {
@@ -186,6 +190,16 @@ export const AudioConfigStep = ({
           value={theme}
           onChange={(e) => onThemeChange(e.target.value)}
           placeholder="Ex: Feliz aniversário para minha mãe"
+        />
+      </div>
+
+      {/* Song Name */}
+      <div className="space-y-2">
+        <label className="text-sm font-semibold">Nome da música (opcional)</label>
+        <Input
+          value={songName || ""}
+          onChange={(e) => onSongNameChange?.(e.target.value)}
+          placeholder="Deixe vazio para gerar automaticamente"
         />
       </div>
 

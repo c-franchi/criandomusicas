@@ -305,6 +305,11 @@ const Briefing = () => {
   const [editingFieldStep, setEditingFieldStep] = useState<number | null>(null);
   const [isQuickMode, setIsQuickMode] = useState(false);
   const [showNoCreditModal, setShowNoCreditModal] = useState(false);
+  
+  // Cover upload state (for instrumental)
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverMode, setCoverMode] = useState<'original' | 'enhanced'>('original');
   const [hasPreviewCreditForModal, setHasPreviewCreditForModal] = useState(false);
   const [quickModeFormData, setQuickModeFormData] = useState<BriefingFormData | null>(null);
   
@@ -1302,8 +1307,8 @@ const Briefing = () => {
       if (!data.isInstrumental && data.musicType === 'religiosa') {
         return 44; // Vai para fluxo gospel (contexto espiritual)
       }
-      // Se é infantil e cantada, vai para fluxo infantil
-      if (!data.isInstrumental && data.musicType === 'infantil') {
+      // Se é infantil, vai para fluxo infantil (tanto cantada quanto instrumental)
+      if (data.musicType === 'infantil') {
         return 60; // Vai para fluxo infantil (faixa etária)
       }
       // Se é corporativa e cantada, perguntar formato (institucional vs jingle)
@@ -1373,15 +1378,23 @@ const Briefing = () => {
     
     // FLUXO INFANTIL (60-69)
     // 60: ageGroup, 61: objective, 62: theme, 63: mood, 64: style, 65: interaction, 66: narrative, 67: story, 68: voiceType, 69: autoGenerateName
-    if (data.musicType === 'infantil' && !data.isInstrumental) {
+    if (data.musicType === 'infantil') {
       if (current === 60) return 61; // ageGroup -> objective
       if (current === 61) return 62; // objective -> theme
       if (current === 62) return 63; // theme -> mood
       if (current === 63) return 64; // mood -> style
-      if (current === 64) return 65; // style -> interaction
+      if (current === 64) {
+        // Se instrumental, pular interaction, narrative, voice -> ir para story
+        if (data.isInstrumental) return 67;
+        return 65; // style -> interaction
+      }
       if (current === 65) return 66; // interaction -> narrative
       if (current === 66) return 67; // narrative -> story
-      if (current === 67) return 68; // story -> voiceType
+      if (current === 67) {
+        // Se instrumental, ir para nome da música instrumental
+        if (data.isInstrumental) return 20;
+        return 68; // story -> voiceType
+      }
       if (current === 68) return 69; // voiceType -> autoGenerateName
       if (current === 69) {
         return data.autoGenerateName ? 100 : 19; // Se auto, vai para confirmação; senão pede nome
@@ -2162,11 +2175,29 @@ const Briefing = () => {
       motivationalIntensity: data.motivationalIntensity,
       motivationalPerspective: data.motivationalPerspective,
       plan: userPlan,
-      lgpdConsent: true
+      lgpdConsent: true,
+      // Cover (will be populated after upload)
+      customCoverUrl: undefined as string | undefined,
+      coverMode: coverMode,
     };
 
     // Criar ordem no Supabase
     try {
+      // Upload cover if provided
+      if (coverFile && data.isInstrumental && user?.id) {
+        const fileExt = coverFile.name.split('.').pop() || 'jpg';
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('covers')
+          .upload(filePath, coverFile);
+        
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('covers')
+            .getPublicUrl(filePath);
+          briefingData.customCoverUrl = urlData.publicUrl;
+        }
+      }
       // Buscar preço do plano selecionado
       let orderAmount = 990; // Default: R$ 9,90
       const effectivePlanId = briefingData.hasCustomLyric 
@@ -2245,6 +2276,8 @@ const Briefing = () => {
             } catch { /* ignore */ }
             return null;
           })(),
+          // Cover URL (uploaded before order creation)
+          cover_url: briefingData.customCoverUrl || null,
         })
         .select()
         .single();
@@ -2767,8 +2800,8 @@ const Briefing = () => {
       rhythm: 'moderado',
       atmosphere: 'festivo',
       voiceType: audioResult.detectedVoiceType || 'feminina',
-      autoGenerateName: true,
-      songName: '',
+      autoGenerateName: !audioResult.songName,
+      songName: audioResult.songName || '',
       hasMonologue: audioResult.section === 'INTRO_MONOLOGUE',
       monologuePosition: audioResult.section === 'INTRO_MONOLOGUE' ? 'intro' : '',
       mandatoryWords: audioResult.mode === 'keep_exact' ? audioResult.transcript : '',
@@ -3295,6 +3328,53 @@ const Briefing = () => {
                       value={formData.autoGenerateName ? t('confirmation.aiGenerated') : formData.songName} 
                       onEdit={() => handleEditField(20)} 
                     />
+                    {/* Cover Upload for Instrumental */}
+                    <div className="space-y-2 pt-2 border-t border-border/50">
+                      <p className="text-sm font-medium">🖼️ Capa da música (opcional)</p>
+                      {coverPreview ? (
+                        <div className="space-y-2">
+                          <img src={coverPreview} alt="Capa" className="w-24 h-24 rounded-xl object-cover" />
+                          <div className="flex gap-2">
+                            <Badge
+                              variant={coverMode === 'original' ? 'default' : 'outline'}
+                              className="cursor-pointer"
+                              onClick={() => setCoverMode('original')}
+                            >
+                              📌 Manter original
+                            </Badge>
+                            <Badge
+                              variant={coverMode === 'enhanced' ? 'default' : 'outline'}
+                              className="cursor-pointer"
+                              onClick={() => setCoverMode('enhanced')}
+                            >
+                              ✨ Melhorar com IA
+                            </Badge>
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => { setCoverFile(null); setCoverPreview(null); }}>
+                            Remover capa
+                          </Button>
+                        </div>
+                      ) : (
+                        <div>
+                          <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                            📷 Escolher imagem
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setCoverFile(file);
+                                  setCoverPreview(URL.createObjectURL(file));
+                                }
+                              }}
+                            />
+                          </label>
+                          <p className="text-xs text-muted-foreground mt-1">Deixe vazio para gerar automaticamente com IA</p>
+                        </div>
+                      )}
+                    </div>
                   </>
                 ) : (
                   // Campos cantada
