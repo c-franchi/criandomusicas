@@ -38,6 +38,9 @@ export interface BriefingPayload {
   motivationalMoment?: string;
   motivationalIntensity?: string;
   motivationalPerspective?: string;
+  // Cover
+  customCoverUrl?: string;
+  coverMode?: string;
   // Any other dynamic fields
   [key: string]: unknown;
 }
@@ -162,6 +165,10 @@ export class OrderProcessingService {
       body: {
         orderId,
         isInstrumental: true,
+        songTitle: briefing.songName || null,
+        customCoverUrl: briefing.customCoverUrl || null,
+        coverMode: briefing.coverMode || 'auto',
+        language: MusicCreationService.getActiveLanguage(),
         briefing: {
           ...briefing,
           instruments: briefing.instruments || [],

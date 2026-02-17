@@ -21,6 +21,7 @@ export interface AudioModeResult {
   theme: string;
   style: string;
   detectedVoiceType: string;
+  songName?: string;
 }
 
 interface AudioModeWizardProps {
@@ -45,6 +46,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
   const [mode, setMode] = useState<ModeType>("light_edit");
   const [theme, setTheme] = useState("");
   const [style, setStyle] = useState("Pop");
+  const [songName, setSongName] = useState("");
 
   const steps: { id: WizardStep; label: string; icon: React.ElementType }[] = [
     { id: "capture", label: "Áudio", icon: Mic },
@@ -122,8 +124,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       theme,
       style,
       detectedVoiceType: mappedVoiceType,
+      songName: songName.trim() || undefined,
     });
-  }, [transcript, section, mode, theme, style, audioId, voiceType, onComplete]);
+  }, [transcript, section, mode, theme, style, audioId, voiceType, songName, onComplete]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -211,6 +214,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               voiceType={voiceType}
               theme={theme}
               style={style}
+              songName={songName}
               isGenerating={false}
               generateProgress={0}
               onSectionChange={setSection}
@@ -219,6 +223,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
               onTranscriptChange={setTranscript}
               onThemeChange={setTheme}
               onStyleChange={setStyle}
+              onSongNameChange={setSongName}
               onBack={() => {
                 setCurrentStep("capture");
                 setAudioId(null);
