@@ -1,68 +1,118 @@
 
+## Plano: Corrigir falhas de traducao em todo o site
 
-## Plano: Criar prompt exclusivo para Chamada/Propaganda corporativa
+### Problema Identificado
 
-### Problema
+Quando o usuario muda o idioma (ex: italiano), varios textos permanecem em portugues porque estao escritos diretamente no codigo (hardcoded) em vez de usar o sistema de traducao (i18next).
 
-Quando o usuario escolhe "Chamada/Propaganda" no briefing corporativo, o sistema define `monologuePosition: 'full'`. Na funcao `generate-lyrics`, a condicao `monologuePosition === 'full'` ativa o prompt de **spoken word motivacional** (com vocabulario de disciplina, superacao, mentor/treinador). Resultado: uma propaganda de padaria vira um discurso motivacional.
+### Falhas Encontradas
 
-### Causa Raiz
+#### 1. MobileMenu.tsx (menu lateral mobile) - PRIORIDADE ALTA
+O arquivo com mais problemas. Textos hardcoded:
+- **Linha 146**: `'creditos' / 'credito'` - deveria usar `tCommon('credits.credits')` / `tCommon('credits.credit')`
+- **Linha 172**: `"Criar Rapido"` - deveria usar chave de traducao
+- **Linha 183**: `"Navegar"` - deveria usar chave de traducao
+- **Linha 204**: `"Menu"` - deveria usar chave de traducao
+- **Linha 258**: `"Legal"` - deveria usar chave de traducao
+- **Linha 267**: `"Termos de Uso"` - deveria usar chave de traducao
+- **Linha 274**: `"Politica de Privacidade"` - deveria usar chave de traducao
 
-A flag `isSomenteMonologo` nao distingue entre:
-- **Monologo motivacional** (`motivationalNarrative === 'somente_monologo'`)
-- **Chamada/propaganda corporativa** (`corporateFormat === 'monologo'`)
+#### 2. CreditsBanner.tsx - creditos hardcoded
+- **Linha 58**: `'1 preview gratis'` e `'credito' / 'creditos'`
+- **Linha 83**: `'1 preview gratis'`
+- **Linha 90**: `'credito' / 'creditos'`
+- **Linha 97**: `"Criar"` (botao)
 
-Ambos setam `monologuePosition: 'full'` e caem no mesmo prompt.
+#### 3. CreditsManagement.tsx - painel de creditos inteiro em portugues
+- **Linha 43**: `"Meus Creditos de Musica"`
+- **Linha 45**: `"Gerencie seus pacotes e creditos disponiveis"`
+- **Linha 53**: `"Creditos disponiveis"`
+- **Linha 55**: `'Preview Gratis'`, `'Ativo'`, `'Sem creditos'`
+- **Linha 87**: `'Ativo'`
+- **Linha 164**: `'Ativo'` / `'Inativo'`
+- **Linha 198**: `"Ver Pacotes Disponiveis"`
+- **Linha 209**: `'Comprar Mais Creditos'` / `'Comprar Pacote de Musicas'`
+
+#### 4. VideoServiceSection.tsx - aviso em portugues
+- **Linha 122**: `"Em breve: use seus creditos para criar videos!"`
+- **Linha 126**: `"Estamos implementando o sistema de creditos para videos."`
+
+#### 5. Auth.tsx - termos legais hardcoded
+- **Linha 646-653**: `"Ao continuar, voce concorda com os Termos de Uso e a Politica de Privacidade"` - tudo em portugues
+
+#### 6. Order.tsx / VideoCheckout.tsx - navegacao
+- **Linha 219**: `"Meus Pedidos"` (Order.tsx)
+- **Linha 340**: `"Ir para Meus Pedidos"` (VideoCheckout.tsx)
+
+#### 7. SEO.tsx - meta description padrao em portugues
+- **Linha 20**: Description padrao hardcoded em portugues
+
+#### 8. AdminSettings.tsx / PricingManager.tsx - painel admin
+- Varios `'Ativo'` / `'Inativo'` hardcoded (menor prioridade pois e area admin)
 
 ### Solucao
 
-Criar uma condicao separada para detectar chamada corporativa e usar um prompt especifico para propaganda/anuncio.
+#### Etapa 1: Adicionar chaves de traducao faltantes nos 4 idiomas
 
-#### Mudancas em `supabase/functions/generate-lyrics/index.ts`
-
-1. **Nova deteccao**: Adicionar flag `isChamadaCorporativa` baseada em `corporateFormat === 'monologo'` (campo ja enviado pelo briefing)
-
-2. **Ajustar prioridade**: A chamada corporativa deve ser verificada ANTES do monologo motivacional:
+Adicionar novas chaves nos arquivos `common.json` de cada idioma:
 
 ```text
-if isChamadaCorporativa -> prompt de propaganda
-else if isSomenteMonologo -> prompt motivacional (existente)
-else if isSimpleMode -> prompt simples (existente)
-else -> prompt padrao (existente)
+"mobileMenu": {
+  "navigate": "Navegar / Navigate / Navegar / Navigare",
+  "menu": "Menu",
+  "quickCreate": "Criar Rapido / Quick Create / Crear Rapido / Crea Veloce",
+  "legal": "Legal / Legal / Legal / Legale",
+  "termsOfUse": "Termos de Uso / Terms of Use / Terminos de Uso / Termini di Utilizzo",
+  "privacyPolicy": "Politica de Privacidade / Privacy Policy / Politica de Privacidad / Informativa sulla Privacy"
+}
+
+"credits": {
+  (adicionar chaves faltantes)
+  "previewFree": "1 preview gratis / 1 free preview / 1 preview gratis / 1 anteprima gratuita",
+  "active": "Ativo / Active / Activo / Attivo",
+  "inactive": "Inativo / Inactive / Inactivo / Inattivo",
+  "noCredits": (ja existe, reutilizar),
+  "myCredits": "Meus Creditos / My Credits / Mis Creditos / I Miei Crediti",
+  "manageCredits": "Gerencie seus creditos / Manage your credits / ...",
+  "availableCredits": "Creditos disponiveis / Available credits / ...",
+  "buyMore": "Comprar Mais / Buy More / ...",
+  "buyPackage": (ja existe, reutilizar),
+  "viewAvailable": "Ver Pacotes / View Packages / ..."
+}
+
+"legal": {
+  "agreementText": "Ao continuar... / By continuing... / Al continuar... / Continuando...",
+  "termsOfUse": "Termos de Uso / ...",
+  "privacyPolicy": "Politica de Privacidade / ..."
+}
+
+"video": {
+  "comingSoon": "Em breve: creditos para videos / Coming soon: credits for videos / ...",
+  "implementing": "Estamos implementando... / We are implementing... / ..."
+}
 ```
 
-3. **Novo system prompt para chamada corporativa**: Tom de locutor de radio/carro de som, direto, comercial. Estrutura obrigatoria:
+#### Etapa 2: Substituir textos hardcoded nos componentes
 
-```text
-[Intro]
-[monologue]
-(texto completo da propaganda em um unico bloco grande)
+Substituir cada string portuguesa por chamadas `t()` com a chave correspondente, mantendo o fallback em portugues como defaultValue.
 
-[End]
-```
+**Arquivos a modificar:**
+1. `src/components/MobileMenu.tsx` - 7 substituicoes
+2. `src/components/CreditsBanner.tsx` - 5 substituicoes
+3. `src/components/CreditsManagement.tsx` - ~10 substituicoes
+4. `src/components/VideoServiceSection.tsx` - 2 substituicoes
+5. `src/pages/Auth.tsx` - 1 bloco (termos legais)
+6. `src/pages/Order.tsx` - 1 substituicao
+7. `src/pages/VideoCheckout.tsx` - 1 substituicao
 
-Regras do prompt:
-- 100% falado, NENHUM trecho cantado
-- Um unico bloco `[monologue]` grande (nao dividir em varios blocos)
-- Tom de locutor comercial, nao motivacional
-- Reproduzir fielmente o texto/contexto que o usuario forneceu
-- Adicionar apenas conectores naturais e enfase comercial
-- NAO inventar historias, emocoes ou mensagens motivacionais
-- Manter curto e direto como propaganda de carro de som
-- Incluir informacoes de contato se fornecidas
+**Arquivos de traducao a modificar:**
+1. `public/locales/pt-BR/common.json` - adicionar novas chaves
+2. `public/locales/en/common.json` - adicionar novas chaves
+3. `public/locales/es/common.json` - adicionar novas chaves
+4. `public/locales/it/common.json` - adicionar novas chaves
 
-4. **Novo user prompt para chamada corporativa**: Enviar o script do usuario como base principal, com instrucao clara de que e uma propaganda comercial.
+### Escopo
 
-### Detalhes Tecnicos
-
-**Arquivo modificado:**
-- `supabase/functions/generate-lyrics/index.ts`
-  - Extrair `corporateFormat` do briefing (ja vem do frontend, so nao e utilizado)
-  - Criar flag `isChamadaCorporativa = corporateFormat === 'monologo'`
-  - Criar `chamadaCorporativaPrompt` (system) e bloco de user prompt dedicado
-  - Ajustar a condicao no `userPrompt` (linha ~770) para priorizar chamada corporativa
-  - Ajustar a condicao no system message (linha ~859) para usar o prompt correto
-
-**Nenhuma mudanca no frontend** - o briefing ja envia `corporateFormat: 'monologo'` corretamente.
-
-**Nenhuma mudanca no banco de dados.**
+- Foco nos componentes voltados ao usuario (nao admin)
+- Admin (`AdminSettings`, `PricingManager`) ficara para uma fase futura se necessario, pois so admins acessam
+- SEO description sera mantido em portugues como fallback (Google indexa por pagina/idioma)
