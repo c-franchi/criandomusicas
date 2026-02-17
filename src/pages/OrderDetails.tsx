@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -11,6 +12,9 @@ import {
   Music, 
   ArrowLeft,
   Download,
+  Upload,
+  ImageIcon,
+  Loader2,
   Play,
   Pause,
   ExternalLink,
@@ -93,6 +97,45 @@ const OrderDetails = () => {
   const [loading, setLoading] = useState(true);
   const [playingTrack, setPlayingTrack] = useState<number | null>(null);
   const [audioElements, setAudioElements] = useState<{ [key: number]: HTMLAudioElement }>({});
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverPopoverOpen, setCoverPopoverOpen] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCoverUpload = async (file: File) => {
+    if (!orderId || !user?.id) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: t('orderDetails.cover.sizeError'), variant: 'destructive' });
+      return;
+    }
+    setUploadingCover(true);
+    setCoverPopoverOpen(false);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const fileName = `custom-${orderId}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(fileName, file, { upsert: true });
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('covers')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({ cover_url: publicUrl })
+        .eq('id', orderId);
+      if (updateError) throw updateError;
+
+      setOrder(prev => prev ? { ...prev, cover_url: publicUrl } : null);
+      toast({ title: t('orderDetails.cover.success') });
+    } catch (err) {
+      console.error('Cover upload error:', err);
+      toast({ title: t('orderDetails.cover.error'), variant: 'destructive' });
+    } finally {
+      setUploadingCover(false);
+    }
+  };
 
   const fetchReview = useCallback(async () => {
     if (!orderId) return;
@@ -506,19 +549,66 @@ const OrderDetails = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Album Art */}
+              {/* Album Art with cover change option */}
               <div className="flex items-center gap-6">
-                {order.cover_url ? (
-                  <img 
-                    src={order.cover_url} 
-                    alt={t('orderDetails.music.title')}
-                    className="w-24 h-24 rounded-xl object-cover shadow-lg"
-                  />
-                ) : (
-                  <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center shadow-lg">
-                    <Music className="w-12 h-12 text-primary-foreground" />
-                  </div>
-                )}
+                <Popover open={coverPopoverOpen} onOpenChange={setCoverPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <button className="relative group cursor-pointer shrink-0" aria-label={t('orderDetails.cover.change')}>
+                      {order.cover_url ? (
+                        <img 
+                          src={order.cover_url} 
+                          alt={t('orderDetails.music.title')}
+                          className="w-24 h-24 rounded-xl object-cover shadow-lg"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 rounded-xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center shadow-lg">
+                          <Music className="w-12 h-12 text-primary-foreground" />
+                        </div>
+                      )}
+                      {uploadingCover ? (
+                        <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center">
+                          <Loader2 className="w-6 h-6 text-white animate-spin" />
+                        </div>
+                      ) : (
+                        <div className="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Camera className="w-6 h-6 text-white" />
+                        </div>
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-56 p-2" side="right">
+                    <div className="space-y-1">
+                      <button
+                        onClick={() => setCoverPopoverOpen(false)}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        {t('orderDetails.cover.keep')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCoverPopoverOpen(false);
+                          coverInputRef.current?.click();
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                      >
+                        <Upload className="w-4 h-4" />
+                        {t('orderDetails.cover.upload')}
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleCoverUpload(file);
+                    e.target.value = '';
+                  }}
+                />
                 <div className="flex-1">
                   <h3 className="text-xl font-bold mb-1">{getSongTitle()}</h3>
                   <p className="text-muted-foreground text-sm">{order.music_style}</p>

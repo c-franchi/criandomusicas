@@ -140,6 +140,15 @@
   "orderDetails": {
     "title": "Detalles del Pedido",
     "back": "Volver",
+    "cover": {
+      "change": "Cambiar portada",
+      "upload": "Subir mi imagen",
+      "keep": "Mantener portada actual",
+      "uploading": "Subiendo...",
+      "success": "¡Portada actualizada!",
+      "error": "Error al actualizar portada",
+      "sizeError": "Imagen muy grande (máx 5MB)"
+    },
     "orderNumber": "Pedido #{{id}}",
     "createdAt": "Creado el {{date}}",
     "sections": {

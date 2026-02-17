@@ -140,6 +140,15 @@
   "orderDetails": {
     "title": "Dettagli Ordine",
     "back": "Indietro",
+    "cover": {
+      "change": "Cambia copertina",
+      "upload": "Carica la mia immagine",
+      "keep": "Mantieni copertina attuale",
+      "uploading": "Caricamento...",
+      "success": "Copertina aggiornata!",
+      "error": "Errore nell'aggiornamento della copertina",
+      "sizeError": "Immagine troppo grande (max 5MB)"
+    },
     "orderNumber": "Ordine #{{id}}",
     "createdAt": "Creato il {{date}}",
     "sections": {

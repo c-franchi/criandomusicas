@@ -140,6 +140,15 @@
   "orderDetails": {
     "title": "Detalhes do Pedido",
     "back": "Voltar",
+    "cover": {
+      "change": "Alterar capa",
+      "upload": "Enviar minha imagem",
+      "keep": "Manter capa atual",
+      "uploading": "Enviando...",
+      "success": "Capa atualizada!",
+      "error": "Erro ao atualizar capa",
+      "sizeError": "Imagem muito grande (máx 5MB)"
+    },
     "orderNumber": "Pedido #{{id}}",
     "createdAt": "Criado em {{date}}",
     "sections": {
