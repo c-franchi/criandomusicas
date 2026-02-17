@@ -226,44 +226,74 @@ const AudioSampleManager = ({
 
   const [generatingDescription, setGeneratingDescription] = useState(false);
 
+  // Map raw style keys to display labels
+  const styleDisplayMap: Record<string, string> = {
+    pop: 'Pop', rock: 'Rock', rap: 'Rap', sertanejo: 'Sertanejo',
+    sertanejo_raiz: 'Sertanejo Raiz', sertanejo_universitario: 'Sertanejo Universitário',
+    mpb: 'MPB', jazz: 'Jazz', gospel: 'Gospel', forro: 'Forró',
+    pagode: 'Pagode', bossa: 'Bossa Nova', eletronico: 'Eletrônico',
+    classico: 'Clássico', lofi: 'Lo-Fi', ambiente: 'Ambiente',
+    cinematico: 'Cinematográfico', reggae: 'Reggae', pop_rock: 'Pop Rock',
+    rock_motivacional: 'Rock Motivacional', rap_motivacional: 'Rap Motivacional',
+    trap_motivacional: 'Trap', hiphop_classico: 'Hip-Hop Clássico',
+    eletronica_epica: 'Eletrônica Épica', lofi_motivacional: 'Lo-Fi',
+  };
+
+  // Map music_type keys to occasion display labels
+  const occasionDisplayMap: Record<string, string> = {
+    homenagem: 'Homenagem', romantica: 'Romântica', motivacional: 'Motivacional',
+    infantil: 'Filhos', religiosa: 'Religiosa', parodia: 'Paródia',
+    corporativa: 'Corporativa', trilha: 'Trilha Sonora', instrumental: 'Instrumental',
+  };
+
+  const getOccasionFromContext = (track: ApprovedMusicTrack) => {
+    // First try purpose
+    if (track.purpose) return track.purpose;
+
+    // Then try music_type mapped label
+    if (track.music_type && occasionDisplayMap[track.music_type]) {
+      return occasionDisplayMap[track.music_type];
+    }
+
+    // Then try story keywords
+    if (track.story) {
+      const s = track.story.toLowerCase();
+      if (s.includes('casamento') || s.includes('noiva') || s.includes('noivo')) return 'Casamento';
+      if (s.includes('aniversário') || s.includes('aniversario')) return 'Aniversário';
+      if (s.includes('formatura')) return 'Formatura';
+      if (s.includes('dia das mães') || s.includes('mãe')) return 'Dia das Mães';
+      if (s.includes('dia dos pais') || s.includes('pai')) return 'Dia dos Pais';
+      if (s.includes('natal')) return 'Natal';
+      if (s.includes('namorados') || s.includes('amor')) return 'Romântico';
+      if (s.includes('filho') || s.includes('filha') || s.includes('criança') || s.includes('bebê')) return 'Filhos';
+      if (s.includes('amigo') || s.includes('amizade')) return 'Amizade';
+      if (s.includes('empresa') || s.includes('marca') || s.includes('negócio')) return 'Corporativa';
+    }
+
+    if (track.music_type) {
+      return track.music_type.charAt(0).toUpperCase() + track.music_type.slice(1);
+    }
+
+    return 'Especial';
+  };
+
   const handleSelectApprovedTrack = async (orderId: string) => {
     const track = approvedTracks.find(t => t.order_id === orderId);
     if (track) {
       setSelectedTrack(orderId);
-      
-      // Determine occasion from real data (purpose, story)
-      const getOccasion = () => {
-        if (track.purpose) return track.purpose;
-        
-        if (track.story) {
-          const storyLower = track.story.toLowerCase();
-          if (storyLower.includes('trilha sonora') || storyLower.includes('vídeo') || storyLower.includes('video')) return 'Trilha Sonora';
-          if (storyLower.includes('casamento') || storyLower.includes('noiva') || storyLower.includes('noivo')) return 'Casamento';
-          if (storyLower.includes('aniversário') || storyLower.includes('aniversario')) return 'Aniversário';
-          if (storyLower.includes('formatura')) return 'Formatura';
-          if (storyLower.includes('dia das mães') || storyLower.includes('mãe')) return 'Dia das Mães';
-          if (storyLower.includes('dia dos pais') || storyLower.includes('pai')) return 'Dia dos Pais';
-          if (storyLower.includes('natal')) return 'Natal';
-          if (storyLower.includes('namorados') || storyLower.includes('amor')) return 'Romântico';
-        }
-        
-        if (track.music_type) {
-          return track.music_type.charAt(0).toUpperCase() + track.music_type.slice(1);
-        }
-        
-        return 'Especial';
-      };
-      
+
       const audioData = editingAudio || newAudio;
       const title = track.song_title || track.lyric_title || `Música ${track.music_type}`;
-      
+      const displayStyle = (track.music_style && styleDisplayMap[track.music_style]) || track.music_style || '';
+      const displayOccasion = getOccasionFromContext(track);
+
       // Set initial data with loading description
       const updatedData = {
         ...audioData,
         audio_url: track.audio_url,
         title,
-        style: track.music_style || '',
-        occasion: getOccasion(),
+        style: displayStyle,
+        occasion: displayOccasion,
         description: 'Gerando descrição com IA...',
         cover_url: track.cover_url || ''
       };
