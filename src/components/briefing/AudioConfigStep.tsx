@@ -24,7 +24,7 @@ const MODE_OPTIONS = [
   { id: "light_edit" as const, label: "Ajustar levemente", emoji: "✨", desc: "Pequenos ajustes de rima e fluidez" },
 ];
 
-const STYLE_OPTIONS = ["Pop", "MPB", "Sertanejo", "Rock", "Gospel", "Pagode", "Bossa Nova", "Forró", "Reggae"];
+const STYLE_OPTIONS = ["Pop", "MPB", "Sertanejo Raiz", "Sertanejo Universitário", "Rock", "Gospel", "Pagode", "Bossa Nova", "Forró", "Reggae"];
 
 interface AudioConfigStepProps {
   transcript: string;

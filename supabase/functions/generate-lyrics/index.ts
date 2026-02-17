@@ -584,6 +584,18 @@ EVITE COMPLETAMENTE estas frases genéricas:
 - "sempre ao meu lado", "minha fortaleza", "meu refúgio"
 - Qualquer frase que serviria para QUALQUER pessoa sem alteração
 
+⚠️ REGRA ANTI-REPETIÇÃO (CRÍTICA):
+- Cada música deve ser COMPLETAMENTE DIFERENTE de qualquer outra que você já criou
+- NUNCA comece o [Verse 1] ou [Intro] com as mesmas palavras/padrão em músicas diferentes
+- VARIE a estrutura de abertura: perguntas, exclamações, descrições de cena, diálogos, memórias
+- Para estilo SERTANEJO: PROIBIDO começar com "Eu lembro", "Desde aquele dia", "Quando eu te vi", "Foi num dia", "Naquela noite"
+  - Em vez disso, ALTERNE entre: cenas específicas, diálogos diretos, descrições sensoriais, metáforas rurais/urbanas únicas
+- Para CADA versão, use uma abordagem narrativa DIFERENTE:
+  - Versão A: pode começar pelo presente, olhando para trás
+  - Versão B: pode começar por uma cena específica, um objeto, um cheiro, um som
+- VARIE os esquemas de rima entre versões (ABAB, AABB, ABBA, livre)
+- VARIE o comprimento dos versos: misture linhas curtas de impacto com linhas mais longas narrativas
+
 PRIORIZE SEMPRE (extraia informações da história):
 - Detalhes ESPECÍFICOS: nome, idade, profissão, hobbies, características únicas
 - Memórias CONCRETAS: "aquele bolo de domingo", "suas plantas na varanda", "seu jeito de rir"
@@ -591,16 +603,22 @@ PRIORIZE SEMPRE (extraia informações da história):
 - Momentos REAIS: datas, lugares, situações específicas mencionadas
 - Rimas CRIATIVAS: evite amor/dor, coração/paixão, vida/querida
 - Frases que SÓ façam sentido para ESTA pessoa específica
+- ORIGINALIDADE na primeira linha: a abertura define o tom, surpreenda o ouvinte
 
-EXEMPLOS DE BOA LETRA (específica):
+EXEMPLOS DE BOA ABERTURA (variada):
 ✅ "Mãe, lembra quando você ensinou a fazer pão?"
 ✅ "Seus 60 anos chegaram com aquele sorriso de sempre"
 ✅ "Na cozinha, o cheiro do café que só você sabe fazer"
+✅ "Aquela foto no porta-retrato ainda me faz sorrir"
+✅ "Três da tarde, sol de janeiro, você chegou sem avisar"
+✅ "Se eu pudesse escolher de novo, te escolhia igual"
 
-EXEMPLOS DE LETRA RUIM (genérica):
+EXEMPLOS DE ABERTURA RUIM (repetitiva/genérica):
 ❌ "Você é a luz que me guia todos os dias"
 ❌ "Razão do meu viver, meu amor eterno"
 ❌ "Estrela que brilha no meu céu"
+❌ "Eu lembro daquele dia que..." (início repetitivo)
+❌ "Desde o primeiro dia que te vi..." (padrão batido)
 
 REGRAS OBRIGATÓRIAS:
 1. Gere APENAS a letra final, sem comentários, explicações ou metadados
@@ -810,6 +828,8 @@ ${story}
 INSTRUÇÕES FINAIS:
 ${versionInstructions}
 - Cada versão deve ser completa e independente
+- As duas versões devem ter ABORDAGENS DIFERENTES: uma pode ser mais narrativa e outra mais emocional, uma pode começar pelo presente e outra pelo passado, uma pode usar rimas ABAB e outra AABB
+- PROIBIDO: ambas as versões começarem com a mesma palavra ou estrutura similar na primeira linha
 - ${autoGenerateName ? `IMPORTANTE SOBRE TÍTULOS:
   - Cada versão DEVE ter um título ÚNICO, CRIATIVO e ESPECÍFICO para esta história
   - NÃO use títulos genéricos como "Música Para Você" ou "Homenagem Especial"` : `⚠️ TÍTULO OBRIGATÓRIO: "${songName}"
