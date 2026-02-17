@@ -85,8 +85,11 @@
       "institucionalDesc": "Soundtracks, company anthem, events",
       "jingle": "📢 Jingle/Advertisement",
       "jingleDesc": "For marketing, with phone/address",
+      "monologo": "🎙️ Monologue/Voiceover",
+      "monologoDesc": "Promotional narration over background music",
       "contactInfoQuestion": "Now enter the contact information for the jingle! 📞\n\nInclude: phone, address, website, social media...",
-      "callToActionQuestion": "What call to action should appear in the jingle? 📢\n\nExample: \"Call now!\", \"Visit our store!\", \"Follow us on Instagram!\""
+      "callToActionQuestion": "What call to action should appear in the jingle? 📢\n\nExample: \"Call now!\", \"Visit our store!\", \"Follow us on Instagram!\"",
+      "monologoScriptQuestion": "Type the full monologue/voiceover text 🎙️\n\nExample: \"Turn your stories into music. With Criando Músicas, you immortalize your moments in personalized songs.\""
     },
     "style": {
       "question": "Which music style do you prefer?",

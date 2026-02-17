@@ -85,8 +85,11 @@
       "institucionalDesc": "Pista, himno de la empresa, eventos",
       "jingle": "📢 Jingle/Publicidad",
       "jingleDesc": "Para marketing, con teléfono/dirección",
+      "monologo": "🎙️ Monólogo/Locución",
+      "monologoDesc": "Narración promocional sobre fondo musical",
       "contactInfoQuestion": "¡Ahora ingresa la información de contacto para el jingle! 📞\n\nIncluye: teléfono, dirección, sitio web, redes sociales...",
-      "callToActionQuestion": "¿Qué llamada a la acción debe aparecer en el jingle? 📢\n\nEjemplo: \"¡Llama ahora!\", \"¡Visita nuestra tienda!\", \"¡Síguenos en Instagram!\""
+      "callToActionQuestion": "¿Qué llamada a la acción debe aparecer en el jingle? 📢\n\nEjemplo: \"¡Llama ahora!\", \"¡Visita nuestra tienda!\", \"¡Síguenos en Instagram!\"",
+      "monologoScriptQuestion": "Escribe el texto completo del monólogo/locución 🎙️\n\nEjemplo: \"Convierte tus historias en música. Con Criando Músicas inmortalizas tus momentos en canciones personalizadas.\""
     },
     "style": {
       "question": "¿Qué estilo musical prefieres?",
