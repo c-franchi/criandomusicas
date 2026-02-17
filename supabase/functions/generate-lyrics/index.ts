@@ -36,8 +36,8 @@ interface Pronunciation {
 }
 
 // ============ REGRAS DE FORMATAÇÃO PARA SUNO ============
-// REGRA: Telefones → números separados por hífen (1-6-9-9-7...)
-// REGRA: Sites → w-w-w-ponto-nome-ponto-com-ponto-b-r
+// REGRA: Telefones → DDD por extenso + resto com hífens (dezesseis, 9-9-7...)
+// REGRA: Sites → SEM www, domínio como fala natural, cada parte em linha separada
 // REGRA: Siglas → letras maiúsculas com hífen (F-M-E)
 // REGRA: NUNCA usar fonética explicativa (ésse, éfe, erre)
 
@@ -85,30 +85,55 @@ function convertPhoneToHyphens(text: string): string {
   return result;
 }
 
-// Converter URLs para formato soletrado com hífens
-function convertUrlToHyphens(text: string): string {
+// Converter URLs para fala natural brasileira (sem www, sem hífens)
+// Exemplo: "criandomusicas.com.br" → "criando músicas\nponto com\nponto bê érre"
+function convertUrlToNaturalSpeech(text: string): string {
   let result = text;
   
-  result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2})?/gi, 
-    (_match, _protocol, hasWww, name, ext1, ext2) => {
+  // Mapa de extensões para pronúncia natural brasileira
+  const extPronunciation: Record<string, string> = {
+    'com': 'ponto com',
+    'br': 'ponto bê érre',
+    'net': 'ponto néti',
+    'org': 'ponto órg',
+    'edu': 'ponto êdu',
+    'gov': 'ponto góv',
+    'io': 'ponto í ó',
+    'app': 'ponto épi',
+    'dev': 'ponto dévi',
+    'me': 'ponto mí',
+    'co': 'ponto cô',
+    'info': 'ponto info',
+  };
+  
+  result = result.replace(/(https?:\/\/)?(www\.)?([a-zA-Z0-9-]+)\.([a-zA-Z]{2,})(\.[a-zA-Z]{2,})?/gi, 
+    (_match, _protocol, _hasWww, name, ext1, ext2) => {
+      // NUNCA incluir www - removido sempre
       const parts: string[] = [];
-      if (hasWww) {
-        parts.push('w-w-w');
-      }
-      parts.push(`ponto-${name.toLowerCase()}`);
-      const extFormatted = ext1.toLowerCase() === 'br' ? 'b-r' : ext1.toLowerCase();
-      parts.push(`ponto-${extFormatted}`);
+      
+      // Nome do domínio: escrever como soa naturalmente
+      // Separar palavras compostas se possível (camelCase ou hifenizadas)
+      const domainName = name.toLowerCase()
+        .replace(/-/g, ' '); // hífens viram espaços
+      parts.push(domainName);
+      
+      // Extensão principal
+      const ext1Lower = ext1.toLowerCase();
+      parts.push(extPronunciation[ext1Lower] || `ponto ${ext1Lower}`);
+      
+      // Extensão secundária (ex: .br)
       if (ext2) {
         const ext2Clean = ext2.replace('.', '').toLowerCase();
-        const ext2Formatted = ext2Clean === 'br' ? 'b-r' : ext2Clean;
-        parts.push(`ponto-${ext2Formatted}`);
+        parts.push(extPronunciation[ext2Clean] || `ponto ${ext2Clean}`);
       }
-      return parts.join('-');
+      
+      // Separar em linhas para melhorar pronúncia no Suno
+      return parts.join('\n');
     }
   );
   
   result = result.replace(/@([a-zA-Z0-9_]+)/g, (_match, handle) => {
-    return `arroba-${handle.toLowerCase()}`;
+    return `arroba ${handle.toLowerCase()}`;
   });
   
   return result;
@@ -131,7 +156,7 @@ function convertAcronymsToHyphens(text: string): string {
 function applyGlobalPronunciationRules(text: string): string {
   let result = text;
   result = convertPhoneToHyphens(result);
-  result = convertUrlToHyphens(result);
+  result = convertUrlToNaturalSpeech(result);
   result = convertAcronymsToHyphens(result);
   return result;
 }
@@ -497,9 +522,16 @@ REGRAS CRÍTICAS:
 🔒 TELEFONES: DDD por extenso + resto com hífens
    Exemplo: dezesseis, 9-9-7-8-1-3-0-3-8
 
-🌐 SITES: w-w-w-ponto-nome-ponto-com-ponto-b-r
+🌐 SITES: SEM www, domínio em fala natural brasileira, cada parte em LINHA SEPARADA
+   Nunca usar hífens para soletrar URLs. Nunca escrever domínio tudo junto.
+   Sempre escrever como soa na fala brasileira.
 
-🔠 SIGLAS: letras com hífen (F-M-E)
+   Exemplo CORRETO:
+   criando músicas
+   ponto com
+   ponto bê érre
+
+   Exemplo ERRADO: "w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r" ou "www.criandomusicas.com.br"
 
 🎤 REDES SOCIAIS: arroba-nomedoperfil
 
@@ -724,12 +756,17 @@ REGRAS OBRIGATÓRIAS:
    - Exemplo ERRADO: "um-seis-nove-nove..." ou "dezesseis... nove nove sete"
 
 🌐 REGRA 2 — SITES E URLs:
-   - Usar formato soletrado com hífens
-   - www → w-w-w
-   - .com → ponto-com
-   - .br → ponto-b-r
-   - Exemplo CORRETO: w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r
-   - Exemplo ERRADO: "www.criandomusicas.com.br" ou "cri-an-do, ponto com"
+   - NUNCA incluir "www" — sempre remover
+   - NÃO usar hífens para soletrar domínios
+   - Escrever o domínio como se pronuncia naturalmente em português brasileiro
+   - Cada parte do endereço em LINHA SEPARADA para melhorar pronúncia
+   - Exemplo CORRETO:
+     criando músicas
+     ponto com
+     ponto bê érre
+   - Exemplo ERRADO: "w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r"
+   - Exemplo ERRADO: "www.criandomusicas.com.br"
+   - Exemplo ERRADO: "criandomusicas ponto com ponto bê érre" (tudo numa linha)
 
 🔠 REGRA 3 — SIGLAS (2-4 letras):
    - Separar TODAS as letras com hífen
@@ -739,9 +776,9 @@ REGRAS OBRIGATÓRIAS:
    - Exemplo ERRADO: "éfe-ême-é" ou "FME"
 
 🎤 REGRA 4 — REDES SOCIAIS:
-   - @ → arroba-
-   - Exemplo CORRETO: arroba-pizzariadojoao
-   - Exemplo ERRADO: "@pizzariadojoao" ou "arroba pizzaria do joão"
+   - @ → arroba (sem hífen)
+   - Exemplo CORRETO: arroba pizzariadojoao
+   - Exemplo ERRADO: "@pizzariadojoao" ou "arroba-pizzariadojoao"
 
 🚫 REGRA 5 — O QUE NUNCA FAZER:
    - NUNCA escrever "ésse", "éfe", "erre", "ême"
@@ -758,25 +795,28 @@ ${hasMonologue ? `
 ✅ CORRETO:
 [monologue]
 "Ligue agora: 1-6-9-9-7-8-1-3-0-3-8!
-Acesse w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r.
+Acesse
+criando músicas
+ponto com
+ponto bê érre
 A F-M-E te espera!"
 
 ❌ ERRADO:
 [monologue]
-"Ligue: dezesseis, nove nove sete... Acesse cri-an-do-mú-si-cas ponto bê-érre. A éfe-ême-é te espera!"
+"Ligue: dezesseis, nove nove sete... Acesse w-w-w-ponto-criandomusicas-ponto-com-ponto-b-r. A éfe-ême-é te espera!"
 ` : ''}
 
 ${musicType === 'corporativa' && hasMonologue ? `
 ⚠️ REGRAS ESPECIAIS PARA JINGLE/PROPAGANDA:
 - O refrão deve ser MUITO simples, curto e fácil de memorizar
 - O monólogo DEVE incluir TODAS as informações de contato
-- CRÍTICO: Aplique as regras de formatação com hífen!
+- CRÍTICO: Sites devem ser escritos em fala natural, cada parte em linha separada!
 
 Exemplo de monólogo para jingle (CORRETO):
 [monologue]
 "Ligue agora: 3-1-9-9-8-7-5-8-8-8-8!
 Pizzaria do João, Rua das Flores, 123, Centro.
-Siga no Instagram arroba-pizzariadojoao!"
+Siga no Instagram arroba pizzariadojoao!"
 ` : ''}
 
 FORMATO DE SAÍDA OBRIGATÓRIO (estrutura para ~4 minutos):
