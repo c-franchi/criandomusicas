@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -31,7 +30,6 @@ import {
   AlertCircle,
   Sparkles,
   Target,
-  BarChart3,
   Clock,
   Megaphone,
   Gift,
@@ -39,7 +37,9 @@ import {
   Heart,
   PartyPopper,
   TrendingUp,
-  Copy,
+  RefreshCw,
+  FileText,
+  XCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -138,7 +138,6 @@ function textToHtml(text: string, ctaUrl: string, ctaText: string): string {
 
   const paragraphs = escapedText.split('\n\n').map(p => {
     const lines = p.split('\n').join('<br/>');
-    // Replace CTA placeholders
     if (lines.includes('[') && lines.includes('→]')) {
       return `<div style="text-align:center;margin:30px 0;">
         <a href="${ctaUrl}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);color:#ffffff;font-size:16px;font-weight:bold;padding:16px 40px;border-radius:12px;text-decoration:none;">${ctaText}</a>
@@ -182,6 +181,23 @@ function textToHtml(text: string, ctaUrl: string, ctaText: string): string {
 </html>`;
 }
 
+interface CampaignMetadata {
+  subject?: string;
+  sentEmails?: string[];
+  failedEmails?: string[];
+  targetAudience?: string;
+  total?: number;
+}
+
+interface CampaignLog {
+  id: string;
+  email: string;
+  status: string;
+  sent_at: string;
+  campaign_type: string;
+  metadata: CampaignMetadata | null;
+}
+
 const AdminEmailMarketing = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
@@ -198,11 +214,15 @@ const AdminEmailMarketing = () => {
   const [sendingTest, setSendingTest] = useState(false);
   const [testEmail, setTestEmail] = useState('');
   const [showPreview, setShowPreview] = useState(false);
-  const [result, setResult] = useState<{ sent: number; failed: number; total: number } | null>(null);
+  const [result, setResult] = useState<{ sent: number; failed: number; total: number; failedEmails?: string[] } | null>(null);
 
   // Campaign history
-  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [campaigns, setCampaigns] = useState<CampaignLog[]>([]);
   const [loadingCampaigns, setLoadingCampaigns] = useState(true);
+
+  // Report dialog
+  const [reportCampaign, setReportCampaign] = useState<CampaignLog | null>(null);
+  const [resending, setResending] = useState(false);
 
   // User stats
   const [userStats, setUserStats] = useState({ total: 0, active: 0, inactive: 0 });
@@ -233,11 +253,11 @@ const AdminEmailMarketing = () => {
       const { data } = await supabase
         .from('email_campaign_logs')
         .select('*')
-        .eq('campaign_type', 'marketing')
+        .in('campaign_type', ['marketing', 'resend'])
         .order('sent_at', { ascending: false })
-        .limit(20);
+        .limit(30);
 
-      setCampaigns(data || []);
+      setCampaigns((data as CampaignLog[]) || []);
     } catch (err) {
       console.error('Error fetching campaigns:', err);
     } finally {
@@ -325,6 +345,42 @@ const AdminEmailMarketing = () => {
     }
   };
 
+  const handleResendFailed = async (campaign: CampaignLog) => {
+    const failedEmails = campaign.metadata?.failedEmails;
+    if (!failedEmails || failedEmails.length === 0) {
+      toast({ title: 'Nenhum e-mail para reenviar', variant: 'destructive' });
+      return;
+    }
+
+    const campaignSubject = campaign.metadata?.subject || campaign.email?.replace('Campaign: ', '') || subject;
+
+    if (!confirm(`Reenviar para ${failedEmails.length} e-mails que falharam?`)) return;
+
+    setResending(true);
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      const { data, error } = await supabase.functions.invoke('send-campaign-email', {
+        body: {
+          subject: campaignSubject,
+          htmlBody: getHtmlPreview(),
+          resendEmails: failedEmails,
+        },
+        headers: { Authorization: `Bearer ${session?.session?.access_token}` },
+      });
+      if (error) throw error;
+      toast({
+        title: '🔄 Reenvio concluído!',
+        description: `${data.sent} enviados, ${data.failed} falhas`,
+      });
+      fetchCampaigns();
+      setReportCampaign(null);
+    } catch (err) {
+      toast({ title: 'Erro ao reenviar', description: String(err), variant: 'destructive' });
+    } finally {
+      setResending(false);
+    }
+  };
+
   if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -339,6 +395,12 @@ const AdminEmailMarketing = () => {
   const audienceCount = targetAudience === 'all' ? userStats.total
     : targetAudience === 'active' ? userStats.active
     : userStats.inactive;
+
+  const parseStatus = (status: string) => {
+    const match = status?.match(/sent:(\d+),failed:(\d+)/);
+    if (match) return { sent: parseInt(match[1]), failed: parseInt(match[2]) };
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -619,23 +681,54 @@ const AdminEmailMarketing = () => {
                     Nenhuma campanha enviada
                   </p>
                 ) : (
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                    {campaigns.map((c) => (
-                      <div key={c.id} className="p-2.5 rounded-lg bg-muted/30 border border-border/50">
-                        <p className="text-xs font-medium truncate">{c.email?.replace('Campaign: ', '')}</p>
-                        <div className="flex items-center justify-between mt-1">
-                          <p className="text-[10px] text-muted-foreground">
-                            {new Date(c.sent_at).toLocaleDateString('pt-BR', {
-                              day: '2-digit', month: '2-digit', year: '2-digit',
-                              hour: '2-digit', minute: '2-digit'
-                            })}
-                          </p>
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-                            {c.status}
-                          </Badge>
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {campaigns.map((c) => {
+                      const stats = parseStatus(c.status || '');
+                      const hasFailed = stats && stats.failed > 0;
+                      const hasMetadata = c.metadata && (c.metadata.sentEmails || c.metadata.failedEmails);
+
+                      return (
+                        <div key={c.id} className="p-2.5 rounded-lg bg-muted/30 border border-border/50">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-xs font-medium truncate flex-1">
+                              {c.email?.replace('Campaign: ', '')}
+                            </p>
+                            {c.campaign_type === 'resend' && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-500/10 text-blue-500 border-blue-500/30 shrink-0">
+                                Reenvio
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between mt-1.5">
+                            <p className="text-[10px] text-muted-foreground">
+                              {new Date(c.sent_at).toLocaleDateString('pt-BR', {
+                                day: '2-digit', month: '2-digit', year: '2-digit',
+                                hour: '2-digit', minute: '2-digit'
+                              })}
+                            </p>
+                            {stats && (
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-[10px] text-green-500 font-medium">✅ {stats.sent}</span>
+                                {stats.failed > 0 && (
+                                  <span className="text-[10px] text-red-500 font-medium">❌ {stats.failed}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {hasMetadata && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-full mt-1.5 h-7 text-[11px] text-muted-foreground hover:text-foreground"
+                              onClick={() => setReportCampaign(c)}
+                            >
+                              <FileText className="w-3 h-3 mr-1.5" />
+                              Ver Relatório
+                            </Button>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -660,6 +753,120 @@ const AdminEmailMarketing = () => {
               title="Email Preview"
             />
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Campaign Report Modal */}
+      <Dialog open={!!reportCampaign} onOpenChange={(open) => !open && setReportCampaign(null)}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              Relatório da Campanha
+            </DialogTitle>
+          </DialogHeader>
+
+          {reportCampaign && (
+            <div className="space-y-4 mt-2">
+              {/* Campaign info */}
+              <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                <p className="text-sm font-medium">
+                  {reportCampaign.metadata?.subject || reportCampaign.email?.replace('Campaign: ', '')}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(reportCampaign.sent_at).toLocaleDateString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                  })}
+                </p>
+                {reportCampaign.campaign_type === 'resend' && (
+                  <Badge variant="outline" className="text-xs bg-blue-500/10 text-blue-500 border-blue-500/30">
+                    Reenvio
+                  </Badge>
+                )}
+              </div>
+
+              {/* Stats summary */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 text-center">
+                  <CheckCircle className="w-5 h-5 text-green-500 mx-auto mb-1" />
+                  <p className="text-lg font-bold text-green-500">{reportCampaign.metadata?.sentEmails?.length || 0}</p>
+                  <p className="text-[11px] text-muted-foreground">Enviados</p>
+                </div>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-center">
+                  <XCircle className="w-5 h-5 text-red-500 mx-auto mb-1" />
+                  <p className="text-lg font-bold text-red-500">{reportCampaign.metadata?.failedEmails?.length || 0}</p>
+                  <p className="text-[11px] text-muted-foreground">Falharam</p>
+                </div>
+              </div>
+
+              {/* Sent emails list */}
+              {reportCampaign.metadata?.sentEmails && reportCampaign.metadata.sentEmails.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                    E-mails Entregues ({reportCampaign.metadata.sentEmails.length})
+                  </p>
+                  <div className="bg-muted/20 rounded-lg border border-border/50 max-h-[150px] overflow-y-auto">
+                    {reportCampaign.metadata.sentEmails.map((email, i) => (
+                      <div key={i} className="px-3 py-1.5 text-xs text-muted-foreground border-b border-border/30 last:border-0 flex items-center gap-2">
+                        <CheckCircle className="w-3 h-3 text-green-500 shrink-0" />
+                        {email}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Failed emails list */}
+              {reportCampaign.metadata?.failedEmails && reportCampaign.metadata.failedEmails.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                    <XCircle className="w-4 h-4 text-red-500" />
+                    E-mails com Falha ({reportCampaign.metadata.failedEmails.length})
+                  </p>
+                  <div className="bg-red-500/5 rounded-lg border border-red-500/20 max-h-[150px] overflow-y-auto">
+                    {reportCampaign.metadata.failedEmails.map((email, i) => (
+                      <div key={i} className="px-3 py-1.5 text-xs text-red-400 border-b border-red-500/10 last:border-0 flex items-center gap-2">
+                        <XCircle className="w-3 h-3 text-red-500 shrink-0" />
+                        {email}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Resend button */}
+                  <Button
+                    className="w-full mt-3"
+                    variant="destructive"
+                    onClick={() => handleResendFailed(reportCampaign)}
+                    disabled={resending}
+                  >
+                    {resending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Reenviando...
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Reenviar para {reportCampaign.metadata.failedEmails.length} e-mails com falha
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+
+              {/* No metadata warning for old campaigns */}
+              {!reportCampaign.metadata?.sentEmails && !reportCampaign.metadata?.failedEmails && (
+                <div className="bg-muted/30 rounded-lg p-4 text-center">
+                  <AlertCircle className="w-6 h-6 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">
+                    Detalhes não disponíveis para campanhas anteriores à atualização.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
