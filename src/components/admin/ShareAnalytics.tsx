@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Share2, Eye, Play, MousePointer, TrendingUp, Music } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
@@ -34,6 +35,13 @@ interface PlatformData {
   color: string;
 }
 
+const TOP_SONGS_PERIODS = [
+  { label: '7 dias', days: 7 },
+  { label: '30 dias', days: 30 },
+  { label: '90 dias', days: 90 },
+  { label: 'Tudo', days: 0 },
+];
+
 const PLATFORM_COLORS: Record<string, string> = {
   whatsapp: '#25D366',
   facebook: '#1877F2',
@@ -64,6 +72,7 @@ const ShareAnalytics = () => {
   const [topSongs, setTopSongs] = useState<TopSong[]>([]);
   const [platformData, setPlatformData] = useState<PlatformData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topSongsPeriod, setTopSongsPeriod] = useState(30);
 
   const fetchAnalytics = useCallback(async () => {
     try {
@@ -114,10 +123,18 @@ const ShareAnalytics = () => {
       }
       setDailyData(last30Days);
 
-      // Calculate top songs by views
+      // Calculate top songs by views (filtered by period)
+      const periodCutoff = topSongsPeriod > 0 
+        ? format(subDays(new Date(), topSongsPeriod), 'yyyy-MM-dd')
+        : null;
+
       const viewsByOrder: Record<string, number> = {};
       analyticsData
-        .filter(a => a.event_type === 'view' && a.order_id)
+        .filter(a => {
+          if (a.event_type !== 'view' || !a.order_id) return false;
+          if (periodCutoff && a.created_at && a.created_at < periodCutoff) return false;
+          return true;
+        })
         .forEach(a => {
           if (a.order_id) {
             viewsByOrder[a.order_id] = (viewsByOrder[a.order_id] || 0) + 1;
@@ -144,6 +161,8 @@ const ShareAnalytics = () => {
           };
         });
         setTopSongs(topSongsWithTitles);
+      } else {
+        setTopSongs([]);
       }
 
       // Calculate platform breakdown
@@ -169,7 +188,7 @@ const ShareAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [topSongsPeriod]);
 
   useEffect(() => {
     fetchAnalytics();
@@ -325,11 +344,26 @@ const ShareAnalytics = () => {
       <div className="grid md:grid-cols-2 gap-4">
         {/* Top Songs */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Music className="w-4 h-4" />
-              🏆 Top Músicas
-            </CardTitle>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Music className="w-4 h-4" />
+                🏆 Top Músicas
+              </CardTitle>
+              <div className="flex gap-1">
+                {TOP_SONGS_PERIODS.map(p => (
+                  <Button
+                    key={p.days}
+                    variant={topSongsPeriod === p.days ? 'default' : 'ghost'}
+                    size="sm"
+                    className="text-xs h-7 px-2"
+                    onClick={() => setTopSongsPeriod(p.days)}
+                  >
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {topSongs.length === 0 ? (
