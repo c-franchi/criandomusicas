@@ -39,6 +39,7 @@ const MusicShare = lazy(() => import("./pages/MusicShare"));
 const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
 const CreatorCheckout = lazy(() => import("./pages/CreatorCheckout"));
+const AdminEmailMarketing = lazy(() => import("./pages/AdminEmailMarketing"));
 
 const queryClient = new QueryClient();
 
