@@ -54,7 +54,7 @@ const InstrumentalShowcase = () => {
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const fetchSamples = async () => {
