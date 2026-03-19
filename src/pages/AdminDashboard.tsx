@@ -1232,6 +1232,13 @@ const AdminDashboard = () => {
                 </Link>
               </Button>
               
+              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Link to="/admin/marketing">
+                  <MessageCircle className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Marketing</span>
+                </Link>
+              </Button>
+              
               <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders} className="flex-1 sm:flex-none text-xs sm:text-sm">
                 <RefreshCw className={`w-4 h-4 sm:mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Atualizar</span>
