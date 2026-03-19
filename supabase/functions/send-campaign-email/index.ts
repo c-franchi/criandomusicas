@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
     if (!roleData) throw new Error('Admin access required');
 
-    const { subject, htmlBody, targetAudience, testEmail } = await req.json();
+    const { subject, htmlBody, targetAudience, testEmail, resendEmails } = await req.json();
 
     if (!subject || !htmlBody) {
       throw new Error('Subject and HTML body are required');
@@ -72,8 +72,7 @@ Deno.serve(async (req) => {
     }
 
     // Fetch target users
-    let query = supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
-    const { data: usersData, error: usersError } = await query;
+    const { data: usersData, error: usersError } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
     if (usersError) throw usersError;
 
     let targetEmails: { email: string; name: string }[] = [];
@@ -87,21 +86,32 @@ Deno.serve(async (req) => {
 
     const profileMap = new Map(profiles?.map(p => [p.user_id, p]) || []);
 
-    for (const u of usersData.users) {
-      if (!u.email) continue;
-      const profile = profileMap.get(u.id);
-      const name = profile?.name || u.email.split('@')[0];
+    // If resending to specific emails
+    if (resendEmails && Array.isArray(resendEmails) && resendEmails.length > 0) {
+      logStep('Resend mode', { count: resendEmails.length });
+      for (const u of usersData.users) {
+        if (!u.email || !resendEmails.includes(u.email)) continue;
+        const profile = profileMap.get(u.id);
+        const name = profile?.name || u.email.split('@')[0];
+        targetEmails.push({ email: u.email, name });
+      }
+    } else {
+      for (const u of usersData.users) {
+        if (!u.email) continue;
+        const profile = profileMap.get(u.id);
+        const name = profile?.name || u.email.split('@')[0];
 
-      if (targetAudience === 'all') {
-        targetEmails.push({ email: u.email, name });
-      } else if (targetAudience === 'active' && profile?.has_created_music) {
-        targetEmails.push({ email: u.email, name });
-      } else if (targetAudience === 'inactive' && !profile?.has_created_music) {
-        targetEmails.push({ email: u.email, name });
+        if (targetAudience === 'all') {
+          targetEmails.push({ email: u.email, name });
+        } else if (targetAudience === 'active' && profile?.has_created_music) {
+          targetEmails.push({ email: u.email, name });
+        } else if (targetAudience === 'inactive' && !profile?.has_created_music) {
+          targetEmails.push({ email: u.email, name });
+        }
       }
     }
 
-    logStep('Target audience', { audience: targetAudience, count: targetEmails.length });
+    logStep('Target audience', { audience: resendEmails ? 'resend' : targetAudience, count: targetEmails.length });
 
     if (targetEmails.length === 0) {
       return new Response(JSON.stringify({ success: true, sent: 0, message: 'No users match the criteria' }), {
@@ -112,6 +122,7 @@ Deno.serve(async (req) => {
     // Send emails one at a time with 250ms delay to respect Resend rate limit (max 5/sec)
     let sent = 0;
     let failed = 0;
+    const sentEmails: string[] = [];
     const failedEmails: string[] = [];
 
     for (let i = 0; i < targetEmails.length; i++) {
@@ -136,6 +147,7 @@ Deno.serve(async (req) => {
         } else {
           logStep('Send success', { email, id: result.data?.id });
           sent++;
+          sentEmails.push(email);
         }
       } catch (err) {
         logStep('Failed to send', { email, error: String(err) });
@@ -149,17 +161,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Log campaign
+    // Log campaign with detailed metadata
     await supabaseAdmin.from('email_campaign_logs').insert({
       user_id: user.id,
-      campaign_type: 'marketing',
+      campaign_type: resendEmails ? 'resend' : 'marketing',
       email: `Campaign: ${subject}`,
       status: `sent:${sent},failed:${failed}`,
+      metadata: {
+        subject,
+        sentEmails,
+        failedEmails,
+        targetAudience: resendEmails ? 'resend' : targetAudience,
+        total: targetEmails.length,
+      },
     });
 
     logStep('Campaign complete', { sent, failed, failedEmails });
 
-    return new Response(JSON.stringify({ success: true, sent, failed, failedEmails, total: targetEmails.length }), {
+    return new Response(JSON.stringify({ success: true, sent, failed, sentEmails, failedEmails, total: targetEmails.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
