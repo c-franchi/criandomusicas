@@ -250,6 +250,7 @@ export type Database = {
           campaign_type: string
           email: string
           id: string
+          metadata: Json | null
           sent_at: string | null
           status: string | null
           user_id: string
@@ -259,6 +260,7 @@ export type Database = {
           campaign_type: string
           email: string
           id?: string
+          metadata?: Json | null
           sent_at?: string | null
           status?: string | null
           user_id: string
@@ -268,6 +270,7 @@ export type Database = {
           campaign_type?: string
           email?: string
           id?: string
+          metadata?: Json | null
           sent_at?: string | null
           status?: string | null
           user_id?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.email_campaign_logs ADD COLUMN IF NOT EXISTS metadata jsonb DEFAULT '{}'::jsonb;
