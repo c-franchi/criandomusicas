@@ -72,6 +72,7 @@ const ShareAnalytics = () => {
   const [topSongs, setTopSongs] = useState<TopSong[]>([]);
   const [platformData, setPlatformData] = useState<PlatformData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [topSongsPeriod, setTopSongsPeriod] = useState(30);
 
   const fetchAnalytics = useCallback(async () => {
     try {
