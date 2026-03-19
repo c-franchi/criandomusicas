@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Share2, Eye, Play, MousePointer, TrendingUp, Music } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
@@ -33,6 +34,13 @@ interface PlatformData {
   value: number;
   color: string;
 }
+
+const TOP_SONGS_PERIODS = [
+  { label: '7 dias', days: 7 },
+  { label: '30 dias', days: 30 },
+  { label: '90 dias', days: 90 },
+  { label: 'Tudo', days: 0 },
+];
 
 const PLATFORM_COLORS: Record<string, string> = {
   whatsapp: '#25D366',
