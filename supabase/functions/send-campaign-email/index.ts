@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
     // If test mode, send only to testEmail
     if (testEmail) {
       logStep('Sending test email', { to: testEmail });
-      const { error: sendError } = await resend.emails.send({
+      const result = await resend.emails.send({
         from: 'Criando Músicas <noreply@criandomusicas.com.br>',
         replyTo: 'contato@criandomusicas.com.br',
         to: testEmail,
@@ -62,7 +62,9 @@ Deno.serve(async (req) => {
         html: htmlBody,
       });
 
-      if (sendError) throw new Error(`Failed to send test: ${JSON.stringify(sendError)}`);
+      logStep('Test email result', { data: result.data, error: result.error });
+
+      if (result.error) throw new Error(`Failed to send test: ${JSON.stringify(result.error)}`);
 
       return new Response(JSON.stringify({ success: true, sent: 1, type: 'test' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
