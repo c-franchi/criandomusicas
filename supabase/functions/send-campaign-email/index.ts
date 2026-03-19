@@ -123,14 +123,19 @@ Deno.serve(async (req) => {
             .replace(/\{\{nome\}\}/g, name)
             .replace(/\{\{email\}\}/g, email);
 
-          await resend.emails.send({
+          const result = await resend.emails.send({
             from: 'Criando Músicas <noreply@criandomusicas.com.br>',
             replyTo: 'contato@criandomusicas.com.br',
             to: email,
             subject,
             html: personalizedHtml,
           });
-          sent++;
+          if (result.error) {
+            logStep('Send error', { email, error: result.error });
+            failed++;
+          } else {
+            sent++;
+          }
         } catch (err) {
           logStep('Failed to send', { email, error: String(err) });
           failed++;
