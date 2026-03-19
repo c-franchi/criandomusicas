@@ -344,11 +344,26 @@ const ShareAnalytics = () => {
       <div className="grid md:grid-cols-2 gap-4">
         {/* Top Songs */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Music className="w-4 h-4" />
-              🏆 Top Músicas
-            </CardTitle>
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Music className="w-4 h-4" />
+                🏆 Top Músicas
+              </CardTitle>
+              <div className="flex gap-1">
+                {TOP_SONGS_PERIODS.map(p => (
+                  <Button
+                    key={p.days}
+                    variant={topSongsPeriod === p.days ? 'default' : 'ghost'}
+                    size="sm"
+                    className="text-xs h-7 px-2"
+                    onClick={() => setTopSongsPeriod(p.days)}
+                  >
+                    {p.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             {topSongs.length === 0 ? (
