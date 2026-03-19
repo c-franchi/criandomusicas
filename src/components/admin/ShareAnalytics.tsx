@@ -123,10 +123,18 @@ const ShareAnalytics = () => {
       }
       setDailyData(last30Days);
 
-      // Calculate top songs by views
+      // Calculate top songs by views (filtered by period)
+      const periodCutoff = topSongsPeriod > 0 
+        ? format(subDays(new Date(), topSongsPeriod), 'yyyy-MM-dd')
+        : null;
+
       const viewsByOrder: Record<string, number> = {};
       analyticsData
-        .filter(a => a.event_type === 'view' && a.order_id)
+        .filter(a => {
+          if (a.event_type !== 'view' || !a.order_id) return false;
+          if (periodCutoff && a.created_at && a.created_at < periodCutoff) return false;
+          return true;
+        })
         .forEach(a => {
           if (a.order_id) {
             viewsByOrder[a.order_id] = (viewsByOrder[a.order_id] || 0) + 1;
@@ -153,6 +161,8 @@ const ShareAnalytics = () => {
           };
         });
         setTopSongs(topSongsWithTitles);
+      } else {
+        setTopSongs([]);
       }
 
       // Calculate platform breakdown
