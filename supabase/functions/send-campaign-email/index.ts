@@ -109,44 +109,43 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send emails in batches of 10
+    // Send emails one at a time with 250ms delay to respect Resend rate limit (max 5/sec)
     let sent = 0;
     let failed = 0;
-    const batchSize = 10;
+    const failedEmails: string[] = [];
 
-    for (let i = 0; i < targetEmails.length; i += batchSize) {
-      const batch = targetEmails.slice(i, i + batchSize);
-      
-      const promises = batch.map(async ({ email, name }) => {
-        try {
-          const personalizedHtml = htmlBody
-            .replace(/\{\{nome\}\}/g, name)
-            .replace(/\{\{email\}\}/g, email);
+    for (let i = 0; i < targetEmails.length; i++) {
+      const { email, name } = targetEmails[i];
+      try {
+        const personalizedHtml = htmlBody
+          .replace(/\{\{nome\}\}/g, name)
+          .replace(/\{\{email\}\}/g, email);
 
-          const result = await resend.emails.send({
-            from: 'Criando Músicas <noreply@criandomusicas.com.br>',
-            replyTo: 'contato@criandomusicas.com.br',
-            to: email,
-            subject,
-            html: personalizedHtml,
-          });
-          if (result.error) {
-            logStep('Send error', { email, error: result.error });
-            failed++;
-          } else {
-            sent++;
-          }
-        } catch (err) {
-          logStep('Failed to send', { email, error: String(err) });
+        const result = await resend.emails.send({
+          from: 'Criando Músicas <noreply@criandomusicas.com.br>',
+          replyTo: 'contato@criandomusicas.com.br',
+          to: email,
+          subject,
+          html: personalizedHtml,
+        });
+
+        if (result.error) {
+          logStep('Send error', { email, error: result.error });
           failed++;
+          failedEmails.push(email);
+        } else {
+          logStep('Send success', { email, id: result.data?.id });
+          sent++;
         }
-      });
+      } catch (err) {
+        logStep('Failed to send', { email, error: String(err) });
+        failed++;
+        failedEmails.push(email);
+      }
 
-      await Promise.all(promises);
-
-      // Rate limit: wait 500ms between batches
-      if (i + batchSize < targetEmails.length) {
-        await new Promise(r => setTimeout(r, 500));
+      // Wait 250ms between sends (max ~4/sec, safely under Resend's 5/sec limit)
+      if (i < targetEmails.length - 1) {
+        await new Promise(r => setTimeout(r, 250));
       }
     }
 
@@ -158,9 +157,9 @@ Deno.serve(async (req) => {
       status: `sent:${sent},failed:${failed}`,
     });
 
-    logStep('Campaign complete', { sent, failed });
+    logStep('Campaign complete', { sent, failed, failedEmails });
 
-    return new Response(JSON.stringify({ success: true, sent, failed, total: targetEmails.length }), {
+    return new Response(JSON.stringify({ success: true, sent, failed, failedEmails, total: targetEmails.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
