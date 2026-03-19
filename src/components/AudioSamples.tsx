@@ -144,7 +144,7 @@ const AudioSamples = () => {
   const [loading, setLoading] = useState(true);
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Fallback samples
   const fallbackSamples: AudioSample[] = [
