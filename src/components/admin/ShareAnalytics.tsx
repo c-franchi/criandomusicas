@@ -188,7 +188,7 @@ const ShareAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [topSongsPeriod]);
 
   useEffect(() => {
     fetchAnalytics();
