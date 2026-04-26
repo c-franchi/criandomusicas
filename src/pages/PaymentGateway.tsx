@@ -59,7 +59,7 @@ const PaymentGateway = () => {
       try {
         const { data, error } = await supabase
           .from("orders")
-          .select("id, style, duration, occasion, amount, payment_status, is_instrumental, has_custom_lyric")
+          .select("id, music_style, song_title, purpose, amount, payment_status, is_instrumental, has_custom_lyric")
           .eq("id", orderId)
           .maybeSingle();
 
