@@ -195,6 +195,80 @@ function applyPronunciations(text: string, pronunciations: Pronunciation[]): str
   return result;
 }
 
+// ============ DETECÇÃO DE INTENÇÃO DA HISTÓRIA ============
+// Analisa o texto do briefing e identifica o tipo REAL de música solicitada.
+// Isso evita que o sistema "se perca" e gere conteúdo fora do tema (ex: anúncio
+// virar música motivacional de academia).
+type DetectedIntent =
+  | 'commercial_ad'   // anúncio, venda, propaganda, imóvel, produto, serviço
+  | 'motivational'    // treino, superação, foco, disciplina
+  | 'tribute'         // homenagem, aniversário, casamento, despedida
+  | 'religious'       // gospel, fé, louvor
+  | 'children'        // infantil
+  | 'romantic'        // romance, declaração
+  | 'generic';
+
+function detectStoryIntent(story: string, briefing: BriefingData): DetectedIntent {
+  const text = `${story || ''}`.toLowerCase();
+  const words = text.split(/\s+/).length;
+
+  // 1) COMERCIAL / ANÚNCIO — prioridade máxima (deve sobrepor motivacional)
+  const commercialSignals = [
+    /\bvend[ae]\b/, /\baluga\b/, /\baluguel\b/, /\bà\s*venda\b/, /\bpre[çc]o\b/,
+    /\br\$\s*\d/, /\bapartament/, /\bcasas?\b/, /\bim[oó]vel\b/, /\bim[oó]ve(l|is)\b/,
+    /\bm²|\bm2\b|\bmetros?\s*quadrad/, /\bquartos?\b/, /\bsu[ií]tes?\b/, /\bgaragem/,
+    /\bcondom[ií]nio\b/, /\bcorretor/, /\bcreci\b/, /\bplant[ãa]\b/, /\blocaliza/,
+    /\bpromo[çc][ãa]o\b/, /\bdesconto\b/, /\boferta\b/, /\bqueima\s*de\s*estoque\b/,
+    /\baproveite/, /\bcompre\s*j[áa]\b/, /\bligue\s*(j[áa]|agora)\b/, /\bwhats?app\b/,
+    /\bestabelecimento\b/, /\bnegocio\b|\bneg[óo]cio\b/, /\binaugura/,
+    /\brestaurante\b/, /\bpizzaria\b/, /\bpadaria\b/, /\bla(c|ç)onia\b/,
+    /\bloja\b/, /\bclínica\b|\bcl[íi]nica\b/, /\bbarbearia\b/, /\bsal[ãa]o\b/,
+    /\bagende\b/, /\bdelivery\b/, /\bplant[ãa]o\b/,
+  ];
+  const commercialHits = commercialSignals.filter(rx => rx.test(text)).length;
+  // Telefone / endereço também são fortes sinais comerciais
+  const hasPhone = /\(?\d{2}\)?\s?9?\d{4}[-\s]?\d{4}/.test(text);
+  const hasAddress = /\brua\b|\bavenida\b|\bav\.\s|\bn[º°o]\s*\d|\bbairro\b|\bcep\s*\d/.test(text);
+  const hasInstagram = /@[a-z0-9_.]+|instagram/.test(text);
+  if (commercialHits >= 2 || (commercialHits >= 1 && (hasPhone || hasAddress || hasInstagram))) {
+    return 'commercial_ad';
+  }
+
+  // 2) RELIGIOSO
+  if (/\b(jesus|deus|senhor|igreja|f[ée]\b|louvor|gospel|salmo|aleluia|cristo)\b/.test(text)) {
+    return 'religious';
+  }
+
+  // 3) INFANTIL
+  if (/\b(crian[çc]a|beb[êe]|filhinh|infantil|ninar|brincar|escola)\b/.test(text) ||
+      briefing?.voiceType?.includes('infantil')) {
+    return 'children';
+  }
+
+  // 4) MOTIVACIONAL — apenas se houver sinais explícitos E não for comercial
+  const motivationalSignals = [
+    /\btreino\b/, /\bacademia\b/, /\bmusculação\b|\bmuscula[çc][ãa]o\b/,
+    /\bsupera[çc][ãa]o\b/, /\bdisciplin/, /\bfoco\b/, /\bmindset\b/,
+    /\brecome[çc]o\b/, /\bobjetivo\b/, /\bmetas?\b/, /\bn[ãa]o\s*desist/,
+    /\bcoach\b/, /\bperformance\b/,
+  ];
+  const motivationalHits = motivationalSignals.filter(rx => rx.test(text)).length;
+  if (motivationalHits >= 2) return 'motivational';
+
+  // 5) HOMENAGEM
+  if (briefing?.musicType === 'homenagem' ||
+      /\b(homenagem|anivers[áa]rio|bodas|casamento|filho|filha|m[ãa]e|pai|av[óo]|saudade|despedida|in\s*memoriam)\b/.test(text)) {
+    return 'tribute';
+  }
+
+  // 6) ROMÂNTICO
+  if (/\b(amor|paix[ãa]o|namorad|esposa|esposo|marido|mulher\s*da\s*minha)\b/.test(text)) {
+    return 'romantic';
+  }
+
+  return 'generic';
+}
+
 function splitTwoLyrics(text: string): { v1: string; v2: string } {
   const byDelimiter = text.split(/\n\s*---+\s*\n/);
   if (byDelimiter.length >= 2) {
@@ -336,12 +410,60 @@ serve(async (req) => {
     } = briefing || {};
 
     // Detectar se é "Chamada/Propaganda" corporativa (prioridade sobre monólogo motivacional)
-    const isChamadaCorporativa = corporateFormat === 'monologo';
+    let isChamadaCorporativa = corporateFormat === 'monologo';
+
+    // ============ DETECÇÃO DE INTENÇÃO REAL DA HISTÓRIA ============
+    const detectedIntent = detectStoryIntent(story, briefing);
+    console.log("Detected story intent:", detectedIntent);
+
+    // Bloco anti-desvio reutilizado em TODOS os prompts (full, simple, preview)
+    const intentRulesMap: Record<DetectedIntent, string> = {
+      commercial_ad: `🎯 TEMA REAL: ANÚNCIO/PROPAGANDA COMERCIAL.
+- Divulgue o produto/serviço/imóvel exatamente como descrito.
+- Mantenha preço, metragem, quartos, endereço, telefone, contato, condições.
+- PROIBIDO virar motivacional, romântica, religiosa ou de superação.
+- PROIBIDO vocabulário de academia/treino/disciplina/foco/jornada/recomeço.
+- PROIBIDO inventar emoções, personagens ou histórias paralelas.
+- Tom: vendedor, persuasivo, direto.`,
+      motivational: `🎯 TEMA REAL: MOTIVACIONAL.
+- Mantenha o cenário motivacional citado (treino, foco, etc.). Não invente outro.`,
+      tribute: `🎯 TEMA REAL: HOMENAGEM PESSOAL.
+- Use nomes, datas, lugares, memórias específicas. PROIBIDO virar propaganda, motivacional de academia ou comercial.`,
+      religious: `🎯 TEMA REAL: RELIGIOSO/GOSPEL.
+- Tom devocional. PROIBIDO virar motivacional secular ou propaganda.`,
+      children: `🎯 TEMA REAL: INFANTIL.
+- Vocabulário simples e lúdico. PROIBIDO virar motivacional adulto ou anúncio.`,
+      romantic: `🎯 TEMA REAL: ROMÂNTICO.
+- Declaração para a pessoa citada. PROIBIDO virar motivacional ou comercial.`,
+      generic: `🎯 TEMA REAL: PERSONALIZADO conforme a história.
+- Baseie-se ESTRITAMENTE no que está na história. PROIBIDO derivar para motivacional/academia, propaganda comercial ou clichês genéricos sem que o usuário tenha pedido.`,
+    };
+    const intentBlock = `
+
+⚠️⚠️⚠️ FIDELIDADE AO BRIEFING (PRIORIDADE MÁXIMA):
+${intentRulesMap[detectedIntent]}
+
+REGRA UNIVERSAL ANTI-DESVIO:
+- Releia a história. Identifique: quem é a pessoa/produto, qual o pedido real, quais detalhes específicos foram dados.
+- A letra DEVE refletir esse pedido. NUNCA derive para outro tema (ex: anúncio virar treino de academia).
+- Se a história menciona produto/serviço/imóvel/empresa: é COMERCIAL.
+- Se menciona uma pessoa específica: é HOMENAGEM.
+`;
+
+    // Se a história é claramente um anúncio comercial, forçar modo "chamada corporativa"
+    if (detectedIntent === 'commercial_ad' && !isChamadaCorporativa) {
+      console.log("⚠️ Story detected as COMMERCIAL AD — forcing chamadaCorporativa mode");
+      isChamadaCorporativa = true;
+    }
+
     console.log("Chamada Corporativa mode:", isChamadaCorporativa, "corporateFormat:", corporateFormat);
 
-    // Detectar se é modo "Somente Monólogo" (spoken word motivacional) - NÃO ativar se for chamada corporativa
-    const isSomenteMonologo = !isChamadaCorporativa && (motivationalNarrative === 'somente_monologo' || monologuePosition === 'full');
-    console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
+    // Modo "Somente Monólogo" (motivacional spoken word) só vale se a intenção permitir
+    const motivationalAllowed = ['motivational', 'generic'].includes(detectedIntent);
+    const isSomenteMonologo = !isChamadaCorporativa
+      && motivationalAllowed
+      && (motivationalNarrative === 'somente_monologo' || monologuePosition === 'full');
+    console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative, "intentAllowsMotivational:", motivationalAllowed);
 
     // ============ MODO SIMPLES AUTOMÁTICO ============
     // Ativar SOMENTE para pedidos preview (crédito de novo usuário) com texto curto
@@ -551,6 +673,7 @@ ${!autoGenerateName && songName ? `TÍTULO: "${songName}"` : 'Use o nome do esta
     const langNoteSimple = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const simpleModePrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
 ${langNoteSimple}
+${intentBlock}
 
 Você deve criar uma letra SIMPLES, BONITA e COERENTE.
 
@@ -611,6 +734,7 @@ Se o pedido for simples, a letra DEVE ser simples.`;
     const langNotePreview = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const previewPrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
 ${langNotePreview}
+${intentBlock}
 
 Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
@@ -664,7 +788,7 @@ TÍTULO DA MÚSICA
       : '';
     
     const isolationId = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
-    
+
     const fullSystemPrompt = `[ISOLATION ID: ${isolationId}]
 ⚠️ REGRA CRÍTICA DE ISOLAMENTO:
 - Este prompt é 100% INDEPENDENTE de qualquer outro pedido
@@ -674,7 +798,7 @@ TÍTULO DA MÚSICA
 - Cada música é ÚNICA e baseada EXCLUSIVAMENTE na história fornecida aqui
 - PROIBIDO copiar ou parafrasear conteúdo de pedidos anteriores
 ${languageInstruction}
-
+${intentBlock}
 Você é um letrista profissional ${language !== 'pt-BR' ? `que escreve em ${targetLanguage}` : 'brasileiro'} especializado em músicas personalizadas para ${musicType === 'parodia' ? 'paródias e humor' : musicType === 'corporativa' ? 'empresas e marketing' : 'momentos especiais'}.
 
 🚫 REGRAS ANTI-CLICHÊ (OBRIGATÓRIAS - PRIORIDADE MÁXIMA):
