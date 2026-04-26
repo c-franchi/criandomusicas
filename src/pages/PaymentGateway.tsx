@@ -195,22 +195,22 @@ const PaymentGateway = () => {
                 <span className="text-muted-foreground">Pedido:</span>
                 <span className="font-mono">#{order.id.slice(0, 8)}</span>
               </div>
-              {order.style && (
+              {order.song_title && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Música:</span>
+                  <span className="font-medium">{order.song_title}</span>
+                </div>
+              )}
+              {order.music_style && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Estilo:</span>
-                  <span className="font-medium">{order.style}</span>
+                  <span className="font-medium">{order.music_style}</span>
                 </div>
               )}
-              {order.occasion && (
+              {order.purpose && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Ocasião:</span>
-                  <span className="font-medium">{order.occasion}</span>
-                </div>
-              )}
-              {order.duration && (
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Duração:</span>
-                  <span className="font-medium">{order.duration}</span>
+                  <span className="text-muted-foreground">Finalidade:</span>
+                  <span className="font-medium">{order.purpose}</span>
                 </div>
               )}
             </div>
