@@ -673,6 +673,7 @@ ${!autoGenerateName && songName ? `TÍTULO: "${songName}"` : 'Use o nome do esta
     const langNoteSimple = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const simpleModePrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
 ${langNoteSimple}
+${intentBlock}
 
 Você deve criar uma letra SIMPLES, BONITA e COERENTE.
 
