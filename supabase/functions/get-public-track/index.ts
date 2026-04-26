@@ -139,15 +139,17 @@ serve(async (req) => {
     const forwardedFor = req.headers.get("x-forwarded-for") || "";
     const ipHash = await hashIP(forwardedFor.split(",")[0]?.trim() || "");
 
-    supabase.from("share_analytics").insert({
-      order_id: orderId,
-      event_type: "view",
-      referrer,
-      user_agent: userAgent,
-      ip_hash: ipHash,
-      platform: "direct",
-      metadata: { version }
-    }).then(() => {
+    Promise.resolve(
+      supabase.from("share_analytics").insert({
+        order_id: orderId,
+        event_type: "view",
+        referrer,
+        user_agent: userAgent,
+        ip_hash: ipHash,
+        platform: "direct",
+        metadata: { version }
+      })
+    ).then(() => {
       console.log("View event tracked for order:", orderId, "version:", version);
     }).catch((err: unknown) => {
       console.error("Failed to track view:", err);
