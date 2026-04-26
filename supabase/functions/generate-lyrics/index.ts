@@ -734,6 +734,7 @@ Se o pedido for simples, a letra DEVE ser simples.`;
     const langNotePreview = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const previewPrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
 ${langNotePreview}
+${intentBlock}
 
 Você é um letrista profissional brasileiro. Crie uma PRÉVIA de música (cerca de 1 minuto).
 
