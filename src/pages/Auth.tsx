@@ -301,7 +301,10 @@ const Auth = () => {
 
     try {
       const { error } = await supabase.functions.invoke('send-recovery-email', {
-        body: { email }
+        body: {
+          email,
+          redirectUrl: `${window.location.origin}/auth`,
+        },
       });
 
       if (error) throw error;
