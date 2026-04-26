@@ -410,12 +410,30 @@ serve(async (req) => {
     } = briefing || {};
 
     // Detectar se é "Chamada/Propaganda" corporativa (prioridade sobre monólogo motivacional)
-    const isChamadaCorporativa = corporateFormat === 'monologo';
+    let isChamadaCorporativa = corporateFormat === 'monologo';
+
+    // ============ DETECÇÃO DE INTENÇÃO REAL DA HISTÓRIA ============
+    // Garante que a letra NÃO se desvie do tema solicitado pelo usuário
+    const detectedIntent = detectStoryIntent(story, briefing);
+    console.log("Detected story intent:", detectedIntent);
+
+    // Se a história é claramente um anúncio/propaganda comercial,
+    // forçar modo "chamada corporativa" mesmo que o briefing não esteja marcado.
+    // Isso impede que anúncios virem música motivacional de academia/superação.
+    if (detectedIntent === 'commercial_ad' && !isChamadaCorporativa) {
+      console.log("⚠️ Story detected as COMMERCIAL AD — forcing chamadaCorporativa mode");
+      isChamadaCorporativa = true;
+    }
+
     console.log("Chamada Corporativa mode:", isChamadaCorporativa, "corporateFormat:", corporateFormat);
 
-    // Detectar se é modo "Somente Monólogo" (spoken word motivacional) - NÃO ativar se for chamada corporativa
-    const isSomenteMonologo = !isChamadaCorporativa && (motivationalNarrative === 'somente_monologo' || monologuePosition === 'full');
-    console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative);
+    // Detectar se é modo "Somente Monólogo" (spoken word motivacional)
+    // NÃO ativar se: for chamada corporativa OU se a intenção for comercial/religiosa/infantil/homenagem
+    const motivationalAllowed = ['motivational', 'generic'].includes(detectedIntent);
+    const isSomenteMonologo = !isChamadaCorporativa
+      && motivationalAllowed
+      && (motivationalNarrative === 'somente_monologo' || monologuePosition === 'full');
+    console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative, "intentAllowsMotivational:", motivationalAllowed);
 
     // ============ MODO SIMPLES AUTOMÁTICO ============
     // Ativar SOMENTE para pedidos preview (crédito de novo usuário) com texto curto
