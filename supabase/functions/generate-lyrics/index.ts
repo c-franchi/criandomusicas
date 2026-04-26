@@ -539,6 +539,14 @@ ${mandatoryWords ? `Palavras/nomes OBRIGATÓRIOS: ${mandatoryWords}` : ''}
 ${restrictedWords ? `Palavras PROIBIDAS: ${restrictedWords}` : ''}
 ${!autoGenerateName && songName ? `TÍTULO: "${songName}"` : 'Use o nome do estabelecimento/promoção como título'}`;
 
+    // ============ LANGUAGE MAPPING (declarado antes dos prompts que o utilizam) ============
+    const languageMap: Record<string, string> = {
+      'pt-BR': 'português brasileiro',
+      'en': 'inglês (English)',
+      'es': 'espanhol (Español)',
+      'it': 'italiano (Italiano)',
+    };
+
     // ============ PROMPT MODO SIMPLES (ativado automaticamente para pedidos curtos) ============
     const langNoteSimple = language !== 'pt-BR' ? `\n⚠️ IDIOMA: Escreva TODA a letra em ${languageMap[language] || language}.` : '';
     const simpleModePrompt = `⚠️ REGRA DE ISOLAMENTO: Este prompt é INDEPENDENTE. NÃO use informações de outros pedidos. Baseie-se EXCLUSIVAMENTE no contexto abaixo.
@@ -649,13 +657,7 @@ TÍTULO DA MÚSICA
 
 [End]`;
 
-    // ============ LANGUAGE MAPPING ============
-    const languageMap: Record<string, string> = {
-      'pt-BR': 'português brasileiro',
-      'en': 'inglês (English)',
-      'es': 'espanhol (Español)',
-      'it': 'italiano (Italiano)',
-    };
+    // ============ LANGUAGE TARGET ============
     const targetLanguage = languageMap[language] || 'português brasileiro';
     const languageInstruction = language !== 'pt-BR' 
       ? `\n\n⚠️ IDIOMA OBRIGATÓRIO: Escreva TODA a letra em ${targetLanguage}. NÃO use português. A letra INTEIRA deve estar em ${targetLanguage}.`
