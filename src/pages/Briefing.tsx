@@ -2463,18 +2463,16 @@ const Briefing = () => {
     }
   };
 
-  // Handler para ir ao checkout ao invés de usar crédito
+  // Handler para ir ao checkout/voucher (página dedicada)
   const handleGoToCheckout = () => {
     setShowNoCreditModal(false);
-    
-    // If we have a pending order, go to checkout with that order
+
     if (pendingOrderId) {
       const planId = selectedPlanId || 'single';
-      navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
+      navigate(`/pagamento/${pendingOrderId}?planId=${planId}`);
       return;
     }
-    
-    // Otherwise, go to plans page to buy credits
+
     navigate('/planos');
   };
 
