@@ -2085,13 +2085,10 @@ const Briefing = () => {
                            creditsData?.total_available > 0 || 
                            creditsData?.preview_credit_available === true;
       if (!hasAnyCredit) {
-        // No credits - show modal immediately with confirmation screen
+        // Sem créditos antes do pedido existir: avançar para confirmação;
+        // o redirect para /pagamento acontece após criar o pedido.
         setIsTyping(false);
         setShowConfirmation(true);
-        // Small delay to ensure confirmation screen renders first
-        setTimeout(() => {
-          setShowNoCreditModal(true);
-        }, 100);
         return;
       }
     } catch (error) {
@@ -2385,12 +2382,12 @@ const Briefing = () => {
         return;
       }
 
-      // Sem créditos - mostrar modal para ir ao checkout
+      // Sem créditos - redirecionar direto para a página de pagamento dedicada
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
-      isCreatingOrderRef.current = false; // Reset flag
-      setHasPreviewCreditForModal(false);
-      setShowNoCreditModal(true);
+      isCreatingOrderRef.current = false;
+      navigate(`/pagamento/${orderData.id}?planId=${selectedPlanId || 'single'}`);
+      return;
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
@@ -2463,18 +2460,16 @@ const Briefing = () => {
     }
   };
 
-  // Handler para ir ao checkout ao invés de usar crédito
+  // Handler para ir ao checkout/voucher (página dedicada)
   const handleGoToCheckout = () => {
     setShowNoCreditModal(false);
-    
-    // If we have a pending order, go to checkout with that order
+
     if (pendingOrderId) {
       const planId = selectedPlanId || 'single';
-      navigate(`/checkout/${pendingOrderId}?planId=${planId}`);
+      navigate(`/pagamento/${pendingOrderId}?planId=${planId}`);
       return;
     }
-    
-    // Otherwise, go to plans page to buy credits
+
     navigate('/planos');
   };
 
@@ -2825,9 +2820,9 @@ const Briefing = () => {
 
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
-      isCreatingOrderRef.current = false; // Reset flag
-      setHasPreviewCreditForModal(false);
-      setShowNoCreditModal(true);
+      isCreatingOrderRef.current = false;
+      navigate(`/pagamento/${orderData.id}?planId=${selectedPlanId || 'single'}`);
+      return;
     } catch (error) {
       console.error('Error creating order:', error);
       toast({

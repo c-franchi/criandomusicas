@@ -42,51 +42,60 @@ const Auth = () => {
     }
   }, [isRecoverySession, resetPasswordMode]);
 
-  // Handle OAuth callback - capture tokens from URL hash
+  // Handle OAuth/recovery callback - capture tokens from URL hash
   useEffect(() => {
-    const handleOAuthCallback = async () => {
+    const handleHashCallback = async () => {
       const currentHash = window.location.hash;
       if (!currentHash) return;
 
       const hashParams = new URLSearchParams(currentHash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
+      const type = hashParams.get('type');
 
-      // Check if this is a token transfer from OAuth
-      if (accessToken && refreshToken) {
-        console.log('[Auth] Token transfer detected, establishing session...');
+      if (!accessToken || !refreshToken) return;
 
-        try {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+      const isRecovery = type === 'recovery';
+      console.log('[Auth] Token transfer detected, type:', type || 'oauth');
+
+      try {
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          console.error('[Auth] Failed to set session:', error);
+          toast({
+            title: t('errors.authError'),
+            description: error.message,
+            variant: 'destructive',
           });
-
-          if (error) {
-            console.error('[Auth] Failed to set session:', error);
-            toast({
-              title: t('errors.authError'),
-              description: error.message,
-              variant: 'destructive',
-            });
-            window.history.replaceState(null, '', '/auth');
-            return;
-          }
-
-          if (data.session?.user) {
-            console.log('[Auth] Session established for:', data.session.user.email);
-            window.history.replaceState(null, '', '/');
-            window.location.href = '/';
-            return;
-          }
-        } catch (err) {
-          console.error('[Auth] Error setting session:', err);
           window.history.replaceState(null, '', '/auth');
+          return;
         }
+
+        if (isRecovery) {
+          // Recovery flow: enable reset-password form, do NOT redirect home
+          console.log('[Auth] Recovery session established for:', data.session?.user?.email);
+          setResetPasswordMode(true);
+          window.history.replaceState(null, '', '/auth');
+          return;
+        }
+
+        if (data.session?.user) {
+          console.log('[Auth] Session established for:', data.session.user.email);
+          window.history.replaceState(null, '', '/');
+          window.location.href = '/';
+          return;
+        }
+      } catch (err) {
+        console.error('[Auth] Error setting session:', err);
+        window.history.replaceState(null, '', '/auth');
       }
     };
 
-    handleOAuthCallback();
+    handleHashCallback();
   }, [toast, t]);
 
   // Clean up URL hash after recovery mode is detected

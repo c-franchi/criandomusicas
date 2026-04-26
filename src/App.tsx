@@ -40,6 +40,7 @@ const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
 const CreatorCheckout = lazy(() => import("./pages/CreatorCheckout"));
 const AdminEmailMarketing = lazy(() => import("./pages/AdminEmailMarketing"));
+const PaymentGateway = lazy(() => import("./pages/PaymentGateway"));
 
 const queryClient = new QueryClient();
 
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="/admin/marketing" element={<AdminEmailMarketing />} />
               <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
               <Route path="/checkout/:orderId" element={<Checkout />} />
+              <Route path="/pagamento/:orderId" element={<PaymentGateway />} />
               <Route path="/install" element={<Install />} />
               <Route path="/privacidade" element={<PrivacyPolicy />} />
               <Route path="/termos" element={<TermsOfUse />} />
