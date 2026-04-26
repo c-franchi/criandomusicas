@@ -2085,11 +2085,10 @@ const Briefing = () => {
                            creditsData?.total_available > 0 || 
                            creditsData?.preview_credit_available === true;
       if (!hasAnyCredit) {
-        // Sem créditos - redirecionar para a página dedicada de pagamento
+        // Sem créditos antes do pedido existir: avançar para confirmação;
+        // o redirect para /pagamento acontece após criar o pedido.
         setIsTyping(false);
-        setIsCreatingOrder(false);
-        isCreatingOrderRef.current = false;
-        navigate('/pagamento/new?planId=' + (selectedPlanId || 'single'));
+        setShowConfirmation(true);
         return;
       }
     } catch (error) {
