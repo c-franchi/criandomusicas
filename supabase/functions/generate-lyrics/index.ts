@@ -787,44 +787,6 @@ TÍTULO DA MÚSICA
     
     const isolationId = `ORDER-${orderId || 'standalone'}-${Date.now()}`;
 
-    // ============ BLOCO ANTI-DESVIO (FIDELIDADE AO BRIEFING) ============
-    const intentRulesMap: Record<DetectedIntent, string> = {
-      commercial_ad: `🎯 TEMA REAL DETECTADO: ANÚNCIO/PROPAGANDA COMERCIAL
-- A letra DEVE divulgar o produto/serviço/imóvel exatamente como descrito.
-- Mantenha TODOS os dados objetivos: preço, metragem, quartos, endereço, telefone, contato, nome do estabelecimento, condições de pagamento.
-- PROIBIDO transformar em música motivacional, romântica, religiosa ou de superação.
-- PROIBIDO usar vocabulário de academia/treino/disciplina/foco/superação/jornada/recomeço.
-- PROIBIDO inventar emoções, personagens, histórias paralelas ou metáforas filosóficas.
-- Tom: vendedor, persuasivo, direto, comercial.`,
-      motivational: `🎯 TEMA REAL DETECTADO: MOTIVACIONAL
-- Mantenha foco no contexto motivacional descrito (treino, superação, foco, etc.).
-- Use APENAS o cenário motivacional citado — não invente outro.`,
-      tribute: `🎯 TEMA REAL DETECTADO: HOMENAGEM
-- A letra é uma HOMENAGEM pessoal. NÃO transforme em propaganda, motivacional de academia, ou conteúdo comercial.
-- Use os nomes, datas, lugares e memórias específicas mencionadas.
-- PROIBIDO vocabulário de treino, vendas, preços ou marketing.`,
-      religious: `🎯 TEMA REAL DETECTADO: RELIGIOSO/GOSPEL
-- Tom devocional, respeitoso. NÃO transforme em motivacional secular nem propaganda.`,
-      children: `🎯 TEMA REAL DETECTADO: INFANTIL
-- Vocabulário simples, lúdico e seguro. NÃO vire motivacional adulto nem anúncio.`,
-      romantic: `🎯 TEMA REAL DETECTADO: ROMÂNTICO
-- Declaração de amor para a pessoa citada. NÃO vire motivacional ou comercial.`,
-      generic: `🎯 TEMA REAL DETECTADO: PERSONALIZADO
-- Baseie-se ESTRITAMENTE no que está na história. NÃO invente outro tema.
-- PROIBIDO virar automaticamente motivacional de academia, propaganda comercial ou clichê genérico.`,
-    };
-    const intentBlock = `
-
-⚠️⚠️⚠️ BLOCO DE FIDELIDADE AO BRIEFING (PRIORIDADE MÁXIMA):
-${intentRulesMap[detectedIntent]}
-
-REGRA UNIVERSAL ANTI-DESVIO:
-- Antes de escrever, releia a história do usuário e identifique: quem é a pessoa/produto, qual é o pedido, quais detalhes específicos foram dados.
-- A letra DEVE refletir esse pedido. NUNCA derive para outro tema (ex: anúncio virar treino de academia).
-- Se a história menciona produto/serviço/imóvel/empresa: é COMERCIAL. NÃO invente história emocional.
-- Se a história menciona uma pessoa específica: é HOMENAGEM. NÃO vire motivacional genérico.
-`;
-
     const fullSystemPrompt = `[ISOLATION ID: ${isolationId}]
 ⚠️ REGRA CRÍTICA DE ISOLAMENTO:
 - Este prompt é 100% INDEPENDENTE de qualquer outro pedido
