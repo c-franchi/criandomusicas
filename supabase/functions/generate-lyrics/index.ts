@@ -195,6 +195,80 @@ function applyPronunciations(text: string, pronunciations: Pronunciation[]): str
   return result;
 }
 
+// ============ DETECÇÃO DE INTENÇÃO DA HISTÓRIA ============
+// Analisa o texto do briefing e identifica o tipo REAL de música solicitada.
+// Isso evita que o sistema "se perca" e gere conteúdo fora do tema (ex: anúncio
+// virar música motivacional de academia).
+type DetectedIntent =
+  | 'commercial_ad'   // anúncio, venda, propaganda, imóvel, produto, serviço
+  | 'motivational'    // treino, superação, foco, disciplina
+  | 'tribute'         // homenagem, aniversário, casamento, despedida
+  | 'religious'       // gospel, fé, louvor
+  | 'children'        // infantil
+  | 'romantic'        // romance, declaração
+  | 'generic';
+
+function detectStoryIntent(story: string, briefing: BriefingData): DetectedIntent {
+  const text = `${story || ''}`.toLowerCase();
+  const words = text.split(/\s+/).length;
+
+  // 1) COMERCIAL / ANÚNCIO — prioridade máxima (deve sobrepor motivacional)
+  const commercialSignals = [
+    /\bvend[ae]\b/, /\baluga\b/, /\baluguel\b/, /\bà\s*venda\b/, /\bpre[çc]o\b/,
+    /\br\$\s*\d/, /\bapartament/, /\bcasas?\b/, /\bim[oó]vel\b/, /\bim[oó]ve(l|is)\b/,
+    /\bm²|\bm2\b|\bmetros?\s*quadrad/, /\bquartos?\b/, /\bsu[ií]tes?\b/, /\bgaragem/,
+    /\bcondom[ií]nio\b/, /\bcorretor/, /\bcreci\b/, /\bplant[ãa]\b/, /\blocaliza/,
+    /\bpromo[çc][ãa]o\b/, /\bdesconto\b/, /\boferta\b/, /\bqueima\s*de\s*estoque\b/,
+    /\baproveite/, /\bcompre\s*j[áa]\b/, /\bligue\s*(j[áa]|agora)\b/, /\bwhats?app\b/,
+    /\bestabelecimento\b/, /\bnegocio\b|\bneg[óo]cio\b/, /\binaugura/,
+    /\brestaurante\b/, /\bpizzaria\b/, /\bpadaria\b/, /\bla(c|ç)onia\b/,
+    /\bloja\b/, /\bclínica\b|\bcl[íi]nica\b/, /\bbarbearia\b/, /\bsal[ãa]o\b/,
+    /\bagende\b/, /\bdelivery\b/, /\bplant[ãa]o\b/,
+  ];
+  const commercialHits = commercialSignals.filter(rx => rx.test(text)).length;
+  // Telefone / endereço também são fortes sinais comerciais
+  const hasPhone = /\(?\d{2}\)?\s?9?\d{4}[-\s]?\d{4}/.test(text);
+  const hasAddress = /\brua\b|\bavenida\b|\bav\.\s|\bn[º°o]\s*\d|\bbairro\b|\bcep\s*\d/.test(text);
+  const hasInstagram = /@[a-z0-9_.]+|instagram/.test(text);
+  if (commercialHits >= 2 || (commercialHits >= 1 && (hasPhone || hasAddress || hasInstagram))) {
+    return 'commercial_ad';
+  }
+
+  // 2) RELIGIOSO
+  if (/\b(jesus|deus|senhor|igreja|f[ée]\b|louvor|gospel|salmo|aleluia|cristo)\b/.test(text)) {
+    return 'religious';
+  }
+
+  // 3) INFANTIL
+  if (/\b(crian[çc]a|beb[êe]|filhinh|infantil|ninar|brincar|escola)\b/.test(text) ||
+      briefing?.voiceType?.includes('infantil')) {
+    return 'children';
+  }
+
+  // 4) MOTIVACIONAL — apenas se houver sinais explícitos E não for comercial
+  const motivationalSignals = [
+    /\btreino\b/, /\bacademia\b/, /\bmusculação\b|\bmuscula[çc][ãa]o\b/,
+    /\bsupera[çc][ãa]o\b/, /\bdisciplin/, /\bfoco\b/, /\bmindset\b/,
+    /\brecome[çc]o\b/, /\bobjetivo\b/, /\bmetas?\b/, /\bn[ãa]o\s*desist/,
+    /\bcoach\b/, /\bperformance\b/,
+  ];
+  const motivationalHits = motivationalSignals.filter(rx => rx.test(text)).length;
+  if (motivationalHits >= 2) return 'motivational';
+
+  // 5) HOMENAGEM
+  if (briefing?.musicType === 'homenagem' ||
+      /\b(homenagem|anivers[áa]rio|bodas|casamento|filho|filha|m[ãa]e|pai|av[óo]|saudade|despedida|in\s*memoriam)\b/.test(text)) {
+    return 'tribute';
+  }
+
+  // 6) ROMÂNTICO
+  if (/\b(amor|paix[ãa]o|namorad|esposa|esposo|marido|mulher\s*da\s*minha)\b/.test(text)) {
+    return 'romantic';
+  }
+
+  return 'generic';
+}
+
 function splitTwoLyrics(text: string): { v1: string; v2: string } {
   const byDelimiter = text.split(/\n\s*---+\s*\n/);
   if (byDelimiter.length >= 2) {
