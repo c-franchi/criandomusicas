@@ -2085,13 +2085,11 @@ const Briefing = () => {
                            creditsData?.total_available > 0 || 
                            creditsData?.preview_credit_available === true;
       if (!hasAnyCredit) {
-        // No credits - show modal immediately with confirmation screen
+        // Sem créditos - redirecionar para a página dedicada de pagamento
         setIsTyping(false);
-        setShowConfirmation(true);
-        // Small delay to ensure confirmation screen renders first
-        setTimeout(() => {
-          setShowNoCreditModal(true);
-        }, 100);
+        setIsCreatingOrder(false);
+        isCreatingOrderRef.current = false;
+        navigate('/pagamento/new?planId=' + (selectedPlanId || 'single'));
         return;
       }
     } catch (error) {
