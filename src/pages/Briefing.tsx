@@ -2820,9 +2820,9 @@ const Briefing = () => {
 
       setPendingOrderId(orderData.id);
       setIsCreatingOrder(false);
-      isCreatingOrderRef.current = false; // Reset flag
-      setHasPreviewCreditForModal(false);
-      setShowNoCreditModal(true);
+      isCreatingOrderRef.current = false;
+      navigate(`/pagamento/${orderData.id}?planId=${selectedPlanId || 'single'}`);
+      return;
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
