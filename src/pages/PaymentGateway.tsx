@@ -21,9 +21,9 @@ import {
 
 interface OrderInfo {
   id: string;
-  style: string | null;
-  duration: string | null;
-  occasion: string | null;
+  music_style: string | null;
+  song_title: string | null;
+  purpose: string | null;
   amount: number | null;
   payment_status: string | null;
   is_instrumental: boolean | null;
