@@ -413,13 +413,44 @@ serve(async (req) => {
     let isChamadaCorporativa = corporateFormat === 'monologo';
 
     // ============ DETECÇÃO DE INTENÇÃO REAL DA HISTÓRIA ============
-    // Garante que a letra NÃO se desvie do tema solicitado pelo usuário
     const detectedIntent = detectStoryIntent(story, briefing);
     console.log("Detected story intent:", detectedIntent);
 
-    // Se a história é claramente um anúncio/propaganda comercial,
-    // forçar modo "chamada corporativa" mesmo que o briefing não esteja marcado.
-    // Isso impede que anúncios virem música motivacional de academia/superação.
+    // Bloco anti-desvio reutilizado em TODOS os prompts (full, simple, preview)
+    const intentRulesMap: Record<DetectedIntent, string> = {
+      commercial_ad: `🎯 TEMA REAL: ANÚNCIO/PROPAGANDA COMERCIAL.
+- Divulgue o produto/serviço/imóvel exatamente como descrito.
+- Mantenha preço, metragem, quartos, endereço, telefone, contato, condições.
+- PROIBIDO virar motivacional, romântica, religiosa ou de superação.
+- PROIBIDO vocabulário de academia/treino/disciplina/foco/jornada/recomeço.
+- PROIBIDO inventar emoções, personagens ou histórias paralelas.
+- Tom: vendedor, persuasivo, direto.`,
+      motivational: `🎯 TEMA REAL: MOTIVACIONAL.
+- Mantenha o cenário motivacional citado (treino, foco, etc.). Não invente outro.`,
+      tribute: `🎯 TEMA REAL: HOMENAGEM PESSOAL.
+- Use nomes, datas, lugares, memórias específicas. PROIBIDO virar propaganda, motivacional de academia ou comercial.`,
+      religious: `🎯 TEMA REAL: RELIGIOSO/GOSPEL.
+- Tom devocional. PROIBIDO virar motivacional secular ou propaganda.`,
+      children: `🎯 TEMA REAL: INFANTIL.
+- Vocabulário simples e lúdico. PROIBIDO virar motivacional adulto ou anúncio.`,
+      romantic: `🎯 TEMA REAL: ROMÂNTICO.
+- Declaração para a pessoa citada. PROIBIDO virar motivacional ou comercial.`,
+      generic: `🎯 TEMA REAL: PERSONALIZADO conforme a história.
+- Baseie-se ESTRITAMENTE no que está na história. PROIBIDO derivar para motivacional/academia, propaganda comercial ou clichês genéricos sem que o usuário tenha pedido.`,
+    };
+    const intentBlock = `
+
+⚠️⚠️⚠️ FIDELIDADE AO BRIEFING (PRIORIDADE MÁXIMA):
+${intentRulesMap[detectedIntent]}
+
+REGRA UNIVERSAL ANTI-DESVIO:
+- Releia a história. Identifique: quem é a pessoa/produto, qual o pedido real, quais detalhes específicos foram dados.
+- A letra DEVE refletir esse pedido. NUNCA derive para outro tema (ex: anúncio virar treino de academia).
+- Se a história menciona produto/serviço/imóvel/empresa: é COMERCIAL.
+- Se menciona uma pessoa específica: é HOMENAGEM.
+`;
+
+    // Se a história é claramente um anúncio comercial, forçar modo "chamada corporativa"
     if (detectedIntent === 'commercial_ad' && !isChamadaCorporativa) {
       console.log("⚠️ Story detected as COMMERCIAL AD — forcing chamadaCorporativa mode");
       isChamadaCorporativa = true;
@@ -427,8 +458,7 @@ serve(async (req) => {
 
     console.log("Chamada Corporativa mode:", isChamadaCorporativa, "corporateFormat:", corporateFormat);
 
-    // Detectar se é modo "Somente Monólogo" (spoken word motivacional)
-    // NÃO ativar se: for chamada corporativa OU se a intenção for comercial/religiosa/infantil/homenagem
+    // Modo "Somente Monólogo" (motivacional spoken word) só vale se a intenção permitir
     const motivationalAllowed = ['motivational', 'generic'].includes(detectedIntent);
     const isSomenteMonologo = !isChamadaCorporativa
       && motivationalAllowed
