@@ -113,27 +113,48 @@ const PaymentGateway = () => {
         },
       });
 
-      if (error) throw error;
+      // Try to extract real backend error message even when invoke throws
+      let backendError: string | null = null;
+      if (error) {
+        try {
+          const ctxResp = (error as any)?.context;
+          if (ctxResp && typeof ctxResp.json === "function") {
+            const body = await ctxResp.json();
+            backendError = body?.error || null;
+          } else if (ctxResp?.body?.error) {
+            backendError = ctxResp.body.error;
+          }
+        } catch {
+          // ignore
+        }
+      }
 
       if (data?.success) {
         toast({
           title: "🎉 Voucher aplicado!",
           description: data.message || "Crédito aplicado ao seu pedido.",
         });
-        // Redirect to create-song flow so the music starts generating
         navigate(`/criar-musica?orderId=${orderId}`);
       } else {
         toast({
           title: "Voucher inválido",
-          description: data?.error || "Não foi possível aplicar este voucher.",
+          description: backendError || data?.error || (error as any)?.message || "Não foi possível aplicar este voucher.",
           variant: "destructive",
         });
       }
     } catch (err: any) {
       console.error("[PaymentGateway] voucher error:", err);
+      let description = err?.message || "Tente novamente.";
+      try {
+        const ctxResp = err?.context;
+        if (ctxResp && typeof ctxResp.json === "function") {
+          const body = await ctxResp.json();
+          if (body?.error) description = body.error;
+        }
+      } catch { /* ignore */ }
       toast({
         title: "Erro ao aplicar voucher",
-        description: err?.message || "Tente novamente.",
+        description,
         variant: "destructive",
       });
     } finally {

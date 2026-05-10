@@ -11,14 +11,20 @@ const logStep = (step: string, details?: any) => {
   console.log(`[APPLY-VOUCHER] ${step}${detailsStr}`);
 };
 
-// Normalize plan ID variants to base tier for universal credits
 const normalizeToBasePlan = (planId: string): string => {
   if (planId.startsWith('single')) return 'single';
   if (planId.startsWith('package')) return 'package';
   if (planId.startsWith('subscription')) return 'subscription';
-  if (planId.startsWith('creator_')) return planId; // Creator plans stay as-is
+  if (planId.startsWith('creator_')) return planId;
   return planId;
 };
+
+// Helper: respond with a user-facing failure (HTTP 200 so the client can read the message)
+const userError = (message: string, status = 200) =>
+  new Response(JSON.stringify({ success: false, error: message }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status,
+  });
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -35,40 +41,29 @@ serve(async (req) => {
 
     const { code, orderId, planId = "single" } = await req.json();
     if (!code || !orderId) {
-      throw new Error("Voucher code and order ID are required");
+      return userError("Código do voucher e pedido são obrigatórios", 400);
     }
     logStep("Applying voucher", { code, orderId, planId });
 
-    // Get authenticated user
+    // Auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      logStep("No authorization header provided");
-      return new Response(JSON.stringify({ success: false, error: "Não autorizado" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      });
+      return userError("Não autorizado", 401);
     }
-    
     const token = authHeader.replace("Bearer ", "");
-    
     const supabaseAuth = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
     const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    
     if (claimsError || !claimsData?.claims?.sub) {
       logStep("Authentication failed", { error: claimsError?.message });
-      return new Response(JSON.stringify({ success: false, error: "Sessão expirada. Por favor, faça login novamente." }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 401,
-      });
+      return userError("Sessão expirada. Por favor, faça login novamente.", 401);
     }
-    
     const userId = claimsData.claims.sub as string;
     logStep("User authenticated", { userId });
 
-    // Verify order belongs to user
+    // Order
     const { data: order, error: orderError } = await supabaseClient
       .from('orders')
       .select('id, user_id, amount, payment_status, is_instrumental, has_custom_lyric')
@@ -76,68 +71,76 @@ serve(async (req) => {
       .single();
 
     if (orderError || !order) {
-      throw new Error("Pedido não encontrado");
+      return userError("Pedido não encontrado");
     }
-
     if (order.user_id !== userId) {
-      throw new Error("Este pedido não pertence a você");
+      return userError("Este pedido não pertence a você");
     }
-
     if (order.payment_status === 'PAID') {
-      throw new Error("Este pedido já foi pago");
+      return userError("Este pedido já foi pago");
     }
 
-    // Fetch voucher by code
+    // Voucher
     const { data: voucher, error: voucherError } = await supabaseClient
       .from('vouchers')
       .select('*')
       .eq('code', code.toUpperCase().trim())
       .eq('is_active', true)
-      .single();
+      .maybeSingle();
 
-    if (voucherError || !voucher) {
-      throw new Error("Voucher não encontrado ou inativo");
+    if (voucherError) {
+      logStep("Database error fetching voucher", { error: voucherError.message });
+      throw new Error("Erro ao buscar voucher");
     }
-
+    if (!voucher) {
+      return userError("Voucher não encontrado ou inativo");
+    }
     logStep("Voucher found", { voucherId: voucher.id });
 
-    // Validate voucher (same checks as validate-voucher)
     const now = new Date();
     if (voucher.valid_from && new Date(voucher.valid_from) > now) {
-      throw new Error("Este voucher ainda não está ativo");
+      return userError("Este voucher ainda não está ativo");
     }
     if (voucher.valid_until && new Date(voucher.valid_until) < now) {
-      throw new Error("Este voucher expirou");
+      return userError("Este voucher expirou");
     }
     if (voucher.max_uses !== null && voucher.current_uses >= voucher.max_uses) {
-      throw new Error("Este voucher atingiu o limite de usos");
+      return userError("Este voucher atingiu o limite de usos");
     }
-    // Check plan restriction - normalize to base plan for universal credits
+
     if (voucher.plan_ids && voucher.plan_ids.length > 0) {
       const basePlanId = normalizeToBasePlan(planId);
-      const hasValidPlan = voucher.plan_ids.some((allowedPlan: string) => 
+      const hasValidPlan = voucher.plan_ids.some((allowedPlan: string) =>
         normalizeToBasePlan(allowedPlan) === basePlanId
       );
-      
       if (!hasValidPlan) {
         logStep("Plan restriction failed", { planId, basePlanId, allowedPlans: voucher.plan_ids });
-        throw new Error("Este voucher não é válido para o plano selecionado");
+        return userError("Este voucher não é válido para o plano selecionado");
       }
     }
 
-    // Check if user already used this voucher
-    const { data: existingRedemption } = await supabaseClient
+    // Per-user usage check (mirrors validate-voucher)
+    const { data: userRedemptions, error: redemptionCheckError } = await supabaseClient
       .from('voucher_redemptions')
       .select('id')
       .eq('voucher_id', voucher.id)
-      .eq('user_id', userId)
-      .maybeSingle();
+      .eq('user_id', userId);
 
-    if (existingRedemption) {
-      throw new Error("Você já utilizou este voucher");
+    if (redemptionCheckError) {
+      logStep("Redemption check error", { error: redemptionCheckError.message });
+    }
+    const userUsageCount = userRedemptions?.length || 0;
+    const maxUsesPerUser = voucher.max_uses_per_user;
+
+    if (maxUsesPerUser !== null && userUsageCount >= maxUsesPerUser) {
+      return userError(
+        maxUsesPerUser === 1
+          ? "Você já utilizou este voucher"
+          : `Você atingiu o limite de ${maxUsesPerUser} usos deste voucher`
+      );
     }
 
-    // Get pricing
+    // Pricing
     const { data: pricing } = await supabaseClient
       .from('pricing_config')
       .select('price_cents, price_promo_cents')
@@ -158,7 +161,7 @@ serve(async (req) => {
 
     logStep("Discount calculated", { originalPrice, discountAmount, finalPrice, isFree });
 
-    // Create redemption record
+    // Persist redemption
     const { error: redemptionError } = await supabaseClient
       .from('voucher_redemptions')
       .insert({
@@ -169,17 +172,15 @@ serve(async (req) => {
       });
 
     if (redemptionError) {
-      logStep("Redemption error", { error: redemptionError.message });
+      logStep("Redemption insert error", { error: redemptionError.message });
       throw new Error("Erro ao registrar uso do voucher");
     }
 
-    // Increment voucher usage
     await supabaseClient
       .from('vouchers')
       .update({ current_uses: voucher.current_uses + 1 })
       .eq('id', voucher.id);
 
-    // Update order with voucher info and potentially mark as paid
     const orderUpdate: Record<string, any> = {
       voucher_code: voucher.code,
       discount_applied: discountAmount,
@@ -188,9 +189,6 @@ serve(async (req) => {
 
     if (isFree) {
       orderUpdate.payment_status = 'PAID';
-      // Instrumental and custom lyrics go directly to production (LYRICS_APPROVED = ready for style prompt)
-      // They already have their "lyrics" (instrumental has none, custom has user's text)
-      // Regular vocal needs to generate lyrics first (LYRICS_PENDING)
       orderUpdate.status = (order.is_instrumental || order.has_custom_lyric) ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
     }
 
@@ -204,7 +202,6 @@ serve(async (req) => {
       throw new Error("Erro ao atualizar pedido");
     }
 
-    // Admin notification moved to generate-style-prompt (after lyrics approval)
     if (isFree) {
       logStep("Free voucher order - admin will be notified after lyrics approval");
     }
@@ -217,8 +214,8 @@ serve(async (req) => {
       original_price: originalPrice,
       discount_amount: discountAmount,
       final_price: finalPrice,
-      message: isFree 
-        ? "Voucher aplicado! Sua música será gerada gratuitamente." 
+      message: isFree
+        ? "Voucher aplicado! Sua música será gerada gratuitamente."
         : `Voucher aplicado! Desconto de R$ ${(discountAmount / 100).toFixed(2).replace('.', ',')}`,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -226,7 +223,7 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
+    logStep("UNEXPECTED ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ success: false, error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
