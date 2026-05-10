@@ -1,106 +1,38 @@
+## Diagnóstico
 
-## Problemas identificados
+Testei as duas funções diretamente no servidor:
 
-### 1. Link de recuperação de senha entra direto no sistema
+1. **`generate-lyrics`** — está respondendo **200 OK** com `gpt-5.2`. Ou seja, a comunicação com a IA está funcionando. O erro que você vê não vem da OpenAI, vem do fluxo cliente→backend.
 
-Quando o usuário clica no link do e-mail de redefinição, o Supabase redireciona para `/auth` com tokens na URL no formato:
-```
-/auth#access_token=...&refresh_token=...&type=recovery
-```
+2. **`apply-voucher`** — encontrei dois bugs reais:
+   - **Bug A**: quando o voucher falha por motivo "esperado" (já usado, expirado, plano errado), a função retorna **HTTP 500**. O `supabase.functions.invoke` interpreta isso como exceção e o frontend mostra apenas "Erro ao aplicar voucher", **escondendo a mensagem real** ("Você já utilizou este voucher", "Voucher expirou", etc.).
+   - **Bug B**: o `apply-voucher` não respeita `max_uses_per_user` (sempre trava no primeiro uso). Diverge do `validate-voucher`, então um voucher que diz "valid: true" pode falhar ao aplicar.
 
-Em `src/pages/Auth.tsx` (linha 46-90), o handler de "OAuth callback" detecta `access_token + refresh_token` e **imediatamente** chama `setSession` + redireciona para `/`, sem antes verificar se é um fluxo de recuperação (`type=recovery`). Resultado: o usuário é logado direto, em vez de ver o formulário de nova senha.
+3. **Dados**: dos vouchers ativos, a maioria está expirada (DESCONTO50, PRIMA100, DESCONTO100, TESTES100). Apenas `DESCONTOAMIGO100` ainda está vigente (até 31/05). Seu usuário admin (`75c3ec36…`) já o usou em 25/03 — por isso, ao tentar de novo, o backend retorna "já utilizado", mas o frontend mostra erro genérico.
 
-### 2. Modal de "créditos insuficientes / voucher" fica atrás da tela
+## Correções
 
-Ao final do briefing, quando o usuário não tem créditos, o sistema abre um `Dialog` (`showNoCreditModal`) sobre a tela de confirmação. No mobile (viewport 393px), o modal:
-- Pode ficar invisível por conflito de z-index com o `AudioModeLoadingOverlay` (`z-50`) e/ou pelo overlay da tela de confirmação.
-- Aparece em três pontos diferentes do código (linhas 3163, 3215, 4485), com comportamentos ligeiramente diferentes.
-- Não oferece um caminho de pagamento real com aplicação de voucher — apenas um botão "Ver opções de compra" que leva a `/planos` ou `/checkout/:orderId`.
+### 1. `supabase/functions/apply-voucher/index.ts`
+- Trocar todos os `throw new Error(...)` de validação (voucher não encontrado, expirado, sem usos, plano não permitido, já usado, pedido não pertence, pedido já pago) por `return Response(... status: 200, success: false, error: <mensagem>)`. Manter `status: 500` apenas para erros inesperados de banco.
+- Substituir o check `existingRedemption` por contagem `userRedemptions.length` comparada a `voucher.max_uses_per_user` (espelhando `validate-voucher`).
+- Manter logs `[APPLY-VOUCHER]` para rastrear.
 
-O usuário pediu que, se for melhor, seja **criada uma página dedicada** para o pagamento com voucher, garantindo que o fluxo funcione sem travamentos.
+### 2. `src/pages/PaymentGateway.tsx`
+- No `catch` do `handleApplyVoucher`, ler `err?.context?.body` / `err?.context?.error` (FunctionsHttpError do supabase-js) para sempre exibir a mensagem real do backend no toast, mesmo se a função retornar não-2xx.
+- Bloquear o botão "Aplicar" se o voucher estiver vazio (já existe), e exibir mensagem clara quando `data.success === false`.
 
----
+### 3. Geração de letra — verificação e blindagem
+- A função em si está OK. Para evitar falsos "erro ao gerar":
+  - Em `src/pages/CreateSong.tsx` (linhas ~383 e ~646), no bloco `if (error) throw error`, ler `error.context?.body` para preservar a mensagem real (ex: 504 timeout, 429 rate limit, 402 sem créditos) e mostrar no toast.
+  - Garantir que, se `generate-lyrics` retornar 504 (timeout 90s), o toast diga "A IA demorou para responder, tente novamente" em vez de mensagem genérica.
+- Não vou alterar a lógica de prompt nem o modelo (`gpt-5.2`) — está correta e validada no teste.
 
-## Solução
+## Arquivos a alterar
 
-### Correção 1 — Recuperação de senha (`src/pages/Auth.tsx`)
+- `supabase/functions/apply-voucher/index.ts` (refatorar respostas de erro + corrigir `max_uses_per_user`)
+- `src/pages/PaymentGateway.tsx` (mostrar erro real do edge function)
+- `src/pages/CreateSong.tsx` (mostrar erro real ao chamar `generate-lyrics`)
 
-Antes de processar o token como login, verificar se o hash contém `type=recovery`. Se sim, **não** chamar `setSession` para redirecionar; apenas estabelecer a sessão temporária e ativar `resetPasswordMode` para mostrar o formulário de nova senha.
-
-Fluxo corrigido:
-```text
-Link do email
-   │
-   ▼
-/auth#access_token=…&type=recovery
-   │
-   ▼
-Auth.tsx detecta type=recovery
-   │
-   ├── setSession(tokens)  → cria sessão de recuperação
-   ├── setResetPasswordMode(true)
-   └── NÃO redireciona para /
-   │
-   ▼
-Form "Nova senha" é exibido
-   │
-   ▼
-Usuário define nova senha → signOut → volta para /auth
-```
-
-Ajustes:
-- No `useEffect` de OAuth callback, verificar `hashParams.get('type') === 'recovery'` antes de redirecionar.
-- Se for recovery: chamar `setSession`, ativar `resetPasswordMode`, limpar o hash, e **não** navegar para `/`.
-- A guarda de redirect `if (user && !resetPasswordMode && !isRecoverySession)` (linha 126) já protege contra redirecionamento prematuro — apenas precisamos garantir que `resetPasswordMode` seja setado a tempo.
-
-### Correção 2 — Página dedicada de pagamento com voucher
-
-Criar uma nova rota e página `/pagamento/:orderId` (`src/pages/PaymentGateway.tsx`) que substitui o modal "Créditos insuficientes". A página oferece:
-
-1. **Resumo do pedido** (estilo, duração, ocasião).
-2. **Campo de voucher** com botão "Aplicar" (usa edge function `validate-voucher` + `apply-voucher` já existentes).
-3. **Botão "Pagar com cartão"** → leva para `/checkout/:orderId?planId=…` (Stripe).
-4. **Botão "Pagar com PIX"** → leva para `/checkout/:orderId?planId=…&method=pix` (fluxo PIX já existente).
-5. **Botão "Comprar pacote/assinatura"** → leva para `/planos`.
-6. **Botão "Cancelar"** → volta para `/dashboard` mantendo o pedido com `payment_status=PENDING`.
-
-Mudanças no `Briefing.tsx`:
-- Substituir todas as três instâncias do modal `showNoCreditModal` por `navigate('/pagamento/' + pendingOrderId)`.
-- Remover o estado `showNoCreditModal`, `hasPreviewCreditForModal` e os três blocos de `<Dialog>` (linhas 3163, 3215, 4485).
-- Manter a função `handleGoToCheckout` apenas como fallback interno se necessário, ou removê-la.
-
-Vantagens:
-- Sem conflitos de z-index com overlays.
-- Funciona perfeitamente em mobile (tela inteira).
-- Permite aplicar voucher sem sair do fluxo.
-- Estado claro e sem travamentos.
-
-Adicionar a rota em `src/App.tsx`:
-```tsx
-const PaymentGateway = lazy(() => import("./pages/PaymentGateway"));
-// …
-<Route path="/pagamento/:orderId" element={<PaymentGateway />} />
-```
-
----
-
-## Detalhes técnicos
-
-**Arquivos editados:**
-- `src/pages/Auth.tsx` — adicionar verificação de `type=recovery` no handler de callback.
-- `src/pages/Briefing.tsx` — remover os três `Dialog` de "Créditos insuficientes" e redirecionar para `/pagamento/:orderId`.
-- `src/App.tsx` — registrar nova rota `/pagamento/:orderId`.
-
-**Arquivos criados:**
-- `src/pages/PaymentGateway.tsx` — nova página de pagamento com voucher, cartão, PIX e opção de comprar pacote.
-
-**Edge functions reutilizadas (sem alterações):**
-- `validate-voucher`, `apply-voucher`, `check-credits`, `create-payment` (já existentes no projeto).
-
-**Testes manuais sugeridos após implementação:**
-1. Esquecer senha → receber email → clicar no link → ver formulário de nova senha (não mais home com login).
-2. Definir nova senha → ser deslogado e voltar para `/auth` para login.
-3. Concluir um briefing sem créditos → ser redirecionado para `/pagamento/:orderId` (página inteira, sem modal).
-4. Na página de pagamento: aplicar voucher válido → crédito é creditado → voltar para o dashboard com música em geração.
-5. Na página de pagamento: pagar com cartão → fluxo Stripe normal.
-6. Na página de pagamento: pagar com PIX → fluxo PIX normal.
+## Fora do escopo
+- Não vou criar novos vouchers nem reativar os expirados — isso é decisão de negócio sua (posso fazer depois se pedir).
+- Não vou alterar o modelo de IA nem o pricing.
