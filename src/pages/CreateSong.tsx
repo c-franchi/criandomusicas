@@ -677,7 +677,17 @@ const CreateSong = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        let backendMsg = (error as any)?.message || '';
+        try {
+          const ctxResp = (error as any)?.context;
+          if (ctxResp && typeof ctxResp.json === 'function') {
+            const body = await ctxResp.json();
+            if (body?.error) backendMsg = body.error;
+          }
+        } catch { /* ignore */ }
+        throw new Error(backendMsg || t('createSong.regenerateLyricError'));
+      }
 
       if (!data?.ok) {
         throw new Error(data?.error || t('createSong.regenerateLyricError'));
