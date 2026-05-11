@@ -93,6 +93,19 @@ export const OrderCard = ({
                     PIX Rejeitado
                   </Badge>
                 )}
+                {order.status === 'AWAITING_PAYMENT' && !order.pix_rejection_reason && (
+                  <Button
+                    asChild
+                    size="sm"
+                    variant="default"
+                    className="h-6 px-2 text-xs"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Link to={`/pagamento/${order.id}`} onClick={(e) => e.stopPropagation()}>
+                      Continuar pagamento
+                    </Link>
+                  </Button>
+                )}
                 <span className="text-xs sm:text-sm text-muted-foreground">
                   {t('order.createdAt', { date: order.created_at ? new Date(order.created_at).toLocaleDateString() : '' })}
                 </span>
