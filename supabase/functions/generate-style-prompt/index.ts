@@ -895,16 +895,49 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
     }
     // Note: For vocal tracks without provided title, the title comes from generate-lyrics
 
-    // Only save approved_lyric_id if it's a valid UUID (not "custom", "lyric-modified", etc.)
+    // Persisted lyricId we'll set on the order
+    let persistedLyricId: string | null = null;
+
     if (!isInstrumental && isValidUuid(lyricId)) {
+      persistedLyricId = lyricId;
       updateData.approved_lyric_id = lyricId;
       updateData.voice_type = voiceType;
       if (pronunciations.length > 0) {
         updateData.pronunciations = pronunciations;
       }
     } else if (!isInstrumental) {
-      // For custom lyrics or modified lyrics without valid UUID, just save voice_type and pronunciations without lyric reference
-      console.log("Non-UUID lyricId detected:", lyricId, "- skipping approved_lyric_id update");
+      // Para letra própria ou letra modificada sem UUID válido,
+      // criamos um registro real em `lyrics` para que o pedido tenha
+      // uma letra aprovada acessível no Dashboard / OrderDetails.
+      console.log("Non-UUID lyricId detected:", lyricId, "- creating new lyrics row for custom/modified flow");
+      try {
+        const { data: insertedLyric, error: insertLyricError } = await supabase
+          .from('lyrics')
+          .insert({
+            order_id: orderId,
+            version: lyricId === 'custom' ? 'CUSTOM' : 'MODIFIED',
+            title: (songTitle && songTitle.trim()) || 'Minha letra',
+            body: approvedLyrics || '',
+            phonetic_body: (approvedLyrics && pronunciations.length > 0)
+              ? applyPronunciations(approvedLyrics, pronunciations)
+              : null,
+            is_approved: true,
+            approved_at: new Date().toISOString(),
+          })
+          .select('id')
+          .single();
+
+        if (insertLyricError) {
+          console.error("Error inserting custom/modified lyric row:", insertLyricError);
+        } else if (insertedLyric?.id) {
+          persistedLyricId = insertedLyric.id;
+          updateData.approved_lyric_id = insertedLyric.id;
+          console.log("Created lyrics row for custom/modified flow:", insertedLyric.id);
+        }
+      } catch (e) {
+        console.error("Exception creating custom/modified lyric row:", e);
+      }
+
       updateData.voice_type = voiceType;
       if (pronunciations.length > 0) {
         updateData.pronunciations = pronunciations;
