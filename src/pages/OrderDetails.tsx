@@ -510,6 +510,39 @@ const OrderDetails = () => {
           </CardContent>
         </Card>
 
+        {/* Resume Payment CTA - shown for any AWAITING_PAYMENT without PIX rejection */}
+        {order.status === 'AWAITING_PAYMENT' && !order.pix_rejection_reason && (
+          <Card className="border-orange-500/50 bg-orange-500/10">
+            <CardContent className="pt-6">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center shrink-0">
+                  <ShoppingCart className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-orange-700 dark:text-orange-300 mb-1">
+                    Pagamento pendente
+                  </h3>
+                  <p className="text-sm text-foreground mb-3">
+                    Seu pedido está aguardando pagamento. Clique abaixo para continuar de onde parou.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button asChild size="sm">
+                      <Link to={`/pagamento/${order.id}`}>
+                        Continuar pagamento
+                      </Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <Link to={`/checkout/${order.id}`}>
+                        Ver opções de pagamento
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* PIX Rejection Alert */}
         {order.pix_rejection_reason && order.status === 'AWAITING_PAYMENT' && (
           <Card className="border-destructive/50 bg-destructive/10">
