@@ -298,6 +298,7 @@ const Briefing = () => {
   const [customInstrumentValue, setCustomInstrumentValue] = useState("");
   const [stepHistory, setStepHistory] = useState<number[]>([]);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [pendingInstrumentalConfirm, setPendingInstrumentalConfirm] = useState<null | { option: { id: string; label: string; description?: string } }>(null);
   const [pendingFinish, setPendingFinish] = useState(false);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
