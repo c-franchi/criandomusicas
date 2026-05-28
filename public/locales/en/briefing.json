@@ -51,13 +51,17 @@
   },
   "steps": {
     "isInstrumental": {
-      "question": "Hello! 👋 I'm the AI that will create your personalized music.\n\nFirst, tell me: do you want a song with vocals or just instrumental?",
+      "question": "Hello! 👋 I'm the AI that will create your personalized music.\n\nFirst, choose your music format carefully:\n\n🎤 **Sung** — has lyrics and a voice singing (great for tributes, dedications, birthdays)\n📝 **I have the lyrics** — paste your lyrics and the AI sings them\n🎹 **Instrumental** — ONLY instruments, NO lyrics, NO voice, NO singing",
       "sung": "🎤 Sung Song",
-      "sungDesc": "With lyrics and vocals",
+      "sungDesc": "With lyrics and a singing voice — best for tributes and messages",
       "customLyric": "📝 I Have the Lyrics",
-      "customLyricDesc": "Use my own lyrics",
+      "customLyricDesc": "Paste your own lyrics and the AI sings them",
       "instrumental": "🎹 Instrumental",
-      "instrumentalDesc": "Music only, no vocals"
+      "instrumentalDesc": "⚠️ Instruments only. NO lyrics, NO voice, NO singing",
+      "confirmInstrumentalTitle": "Are you sure you want Instrumental?",
+      "confirmInstrumentalBody": "You picked Instrumental. Your music will have ONLY instruments playing — no lyrics, no voice and nobody singing.\n\nIf you want to honor, congratulate or tell someone a story, we recommend 🎤 Sung Song.",
+      "confirmInstrumentalConfirm": "Yes, instrumental only",
+      "confirmInstrumentalCancel": "Go back and pick sung"
     },
     "musicType": {
       "question": "What type of music do you want to create?",
