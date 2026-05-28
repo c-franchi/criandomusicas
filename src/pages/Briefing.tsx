@@ -1587,7 +1587,13 @@ const Briefing = () => {
 
     // Handle isInstrumental / custom_lyric
     if (field === 'isInstrumental') {
-      const isInstrumental = option.id === 'instrumental';
+      // Pedir confirmação explícita ao escolher Instrumental para evitar pedidos
+      // de "homenagem instrumental" criados sem perceber que não terá voz/letra
+      if (option.id === 'instrumental') {
+        setPendingInstrumentalConfirm({ option });
+        return;
+      }
+      const isInstrumental = false;
       const hasCustomLyric = option.id === 'custom_lyric';
       
       setFormData(prev => ({ 
