@@ -51,13 +51,17 @@
   },
   "steps": {
     "isInstrumental": {
-      "question": "Ciao! 👋 Sono l'IA che creerà la tua musica personalizzata.\n\nPrima di tutto, dimmi: vuoi una canzone cantata o solo strumentale?",
+      "question": "Ciao! 👋 Sono l'IA che creerà la tua musica personalizzata.\n\nPrima di tutto, scegli con attenzione il formato della tua musica:\n\n🎤 **Cantata** — ha testo e una voce che canta (perfetta per omaggi, dediche, compleanni)\n📝 **Ho già il testo** — incolli il testo e l'IA lo canta\n🎹 **Strumentale** — SOLO strumenti, SENZA testo, SENZA voce, SENZA canto",
       "sung": "🎤 Canzone Cantata",
-      "sungDesc": "Con testo e voce",
+      "sungDesc": "Con testo e voce che canta — ideale per omaggi e messaggi",
       "customLyric": "📝 Ho Già il Testo",
-      "customLyricDesc": "Usare il mio testo",
+      "customLyricDesc": "Incolli il tuo testo e l'IA lo canta",
       "instrumental": "🎹 Strumentale",
-      "instrumentalDesc": "Solo musica, senza voce"
+      "instrumentalDesc": "⚠️ Solo strumenti. SENZA testo, SENZA voce, SENZA canto",
+      "confirmInstrumentalTitle": "Sei sicuro di voler Strumentale?",
+      "confirmInstrumentalBody": "Hai scelto Strumentale. La tua musica avrà SOLO strumenti che suonano — senza testo, senza voce e senza nessuno che canta.\n\nSe vuoi omaggiare, fare gli auguri o raccontare una storia, consigliamo 🎤 Canzone Cantata.",
+      "confirmInstrumentalConfirm": "Sì, solo strumentale",
+      "confirmInstrumentalCancel": "Torna indietro e scegli cantata"
     },
     "musicType": {
       "question": "Che tipo di musica vuoi creare?",

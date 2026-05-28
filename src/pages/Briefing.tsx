@@ -298,6 +298,7 @@ const Briefing = () => {
   const [customInstrumentValue, setCustomInstrumentValue] = useState("");
   const [stepHistory, setStepHistory] = useState<number[]>([]);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [pendingInstrumentalConfirm, setPendingInstrumentalConfirm] = useState<null | { option: { id: string; label: string; description?: string } }>(null);
   const [pendingFinish, setPendingFinish] = useState(false);
   const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
@@ -1586,7 +1587,13 @@ const Briefing = () => {
 
     // Handle isInstrumental / custom_lyric
     if (field === 'isInstrumental') {
-      const isInstrumental = option.id === 'instrumental';
+      // Pedir confirmação explícita ao escolher Instrumental para evitar pedidos
+      // de "homenagem instrumental" criados sem perceber que não terá voz/letra
+      if (option.id === 'instrumental') {
+        setPendingInstrumentalConfirm({ option });
+        return;
+      }
+      const isInstrumental = false;
       const hasCustomLyric = option.id === 'custom_lyric';
       
       setFormData(prev => ({ 
@@ -4499,6 +4506,52 @@ const Briefing = () => {
               <Button onClick={handleGoToCheckout} className="w-full">
                 <CreditCard className="w-5 h-5 mr-2" />
                 {t('noCreditModal.buyButton', 'Ver opções de compra')}
+              </Button>
+            </div>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      {/* Modal de Confirmação - Instrumental sem letra/voz */}
+      <Dialog open={!!pendingInstrumentalConfirm} onOpenChange={(open) => { if (!open) setPendingInstrumentalConfirm(null); }}>
+        <DialogPortal>
+          <DialogOverlay className="z-[100]" />
+          <DialogContent className="sm:max-w-md z-[100]" aria-describedby="confirm-instrumental-desc">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-xl">
+                <AlertCircle className="w-5 h-5 text-amber-500" />
+                {t('steps.isInstrumental.confirmInstrumentalTitle', 'Tem certeza que quer Instrumental?')}
+              </DialogTitle>
+              <DialogDescription className="pt-2 whitespace-pre-line text-sm" id="confirm-instrumental-desc">
+                {t('steps.isInstrumental.confirmInstrumentalBody', 'Você escolheu Instrumental. Sua música terá APENAS instrumentos tocando — sem letra, sem voz e sem ninguém cantando.\n\nSe a ideia é homenagear, parabenizar ou contar uma história para alguém, recomendamos a opção 🎤 Música Cantada.')}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-2 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setPendingInstrumentalConfirm(null)}
+                className="w-full"
+              >
+                {t('steps.isInstrumental.confirmInstrumentalCancel', 'Voltar e escolher cantada')}
+              </Button>
+              <Button
+                onClick={() => {
+                  const opt = pendingInstrumentalConfirm?.option;
+                  setPendingInstrumentalConfirm(null);
+                  if (!opt) return;
+                  const isInstrumental = true;
+                  const hasCustomLyric = false;
+                  setFormData(prev => ({ ...prev, isInstrumental, hasCustomLyric }));
+                  addUserMessage(opt.label);
+                  setStepHistory(prev => [...prev, currentStep]);
+                  const nextStep = getNextStep(currentStep, { ...formData, isInstrumental, hasCustomLyric });
+                  setCurrentStep(nextStep);
+                  setTimeout(() => addBotMessage(chatFlow[nextStep]), 500);
+                }}
+                variant="destructive"
+                className="w-full"
+              >
+                {t('steps.isInstrumental.confirmInstrumentalConfirm', 'Sim, quero só instrumental')}
               </Button>
             </div>
           </DialogContent>

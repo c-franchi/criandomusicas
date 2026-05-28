@@ -929,6 +929,19 @@ export default function Checkout() {
                 <p className="text-sm line-clamp-3">{order.story}</p>
               </div>
             )}
+            {order.is_instrumental && !order.has_custom_lyric && (
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 flex gap-2 text-sm text-amber-700 dark:text-amber-300">
+                <span className="text-base leading-none">⚠️</span>
+                <div>
+                  <p className="font-semibold mb-0.5">
+                    {t('summary.instrumentalWarningTitle', 'Você está pedindo uma música INSTRUMENTAL')}
+                  </p>
+                  <p className="text-xs opacity-90">
+                    {t('summary.instrumentalWarningBody', 'Esta música terá APENAS instrumentos — não terá letra, voz ou ninguém cantando. Se a ideia é homenagear alguém com uma mensagem cantada, volte e escolha "Música Cantada".')}
+                  </p>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
