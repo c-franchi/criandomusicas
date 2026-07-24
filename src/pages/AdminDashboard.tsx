@@ -541,9 +541,6 @@ const AdminDashboard = () => {
           .eq('user_id', userId)
           .maybeSingle();
 
-
-
-
         const amountBRL = (orderData.amount || 0) / 100;
         const capiResp = await supabase.functions.invoke('meta-capi-purchase', {
           body: {
@@ -552,6 +549,7 @@ const AdminDashboard = () => {
             value: amountBRL,
             currency: orderData.currency || 'BRL',
             event_source_url: window.location.origin + `/pedido/${orderId}`,
+            user_id: userId,
             phone: profileRow?.whatsapp || profileRow?.phone || null,
           },
         });
