@@ -12,3 +12,18 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /perfil
+Disallow: /checkout/
+Disallow: /pagamento/
+Disallow: /pedido/
+Disallow: /order/
+Disallow: /video-checkout/
+Disallow: /video-upload/
+Disallow: /creator-checkout/
+Disallow: /pagamento-sucesso
+Disallow: /test-openai
+
+Sitemap: https://criandomusicas.com.br/sitemap.xml
