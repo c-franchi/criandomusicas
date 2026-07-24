@@ -163,8 +163,11 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           status: "paid",
+          paid: true,
           message: "Pagamento confirmado.",
           orderType: isInstrumental ? "instrumental" : hasCustomLyric ? "custom_lyric" : "vocal",
+          amount: session.amount_total ? session.amount_total / 100 : 0,
+          currency: (session.currency || "brl").toUpperCase(),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );

@@ -72,9 +72,21 @@ export const analytics = {
   },
   applyVoucher: (code: string, success: boolean) =>
     trackEvent('apply_voucher', { code, success }),
-  purchase: (params: { value: number; currency?: string; transaction_id?: string }) => {
-    const { value, currency = 'BRL', transaction_id } = params;
-    trackEvent('purchase', { value, currency, transaction_id });
-    trackPixel('Purchase', { value, currency });
+  purchase: (params: { value: number; currency?: string; transaction_id?: string; event_id?: string }) => {
+    const { value, currency = 'BRL', transaction_id, event_id } = params;
+    if (typeof window === 'undefined') return;
+    // Dedupe: never fire the same purchase twice (page refresh, re-verify, etc.)
+    const dedupeKey = `analytics_purchase_${transaction_id || event_id || value}`;
+    try {
+      if (transaction_id && window.localStorage.getItem(dedupeKey)) {
+        return;
+      }
+      if (transaction_id) window.localStorage.setItem(dedupeKey, String(Date.now()));
+    } catch {
+      // ignore storage errors
+    }
+    const eid = event_id || `${transaction_id || 'txn'}_${Date.now()}`;
+    trackEvent('purchase', { value, currency, transaction_id, event_id: eid });
+    trackPixel('Purchase', { value, currency, eventID: eid });
   },
 };
