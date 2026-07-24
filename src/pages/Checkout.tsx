@@ -1258,7 +1258,7 @@ export default function Checkout() {
 
         {/* PIX Payment Details */}
         {showPixSection && !pixConfirmed && (
-          <Card className="border-emerald-600/30">
+          <Card ref={pixSectionRef} className="border-emerald-600/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <QrCode className="h-5 w-5 text-emerald-600" />
