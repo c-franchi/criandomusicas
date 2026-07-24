@@ -4,6 +4,7 @@ import { HelmetProvider } from 'react-helmet-async'
 import { ThemeProvider } from 'next-themes'
 import App from './App.tsx'
 import './lib/i18n'
+import './lib/metaPixel'
 import './index.css'
 
 const rootElement = document.getElementById("root");
