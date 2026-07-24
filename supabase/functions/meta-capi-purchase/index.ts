@@ -106,7 +106,7 @@ serve(async (req) => {
 
 
     const user_data: Record<string, unknown> = {};
-    const em = normalizeEmail(email);
+    const em = normalizeEmail(resolvedEmail);
     if (em) user_data.em = [await sha256Hex(em)];
     const ph = normalizePhone(phone);
     if (ph) user_data.ph = [await sha256Hex(ph)];
