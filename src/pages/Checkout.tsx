@@ -562,7 +562,24 @@ export default function Checkout() {
             content_type: 'product',
             num_items: 1,
           });
-          console.info('[Meta] InitiateCheckout enviado');
+          console.info('[Meta] InitiateCheckout enviado (pixel)');
+        }
+        // Server-side CAPI mirror (independe do consentimento LGPD)
+        try {
+          await supabase.functions.invoke('meta-capi-track', {
+            body: {
+              event_name: 'InitiateCheckout',
+              event_id: `initiate_${order.id}_card`,
+              value: totalValue,
+              currency: 'BRL',
+              order_id: order.id,
+              content_name: planId,
+              event_source_url: window.location.href,
+            },
+          });
+          console.info('[Meta] InitiateCheckout enviado (CAPI)');
+        } catch (e) {
+          console.warn('[Meta] CAPI InitiateCheckout falhou (non-blocking):', e);
         }
         // Pequeno atraso para o Pixel enviar o beacon antes do redirect
         setTimeout(() => {
