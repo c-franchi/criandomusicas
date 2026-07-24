@@ -88,6 +88,9 @@ export default function Checkout() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
+  const pixSectionRef = useRef<HTMLDivElement>(null);
+  const receiptUploadRef = useRef<HTMLDivElement>(null);
+  const receiptPreviewRef = useRef<HTMLDivElement>(null);
 
   // Plan labels for display - dynamically translated
   const getPlanLabel = (planId: string): string => {
@@ -225,6 +228,36 @@ export default function Checkout() {
       fetchOrder();
     }
   }, [orderId, user, authLoading, navigate]);
+
+  // Scroll to PIX section when it becomes visible
+  useEffect(() => {
+    if (showPixSection && pixSectionRef.current) {
+      const timer = setTimeout(() => {
+        pixSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showPixSection]);
+
+  // Scroll to receipt upload when it opens
+  useEffect(() => {
+    if (showReceiptUpload && receiptUploadRef.current) {
+      const timer = setTimeout(() => {
+        receiptUploadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showReceiptUpload]);
+
+  // Scroll to receipt preview after user selects a file
+  useEffect(() => {
+    if (receiptPreview && receiptPreviewRef.current) {
+      const timer = setTimeout(() => {
+        receiptPreviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [receiptPreview]);
 
   // Auto-process VIP access
   useEffect(() => {
@@ -1225,7 +1258,7 @@ export default function Checkout() {
 
         {/* PIX Payment Details */}
         {showPixSection && !pixConfirmed && (
-          <Card className="border-emerald-600/30">
+          <Card ref={pixSectionRef} className="border-emerald-600/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <QrCode className="h-5 w-5 text-emerald-600" />
@@ -1292,7 +1325,7 @@ export default function Checkout() {
 
               {/* Receipt Upload Modal - ÁREA TODA CLICÁVEL */}
               {showReceiptUpload && (
-                <Card className="mt-4 p-4 border-2 border-primary/30 bg-primary/5">
+                <Card ref={receiptUploadRef} className="mt-4 p-4 border-2 border-primary/30 bg-primary/5">
                   <div className="space-y-4">
                     {/* Área clicável para selecionar arquivo */}
                     <div 
@@ -1310,7 +1343,7 @@ export default function Checkout() {
                       />
                       
                       {receiptPreview ? (
-                        <div className="flex flex-col items-center gap-3">
+                        <div ref={receiptPreviewRef} className="flex flex-col items-center gap-3">
                           <img 
                             src={receiptPreview} 
                             alt={t('receipt.title')} 
