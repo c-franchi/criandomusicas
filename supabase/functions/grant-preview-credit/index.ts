@@ -16,7 +16,7 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseClient = createClient(
+  const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
@@ -24,16 +24,28 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { userId } = await req.json();
-    
-    if (!userId) {
-      throw new Error("User ID is required");
+    // Require valid JWT — derive userId from token, ignore any client-supplied id
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
     }
 
+    const token = authHeader.replace("Bearer ", "");
+    const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+    if (userError || !userData?.user?.id) {
+      return new Response(JSON.stringify({ success: false, error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
+    const userId = userData.user.id;
     logStep("Processing user", { userId });
 
-    // Check if user already has a preview credit
-    const { data: existingCredit, error: checkError } = await supabaseClient
+    const { data: existingCredit, error: checkError } = await supabaseAdmin
       .from('user_credits')
       .select('id')
       .eq('user_id', userId)
@@ -45,7 +57,6 @@ serve(async (req) => {
     }
 
     if (existingCredit) {
-      logStep("User already has preview credit", { creditId: existingCredit.id });
       return new Response(JSON.stringify({
         success: true,
         message: "User already has preview credit",
@@ -56,8 +67,7 @@ serve(async (req) => {
       });
     }
 
-    // Grant new preview credit
-    const { data: newCredit, error: insertError } = await supabaseClient
+    const { data: newCredit, error: insertError } = await supabaseAdmin
       .from('user_credits')
       .insert({
         user_id: userId,
@@ -87,8 +97,8 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ 
-      success: false, 
+    return new Response(JSON.stringify({
+      success: false,
       error: errorMessage,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
