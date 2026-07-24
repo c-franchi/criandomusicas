@@ -85,12 +85,15 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
+      console.log("[Meta CAPI] evento já deduplicado: true", { transaction_id });
       log("Already sent for transaction", { transaction_id });
       return new Response(
         JSON.stringify({ success: true, deduped: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
     }
+    console.log("[Meta CAPI] evento já deduplicado: false", { transaction_id });
+
 
     const user_data: Record<string, unknown> = {};
     const em = normalizeEmail(email);

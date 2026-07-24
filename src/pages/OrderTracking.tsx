@@ -19,6 +19,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatLocalizedDate } from "@/lib/i18n-format";
+import { analytics } from "@/lib/analytics";
+
 
 interface OrderData {
   id: string;
@@ -31,7 +33,10 @@ interface OrderData {
   approved_lyric_id: string | null;
   lyric_title?: string;
   is_instrumental?: boolean;
+  amount?: number | null;
+  currency?: string | null;
 }
+
 
 const OrderTracking = () => {
   const { t, i18n } = useTranslation('dashboard');
@@ -150,6 +155,23 @@ const OrderTracking = () => {
       supabase.removeChannel(channel);
     };
   }, [user?.id, orderId]);
+
+  // Fire browser-side Meta Purchase whenever the order is PAID (deduped internally).
+  // Ensures PIX-approved orders (which never pass through PaymentSuccess) also send Purchase.
+  useEffect(() => {
+    if (!order) return;
+    if (order.payment_status !== 'PAID') return;
+    console.info('[Meta Purchase] payment_status PAID detectado (order tracking)');
+    console.info('[Meta Purchase] fbq disponível:', typeof (window as any).fbq);
+    analytics.purchase({
+      value: Number(order.amount ?? 0) / 100 || 0,
+      currency: order.currency || 'BRL',
+      transaction_id: order.id,
+      event_id: `purchase_${order.id}`,
+    });
+    console.info('[Meta Purchase] Purchase enviado (event_id: purchase_' + order.id + ')');
+  }, [order?.id, order?.payment_status]);
+
 
   if (authLoading || loading) {
     return (

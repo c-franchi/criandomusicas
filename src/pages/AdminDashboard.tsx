@@ -532,6 +532,35 @@ const AdminDashboard = () => {
         // Don't fail the payment confirmation if email fails
       }
 
+      // 7. Fire Meta Conversions API Purchase (server-side) for PIX approval
+      try {
+        console.info('[Meta CAPI] chamando meta-capi-purchase (pix)', { orderId });
+        const { data: profileRow } = await supabase
+          .from('profiles')
+          .select('phone, whatsapp')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+
+
+
+        const amountBRL = (orderData.amount || 0) / 100;
+        const capiResp = await supabase.functions.invoke('meta-capi-purchase', {
+          body: {
+            transaction_id: orderId,
+            event_id: `purchase_${orderId}`,
+            value: amountBRL,
+            currency: orderData.currency || 'BRL',
+            event_source_url: window.location.origin + `/pedido/${orderId}`,
+            phone: profileRow?.whatsapp || profileRow?.phone || null,
+          },
+        });
+        console.info('[Meta CAPI] resposta meta-capi-purchase (pix)', capiResp?.data || capiResp?.error);
+      } catch (capiErr) {
+        console.error('[Meta CAPI] falha ao disparar (pix, non-blocking):', capiErr);
+      }
+
+
       toast({
         title: '✅ Pagamento confirmado!',
         description: isInstrumental 
