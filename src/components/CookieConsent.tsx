@@ -48,6 +48,8 @@ const CookieConsent = () => {
 
     // Save to localStorage
     localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(finalConsent));
+    // Notify listeners (Meta Pixel loader) that consent changed
+    window.dispatchEvent(new CustomEvent('criandomusicas:consent-updated', { detail: finalConsent }));
 
     // Save to database if user is logged in
     if (user?.id) {

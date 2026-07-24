@@ -26,6 +26,11 @@ export const trackPageView = (path: string, title?: string) => {
   }
   if (window.fbq && META_PIXEL_ID) {
     window.fbq('track', 'PageView');
+    // ViewContent on every SPA route change so remarketing audiences populate
+    window.fbq('track', 'ViewContent', {
+      content_name: title ?? document.title,
+      content_category: path,
+    });
   }
 };
 
