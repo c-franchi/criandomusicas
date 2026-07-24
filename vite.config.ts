@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'favicon.png', 'robots.txt'],
+      includeAssets: ['favicon.ico', 'favicon.png', 'robots.txt', 'sitemap.xml'],
       manifest: {
         name: 'Criando Músicas',
         short_name: 'CriandoMúsicas',
@@ -43,8 +43,8 @@ export default defineConfig(({ mode }) => ({
       },
     workbox: {
       importScripts: ['/sw-push.js'],
-      navigateFallbackDenylist: [/^\/~oauth/],
-      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+      navigateFallbackDenylist: [/^\/~oauth/, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
+      globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,txt,xml}'],
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
