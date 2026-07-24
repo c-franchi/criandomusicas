@@ -19,6 +19,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatLocalizedDate } from "@/lib/i18n-format";
+import { analytics } from "@/lib/analytics";
+
 
 interface OrderData {
   id: string;
