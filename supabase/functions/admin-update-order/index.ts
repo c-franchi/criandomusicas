@@ -18,37 +18,26 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, adminKey, musicStyle, musicType, songTitle, voiceType, stylePrompt, coverUrl } = body;
-    
-    // Allow service role key or admin auth
+    const { orderId, status, paymentStatus, voucherCode, discountApplied, amount, musicStyle, musicType, songTitle, voiceType, stylePrompt, coverUrl } = body;
+
+    // Only allow requests from authenticated admin users (no bypass keys)
     const authHeader = req.headers.get("Authorization");
     let isAuthorized = false;
     let adminUserId = "system";
 
-    // Check for internal Lovable call (trusted)
-    const internalKey = req.headers.get("x-lovable-internal");
-    if (internalKey === "trusted-admin-call") {
-      isAuthorized = true;
-      adminUserId = "lovable-internal";
-    }
-    // Check for admin key (for emergency use)
-    else if (adminKey === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")?.slice(-20)) {
-      isAuthorized = true;
-      adminUserId = "service-role";
-    } else if (authHeader?.startsWith("Bearer ")) {
+    if (authHeader?.startsWith("Bearer ")) {
       const token = authHeader.replace("Bearer ", "");
       const { data: userData, error: userError } = await supabaseClient.auth.getUser(token);
-      
+
       if (!userError && userData?.user?.id) {
         const userId = userData.user.id;
-        
-        // Check if user is admin
+
         const { data: roleData } = await supabaseClient
           .from('user_roles')
           .select('role')
           .eq('user_id', userId)
           .eq('role', 'admin')
-          .single();
+          .maybeSingle();
 
         if (roleData) {
           isAuthorized = true;
