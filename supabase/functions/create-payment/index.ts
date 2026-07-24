@@ -225,12 +225,26 @@ serve(async (req) => {
       logStep("Using inline price data", { priceInCents, productName });
     }
 
-    // Create a one-time payment session
-    const session = await stripe.checkout.sessions.create({
+    // Helper to build inline price_data fallback
+    const buildInlineLineItems = () => {
+      let description = 'Uma música exclusiva criada com IA baseada na sua história';
+      if (hasCustomLyric) description = 'Uma música exclusiva criada com sua letra personalizada';
+      else if (isInstrumental) description = 'Uma música instrumental exclusiva criada com IA';
+      return [{
+        price_data: {
+          currency: 'brl',
+          product_data: { name: productName, description },
+          unit_amount: priceInCents,
+        },
+        quantity: 1,
+      }];
+    };
+
+    const sessionParams = {
       customer: customerId,
       customer_email: customerId ? undefined : userEmail,
       line_items: lineItems,
-      mode: "payment",
+      mode: "payment" as const,
       success_url: `${origin}/pagamento-sucesso?order_id=${orderId}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/pedido/${orderId}`,
       metadata: {
@@ -240,7 +254,23 @@ serve(async (req) => {
         is_instrumental: String(isInstrumental),
         has_custom_lyric: String(hasCustomLyric)
       }
-    });
+    };
+
+    let session;
+    try {
+      session = await stripe.checkout.sessions.create(sessionParams);
+    } catch (err: any) {
+      const msg = err?.message || String(err);
+      // Fallback: if the configured Stripe price ID is invalid, retry with inline price_data
+      if (msg.includes('No such price') || err?.code === 'resource_missing') {
+        logStep("Stripe price invalid, falling back to inline price_data", { error: msg });
+        sessionParams.line_items = buildInlineLineItems();
+        session = await stripe.checkout.sessions.create(sessionParams);
+      } else {
+        throw err;
+      }
+    }
+
 
     // Update order amount in database
     await supabaseClient
