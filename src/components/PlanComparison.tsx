@@ -9,8 +9,10 @@ import { formatCurrency } from "@/lib/i18n-format";
 const PlanComparison = () => {
   const { t, i18n } = useTranslation('pricing');
   
-  const packagesFeatures = t('comparison.packages.features', { returnObjects: true }) as string[];
-  const subscriptionFeatures = t('comparison.subscription.features', { returnObjects: true }) as string[];
+  const rawPackages = t('comparison.packages.features', { returnObjects: true, defaultValue: [] });
+  const rawSubscription = t('comparison.subscription.features', { returnObjects: true, defaultValue: [] });
+  const packagesFeatures = Array.isArray(rawPackages) ? (rawPackages as string[]) : [];
+  const subscriptionFeatures = Array.isArray(rawSubscription) ? (rawSubscription as string[]) : [];
 
   // Format price with currency conversion
   const formatPrice = (cents: number) => formatCurrency(cents, i18n.language, { convert: true });
