@@ -537,7 +537,7 @@ const AdminDashboard = () => {
         console.info('[Meta CAPI] chamando meta-capi-purchase (pix)', { orderId });
         const { data: profileRow } = await supabase
           .from('profiles')
-          .select('phone, whatsapp, email')
+          .select('phone, whatsapp')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -549,7 +549,7 @@ const AdminDashboard = () => {
             value: amountBRL,
             currency: orderData.currency || 'BRL',
             event_source_url: window.location.origin + `/pedido/${orderId}`,
-            email: profileRow?.email || null,
+            user_id: userId,
             phone: profileRow?.whatsapp || profileRow?.phone || null,
           },
         });
