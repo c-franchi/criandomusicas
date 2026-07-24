@@ -549,12 +549,13 @@ export default function Checkout() {
       if (error) throw error;
 
       if (data?.url) {
-        // Meta Pixel: InitiateCheckout disparado após criação da sessão do cartão
-        console.info('[Meta] cobrança criada');
-        console.info('[Meta] fbq no checkout:', typeof (window as any).fbq);
+        // Meta Pixel: InitiateCheckout — cobrança/sessão criada com sucesso
+        console.info('[Meta] pagamento criado');
+        console.info('[Meta] fbq checkout:', typeof (window as any).fbq);
+        const totalValue = Number(((order.amount || 0) / 100).toFixed(2));
         if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
           (window as any).fbq('track', 'InitiateCheckout', {
-            value: Number(((order.amount || 0) / 100).toFixed(2)),
+            value: totalValue,
             currency: 'BRL',
             content_name: planId,
             content_ids: [order.id],
@@ -563,7 +564,10 @@ export default function Checkout() {
           });
           console.info('[Meta] InitiateCheckout enviado');
         }
-        window.location.href = data.url;
+        // Pequeno atraso para o Pixel enviar o beacon antes do redirect
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 350);
       } else {
         throw new Error(t('errors.paymentFailed'));
       }
@@ -578,10 +582,8 @@ export default function Checkout() {
   const handlePixPayment = async () => {
     if (!order) return;
 
-    setShowPixSection(true);
-
     try {
-      // Update order to AWAITING_PIX status
+      // Update order to AWAITING_PIX status (cobrança PIX "criada")
       const { error } = await supabase
         .from('orders')
         .update({
@@ -592,18 +594,13 @@ export default function Checkout() {
 
       if (error) throw error;
 
-      setOrder({
-        ...order,
-        payment_method: 'pix',
-        payment_status: 'AWAITING_PIX'
-      });
-
-      // Meta Pixel: InitiateCheckout disparado após seleção PIX confirmada
-      console.info('[Meta] cobrança criada');
-      console.info('[Meta] fbq no checkout:', typeof (window as any).fbq);
+      // Meta Pixel: InitiateCheckout — cobrança PIX criada com sucesso, antes de exibir o QR
+      console.info('[Meta] pagamento criado');
+      console.info('[Meta] fbq checkout:', typeof (window as any).fbq);
+      const totalValue = Number(((order.amount || 0) / 100).toFixed(2));
       if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
         (window as any).fbq('track', 'InitiateCheckout', {
-          value: Number(((order.amount || 0) / 100).toFixed(2)),
+          value: totalValue,
           currency: 'BRL',
           content_name: 'pix',
           content_ids: [order.id],
@@ -612,10 +609,21 @@ export default function Checkout() {
         });
         console.info('[Meta] InitiateCheckout enviado');
       }
+
+      setOrder({
+        ...order,
+        payment_method: 'pix',
+        payment_status: 'AWAITING_PIX'
+      });
+
+      // Só exibe o QR Code após o evento ter sido enviado
+      setShowPixSection(true);
     } catch (error) {
       console.error('PIX update error:', error);
+      toast.error(t('errors.paymentFailed'));
     }
   };
+
 
   // Copy PIX key to clipboard
   const copyPixKey = () => {
