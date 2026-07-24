@@ -541,9 +541,8 @@ const AdminDashboard = () => {
           .eq('user_id', userId)
           .maybeSingle();
 
-        const { data: userRow } = await supabase.auth.admin?.getUserById
-          ? { data: null } // admin API not available on client; edge already has email
-          : { data: null };
+
+
 
         const amountBRL = (orderData.amount || 0) / 100;
         const capiResp = await supabase.functions.invoke('meta-capi-purchase', {
