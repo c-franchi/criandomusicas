@@ -65,8 +65,10 @@ serve(async (req) => {
       client_user_agent,
       email,
       phone,
-      test_event_code,
     } = body || {};
+
+    // Test event code comes ONLY from a backend secret; never accepted from client input.
+    const testEventCode = Deno.env.get("META_CAPI_TEST_EVENT_CODE")?.trim() || undefined;
 
     if (!transaction_id || !event_id || typeof value !== "number") {
       return new Response(
@@ -116,7 +118,7 @@ serve(async (req) => {
           },
         },
       ],
-      ...(test_event_code ? { test_event_code } : {}),
+      ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
     const url = `https://graph.facebook.com/v20.0/${PIXEL_ID}/events?access_token=${encodeURIComponent(token)}`;
