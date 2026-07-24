@@ -2345,12 +2345,15 @@ const Briefing = () => {
       if (error) throw error;
 
       // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
+      console.info('[Meta] pedido criado');
+      console.info('[Meta] fbq no Lead:', typeof (window as any).fbq);
       analytics.submitBriefing(creationMode);
       if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
         (window as any).fbq('track', 'Lead', {
           content_name: 'Briefing de música personalizada',
           content_category: creationMode,
         });
+        console.info('[Meta] Lead enviado');
       }
 
       // Salvar dados completos no localStorage para uso posterior
