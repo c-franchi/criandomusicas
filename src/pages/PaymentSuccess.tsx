@@ -38,13 +38,15 @@ const PaymentSuccess = () => {
 
         if (fnError) throw fnError;
 
-        if (data?.success) {
+        if (data?.success && (data.status === 'paid' || data.paid === true)) {
           setVerified(true);
           setOrderType(data.orderType || "vocal");
+          // Only fire purchase after backend-confirmed payment; dedupe is handled in analytics helper
           analytics.purchase({
             value: Number(data.amount ?? data.value ?? 0) || 0,
             currency: data.currency || 'BRL',
             transaction_id: orderId,
+            event_id: `purchase_${orderId}`,
           });
           toast({
             title: t('toast.paymentConfirmed'),
