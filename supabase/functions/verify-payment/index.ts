@@ -25,7 +25,8 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { sessionId, orderId } = await req.json();
+    const reqBody = await req.json();
+    const { sessionId, orderId, fbp, fbc, event_source_url } = reqBody || {};
     if (!sessionId || !orderId) {
       throw new Error("Session ID and Order ID are required");
     }
