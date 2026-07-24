@@ -65,7 +65,17 @@ serve(async (req) => {
       client_user_agent,
       email,
       phone,
+      user_id,
     } = body || {};
+
+    // If email not supplied but user_id is, resolve via auth admin
+    let resolvedEmail: string | null = email || null;
+    if (!resolvedEmail && user_id) {
+      try {
+        const { data: u } = await supabase.auth.admin.getUserById(user_id);
+        resolvedEmail = u?.user?.email ?? null;
+      } catch (_e) { /* ignore */ }
+    }
 
     // Test event code comes ONLY from a backend secret; never accepted from client input.
     const testEventCode = Deno.env.get("META_CAPI_TEST_EVENT_CODE")?.trim() || undefined;
