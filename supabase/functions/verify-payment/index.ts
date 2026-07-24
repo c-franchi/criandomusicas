@@ -53,7 +53,10 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
+    console.log("[Meta CAPI] session.payment_status atual:", session.payment_status);
     if (session.payment_status === "paid") {
+      console.log("[Meta CAPI] condição paid atendida");
+
       // Fetch full order data to determine type
       const { data: orderData, error: orderFetchError } = await supabaseClient
         .from("orders")
