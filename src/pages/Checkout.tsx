@@ -171,10 +171,17 @@ export default function Checkout() {
           return;
         }
 
-        // If awaiting PIX, show waiting state
+        // If awaiting PIX, decide state based on whether receipt was already uploaded
         if (data.payment_status === 'AWAITING_PIX') {
           setShowPixSection(true);
-          setPixConfirmed(true);
+          if (data.pix_receipt_url) {
+            // Receipt already sent — show waiting/confirmation screen
+            setPixConfirmed(true);
+          } else {
+            // No receipt yet — keep upload UI open so user can finish sending it
+            setPixConfirmed(false);
+            setShowReceiptUpload(true);
+          }
         }
 
         // Determine correct pricing based on planId from URL
