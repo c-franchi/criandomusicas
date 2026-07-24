@@ -561,6 +561,18 @@ export default function Checkout() {
         payment_method: 'pix',
         payment_status: 'AWAITING_PIX'
       });
+
+      // Meta Pixel: InitiateCheckout disparado após seleção PIX confirmada
+      if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+        (window as any).fbq('track', 'InitiateCheckout', {
+          value: Number(((order.amount || 0) / 100).toFixed(2)),
+          currency: 'BRL',
+          content_name: 'pix',
+          content_ids: [order.id],
+          content_type: 'product',
+          num_items: 1,
+        });
+      }
     } catch (error) {
       console.error('PIX update error:', error);
     }
