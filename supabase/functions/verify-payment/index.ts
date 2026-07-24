@@ -159,6 +159,50 @@ serve(async (req) => {
         logStep("User push notification failed (non-blocking)", { error: String(pushErr) });
       }
 
+      // Send Meta Conversions API Purchase event (server-side, deduped with Pixel via event_id)
+      try {
+        const amount = session.amount_total ? session.amount_total / 100 : 0;
+        const currency = (session.currency || "brl").toUpperCase();
+
+        // Prefer profile phone; fall back to customer_details from Stripe
+        const { data: profileRow } = await supabaseClient
+          .from("profiles")
+          .select("phone, whatsapp")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        const email =
+          session.customer_details?.email ||
+          session.customer_email ||
+          null;
+        const phone =
+          profileRow?.whatsapp || profileRow?.phone || session.customer_details?.phone || null;
+
+        const xff = req.headers.get("x-forwarded-for") || "";
+        const client_ip_address = xff.split(",")[0]?.trim() || undefined;
+        const client_user_agent = req.headers.get("user-agent") || undefined;
+
+        await supabaseClient.functions.invoke("meta-capi-purchase", {
+          body: {
+            transaction_id: orderId,
+            event_id: `purchase_${orderId}`,
+            value: amount,
+            currency,
+            event_source_url,
+            fbp,
+            fbc,
+            client_ip_address,
+            client_user_agent,
+            email,
+            phone,
+          },
+        });
+        logStep("Meta CAPI purchase dispatched");
+      } catch (capiErr) {
+        logStep("Meta CAPI dispatch failed (non-blocking)", { error: String(capiErr) });
+      }
+
+
       // Return order type so frontend can redirect correctly
       return new Response(
         JSON.stringify({
