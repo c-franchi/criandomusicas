@@ -1343,7 +1343,7 @@ export default function Checkout() {
                       />
                       
                       {receiptPreview ? (
-                        <div className="flex flex-col items-center gap-3">
+                        <div ref={receiptPreviewRef} className="flex flex-col items-center gap-3">
                           <img 
                             src={receiptPreview} 
                             alt={t('receipt.title')} 
