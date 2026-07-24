@@ -156,6 +156,23 @@ const OrderTracking = () => {
     };
   }, [user?.id, orderId]);
 
+  // Fire browser-side Meta Purchase whenever the order is PAID (deduped internally).
+  // Ensures PIX-approved orders (which never pass through PaymentSuccess) also send Purchase.
+  useEffect(() => {
+    if (!order) return;
+    if (order.payment_status !== 'PAID') return;
+    console.info('[Meta Purchase] payment_status PAID detectado (order tracking)');
+    console.info('[Meta Purchase] fbq disponível:', typeof (window as any).fbq);
+    analytics.purchase({
+      value: Number(order.amount ?? 0) / 100 || 0,
+      currency: order.currency || 'BRL',
+      transaction_id: order.id,
+      event_id: `purchase_${order.id}`,
+    });
+    console.info('[Meta Purchase] Purchase enviado (event_id: purchase_' + order.id + ')');
+  }, [order?.id, order?.payment_status]);
+
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
