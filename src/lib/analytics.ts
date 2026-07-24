@@ -69,7 +69,14 @@ export const analytics = {
   beginBriefing: (mode?: string) => trackEvent('begin_briefing', { mode }),
   submitBriefing: (mode?: string) => {
     trackEvent('submit_briefing', { mode });
-    trackPixel('Lead');
+    trackPixel('Lead', {
+      content_name: 'Briefing de música personalizada',
+      content_category: mode,
+    });
+    if (import.meta.env.DEV) {
+      // Dev-only trace, no PII
+      console.info('[analytics] Lead fired (submitBriefing)', { mode });
+    }
   },
   beginCheckout: (value?: number, currency = 'BRL') => {
     trackEvent('begin_checkout', { value, currency });
