@@ -32,8 +32,20 @@ const PaymentSuccess = () => {
       }
 
       try {
+        const getCookie = (name: string) => {
+          const m = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+          return m ? decodeURIComponent(m[1]) : undefined;
+        };
+        const fbp = getCookie('_fbp');
+        const fbc = getCookie('_fbc');
         const { data, error: fnError } = await supabase.functions.invoke('verify-payment', {
-          body: { sessionId, orderId }
+          body: {
+            sessionId,
+            orderId,
+            fbp,
+            fbc,
+            event_source_url: window.location.href,
+          }
         });
 
         if (fnError) throw fnError;

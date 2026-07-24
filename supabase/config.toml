@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.send-reengagement-email]
 verify_jwt = false
+
+[functions.meta-capi-purchase]
+verify_jwt = false
