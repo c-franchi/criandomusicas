@@ -1325,7 +1325,7 @@ export default function Checkout() {
 
               {/* Receipt Upload Modal - ÁREA TODA CLICÁVEL */}
               {showReceiptUpload && (
-                <Card className="mt-4 p-4 border-2 border-primary/30 bg-primary/5">
+                <Card ref={receiptUploadRef} className="mt-4 p-4 border-2 border-primary/30 bg-primary/5">
                   <div className="space-y-4">
                     {/* Área clicável para selecionar arquivo */}
                     <div 
