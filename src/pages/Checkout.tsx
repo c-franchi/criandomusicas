@@ -229,6 +229,36 @@ export default function Checkout() {
     }
   }, [orderId, user, authLoading, navigate]);
 
+  // Scroll to PIX section when it becomes visible
+  useEffect(() => {
+    if (showPixSection && pixSectionRef.current) {
+      const timer = setTimeout(() => {
+        pixSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showPixSection]);
+
+  // Scroll to receipt upload when it opens
+  useEffect(() => {
+    if (showReceiptUpload && receiptUploadRef.current) {
+      const timer = setTimeout(() => {
+        receiptUploadRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showReceiptUpload]);
+
+  // Scroll to receipt preview after user selects a file
+  useEffect(() => {
+    if (receiptPreview && receiptPreviewRef.current) {
+      const timer = setTimeout(() => {
+        receiptPreviewRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [receiptPreview]);
+
   // Auto-process VIP access
   useEffect(() => {
     const processVIPAccess = async () => {
