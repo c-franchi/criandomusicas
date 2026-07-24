@@ -88,6 +88,9 @@ export default function Checkout() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
+  const pixSectionRef = useRef<HTMLDivElement>(null);
+  const receiptUploadRef = useRef<HTMLDivElement>(null);
+  const receiptPreviewRef = useRef<HTMLDivElement>(null);
 
   // Plan labels for display - dynamically translated
   const getPlanLabel = (planId: string): string => {
