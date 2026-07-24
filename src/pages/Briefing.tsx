@@ -2344,6 +2344,9 @@ const Briefing = () => {
 
       if (error) throw error;
 
+      // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
+      analytics.submitBriefing(creationMode);
+
       // Salvar dados completos no localStorage para uso posterior
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
@@ -2790,6 +2793,9 @@ const Briefing = () => {
         .single();
 
       if (error) throw error;
+
+      // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
+      analytics.submitBriefing('quick');
 
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
