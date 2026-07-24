@@ -364,6 +364,36 @@ export type Database = {
           },
         ]
       }
+      meta_capi_events: {
+        Row: {
+          event_id: string
+          event_name: string
+          id: string
+          response_body: string | null
+          response_status: number | null
+          sent_at: string
+          transaction_id: string
+        }
+        Insert: {
+          event_id: string
+          event_name: string
+          id?: string
+          response_body?: string | null
+          response_status?: number | null
+          sent_at?: string
+          transaction_id: string
+        }
+        Update: {
+          event_id?: string
+          event_name?: string
+          id?: string
+          response_body?: string | null
+          response_status?: number | null
+          sent_at?: string
+          transaction_id?: string
+        }
+        Relationships: []
+      }
       notification_logs: {
         Row: {
           body: string
