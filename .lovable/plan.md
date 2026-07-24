@@ -1,38 +1,55 @@
-## Diagnóstico
 
-Testei as duas funções diretamente no servidor:
+# Plano aprovado — implementação inicial (SEO técnico + GA4)
 
-1. **`generate-lyrics`** — está respondendo **200 OK** com `gpt-5.2`. Ou seja, a comunicação com a IA está funcionando. O erro que você vê não vem da OpenAI, vem do fluxo cliente→backend.
+Você aprovou o plano e já enviou o GA4 (`G-338TEK08MW`). Vou implementar agora tudo que não depende de IDs externos, deixando ganchos prontos para colar Meta Pixel, GTM e Conversions API quando enviar os IDs.
 
-2. **`apply-voucher`** — encontrei dois bugs reais:
-   - **Bug A**: quando o voucher falha por motivo "esperado" (já usado, expirado, plano errado), a função retorna **HTTP 500**. O `supabase.functions.invoke` interpreta isso como exceção e o frontend mostra apenas "Erro ao aplicar voucher", **escondendo a mensagem real** ("Você já utilizou este voucher", "Voucher expirou", etc.).
-   - **Bug B**: o `apply-voucher` não respeita `max_uses_per_user` (sempre trava no primeiro uso). Diverge do `validate-voucher`, então um voucher que diz "valid: true" pode falhar ao aplicar.
+## 1. GA4 (com ID real)
 
-3. **Dados**: dos vouchers ativos, a maioria está expirada (DESCONTO50, PRIMA100, DESCONTO100, TESTES100). Apenas `DESCONTOAMIGO100` ainda está vigente (até 31/05). Seu usuário admin (`75c3ec36…`) já o usou em 25/03 — por isso, ao tentar de novo, o backend retorna "já utilizado", mas o frontend mostra erro genérico.
+- Adicionar o snippet `gtag.js` em `index.html` com o ID `G-338TEK08MW`.
+- Criar `src/lib/analytics.ts` com helpers:
+  - `trackPageView(path)` — dispara em cada mudança de rota (React Router).
+  - `trackEvent(name, params)` — wrapper de `gtag('event', ...)`.
+- Criar hook `usePageTracking` montado no `App.tsx` para enviar `page_view` em SPA.
+- Instrumentar eventos-chave: `begin_briefing`, `submit_briefing`, `begin_checkout`, `apply_voucher`, `purchase` (na `PaymentSuccess`), `sign_up`, `login`.
+- Guardar o ID em `VITE_GA4_ID` (ler de `import.meta.env`) com fallback no valor enviado, para permitir troca sem redeploy.
 
-## Correções
+## 2. Melhorar HTML inicial e renderização para o Google
 
-### 1. `supabase/functions/apply-voucher/index.ts`
-- Trocar todos os `throw new Error(...)` de validação (voucher não encontrado, expirado, sem usos, plano não permitido, já usado, pedido não pertence, pedido já pago) por `return Response(... status: 200, success: false, error: <mensagem>)`. Manter `status: 500` apenas para erros inesperados de banco.
-- Substituir o check `existingRedemption` por contagem `userRedemptions.length` comparada a `voucher.max_uses_per_user` (espelhando `validate-voucher`).
-- Manter logs `[APPLY-VOUCHER]` para rastrear.
+- Revisar `index.html`: manter title/description/OG já existentes, adicionar `hreflang` para pt-BR/en/es/it (as rotas i18n existem) e `<link rel="alternate">`.
+- Injetar em cada página com Helmet (`SEO.tsx` já existe) títulos/descrições únicos nas rotas públicas: `/planos`, `/regras`, `/privacidade`, `/termos`, `/m/:orderId`.
+- Adicionar `Breadcrumb` JSON-LD dinâmico nas páginas internas relevantes.
+- Confirmar `noindex` nas rotas privadas (`/dashboard`, `/perfil`, `/admin/*`, `/checkout/*`, `/pagamento/*`) via `SEO noIndex`.
+- Garantir `<h1>` único em Home, Planos e páginas legais; alt text nas imagens do Hero/Showcases.
 
-### 2. `src/pages/PaymentGateway.tsx`
-- No `catch` do `handleApplyVoucher`, ler `err?.context?.body` / `err?.context?.error` (FunctionsHttpError do supabase-js) para sempre exibir a mensagem real do backend no toast, mesmo se a função retornar não-2xx.
-- Bloquear o botão "Aplicar" se o voucher estiver vazio (já existe), e exibir mensagem clara quando `data.success === false`.
+## 3. Search Console + sitemap
 
-### 3. Geração de letra — verificação e blindagem
-- A função em si está OK. Para evitar falsos "erro ao gerar":
-  - Em `src/pages/CreateSong.tsx` (linhas ~383 e ~646), no bloco `if (error) throw error`, ler `error.context?.body` para preservar a mensagem real (ex: 504 timeout, 429 rate limit, 402 sem créditos) e mostrar no toast.
-  - Garantir que, se `generate-lyrics` retornar 504 (timeout 90s), o toast diga "A IA demorou para responder, tente novamente" em vez de mensagem genérica.
-- Não vou alterar a lógica de prompt nem o modelo (`gpt-5.2`) — está correta e validada no teste.
+- Gerar `public/sitemap.xml` estático com rotas públicas (`/`, `/planos`, `/briefing`, `/regras`, `/privacidade`, `/termos`).
+- Atualizar `public/robots.txt` adicionando `Sitemap: https://criandomusicas.com.br/sitemap.xml`.
+- Preparar espaço para meta-tag de verificação do Search Console (`google-site-verification`) — colar quando você enviar o código.
 
-## Arquivos a alterar
+## 4. Estrutura pronta para Meta Pixel + Conversions API (aguardando IDs)
 
-- `supabase/functions/apply-voucher/index.ts` (refatorar respostas de erro + corrigir `max_uses_per_user`)
-- `src/pages/PaymentGateway.tsx` (mostrar erro real do edge function)
-- `src/pages/CreateSong.tsx` (mostrar erro real ao chamar `generate-lyrics`)
+- Criar `src/lib/pixel.ts` (stub inativo até `VITE_META_PIXEL_ID` existir): `fbq('init')`, `PageView`, `Lead`, `InitiateCheckout`, `Purchase`.
+- Adicionar snippet condicional no `index.html` (só carrega se a env var estiver definida) + `<noscript>` no `<body>` (nunca no `<head>`).
+- Criar edge function `meta-capi` (Deno) pronta para receber eventos server-side (Purchase, Lead) e enviar ao endpoint Graph com `META_CAPI_ACCESS_TOKEN` + `META_PIXEL_ID` (secrets adicionados via `add_secret` quando você enviar).
+- Disparar `Purchase` server-side em `verify-payment` assim que o token existir.
 
-## Fora do escopo
-- Não vou criar novos vouchers nem reativar os expirados — isso é decisão de negócio sua (posso fazer depois se pedir).
-- Não vou alterar o modelo de IA nem o pricing.
+## 5. GTM (opcional, deixo o gancho)
+
+- Slot no `index.html` para container `GTM-XXXX` desativado até você mandar o ID; se preferir GA4 direto (como está), pulamos.
+
+## O que fica pendente do seu lado (sem bloquear o que já dá pra fazer)
+
+- ID do Meta Pixel + Access Token da Conversions API.
+- Código de verificação do Google Search Console (meta tag ou arquivo).
+- (Opcional) Container GTM.
+- Criação dos perfis Facebook/Instagram, conteúdos, vídeos, campanhas e remarketing — são ações operacionais fora do código; te oriento quando quiser.
+
+## Detalhes técnicos
+
+- `analytics.ts` usa `window.gtag` com type-guards para SSR-safety.
+- `usePageTracking` escuta `useLocation()` e dispara `page_view` com `page_path` + `page_title` corretos após a navegação.
+- Pixel e CAPI ficam atrás de flag (`if (import.meta.env.VITE_META_PIXEL_ID)`) para não quebrar quando a env não existir.
+- Sitemap servido estaticamente pelo hosting (Firebase); não precisa de build especial.
+
+Confirma para eu implementar?

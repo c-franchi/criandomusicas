@@ -7,6 +7,7 @@ import { CheckCircle, Music, Loader2, XCircle } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { analytics } from "@/lib/analytics";
 
 const PaymentSuccess = () => {
   const { t } = useTranslation('checkout');
@@ -40,6 +41,11 @@ const PaymentSuccess = () => {
         if (data?.success) {
           setVerified(true);
           setOrderType(data.orderType || "vocal");
+          analytics.purchase({
+            value: Number(data.amount ?? data.value ?? 0) || 0,
+            currency: data.currency || 'BRL',
+            transaction_id: orderId,
+          });
           toast({
             title: t('toast.paymentConfirmed'),
             description: t('success.confirmedDescription'),

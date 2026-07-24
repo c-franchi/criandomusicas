@@ -10,6 +10,7 @@ import PageLoader from "@/components/PageLoader";
 import UpdateBanner from "@/components/UpdateBanner";
 import ProfileOnboardingWrapper from "@/components/ProfileOnboardingWrapper";
 import TourWrapper from "@/components/TourWrapper";
+import { usePageTracking } from "@/hooks/usePageTracking";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -44,6 +45,11 @@ const PaymentGateway = lazy(() => import("./pages/PaymentGateway"));
 
 const queryClient = new QueryClient();
 
+const RouteTracker = () => {
+  usePageTracking();
+  return null;
+};
+
 // PWA Update Handler Component with visual banner
 const PWAUpdateHandler = () => {
   const { showUpdateBanner, forceUpdate, dismissBanner } = usePWAUpdate();
@@ -68,6 +74,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <TourWrapper />
+          <RouteTracker />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Critical routes - loaded immediately */}
