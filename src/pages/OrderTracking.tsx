@@ -33,7 +33,10 @@ interface OrderData {
   approved_lyric_id: string | null;
   lyric_title?: string;
   is_instrumental?: boolean;
+  amount?: number | null;
+  currency?: string | null;
 }
+
 
 const OrderTracking = () => {
   const { t, i18n } = useTranslation('dashboard');
