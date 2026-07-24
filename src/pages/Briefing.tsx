@@ -2346,6 +2346,12 @@ const Briefing = () => {
 
       // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
       analytics.submitBriefing(creationMode);
+      if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+        (window as any).fbq('track', 'Lead', {
+          content_name: 'Briefing de música personalizada',
+          content_category: creationMode,
+        });
+      }
 
       // Salvar dados completos no localStorage para uso posterior
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
@@ -2796,6 +2802,12 @@ const Briefing = () => {
 
       // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
       analytics.submitBriefing('quick');
+      if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+        (window as any).fbq('track', 'Lead', {
+          content_name: 'Briefing de música personalizada',
+          content_category: 'quick',
+        });
+      }
 
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       

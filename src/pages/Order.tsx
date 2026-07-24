@@ -136,6 +136,15 @@ const Order = () => {
       if (error) throw error;
 
       if (data?.url) {
+        if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'InitiateCheckout', {
+            value: Number(((order?.amount || 0) / 100).toFixed(2)),
+            currency: 'BRL',
+            content_ids: [orderId],
+            content_type: 'product',
+            num_items: 1,
+          });
+        }
         window.location.href = data.url;
       } else {
         throw new Error('URL de pagamento não recebida');
