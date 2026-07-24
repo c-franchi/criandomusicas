@@ -118,7 +118,7 @@ serve(async (req) => {
           },
         },
       ],
-      ...(testEventCode ? { test_event_code } : {}),
+      ...(testEventCode ? { test_event_code: testEventCode } : {}),
     };
 
     const url = `https://graph.facebook.com/v20.0/${PIXEL_ID}/events?access_token=${encodeURIComponent(token)}`;
