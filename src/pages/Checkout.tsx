@@ -516,6 +516,17 @@ export default function Checkout() {
       if (error) throw error;
 
       if (data?.url) {
+        // Meta Pixel: InitiateCheckout disparado após criação da sessão do cartão
+        if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'InitiateCheckout', {
+            value: Number(((order.amount || 0) / 100).toFixed(2)),
+            currency: 'BRL',
+            content_name: planId,
+            content_ids: [order.id],
+            content_type: 'product',
+            num_items: 1,
+          });
+        }
         window.location.href = data.url;
       } else {
         throw new Error(t('errors.paymentFailed'));
