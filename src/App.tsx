@@ -45,6 +45,11 @@ const PaymentGateway = lazy(() => import("./pages/PaymentGateway"));
 
 const queryClient = new QueryClient();
 
+const RouteTracker = () => {
+  usePageTracking();
+  return null;
+};
+
 // PWA Update Handler Component with visual banner
 const PWAUpdateHandler = () => {
   const { showUpdateBanner, forceUpdate, dismissBanner } = usePWAUpdate();
