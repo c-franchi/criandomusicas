@@ -160,6 +160,16 @@ const VideoCheckout = () => {
       if (paymentError) throw paymentError;
 
       if (paymentData?.url) {
+        if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+          (window as any).fbq('track', 'InitiateCheckout', {
+            value: 50,
+            currency: 'BRL',
+            content_name: 'video_personalizado',
+            content_ids: [videoOrder.id],
+            content_type: 'product',
+            num_items: 1,
+          });
+        }
         window.location.href = paymentData.url;
       } else {
         throw new Error('URL de pagamento não recebida');
