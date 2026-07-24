@@ -4,8 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/verify-static-assets.js prebuild",
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "node scripts/verify-static-assets.js postbuild",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
