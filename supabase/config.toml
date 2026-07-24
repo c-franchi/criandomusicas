@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.meta-capi-purchase]
 verify_jwt = false
+
+[functions.meta-capi-track]
+verify_jwt = false
