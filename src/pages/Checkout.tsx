@@ -566,6 +566,8 @@ export default function Checkout() {
       });
 
       // Meta Pixel: InitiateCheckout disparado após seleção PIX confirmada
+      console.info('[Meta] cobrança criada');
+      console.info('[Meta] fbq no checkout:', typeof (window as any).fbq);
       if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
         (window as any).fbq('track', 'InitiateCheckout', {
           value: Number(((order.amount || 0) / 100).toFixed(2)),
@@ -575,6 +577,7 @@ export default function Checkout() {
           content_type: 'product',
           num_items: 1,
         });
+        console.info('[Meta] InitiateCheckout enviado');
       }
     } catch (error) {
       console.error('PIX update error:', error);
