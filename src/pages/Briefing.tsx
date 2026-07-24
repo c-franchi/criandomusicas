@@ -22,6 +22,7 @@ import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCre
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
+import { analytics } from "@/lib/analytics";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
@@ -2343,6 +2344,9 @@ const Briefing = () => {
 
       if (error) throw error;
 
+      // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
+      analytics.submitBriefing(creationMode);
+
       // Salvar dados completos no localStorage para uso posterior
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
@@ -2789,6 +2793,9 @@ const Briefing = () => {
         .single();
 
       if (error) throw error;
+
+      // Meta Pixel: Lead disparado somente após confirmação de sucesso do backend
+      analytics.submitBriefing('quick');
 
       localStorage.setItem('briefingData', JSON.stringify({ ...briefingData, orderId: orderData.id }));
       
