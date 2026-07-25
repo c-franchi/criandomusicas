@@ -6,12 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const log = (step: string, details?: unknown) => {
-  const d = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[META-CAPI] ${step}${d}`);
-};
-
 const PIXEL_ID = "1411399390868441";
+
 
 async function sha256Hex(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input);
@@ -95,14 +91,12 @@ serve(async (req) => {
       .maybeSingle();
 
     if (existing) {
-      console.log("[Meta CAPI] evento já deduplicado: true", { transaction_id });
-      log("Already sent for transaction", { transaction_id });
       return new Response(
         JSON.stringify({ success: true, deduped: true }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
     }
-    console.log("[Meta CAPI] evento já deduplicado: false", { transaction_id });
+
 
 
     const user_data: Record<string, unknown> = {};
@@ -141,7 +135,7 @@ serve(async (req) => {
       body: JSON.stringify(payload),
     });
     const respText = await res.text();
-    log("Meta response", { status: res.status });
+
 
     // Persist dedupe record (unique on transaction_id also protects against races)
     const { error: insertErr } = await supabase.from("meta_capi_events").insert({
@@ -151,7 +145,7 @@ serve(async (req) => {
       response_status: res.status,
       response_body: respText.slice(0, 2000),
     });
-    if (insertErr) log("Dedupe insert error (non-blocking)", { error: insertErr.message });
+    if (insertErr) console.error("[META-CAPI] dedupe insert error");
 
     if (!res.ok) {
       return new Response(
@@ -166,7 +160,8 @@ serve(async (req) => {
     );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    log("Error", { msg });
+    console.error("[META-CAPI] error", msg);
+
     return new Response(JSON.stringify({ error: msg }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

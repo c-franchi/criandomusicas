@@ -111,7 +111,8 @@ serve(async (req) => {
       body: JSON.stringify(payload),
     });
     const respText = await res.text();
-    console.log(`[META-CAPI-TRACK] ${event_name} status=${res.status} body=${respText.slice(0, 300)}`);
+    if (!res.ok) console.error(`[META-CAPI-TRACK] ${event_name} failed status=${res.status}`);
+
 
     return new Response(
       JSON.stringify({ success: res.ok, status: res.status, body: respText }),
