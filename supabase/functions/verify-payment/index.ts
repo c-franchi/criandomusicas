@@ -186,8 +186,7 @@ serve(async (req) => {
         const client_ip_address = xff.split(",")[0]?.trim() || undefined;
         const client_user_agent = req.headers.get("user-agent") || undefined;
 
-        console.log("[Meta CAPI] chamando meta-capi-purchase");
-        const capiResp = await supabaseClient.functions.invoke("meta-capi-purchase", {
+        await supabaseClient.functions.invoke("meta-capi-purchase", {
           body: {
             transaction_id: orderId,
             event_id: `purchase_${orderId}`,
@@ -202,12 +201,10 @@ serve(async (req) => {
             phone,
           },
         });
-        console.log("[Meta CAPI] resposta meta-capi-purchase:", JSON.stringify(capiResp?.data ?? capiResp?.error ?? {}));
-        logStep("Meta CAPI purchase dispatched");
-
       } catch (capiErr) {
-        logStep("Meta CAPI dispatch failed (non-blocking)", { error: String(capiErr) });
+        console.error("[VERIFY-PAYMENT] Meta CAPI dispatch failed:", String(capiErr));
       }
+
 
 
       // Return order type so frontend can redirect correctly
