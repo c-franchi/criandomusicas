@@ -139,7 +139,7 @@ serve(async (req) => {
       body: JSON.stringify(payload),
     });
     const respText = await res.text();
-    log("Meta response", { status: res.status });
+
 
     // Persist dedupe record (unique on transaction_id also protects against races)
     const { error: insertErr } = await supabase.from("meta_capi_events").insert({
