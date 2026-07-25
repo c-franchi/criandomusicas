@@ -6,12 +6,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const log = (step: string, details?: unknown) => {
-  const d = details ? ` - ${JSON.stringify(details)}` : "";
-  console.log(`[META-CAPI] ${step}${d}`);
-};
-
 const PIXEL_ID = "1411399390868441";
+
 
 async function sha256Hex(input: string): Promise<string> {
   const buf = new TextEncoder().encode(input);
