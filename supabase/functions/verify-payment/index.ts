@@ -23,8 +23,8 @@ serve(async (req) => {
   );
 
   try {
-    logStep("Function started");
-    console.log("[Meta CAPI] verify-payment chamado");
+
+
 
 
     const reqBody = await req.json();
