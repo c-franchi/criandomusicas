@@ -149,7 +149,7 @@ serve(async (req) => {
       response_status: res.status,
       response_body: respText.slice(0, 2000),
     });
-    if (insertErr) log("Dedupe insert error (non-blocking)", { error: insertErr.message });
+    if (insertErr) console.error("[META-CAPI] dedupe insert error");
 
     if (!res.ok) {
       return new Response(
