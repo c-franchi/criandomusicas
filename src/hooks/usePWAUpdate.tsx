@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { shouldBlockUpdate, subscribeFlowBusy } from '@/lib/flowGuard';
 
 // Safe wrapper to avoid "Should have a queue" React error
 const useSafeRegisterSW = () => {
