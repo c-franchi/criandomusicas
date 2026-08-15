@@ -101,31 +101,19 @@ serve(async (req) => {
       throw new Error(`Error fetching credits: ${creditsError.message}`);
     }
 
-    // Find first package with available credits
-    // Prioritize regular credits over preview credits
+    // Find first package with available credits (preview credits are no longer accepted)
     let creditToUse = null;
-    let previewCredit = null;
-    
+
     if (credits && credits.length > 0) {
       for (const credit of credits) {
+        if (credit.plan_id === 'preview_test') continue;
         if (credit.total_credits > credit.used_credits) {
-          // Store preview credit separately
-          if (credit.plan_id === 'preview_test') {
-            previewCredit = credit;
-            continue;
-          }
-          // Use first regular credit found
           creditToUse = credit;
           break;
         }
       }
-      
-      // If no regular credits, use preview credit
-      if (!creditToUse && previewCredit) {
-        creditToUse = previewCredit;
-        logStep("Using preview credit (no regular credits available)");
-      }
     }
+
 
     // If no package credits found, check for subscription credits from Stripe
     let useSubscription = false;
