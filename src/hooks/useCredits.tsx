@@ -45,7 +45,6 @@ interface CreditsState {
   activePackage: ActivePackage | null;
   allPackages: CreditPackage[];
   subscriptionInfo: SubscriptionInfo | null;
-  // Preview credit info
   error: string | null;
 }
 
@@ -196,9 +195,4 @@ export const getCreditsForPlan = (planId: string): number => {
 // Check if plan is a subscription type
 export const isSubscriptionPlan = (planId: string): boolean => {
   return planId.startsWith('creator_');
-};
-
-// Check if plan is a preview test
-export const isPreviewPlan = (planId: string | null | undefined): boolean => {
-  return planId === 'preview_test';
 };
