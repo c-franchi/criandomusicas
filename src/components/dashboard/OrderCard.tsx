@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Trash2, Clock, AlertTriangle } from "lucide-react";
 import { TFunction } from "i18next";
-import { isPreviewOrder } from "@/hooks/usePreviewCredit";
 
 interface Order {
   id: string;
@@ -43,7 +42,6 @@ export const OrderCard = ({
   getStatusText,
   setDeleteOrderId 
 }: OrderCardProps) => {
-  const isPreview = order.is_preview || isPreviewOrder(order.plan_id);
   
   return (
     <motion.div

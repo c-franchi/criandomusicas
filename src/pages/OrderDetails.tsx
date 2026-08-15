@@ -33,7 +33,6 @@ import { supabase } from "@/integrations/supabase/client";
 import ReviewForm from "@/components/ReviewForm";
 import ReactionVideoUpload from "@/components/ReactionVideoUpload";
 import { formatLocalizedDate } from "@/lib/i18n-format";
-import { isPreviewOrder } from "@/hooks/usePreviewCredit";
 
 interface OrderData {
   id: string;
@@ -447,7 +446,6 @@ const OrderDetails = () => {
   const approvedLyric = lyrics.find(l => l.is_approved);
   const isMusicReady = order.status === 'MUSIC_READY' || order.status === 'COMPLETED';
   const isInstrumental = order.is_instrumental === true;
-  const isPreview = isPreviewOrder(order.plan_id) || order.is_preview === true;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4">
