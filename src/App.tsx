@@ -10,6 +10,7 @@ import PageLoader from "@/components/PageLoader";
 import UpdateBanner from "@/components/UpdateBanner";
 import ProfileOnboardingWrapper from "@/components/ProfileOnboardingWrapper";
 import TourWrapper from "@/components/TourWrapper";
+import ContinueFlowBar from "@/components/ContinueFlowBar";
 import { usePageTracking } from "@/hooks/usePageTracking";
 
 // Critical path - load immediately
@@ -75,6 +76,7 @@ const App = () => (
         <BrowserRouter>
           <TourWrapper />
           <RouteTracker />
+          <ContinueFlowBar />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Critical routes - loaded immediately */}
