@@ -233,7 +233,7 @@ const Auth = () => {
       } else {
         toast({
           title: t('success.signup'),
-          description: t('success.signupWithPreview', '🎁 Você ganhou 1 crédito preview gratuito para testar!'),
+          description: t('success.signupDescription', 'Conta criada com sucesso!'),
         });
         
         // Send welcome email
