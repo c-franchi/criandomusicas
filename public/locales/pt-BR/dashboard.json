@@ -277,7 +277,6 @@
     "current": "Etapa atual",
     "pending": "Aguardando",
     "estimatedTime": "Tempo estimado: {{time}}",
-    "order": "Pedido",
     "amount": "Valor",
     "personalizedVideo": "Criar Vídeo Personalizado",
     "soloInstrument": "Solo de instrumento",
@@ -397,14 +396,5 @@
     "acceptedDesc": "O crédito foi adicionado à sua conta.",
     "errorTitle": "Erro ao aceitar",
     "errorDesc": "Tente novamente ou contate o suporte."
-  },
-  "preview": {
-    "badge": "Preview",
-    "downloadBlocked": "Download bloqueado",
-    "downloadBlockedTitle": "🔒 Download indisponível",
-    "downloadBlockedDesc": "Esta é uma prévia gratuita (Verso + Refrão). Você pode baixar esta versão!",
-    "buyCredits": "Comprar Créditos",
-    "createFull": "Criar Música Completa",
-    "notice": "Esta é sua prévia gratuita com estrutura Verso + Refrão. Para criar músicas completas com todas as seções, adquira créditos."
   }
 }

@@ -17,9 +17,7 @@
       "songs": "Songs Created",
       "time": "Average Time",
       "rating": "Rating"
-    },
-    "previewBadge": "🎁 New! Try free before you buy",
-    "previewSubtext": "Create a preview with verse and chorus"
+    }
   },
   "process": {
     "title": "How it",
@@ -45,14 +43,6 @@
       "savings16": "16% savings",
       "bestSavings": "Best savings",
       "viewPackages": "View Packages"
-    },
-    "preview": {
-      "title": "🎁 Free Preview",
-      "description": "Create your account and test the system for free! You get 1 credit to generate a preview with verse and chorus, and you can download it.",
-      "benefit1": "No commitment",
-      "benefit2": "Know the style before buying",
-      "benefit3": "Quick and easy signup",
-      "cta": "Start Free"
     }
   },
   "samples": {
@@ -63,9 +53,24 @@
     "playButton": "Play",
     "pauseButton": "Pause",
     "fallback": {
-      "sample1": { "title": "Tribute Song", "description": "A special tribute for an unforgettable moment", "style": "Pop", "occasion": "Birthday" },
-      "sample2": { "title": "Motivational Song", "description": "An inspiring track to lift your spirits", "style": "Rock", "occasion": "Motivational" },
-      "sample3": { "title": "Romantic Song", "description": "A beautiful melody to express love", "style": "Bossa Nova", "occasion": "Wedding" }
+      "sample1": {
+        "title": "Tribute Song",
+        "description": "A special tribute for an unforgettable moment",
+        "style": "Pop",
+        "occasion": "Birthday"
+      },
+      "sample2": {
+        "title": "Motivational Song",
+        "description": "An inspiring track to lift your spirits",
+        "style": "Rock",
+        "occasion": "Motivational"
+      },
+      "sample3": {
+        "title": "Romantic Song",
+        "description": "A beautiful melody to express love",
+        "style": "Bossa Nova",
+        "occasion": "Wedding"
+      }
     }
   },
   "videoService": {
@@ -77,9 +82,18 @@
     "startingAt": "starting at",
     "cardDescription": "Choose one of the options below to create your video with professional editing",
     "options": {
-      "5images": { "title": "5 Images", "description": "Slideshow with smooth transitions" },
-      "10images": { "title": "10 Images", "description": "More photos, more memories" },
-      "video": { "title": "1 Video of 2 min", "description": "Complete editing of your video" }
+      "5images": {
+        "title": "5 Images",
+        "description": "Slideshow with smooth transitions"
+      },
+      "10images": {
+        "title": "10 Images",
+        "description": "More photos, more memories"
+      },
+      "video": {
+        "title": "1 Video of 2 min",
+        "description": "Complete editing of your video"
+      }
     },
     "features": {
       "professional": "Professional editing with effects",

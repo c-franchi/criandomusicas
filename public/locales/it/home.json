@@ -17,9 +17,7 @@
       "songs": "Canzoni Create",
       "time": "Tempo Medio",
       "rating": "Valutazione"
-    },
-    "previewBadge": "🎁 Nuovo! Prova gratis prima di acquistare",
-    "previewSubtext": "Crea un'anteprima con strofa e ritornello"
+    }
   },
   "process": {
     "title": "Come",
@@ -45,14 +43,6 @@
       "savings16": "16% di risparmio",
       "bestSavings": "Maggior risparmio",
       "viewPackages": "Vedi Pacchetti"
-    },
-    "preview": {
-      "title": "🎁 Anteprima Gratuita",
-      "description": "Crea il tuo account e prova il sistema gratis! Ricevi 1 credito per generare un'anteprima con strofa e ritornello, e puoi scaricarla.",
-      "benefit1": "Senza impegno",
-      "benefit2": "Conosci lo stile prima di acquistare",
-      "benefit3": "Registrazione semplice e veloce",
-      "cta": "Inizia Gratis"
     }
   },
   "samples": {
@@ -63,9 +53,24 @@
     "playButton": "Riproduci",
     "pauseButton": "Pausa",
     "fallback": {
-      "sample1": { "title": "Canzone Omaggio", "description": "Un omaggio speciale per un momento indimenticabile", "style": "Pop", "occasion": "Compleanno" },
-      "sample2": { "title": "Canzone Motivazionale", "description": "Una traccia ispiratrice per sollevare lo spirito", "style": "Rock", "occasion": "Motivazionale" },
-      "sample3": { "title": "Canzone Romantica", "description": "Una bella melodia per esprimere amore", "style": "Bossa Nova", "occasion": "Matrimonio" }
+      "sample1": {
+        "title": "Canzone Omaggio",
+        "description": "Un omaggio speciale per un momento indimenticabile",
+        "style": "Pop",
+        "occasion": "Compleanno"
+      },
+      "sample2": {
+        "title": "Canzone Motivazionale",
+        "description": "Una traccia ispiratrice per sollevare lo spirito",
+        "style": "Rock",
+        "occasion": "Motivazionale"
+      },
+      "sample3": {
+        "title": "Canzone Romantica",
+        "description": "Una bella melodia per esprimere amore",
+        "style": "Bossa Nova",
+        "occasion": "Matrimonio"
+      }
     }
   },
   "videoService": {
@@ -77,9 +82,18 @@
     "startingAt": "a partire da",
     "cardDescription": "Scegli una delle opzioni qui sotto per creare il tuo video con editing professionale",
     "options": {
-      "5images": { "title": "5 Immagini", "description": "Slideshow con transizioni fluide" },
-      "10images": { "title": "10 Immagini", "description": "Più foto, più ricordi" },
-      "video": { "title": "1 Video di 2 min", "description": "Editing completo del tuo video" }
+      "5images": {
+        "title": "5 Immagini",
+        "description": "Slideshow con transizioni fluide"
+      },
+      "10images": {
+        "title": "10 Immagini",
+        "description": "Più foto, più ricordi"
+      },
+      "video": {
+        "title": "1 Video di 2 min",
+        "description": "Editing completo del tuo video"
+      }
     },
     "features": {
       "professional": "Editing professionale con effetti",

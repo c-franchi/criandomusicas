@@ -669,33 +669,8 @@
     "description": "Non hai crediti disponibili per creare questa musica.",
     "message": "Acquista un pacchetto o abbonamento per continuare a creare musica.",
     "buyButton": "Vedi opzioni di acquisto",
-    "previewTitle": "🎁 Usa il tuo credito anteprima!",
-    "previewDescription": "Hai 1 credito anteprima gratuito disponibile.",
     "previewMessage": "Clicca sul pulsante qui sotto per usare il tuo credito e creare un'anteprima con strofa e ritornello.",
     "usePreviewButton": "Usa il mio credito anteprima"
-  },
-  "preview": {
-    "warning": "⚠️ Attenzione: Questa è un'ANTEPRIMA DI TEST limitata a strofa e ritornello, creata per dimostrare lo stile e l'atmosfera della musica.",
-    "fullVersionNote": "Per generare la musica completa, sarà necessario acquistare crediti.",
-    "generateButton": "Genera Anteprima",
-    "playingLabel": "Anteprima in riproduzione",
-    "playingDescription": "Stai ascoltando una versione di prova per conoscere lo stile della musica.",
-    "completedTitle": "Ti è piaciuto quello che hai sentito?",
-    "completedDescription": "Quella era un'anteprima con strofa e ritornello.",
-    "fullVersionFeatures": "La versione completa può avere:",
-    "featureFullLyrics": "Testo completo",
-    "featureMoreVerses": "Più strofe e struttura completa",
-    "featureProStructure": "Struttura professionale",
-    "featureFinalQuality": "Qualità finale per uso reale",
-    "createFullButton": "Crea musica completa",
-    "buyCreditsButton": "Acquista crediti",
-    "usedNotice": "Il tuo credito anteprima è stato utilizzato. Per continuare a creare musica, acquista crediti.",
-    "badge": "Anteprima (Strofa + Ritornello)",
-    "freePreviewBadge": "🎁 Anteprima gratuita",
-    "structureLimit": "Strofa + Ritornello",
-    "freeStart": "Gratis per iniziare - Senza impegno",
-    "downloadAllowed": "Puoi scaricare questa anteprima",
-    "shareNotice": "Questa è un'anteprima di prova"
   },
   "tour": {
     "buttons": {

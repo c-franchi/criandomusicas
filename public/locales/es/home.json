@@ -17,9 +17,7 @@
       "songs": "Canciones Creadas",
       "time": "Tiempo Promedio",
       "rating": "Calificación"
-    },
-    "previewBadge": "🎁 ¡Nuevo! Prueba gratis antes de comprar",
-    "previewSubtext": "Crea una vista previa con verso y estribillo"
+    }
   },
   "process": {
     "title": "Cómo",
@@ -45,14 +43,6 @@
       "savings16": "16% de ahorro",
       "bestSavings": "Mayor ahorro",
       "viewPackages": "Ver Paquetes"
-    },
-    "preview": {
-      "title": "🎁 Vista Previa Gratis",
-      "description": "¡Crea tu cuenta y prueba el sistema gratis! Recibes 1 crédito para generar una vista previa con verso y estribillo, y puedes descargarla.",
-      "benefit1": "Sin compromiso",
-      "benefit2": "Conoce el estilo antes de comprar",
-      "benefit3": "Registro simple y rápido",
-      "cta": "Empezar Gratis"
     }
   },
   "samples": {
@@ -63,9 +53,24 @@
     "playButton": "Reproducir",
     "pauseButton": "Pausar",
     "fallback": {
-      "sample1": { "title": "Canción de Homenaje", "description": "Un homenaje especial para un momento inolvidable", "style": "Pop", "occasion": "Cumpleaños" },
-      "sample2": { "title": "Canción Motivacional", "description": "Una pista inspiradora para levantar el ánimo", "style": "Rock", "occasion": "Motivacional" },
-      "sample3": { "title": "Canción Romántica", "description": "Una bella melodía para expresar amor", "style": "Bossa Nova", "occasion": "Boda" }
+      "sample1": {
+        "title": "Canción de Homenaje",
+        "description": "Un homenaje especial para un momento inolvidable",
+        "style": "Pop",
+        "occasion": "Cumpleaños"
+      },
+      "sample2": {
+        "title": "Canción Motivacional",
+        "description": "Una pista inspiradora para levantar el ánimo",
+        "style": "Rock",
+        "occasion": "Motivacional"
+      },
+      "sample3": {
+        "title": "Canción Romántica",
+        "description": "Una bella melodía para expresar amor",
+        "style": "Bossa Nova",
+        "occasion": "Boda"
+      }
     }
   },
   "videoService": {
@@ -77,9 +82,18 @@
     "startingAt": "a partir de",
     "cardDescription": "Elige una de las opciones abajo para crear tu video con edición profesional",
     "options": {
-      "5images": { "title": "5 Imágenes", "description": "Slideshow con transiciones suaves" },
-      "10images": { "title": "10 Imágenes", "description": "Más fotos, más recuerdos" },
-      "video": { "title": "1 Video de 2 min", "description": "Edición completa de tu video" }
+      "5images": {
+        "title": "5 Imágenes",
+        "description": "Slideshow con transiciones suaves"
+      },
+      "10images": {
+        "title": "10 Imágenes",
+        "description": "Más fotos, más recuerdos"
+      },
+      "video": {
+        "title": "1 Video de 2 min",
+        "description": "Edición completa de tu video"
+      }
     },
     "features": {
       "professional": "Edición profesional con efectos",
