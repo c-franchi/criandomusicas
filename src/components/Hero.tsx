@@ -129,11 +129,8 @@ const Hero = () => {
             <Sparkles className="w-4 h-4" />
             {t('hero.badge', 'Músicas feitas sob medida para você')}
           </span>
-          
         </motion.div>
-            </Link>
-          )}
-        </motion.div>
+
         
         {/* Headline */}
         <motion.h1 
