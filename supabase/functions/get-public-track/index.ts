@@ -70,7 +70,7 @@ serve(async (req) => {
         if (fallbackTrack?.audio_url) {
           const { data: orderData } = await supabase
             .from("orders")
-            .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric, is_preview, plan_id")
+            .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric")
             .eq("id", orderId)
             .single();
 
@@ -88,7 +88,6 @@ serve(async (req) => {
             title = `Instrumental ${orderData.music_type || "Personalizado"}`;
           }
 
-          const isPreview = orderData?.is_preview === true || orderData?.plan_id === 'preview_test';
 
           return new Response(
             JSON.stringify({
@@ -96,7 +95,6 @@ serve(async (req) => {
               title,
               music_style: orderData?.music_style || "",
               cover_url: orderData?.cover_url || null,
-              is_preview: isPreview,
               version: 1
             }),
             { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -113,7 +111,7 @@ serve(async (req) => {
     // Fetch order info
     const { data: orderData } = await supabase
       .from("orders")
-      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric, is_preview, plan_id")
+      .select("music_style, music_type, is_instrumental, approved_lyric_id, cover_url, song_title, has_custom_lyric")
       .eq("id", orderId)
       .single();
 
@@ -155,7 +153,6 @@ serve(async (req) => {
       console.error("Failed to track view:", err);
     });
 
-    const isPreview = orderData?.is_preview === true || orderData?.plan_id === 'preview_test';
 
     return new Response(
       JSON.stringify({
@@ -163,7 +160,6 @@ serve(async (req) => {
         title,
         music_style: orderData?.music_style || "",
         cover_url: orderData?.cover_url || null,
-        is_preview: isPreview,
         version: trackData.version || version
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

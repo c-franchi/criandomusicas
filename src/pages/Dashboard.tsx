@@ -44,7 +44,6 @@ interface Order {
   has_custom_lyric?: boolean;
   song_title?: string;
   plan_id?: string;
-  is_preview?: boolean;
   pix_rejection_reason?: string | null;
   audio_input_id?: string | null;
 }
@@ -188,7 +187,7 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from('orders')
-        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental, has_custom_lyric, song_title, plan_id, is_preview, audio_input_id')
+        .select('id, status, payment_status, created_at, music_type, music_style, story, approved_lyric_id, amount, is_instrumental, has_custom_lyric, song_title, plan_id, audio_input_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 

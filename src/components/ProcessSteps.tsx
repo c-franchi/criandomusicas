@@ -79,56 +79,6 @@ const ProcessSteps = () => {
           ))}
         </div>
 
-        {/* Free Preview Card - Only for non-logged users */}
-        {!user && (
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="mb-16"
-          >
-            <Card className="p-8 max-w-4xl mx-auto border-emerald-500/30 bg-gradient-to-r from-emerald-500/10 to-green-500/10">
-              <div className="flex flex-col md:flex-row items-center gap-6">
-                <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-green-500/20">
-                  <Gift className="w-10 h-10 text-emerald-500" />
-                </div>
-                
-                <div className="flex-1 text-center md:text-left">
-                  <h3 className="text-2xl font-bold mb-2 text-emerald-500">
-                    {t('process.preview.title', '🎁 Preview Gratuito')}
-                  </h3>
-                  <p className="text-foreground/80 mb-4 leading-relaxed">
-                    {t('process.preview.description', 'Crie sua conta e teste o sistema de graça! Você recebe 1 crédito para gerar uma prévia (Verso + Refrão) da sua música.')}
-                  </p>
-                  
-                  <div className="flex flex-wrap gap-3 justify-center md:justify-start text-sm">
-                    <div className="flex items-center gap-2 text-emerald-600">
-                      <Check className="w-4 h-4" />
-                      <span>{t('process.preview.benefit1', 'Sem compromisso')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-emerald-600">
-                      <Check className="w-4 h-4" />
-                      <span>{t('process.preview.benefit2', 'Conheça o estilo antes de comprar')}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-emerald-600">
-                      <Check className="w-4 h-4" />
-                      <span>{t('process.preview.benefit3', 'Cadastro simples e rápido')}</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <Button asChild size="lg" className="shrink-0 rounded-xl bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-400 hover:to-green-400">
-                  <Link to="/auth">
-                    {t('process.preview.cta', 'Começar Grátis')}
-                    <ChevronRight className="w-4 h-4 ml-1" />
-                  </Link>
-                </Button>
-              </div>
-            </Card>
-          </motion.div>
-        )}
-
         {/* Audio Mode - New Feature */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
