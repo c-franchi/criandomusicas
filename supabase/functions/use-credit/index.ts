@@ -354,9 +354,6 @@ serve(async (req) => {
       }
 
       // Update order to mark as paid via credits
-      // Mark as preview if using preview credit
-      const isPreviewCredit = creditToUse.plan_id === 'preview_test';
-      
       const { error: orderError } = await supabaseClient
         .from('orders')
         .update({
@@ -365,8 +362,9 @@ serve(async (req) => {
           payment_method: 'credits',
           plan_id: creditToUse.plan_id,
           amount: 0,
-          is_preview: isPreviewCredit,
+          is_preview: false,
         })
+
         .eq('id', orderId)
         .eq('user_id', userId);
 
