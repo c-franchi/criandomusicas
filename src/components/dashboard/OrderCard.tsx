@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Trash2, Clock, AlertTriangle } from "lucide-react";
 import { TFunction } from "i18next";
-import { isPreviewOrder } from "@/hooks/usePreviewCredit";
 
 interface Order {
   id: string;
@@ -22,7 +21,6 @@ interface Order {
   has_custom_lyric?: boolean;
   song_title?: string;
   plan_id?: string;
-  is_preview?: boolean;
   pix_rejection_reason?: string | null;
 }
 
@@ -43,7 +41,6 @@ export const OrderCard = ({
   getStatusText,
   setDeleteOrderId 
 }: OrderCardProps) => {
-  const isPreview = order.is_preview || isPreviewOrder(order.plan_id);
   
   return (
     <motion.div
@@ -60,15 +57,6 @@ export const OrderCard = ({
                 <h3 className="font-semibold text-lg break-words text-foreground group-hover:text-primary transition-colors">
                   {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
                 </h3>
-                {isPreview && (
-                  <Badge 
-                    variant="outline" 
-                    className="text-[10px] px-1.5 py-0.5 gap-1 border-amber-500/50 text-amber-600 dark:text-amber-400 bg-amber-500/10 shrink-0"
-                  >
-                    <Clock className="w-2.5 h-2.5" />
-                    Preview
-                  </Badge>
-                )}
               </div>
               <p className="text-sm text-muted-foreground mb-2">
                 {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}

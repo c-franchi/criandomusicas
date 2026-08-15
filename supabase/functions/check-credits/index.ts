@@ -85,26 +85,16 @@ serve(async (req) => {
     logStep("Package credits fetched", { count: credits?.length || 0 });
 
     // Calculate available credits from packages (universal - no type distinction)
-    // IMPORTANT: Separate preview credits from regular credits
     let totalCredits = 0;
     let activePackage = null;
-    let hasPreviewCredit = false;
-    let previewCreditUsed = false;
-    let previewCreditAvailable = false;
 
     if (credits && credits.length > 0) {
       for (const credit of credits) {
         const available = credit.total_credits - credit.used_credits;
         
-        // Handle preview credits separately
-        if (credit.plan_id === 'preview_test') {
-          hasPreviewCredit = true;
-          previewCreditUsed = available <= 0;
-          previewCreditAvailable = available > 0 && credit.is_active;
-          // Don't add preview credits to total - they're tracked separately
-          continue;
-        }
-        
+        // Legacy free preview credits are no longer usable
+        if (credit.plan_id === 'preview_test') continue;
+
         if (available > 0) {
           totalCredits += available;
           
@@ -275,10 +265,6 @@ serve(async (req) => {
       total_instrumental: totalCredits,
       active_package: activePackage,
       subscription_info: subscriptionInfo,
-      // Preview credit info
-      has_preview_credit: hasPreviewCredit,
-      preview_credit_used: previewCreditUsed,
-      preview_credit_available: previewCreditAvailable,
       all_packages: credits?.filter(c => c.plan_id !== 'preview_test').map(c => ({
         id: c.id,
         plan_id: c.plan_id,

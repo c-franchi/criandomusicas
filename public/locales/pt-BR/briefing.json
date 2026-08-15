@@ -689,34 +689,7 @@
     "title": "Créditos insuficientes",
     "description": "Você não possui créditos disponíveis para criar esta música.",
     "message": "Adquira um pacote ou assinatura para continuar criando músicas.",
-    "buyButton": "Ver opções de compra",
-    "previewTitle": "🎁 Use seu crédito preview!",
-    "previewDescription": "Você tem 1 crédito preview gratuito disponível.",
-    "previewMessage": "Clique no botão abaixo para usar seu crédito e criar uma prévia com verso e refrão da sua música.",
-    "usePreviewButton": "Usar meu crédito preview"
-  },
-  "preview": {
-    "warning": "⚠️ Atenção: Este é um PREVIEW DE TESTE limitado a verso e refrão, criado para demonstrar o estilo e a atmosfera da música.",
-    "fullVersionNote": "Para gerar a música completa, será necessário adquirir créditos.",
-    "generateButton": "Gerar Preview",
-    "playingLabel": "Preview em reprodução",
-    "playingDescription": "Você está ouvindo uma versão de teste para conhecer o estilo da música.",
-    "completedTitle": "Gostou do que ouviu?",
-    "completedDescription": "Essa foi uma prévia com verso e refrão.",
-    "fullVersionFeatures": "A versão completa pode ter:",
-    "featureFullLyrics": "Letra completa",
-    "featureMoreVerses": "Mais versos e estrutura completa",
-    "featureProStructure": "Estrutura profissional",
-    "featureFinalQuality": "Qualidade final para uso real",
-    "createFullButton": "Criar música completa",
-    "buyCreditsButton": "Comprar créditos",
-    "usedNotice": "Seu crédito de preview foi utilizado. Para continuar criando músicas, adquira créditos.",
-    "badge": "Preview (Verso + Refrão)",
-    "freePreviewBadge": "🎁 Preview grátis",
-    "structureLimit": "Verso + Refrão",
-    "freeStart": "Grátis para começar - Sem compromisso",
-    "downloadAllowed": "Você pode baixar esta prévia",
-    "shareNotice": "Esta é uma prévia de teste"
+    "buyButton": "Ver opções de compra"
   },
   "tour": {
     "buttons": {

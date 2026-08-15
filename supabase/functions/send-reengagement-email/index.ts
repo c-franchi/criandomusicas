@@ -31,7 +31,7 @@ function generateReengagementHtml(userName: string, audioSamples: Array<{ title:
 <table role="presentation" style="max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 6px rgba(0,0,0,0.1);">
   <tr>
     <td style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 100%);padding:40px 30px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:bold;">🎁 Você ainda tem 1 música grátis!</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:24px;font-weight:bold;">🎵 Sua música personalizada te espera!</h1>
     </td>
   </tr>
   <tr>
@@ -70,10 +70,10 @@ function generateReengagementHtml(userName: string, audioSamples: Array<{ title:
       <div style="text-align:center;margin:30px 0;">
         <a href="https://criandomusicas.lovable.app/briefing?type=vocal"
            style="display:inline-block;background:linear-gradient(135deg,#10b981 0%,#059669 100%);color:#ffffff;text-decoration:none;padding:18px 40px;border-radius:10px;font-weight:700;font-size:18px;">
-          🔥 Criar minha música grátis
+          🔥 Criar minha música
         </a>
         <p style="margin:12px 0 0;color:#6b7280;font-size:13px;">
-          Seu crédito gratuito ainda está disponível. Sem cartão. Sem compromisso.
+          Crie uma música 100% personalizada em poucos minutos.
         </p>
       </div>
 
@@ -183,24 +183,6 @@ Deno.serve(async (req) => {
 
       for (const profile of inactiveProfiles) {
         try {
-          // Check if preview credit is still available
-          const { data: credit } = await supabase
-            .from('user_credits')
-            .select('used_credits, total_credits')
-            .eq('user_id', profile.user_id)
-            .eq('plan_id', 'preview_test')
-            .maybeSingle();
-
-          if (!credit || (credit.used_credits ?? 0) >= credit.total_credits) {
-            // Credit already used or doesn't exist — mark as sent to avoid re-checking
-            await supabase
-              .from('profiles')
-              .update({ email_24h_sent: true })
-              .eq('user_id', profile.user_id);
-            logStep('Skipping user (credit already used)', { userId: profile.user_id });
-            continue;
-          }
-
           // Get user email from auth
           const { data: { user } } = await supabase.auth.admin.getUserById(profile.user_id);
           if (!user?.email) continue;
@@ -214,7 +196,7 @@ Deno.serve(async (req) => {
             from: 'Criando Músicas <noreply@criandomusicas.com.br>',
             replyTo: 'contato@criandomusicas.com.br',
             to: [user.email],
-            subject: '🎁 Você ainda tem 1 música personalizada grátis esperando por você',
+            subject: '🎵 Que tal criar sua música personalizada?',
             html,
           });
 

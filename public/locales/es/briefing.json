@@ -668,34 +668,7 @@
     "title": "Créditos insuficientes",
     "description": "No tienes créditos disponibles para crear esta música.",
     "message": "Adquiere un paquete o suscripción para seguir creando música.",
-    "buyButton": "Ver opciones de compra",
-    "previewTitle": "🎁 ¡Usa tu crédito de vista previa!",
-    "previewDescription": "Tienes 1 crédito de vista previa gratis disponible.",
-    "previewMessage": "Haz clic en el botón abajo para usar tu crédito y crear una vista previa con verso y estribillo.",
-    "usePreviewButton": "Usar mi crédito de vista previa"
-  },
-  "preview": {
-    "warning": "⚠️ Atención: Esta es una VISTA PREVIA DE PRUEBA limitada a verso y estribillo, creada para demostrar el estilo y la atmósfera de la música.",
-    "fullVersionNote": "Para generar la música completa, será necesario adquirir créditos.",
-    "generateButton": "Generar Vista Previa",
-    "playingLabel": "Vista previa en reproducción",
-    "playingDescription": "Estás escuchando una versión de prueba para conocer el estilo de la música.",
-    "completedTitle": "¿Te gustó lo que escuchaste?",
-    "completedDescription": "Eso fue una vista previa con verso y estribillo.",
-    "fullVersionFeatures": "La versión completa puede tener:",
-    "featureFullLyrics": "Letra completa",
-    "featureMoreVerses": "Más versos y estructura completa",
-    "featureProStructure": "Estructura profesional",
-    "featureFinalQuality": "Calidad final para uso real",
-    "createFullButton": "Crear música completa",
-    "buyCreditsButton": "Comprar créditos",
-    "usedNotice": "Tu crédito de vista previa ha sido utilizado. Para continuar creando música, adquiere créditos.",
-    "badge": "Vista previa (Verso + Estribillo)",
-    "freePreviewBadge": "🎁 Vista previa gratis",
-    "structureLimit": "Verso + Estribillo",
-    "freeStart": "Gratis para empezar - Sin compromiso",
-    "downloadAllowed": "Puedes descargar esta vista previa",
-    "shareNotice": "Esta es una vista previa de prueba"
+    "buyButton": "Ver opciones de compra"
   },
   "tour": {
     "buttons": {

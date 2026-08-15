@@ -22,7 +22,7 @@ interface CreditsManagementProps {
 }
 
 export function CreditsManagement({ className = '' }: CreditsManagementProps) {
-  const { loading, hasCredits, totalAvailable, allPackages, activePackage, subscriptionInfo, previewCreditAvailable } = useCredits();
+  const { loading, hasCredits, totalAvailable, allPackages, activePackage, subscriptionInfo } = useCredits();
   const { t, i18n } = useTranslation('common');
   const dateLocale = localeMap[i18n.language] || ptBR;
 
@@ -39,8 +39,7 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
   const hasSubscriptionCredits = subscriptionInfo && subscriptionInfo.credits_remaining > 0;
   const hasPackageCredits = allPackages.some(p => p.available_credits > 0);
   
-  const displayAvailable = totalAvailable > 0 ? totalAvailable : (previewCreditAvailable ? 1 : 0);
-  const isOnlyPreview = totalAvailable === 0 && previewCreditAvailable;
+  const displayAvailable = totalAvailable;
 
   return (
     <Card className={`p-6 ${className}`}>
@@ -57,25 +56,19 @@ export function CreditsManagement({ className = '' }: CreditsManagementProps) {
       </div>
 
       {/* Current Balance */}
-      <div className={`p-4 rounded-lg border mb-6 ${isOnlyPreview ? 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-emerald-500/20' : 'bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20'}`}>
+      <div className="p-4 rounded-lg border mb-6 bg-gradient-to-r from-primary/10 to-accent/10 border-primary/20">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm text-muted-foreground">{t('credits.availableCredits', 'Créditos disponíveis')}</span>
-          <Badge variant={hasCredits || previewCreditAvailable ? "default" : "secondary"} className={isOnlyPreview ? 'bg-emerald-500/20 text-emerald-600' : ''}>
-            {isOnlyPreview ? t('credits.previewFree', 'Preview Grátis') : (hasCredits ? t('credits.active', 'Ativo') : t('credits.noCredits', 'Sem créditos'))}
+          <Badge variant={hasCredits ? "default" : "secondary"}>
+            {hasCredits ? t('credits.active', 'Ativo') : t('credits.noCredits', 'Sem créditos')}
           </Badge>
         </div>
         <div className="flex items-baseline gap-2">
-          <span className={`text-4xl font-bold ${isOnlyPreview ? 'text-emerald-600' : 'text-primary'}`}>{displayAvailable}</span>
+          <span className="text-4xl font-bold text-primary">{displayAvailable}</span>
           <span className="text-muted-foreground">
-            {isOnlyPreview ? t('credits.previewDesc', 'preview (verso + refrão)') : (displayAvailable !== 1 ? t('credits.songsCount_other', 'músicas') : t('credits.songsCount_one', 'música'))}
+            {displayAvailable !== 1 ? t('credits.songsCount_other', 'músicas') : t('credits.songsCount_one', 'música')}
           </span>
         </div>
-        {isOnlyPreview && (
-          <p className="text-xs text-emerald-600/80 mt-2 flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
-            {t('credits.previewHint', 'Crie uma prévia com verso e refrão da sua música gratuitamente!')}
-          </p>
-        )}
       </div>
 
       {/* Subscription Credits Section */}

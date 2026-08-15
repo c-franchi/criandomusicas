@@ -689,34 +689,7 @@
     "title": "Insufficient credits",
     "description": "You don't have credits available to create this music.",
     "message": "Purchase a package or subscription to continue creating music.",
-    "buyButton": "View purchase options",
-    "previewTitle": "🎁 Use your preview credit!",
-    "previewDescription": "You have 1 free preview credit available.",
-    "previewMessage": "Click the button below to use your credit and create a preview with verse and chorus.",
-    "usePreviewButton": "Use my preview credit"
-  },
-  "preview": {
-    "warning": "⚠️ Attention: This is a TEST PREVIEW limited to verse and chorus, created to demonstrate the style and atmosphere of the music.",
-    "fullVersionNote": "To generate the full music, you will need to purchase credits.",
-    "generateButton": "Generate Preview",
-    "playingLabel": "Preview playing",
-    "playingDescription": "You are listening to a test version to understand the style of the music.",
-    "completedTitle": "Did you like what you heard?",
-    "completedDescription": "That was a preview with verse and chorus.",
-    "fullVersionFeatures": "The full version can have:",
-    "featureFullLyrics": "Complete lyrics",
-    "featureMoreVerses": "More verses and complete structure",
-    "featureProStructure": "Professional structure",
-    "featureFinalQuality": "Final quality for real use",
-    "createFullButton": "Create full music",
-    "buyCreditsButton": "Buy credits",
-    "usedNotice": "Your preview credit has been used. To continue creating music, purchase credits.",
-    "badge": "Preview (Verse + Chorus)",
-    "freePreviewBadge": "🎁 Free preview",
-    "structureLimit": "Verse + Chorus",
-    "freeStart": "Free to start - No commitment",
-    "downloadAllowed": "You can download this preview",
-    "shareNotice": "This is a test preview"
+    "buyButton": "View purchase options"
   },
   "tour": {
     "buttons": {

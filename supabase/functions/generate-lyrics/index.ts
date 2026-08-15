@@ -342,7 +342,7 @@ serve(async (req) => {
 
     // Standalone mode: no orderId needed (used by Audio Mode wizard)
     const isStandaloneMode = !orderId;
-    console.log("generate-lyrics called with orderId:", orderId, "isPreview param:", isPreview, "autoApprove:", autoApprove, "standalone:", isStandaloneMode, "isModification:", isModification, "language:", language);
+    console.log("generate-lyrics called with orderId:", orderId, "autoApprove:", autoApprove, "standalone:", isStandaloneMode, "isModification:", isModification, "language:", language);
 
     if (!story) {
       return new Response(
@@ -378,14 +378,8 @@ serve(async (req) => {
       orderInfo = fetchedOrder;
     }
     
-    const isPreviewOrder = orderInfo?.is_preview === true || orderInfo?.plan_id === 'preview_test' || isPreview || isStandaloneMode;
-    console.log("Order preview determination:", { 
-      dbIsPreview: orderInfo?.is_preview, 
-      planId: orderInfo?.plan_id, 
-      paramIsPreview: isPreview,
-      standalone: isStandaloneMode,
-      finalIsPreview: isPreviewOrder 
-    });
+    // Free preview mode removed — every order gets the full lyric structure
+    const isPreviewOrder = false;
 
     const {
       musicType = 'homenagem',
@@ -465,21 +459,15 @@ REGRA UNIVERSAL ANTI-DESVIO:
       && (motivationalNarrative === 'somente_monologo' || monologuePosition === 'full');
     console.log("Somente Monologo mode:", isSomenteMonologo, "motivationalNarrative:", motivationalNarrative, "intentAllowsMotivational:", motivationalAllowed);
 
-    // ============ MODO SIMPLES AUTOMÁTICO ============
-    // Ativar SOMENTE para pedidos preview (crédito de novo usuário) com texto curto
-    // Pedidos pagos SEMPRE recebem letra completa, independente do tamanho do texto
-    const storyLength = story?.trim()?.length || 0;
-    const isSimpleMode = isPreviewOrder && storyLength > 0 && storyLength < 240;
-    console.log("Simple Mode detection:", { storyLength, isSimpleMode, isPreviewOrder, storyPreview: story?.substring(0, 50) });
+    // Todos os pedidos recebem letra completa
+    const isSimpleMode = false;
 
     const criticalTerms = detectCriticalTerms(mandatoryWords);
     const missingPronunciations = criticalTerms.filter(
       term => !pronunciations.some(p => p.term === term)
     );
 
-    // For preview orders, use simplified structure (verse + pre-chorus + chorus = ~1 minute)
-    const previewStructure = ['verse', 'pre-chorus', 'chorus'];
-    const effectiveStructure = isPreviewOrder ? previewStructure : structure;
+    const effectiveStructure = structure;
 
     const structureTags = effectiveStructure.map(s => `[${s.charAt(0).toUpperCase() + s.slice(1)}]`).join(', ');
 
@@ -980,20 +968,10 @@ ${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
       ? chamadaCorporativaPrompt
       : isSomenteMonologo 
         ? somenteMonologoPrompt 
-        : isSimpleMode 
-          ? simpleModePrompt 
-          : isPreviewOrder 
-            ? previewPrompt 
-            : fullSystemPrompt;
-    
-    const selectedMode = isChamadaCorporativa ? 'chamadaCorporativa' : isSomenteMonologo ? 'somenteMonologo' : isSimpleMode ? 'simpleMode' : isPreviewOrder ? 'preview' : 'full';
-    console.log("Selected prompt mode:", { 
-      isChamadaCorporativa,
-      isSomenteMonologo, 
-      isSimpleMode, 
-      isPreviewOrder, 
-      selectedMode
-    });
+        : fullSystemPrompt;
+
+    const selectedMode = isChamadaCorporativa ? 'chamadaCorporativa' : isSomenteMonologo ? 'somenteMonologo' : 'full';
+    console.log("Selected prompt mode:", { selectedMode });
 
     // ============ MODIFICATION MODE: Generate only 1 version ============
     const versionCount = isModification ? 'UMA versão MODIFICADA' : 'DUAS versões';

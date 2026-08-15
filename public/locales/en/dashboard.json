@@ -379,14 +379,5 @@
     "musicProductionSoon": "Music production (coming soon)",
     "goToDashboard": "Go to Dashboard",
     "produceMusicSoon": "Produce Music (Coming Soon)"
-  },
-  "preview": {
-    "badge": "Preview",
-    "downloadBlocked": "Download blocked",
-    "downloadBlockedTitle": "🔒 Download unavailable",
-    "downloadBlockedDesc": "This is a free preview (Verse + Chorus). You can download this version!",
-    "buyCredits": "Buy Credits",
-    "createFull": "Create Full Song",
-    "notice": "This is your free preview with Verse + Chorus structure. To create full songs with all sections, purchase credits."
   }
 }

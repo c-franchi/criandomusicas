@@ -14,7 +14,7 @@ interface CreditsBannerProps {
 
 export function CreditsBanner({ className = '', showBuyButton = true, compact = false }: CreditsBannerProps) {
   const { t } = useTranslation('common');
-  const { loading, hasCredits, totalCredits, subscriptionInfo, previewCreditAvailable } = useCredits();
+  const { loading, hasCredits, totalCredits, subscriptionInfo } = useCredits();
 
   if (loading) {
     return (
@@ -24,11 +24,9 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
     );
   }
 
-  // Calculate display credits (include preview if available and no other credits)
-  const displayCredits = totalCredits > 0 ? totalCredits : (previewCreditAvailable ? 1 : 0);
-  const isOnlyPreview = totalCredits === 0 && previewCreditAvailable;
+  const displayCredits = totalCredits;
 
-  if (!hasCredits && !previewCreditAvailable) {
+  if (!hasCredits) {
     if (!showBuyButton) return null;
     
     return (
@@ -53,9 +51,9 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
   if (compact) {
     return (
       <div className={`flex gap-2 flex-wrap items-center ${className}`}>
-        <Badge className={`gap-1.5 ${isOnlyPreview ? 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30' : 'bg-primary/20 text-primary border-primary/30'} hover:opacity-80`}>
+        <Badge className="gap-1.5 bg-primary/20 text-primary border-primary/30 hover:opacity-80">
           <Music className="w-3 h-3" />
-          {isOnlyPreview ? t('credits.previewFree', '1 preview grátis') : `${displayCredits} ${displayCredits === 1 ? t('credits.credit') : t('credits.credits')}`}
+          {`${displayCredits} ${displayCredits === 1 ? t('credits.credit') : t('credits.credits')}`}
         </Badge>
         {isFromSubscription && (
           <Badge variant="outline" className="gap-1 text-amber-500 border-amber-500/30">
@@ -77,19 +75,11 @@ export function CreditsBanner({ className = '', showBuyButton = true, compact = 
         </Badge>
       )}
       
-      {isOnlyPreview ? (
-        <Badge className="gap-1.5 px-3 py-1.5 bg-emerald-500/20 text-emerald-600 border-emerald-500/30">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span className="font-semibold">{t('credits.previewFree', '1 preview grátis')}</span>
-          <span className="text-xs opacity-80">(40s)</span>
-        </Badge>
-      ) : (
-        <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
-          <Music className="w-3.5 h-3.5" />
-          <span className="font-semibold">{displayCredits}</span>
-          <span className="text-xs opacity-80">{displayCredits === 1 ? t('credits.credit') : t('credits.credits')}</span>
-        </Badge>
-      )}
+      <Badge className="gap-1.5 px-3 py-1.5 bg-primary/20 text-primary border-primary/30 hover:bg-primary/30">
+        <Music className="w-3.5 h-3.5" />
+        <span className="font-semibold">{displayCredits}</span>
+        <span className="text-xs opacity-80">{displayCredits === 1 ? t('credits.credit') : t('credits.credits')}</span>
+      </Badge>
       
       {showBuyButton && (
         <Button asChild size="sm" variant="default" className="rounded-full h-8 px-4">

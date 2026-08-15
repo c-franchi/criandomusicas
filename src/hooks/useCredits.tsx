@@ -45,10 +45,6 @@ interface CreditsState {
   activePackage: ActivePackage | null;
   allPackages: CreditPackage[];
   subscriptionInfo: SubscriptionInfo | null;
-  // Preview credit info
-  hasPreviewCredit: boolean;
-  previewCreditUsed: boolean;
-  previewCreditAvailable: boolean;
   error: string | null;
 }
 
@@ -64,9 +60,6 @@ export function useCredits() {
     activePackage: null,
     allPackages: [],
     subscriptionInfo: null,
-    hasPreviewCredit: false,
-    previewCreditUsed: false,
-    previewCreditAvailable: false,
     error: null,
   });
 
@@ -82,9 +75,6 @@ export function useCredits() {
         activePackage: null,
         allPackages: [],
         subscriptionInfo: null,
-        hasPreviewCredit: false,
-        previewCreditUsed: false,
-        previewCreditAvailable: false,
         error: null,
       });
       return;
@@ -110,7 +100,7 @@ export function useCredits() {
 
       setState({
         loading: false,
-        hasCredits: totalCredits > 0 || (data.preview_credit_available === true),
+        hasCredits: totalCredits > 0,
         totalCredits: totalCredits,
         // Backwards compatibility - all fields show the same universal total
         totalAvailable: totalCredits,
@@ -119,10 +109,6 @@ export function useCredits() {
         activePackage: data.active_package || null,
         allPackages: data.all_packages || [],
         subscriptionInfo: data.subscription_info || null,
-        // Preview credit info
-        hasPreviewCredit: data.has_preview_credit || false,
-        previewCreditUsed: data.preview_credit_used || false,
-        previewCreditAvailable: data.preview_credit_available || false,
         error: null,
       });
     } catch (err) {
@@ -209,9 +195,4 @@ export const getCreditsForPlan = (planId: string): number => {
 // Check if plan is a subscription type
 export const isSubscriptionPlan = (planId: string): boolean => {
   return planId.startsWith('creator_');
-};
-
-// Check if plan is a preview test
-export const isPreviewPlan = (planId: string | null | undefined): boolean => {
-  return planId === 'preview_test';
 };

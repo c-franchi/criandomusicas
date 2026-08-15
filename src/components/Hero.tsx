@@ -129,22 +129,8 @@ const Hero = () => {
             <Sparkles className="w-4 h-4" />
             {t('hero.badge', 'Músicas feitas sob medida para você')}
           </span>
-          
-          {/* Free Preview Badge - Only for non-logged users */}
-          {!user && (
-            <Link to="/auth">
-              <motion.div 
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 text-sm font-medium text-emerald-700 dark:text-emerald-400 backdrop-blur-sm cursor-pointer hover:from-emerald-500/30 hover:to-green-500/30 transition-all"
-                animate={{ scale: [1, 1.02, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <Gift className="w-4 h-4" />
-                <span className="hidden sm:inline">{t('hero.previewBadge', '🎁 Novo! Teste grátis antes de comprar')}</span>
-                <span className="sm:hidden">{t('hero.previewSubtext', 'Crie uma prévia de 40s da sua música')}</span>
-              </motion.div>
-            </Link>
-          )}
         </motion.div>
+
         
         {/* Headline */}
         <motion.h1 

@@ -19,15 +19,12 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Helmet } from "react-helmet-async";
-import PreviewBanner from "@/components/PreviewBanner";
-import PreviewCompletedModal from "@/components/PreviewCompletedModal";
 
 interface TrackData {
   audio_url: string;
   title: string;
   music_style: string;
   cover_url: string | null;
-  is_preview?: boolean;
   version?: number;
 }
 
@@ -39,7 +36,6 @@ const MusicShare = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [totalSongs, setTotalSongs] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -104,7 +100,6 @@ const MusicShare = () => {
           title: data.title || t('common:share.defaultTitle'),
           music_style: data.music_style || '',
           cover_url: data.cover_url || null,
-          is_preview: data.is_preview || false,
           version: trackVersion
         });
       } catch {
@@ -148,9 +143,6 @@ const MusicShare = () => {
 
   const handleAudioEnded = () => {
     setIsPlaying(false);
-    if (track?.is_preview) {
-      setShowPreviewModal(true);
-    }
   };
 
   if (loading) {
@@ -250,16 +242,6 @@ const MusicShare = () => {
               onEnded={handleAudioEnded}
               preload="metadata"
             />
-
-            {/* Preview Badge */}
-            {track.is_preview && (
-              <div className="mb-4">
-                <p className="text-xs text-muted-foreground mb-2">
-                  Você está ouvindo uma prévia de uma música 100% personalizada criada com IA.
-                </p>
-                <PreviewBanner variant="info" />
-              </div>
-            )}
 
             {/* Player Controls */}
             <div className="flex flex-col gap-3 mb-4">
@@ -365,18 +347,8 @@ const MusicShare = () => {
                 <span className="truncate">🔥 Transformar minha história em música</span>
               </Link>
             </Button>
-            <p className="text-xs text-muted-foreground">
-              Comece agora com 1 crédito grátis.
-            </p>
-            <p className="text-[10px] text-muted-foreground/70">
-              Crédito gratuito disponível para novos usuários.
-            </p>
           </Card>
 
-          <PreviewCompletedModal 
-            open={showPreviewModal} 
-            onOpenChange={setShowPreviewModal}
-          />
         </div>
       </div>
     </>
