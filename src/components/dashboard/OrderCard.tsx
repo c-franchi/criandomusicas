@@ -21,7 +21,6 @@ interface Order {
   has_custom_lyric?: boolean;
   song_title?: string;
   plan_id?: string;
-  is_preview?: boolean;
   pix_rejection_reason?: string | null;
 }
 

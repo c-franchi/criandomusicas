@@ -53,7 +53,6 @@ interface OrderData {
   cover_url: string | null;
   song_title: string | null;
   has_custom_lyric: boolean | null;
-  is_preview: boolean | null;
   plan_id: string | null;
   pix_rejection_reason: string | null;
 }
