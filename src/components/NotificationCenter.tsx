@@ -13,6 +13,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { getNextStep } from "@/lib/nextStep";
 
 interface Notification {
   id: string;
@@ -186,7 +187,32 @@ const NotificationCenter = () => {
               : t('notifications.paymentApprovedDesc', 'Seu pagamento foi confirmado e estamos criando sua música.'),
             createdAt: order.updated_at,
             read: false,
-            actionUrl: `/pedido/${order.id}`,
+            actionUrl: getNextStep(order).url,
+            metadata: { orderId: order.id },
+          });
+        });
+      }
+
+      // 4. Orders still awaiting payment / receipt (last 7 days)
+      const { data: pendingOrders } = await supabase
+        .from('orders')
+        .select('id, status, payment_status, payment_method, updated_at, song_title')
+        .eq('user_id', user.id)
+        .eq('status', 'AWAITING_PAYMENT')
+        .gte('updated_at', sevenDaysAgo.toISOString())
+        .order('updated_at', { ascending: false });
+
+      if (pendingOrders) {
+        pendingOrders.forEach((order: OrderNotification) => {
+          const next = getNextStep(order);
+          allNotifications.push({
+            id: `pending_${order.id}_${order.payment_status}`,
+            type: 'payment_approved',
+            title: next.label,
+            message: next.description,
+            createdAt: order.updated_at,
+            read: false,
+            actionUrl: next.url,
             metadata: { orderId: order.id },
           });
         });
