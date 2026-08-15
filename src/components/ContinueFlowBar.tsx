@@ -15,7 +15,7 @@ const ACTIVE_STATUSES = [
   'LYRICS_PENDING',
   'LYRICS_GENERATED',
   'MUSIC_READY',
-];
+] as const;
 
 const DISMISS_KEY = 'continue_flow_dismissed';
 
