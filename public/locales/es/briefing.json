@@ -668,9 +668,7 @@
     "title": "Créditos insuficientes",
     "description": "No tienes créditos disponibles para crear esta música.",
     "message": "Adquiere un paquete o suscripción para seguir creando música.",
-    "buyButton": "Ver opciones de compra",
-    "previewMessage": "Haz clic en el botón abajo para usar tu crédito y crear una vista previa con verso y estribillo.",
-    "usePreviewButton": "Usar mi crédito de vista previa"
+    "buyButton": "Ver opciones de compra"
   },
   "tour": {
     "buttons": {

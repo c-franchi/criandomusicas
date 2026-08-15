@@ -689,9 +689,7 @@
     "title": "Insufficient credits",
     "description": "You don't have credits available to create this music.",
     "message": "Purchase a package or subscription to continue creating music.",
-    "buyButton": "View purchase options",
-    "previewMessage": "Click the button below to use your credit and create a preview with verse and chorus.",
-    "usePreviewButton": "Use my preview credit"
+    "buyButton": "View purchase options"
   },
   "tour": {
     "buttons": {

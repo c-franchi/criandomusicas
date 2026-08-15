@@ -668,9 +668,7 @@
     "title": "Crediti insufficienti",
     "description": "Non hai crediti disponibili per creare questa musica.",
     "message": "Acquista un pacchetto o abbonamento per continuare a creare musica.",
-    "buyButton": "Vedi opzioni di acquisto",
-    "previewMessage": "Clicca sul pulsante qui sotto per usare il tuo credito e creare un'anteprima con strofa e ritornello.",
-    "usePreviewButton": "Usa il mio credito anteprima"
+    "buyButton": "Vedi opzioni di acquisto"
   },
   "tour": {
     "buttons": {
