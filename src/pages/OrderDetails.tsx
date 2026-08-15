@@ -467,11 +467,6 @@ const OrderDetails = () => {
                   {t('badges.instrumental')}
                 </Badge>
               )}
-              {isPreview && (
-                <Badge className="bg-amber-500/20 text-amber-600 border-amber-500/30">
-                  {t('preview.badge', 'Preview')}
-                </Badge>
-              )}
             </div>
             <p className="text-sm text-muted-foreground">
               {order.music_style} • {t('orderTracking.order')} #{orderId?.slice(0, 8)}
@@ -743,29 +738,6 @@ const OrderDetails = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Preview Notice */}
-              {isPreview && (
-                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
-                    {t('preview.notice', 'Esta é uma prévia (Verso + Refrão). Para baixar a versão completa com todos os versos e qualidade final, adquira créditos.')}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Button asChild size="sm" className="gap-2">
-                      <Link to="/planos">
-                        <ShoppingCart className="w-4 h-4" />
-                        {t('preview.buyCredits', 'Comprar Créditos')}
-                      </Link>
-                    </Button>
-                    <Button asChild variant="outline" size="sm" className="gap-2">
-                      <Link to="/briefing?type=vocal">
-                        <Music className="w-4 h-4" />
-                        {t('preview.createFull', 'Criar Música Completa')}
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              )}
 
               {/* Share Options */}
               <div className="pt-4 border-t border-border/50 space-y-3">
