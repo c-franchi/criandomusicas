@@ -46,10 +46,27 @@ const useSafeRegisterSW = () => {
 };
 
 export const usePWAUpdate = () => {
-  const [showUpdateBanner, setShowUpdateBanner] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-  
+  const [blocked, setBlocked] = useState(() => shouldBlockUpdate(window.location.pathname));
+
   const { needRefresh, updateServiceWorker } = useSafeRegisterSW();
+
+  // Keep track of whether the user is in the middle of a flow
+  // (briefing, checkout, lyrics...) — never interrupt them there.
+  useEffect(() => {
+    const check = () => setBlocked(shouldBlockUpdate(window.location.pathname));
+    check();
+    const interval = setInterval(check, 1000);
+    const unsubscribe = subscribeFlowBusy(check);
+    window.addEventListener('popstate', check);
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+      window.removeEventListener('popstate', check);
+    };
+  }, []);
 
   // Listen for service worker messages about updates
   useEffect(() => {
@@ -57,8 +74,7 @@ export const usePWAUpdate = () => {
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'SW_UPDATED') {
-        console.log('SW Update detected via message:', event.data.version);
-        setShowUpdateBanner(true);
+        setUpdateAvailable(true);
       }
     };
 
@@ -71,8 +87,7 @@ export const usePWAUpdate = () => {
   // Show banner when SW needs refresh
   useEffect(() => {
     if (needRefresh) {
-      console.log('SW needs refresh detected');
-      setShowUpdateBanner(true);
+      setUpdateAvailable(true);
     }
   }, [needRefresh]);
 
@@ -82,11 +97,13 @@ export const usePWAUpdate = () => {
   }, [updateServiceWorker]);
 
   const dismissBanner = useCallback(() => {
-    setShowUpdateBanner(false);
+    setDismissed(true);
   }, []);
 
   return {
-    showUpdateBanner,
+    // Only surface the update prompt when the user is not mid-flow.
+    showUpdateBanner: updateAvailable && !dismissed && !blocked,
+    updateAvailable,
     isUpdating,
     forceUpdate,
     dismissBanner,
