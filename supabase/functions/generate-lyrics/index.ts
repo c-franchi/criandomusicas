@@ -1102,86 +1102,71 @@ INSTRUÇÕES SOBRE O TRECHO:
 - Mantenha o mesmo tom e tema do trecho ao criar as outras partes`;
     }
 
-    console.log("Calling AI Gateway for lyrics generation...", audioInsert ? "(with audio insert)" : "");
+    console.log("Generating lyrics...", audioInsert ? "(with audio insert)" : "");
 
-    // GPT-5 is a reasoning model - needs high max_completion_tokens (includes internal reasoning)
-    // Timeout after 90 seconds to avoid hanging indefinitely
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => {
-      console.error("AI Gateway request timeout after 90 seconds");
-      controller.abort();
-    }, 90000);
-    
-    let response: Response;
-    try {
-      response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${AI_GATEWAY_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "openai/gpt-5.2",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: finalUserPrompt }
-          ],
-          max_completion_tokens: 16000,
-          temperature: 0.7,
-        }),
-        signal: controller.signal,
-      });
-    } catch (fetchError: unknown) {
-      clearTimeout(timeoutId);
-      const errorMsg = fetchError instanceof Error ? fetchError.message : String(fetchError);
-      console.error("AI Gateway fetch error:", errorMsg);
-      
-      if (errorMsg.includes('abort')) {
-        return new Response(
-          JSON.stringify({ ok: false, error: "Tempo limite excedido. A IA demorou muito para responder. Tente novamente." }),
-          { status: 504, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    const aiMessages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: finalUserPrompt },
+    ];
+
+    // Primary: OpenAI direct. Fallback: Lovable AI.
+    const callAI = async (provider: "openai" | "lovable"): Promise<{ content?: string; status: number; error?: string }> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 150000);
+      try {
+        const isOpenAI = provider === "openai";
+        const key = isOpenAI ? Deno.env.get("OPENAI_API_KEY") : AI_GATEWAY_API_KEY;
+        if (!key) return { status: 500, error: `${provider} key missing` };
+        const r = await fetch(
+          isOpenAI ? "https://api.openai.com/v1/chat/completions" : "https://ai.gateway.lovable.dev/v1/chat/completions",
+          {
+            method: "POST",
+            headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+            body: JSON.stringify(
+              isOpenAI
+                ? { model: "gpt-5.5", messages: aiMessages, max_completion_tokens: 16000 }
+                : { model: "openai/gpt-6-astra", messages: aiMessages, reasoning_effort: "low" }
+            ),
+            signal: controller.signal,
+          }
         );
+        if (!r.ok) {
+          const t = await r.text();
+          console.error(`[${provider}] error`, r.status, t.slice(0, 500));
+          return { status: r.status, error: t };
+        }
+        const j = await r.json();
+        const c = j.choices?.[0]?.message?.content?.trim();
+        if (!c) return { status: 500, error: "empty" };
+        console.log(`[${provider}] lyrics OK`);
+        return { status: 200, content: c };
+      } catch (e) {
+        console.error(`[${provider}] fetch error`, e instanceof Error ? e.message : String(e));
+        return { status: 504, error: String(e) };
+      } finally {
+        clearTimeout(timeoutId);
       }
-      
-      return new Response(
-        JSON.stringify({ ok: false, error: `Erro de conexão com IA: ${errorMsg}` }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    };
+
+    let result = await callAI("openai");
+    if (!result.content) {
+      console.warn("OpenAI failed, falling back to Lovable AI");
+      result = await callAI("lovable");
     }
-    
-    clearTimeout(timeoutId);
-    console.log("AI Gateway response status:", response.status);
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ ok: false, error: "Limite de requisições excedido. Tente novamente em alguns minutos." }),
-          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ ok: false, error: "Créditos insuficientes. Entre em contato com o suporte." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      const errorText = await response.text();
-      console.error("AI Gateway error:", response.status, errorText);
+    if (!result.content) {
+      const msg = result.status === 429
+        ? "Limite de requisições excedido. Tente novamente em alguns minutos."
+        : result.status === 402
+        ? "Créditos insuficientes. Entre em contato com o suporte."
+        : "Erro ao gerar letras. Tente novamente.";
       return new Response(
-        JSON.stringify({ ok: false, error: "Erro ao gerar letras. Tente novamente." }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ ok: false, error: msg }),
+        { status: result.status === 429 || result.status === 402 ? result.status : 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const aiResponse = await response.json();
-    const content = aiResponse.choices?.[0]?.message?.content?.trim();
-
-    if (!content) {
-      return new Response(
-        JSON.stringify({ ok: false, error: "Resposta vazia da IA" }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    const content = result.content;
 
     console.log("AI Response received, processing lyrics...");
 
