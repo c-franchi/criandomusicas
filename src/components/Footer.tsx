@@ -133,12 +133,12 @@ const Footer = () => {
           <p className="text-sm mt-3 text-muted-foreground">
             {t('footer.developedBy')}{" "}
             <a 
-              href="https://neitechweb.web.app/" 
+              href="https://fllifranchi.com"
               target="_blank" 
               rel="noopener noreferrer"
               className="text-primary hover:underline transition-colors font-medium"
             >
-              Neitch
+              Flli Franchi
             </a>
           </p>
         </div>
