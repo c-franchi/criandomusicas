@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 // Emails with full VIP access (no payment required)
-const VIP_EMAILS = ['neizao.franchi@gmail.com'];
+const VIP_EMAILS = ['neizao.franchi@gmail.com', 'gleicifranchi@gmail.com'];
 
 export const useVIPAccess = (userId: string | undefined, userEmail: string | undefined) => {
   const [isVIP, setIsVIP] = useState(false);
