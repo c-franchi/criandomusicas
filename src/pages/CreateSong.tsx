@@ -293,15 +293,26 @@ const CreateSong = () => {
           description: t('createSong.chooseVersions')
         });
       } else {
-        // Aguardar letras (podem estar sendo geradas)
+        // Nenhuma letra ainda: disparar a geração para este pedido (sem criar novo pedido)
         setStep("generating");
         toast.info(t('createSong.waitingLyrics'), {
           description: t('createSong.lyricsBeingGenerated')
         });
+
+        supabase.functions.invoke('generate-lyrics', {
+          body: {
+            orderId: existingOrderId,
+            story: orderData.story || '',
+            language: MusicCreationService.getActiveLanguage(),
+            briefing: reconstructedBriefing,
+          },
+        }).then(({ error }) => {
+          if (error) console.error('[CreateSong] generate-lyrics error:', error);
+        }).catch((e) => console.error('[CreateSong] generate-lyrics exception:', e));
         
-        // Poll a cada 3 segundos por até 60 segundos
+        // Poll a cada 3 segundos por até 3 minutos
         let attempts = 0;
-        const maxAttempts = 20;
+        const maxAttempts = 60;
         const pollInterval = setInterval(async () => {
           attempts++;
           const { data: newLyrics } = await supabase
