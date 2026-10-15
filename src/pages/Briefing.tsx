@@ -1576,6 +1576,19 @@ const Briefing = () => {
     navigate('/');
   };
 
+  // Botão "voltar" do celular/navegador: volta uma etapa do briefing em vez de sair
+  const headerBackRef = useRef(handleHeaderBack);
+  headerBackRef.current = handleHeaderBack;
+  useEffect(() => {
+    window.history.pushState({ briefingGuard: true }, '');
+    const onPop = () => {
+      window.history.pushState({ briefingGuard: true }, '');
+      headerBackRef.current();
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
   const handleOptionSelect = (option: { id: string; label: string }) => {
     const currentMsg = messages[messages.length - 1];
     if (!currentMsg?.field) {
