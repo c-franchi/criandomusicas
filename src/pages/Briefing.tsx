@@ -1556,6 +1556,26 @@ const Briefing = () => {
     }, 300);
   };
 
+  // Voltar do cabeçalho: durante edição volta para a confirmação; sem histórico pede confirmação antes de sair
+  const handleHeaderBack = () => {
+    if (isEditingSingleField) {
+      setIsEditingSingleField(false);
+      setEditingFieldStep(null);
+      setMessages([]);
+      showConfirmationScreen(formData);
+      return;
+    }
+    if (stepHistory.length > 0) {
+      handleGoBack();
+      return;
+    }
+    if (messages.some(m => m.type === 'user')) {
+      const ok = window.confirm('Seu briefing fica salvo e você pode continuar depois. Deseja sair?');
+      if (!ok) return;
+    }
+    navigate('/');
+  };
+
   const handleOptionSelect = (option: { id: string; label: string }) => {
     const currentMsg = messages[messages.length - 1];
     if (!currentMsg?.field) {
@@ -2989,7 +3009,7 @@ const Briefing = () => {
   // Tela de seleção de pacote
   if (showPlanSelection) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+      <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
         <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
           <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="mr-1">
@@ -3217,7 +3237,7 @@ const Briefing = () => {
   // Tela de Criação Rápida
   if (creationMode === 'quick') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+      <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
         <QuickCreation
           onSubmit={handleQuickCreationSubmit}
           onBack={handleQuickCreationBack}
@@ -3264,7 +3284,7 @@ const Briefing = () => {
   // Tela de confirmação
   if (showConfirmation) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+      <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
         <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
           <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -3455,51 +3475,40 @@ const Briefing = () => {
                 ) : (
                   // Campos cantada
                   <>
-                    <ConfirmationItem 
-                      label={t('confirmation.emotion')} 
-                      value={getFieldLabel('emotion', formData.emotion)} 
-                      onEdit={() => handleEditField(10)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.intensity')} 
-                      value={getFieldLabel('emotionIntensity', formData.emotionIntensity)} 
-                      onEdit={() => handleEditField(11)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.story')} 
-                      value={formData.story.length > 100 ? formData.story.substring(0, 100) + "..." : formData.story} 
-                      onEdit={() => handleEditField(12)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.mandatoryWords')} 
-                      value={formData.mandatoryWords || t('confirmation.none')} 
-                      onEdit={() => handleEditField(13)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.voiceType')} 
-                      value={getFieldLabel('voiceType', formData.voiceType)} 
-                      onEdit={() => handleEditField(14)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.style')} 
-                      value={getFieldLabel('style', formData.style)} 
-                      onEdit={() => handleEditField(15)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.rhythm')} 
-                      value={getFieldLabel('rhythm', formData.rhythm)} 
-                      onEdit={() => handleEditField(16)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.atmosphere')} 
-                      value={getFieldLabel('atmosphere', formData.atmosphere)} 
-                      onEdit={() => handleEditField(17)} 
-                    />
-                    <ConfirmationItem 
-                      label={t('confirmation.songName')} 
-                      value={formData.autoGenerateName ? t('confirmation.aiGenerated') : formData.songName} 
-                      onEdit={() => handleEditField(18)} 
-                    />
+                    {(() => {
+                      const isMotiv = formData.musicType === 'motivacional';
+                      const specialized = ['motivacional','religiosa','gospel','infantil','corporativa','trilha','parodia'].includes(formData.musicType);
+                      const st = isMotiv
+                        ? { emotion: 35, story: 40, words: 41, voice: 42, style: 37, name: 43 }
+                        : { emotion: 10, story: 12, words: 13, voice: 14, style: 15, name: 18 };
+                      return (
+                        <>
+                          {formData.emotion && (
+                            <ConfirmationItem label={t('confirmation.emotion')} value={getFieldLabel('emotion', formData.emotion)} onEdit={() => handleEditField(st.emotion)} />
+                          )}
+                          {!specialized && (
+                            <ConfirmationItem label={t('confirmation.intensity')} value={getFieldLabel('emotionIntensity', formData.emotionIntensity)} onEdit={() => handleEditField(11)} />
+                          )}
+                          <ConfirmationItem label={t('confirmation.story')} value={formData.story.length > 100 ? formData.story.substring(0, 100) + "..." : formData.story} onEdit={() => handleEditField(st.story)} />
+                          {formData.mandatoryWords && (
+                            <ConfirmationItem label={t('confirmation.mandatoryWords')} value={formData.mandatoryWords} onEdit={() => handleEditField(st.words)} />
+                          )}
+                          {formData.voiceType && (
+                            <ConfirmationItem label={t('confirmation.voiceType')} value={getFieldLabel('voiceType', formData.voiceType)} onEdit={() => handleEditField(st.voice)} />
+                          )}
+                          {formData.style && (
+                            <ConfirmationItem label={t('confirmation.style')} value={getFieldLabel('style', formData.style)} onEdit={() => handleEditField(st.style)} />
+                          )}
+                          {!specialized && formData.rhythm && (
+                            <ConfirmationItem label={t('confirmation.rhythm')} value={getFieldLabel('rhythm', formData.rhythm)} onEdit={() => handleEditField(16)} />
+                          )}
+                          {!specialized && formData.atmosphere && (
+                            <ConfirmationItem label={t('confirmation.atmosphere')} value={getFieldLabel('atmosphere', formData.atmosphere)} onEdit={() => handleEditField(17)} />
+                          )}
+                          <ConfirmationItem label={t('confirmation.songName')} value={formData.autoGenerateName ? t('confirmation.aiGenerated') : formData.songName} onEdit={() => handleEditField(st.name)} />
+                        </>
+                      );
+                    })()}
                     {/* Cover Upload for Custom Lyrics */}
                     {formData.hasCustomLyric && (
                       <div className="space-y-2 pt-2 border-t border-border/50">
@@ -3626,7 +3635,7 @@ const Briefing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+    <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
       {/* Header */}
       <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -3634,7 +3643,7 @@ const Briefing = () => {
           <Button 
             variant="ghost" 
             size="icon" 
-            onClick={stepHistory.length > 0 ? handleGoBack : () => navigate('/')} 
+            onClick={handleHeaderBack} 
             className="h-9 w-9 shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
