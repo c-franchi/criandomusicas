@@ -63,7 +63,7 @@ export const ImageCard = memo(({
         
         {/* Label overlay at bottom */}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent px-1 py-1.5">
-          <span className="text-[10px] sm:text-xs font-medium text-white text-center block truncate">
+          <span className="text-[10px] sm:text-xs font-medium leading-tight text-white text-center block line-clamp-2 break-words">
             {cleanLabel}
           </span>
         </div>
