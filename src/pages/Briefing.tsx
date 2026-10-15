@@ -3022,7 +3022,7 @@ const Briefing = () => {
   // Tela de seleção de pacote
   if (showPlanSelection) {
     return (
-      <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+      <div className="min-h-[100dvh] bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
         <header className="border-b bg-card/80 backdrop-blur-xl sticky top-0 z-10">
           <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-3">
             <Button variant="ghost" size="icon" onClick={() => navigate('/')} className="mr-1">
@@ -3250,7 +3250,7 @@ const Briefing = () => {
   // Tela de Criação Rápida
   if (creationMode === 'quick') {
     return (
-      <div className="h-[100dvh] overflow-hidden bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
+      <div className="min-h-[100dvh] bg-gradient-to-br from-background via-card/50 to-background flex flex-col">
         <QuickCreation
           onSubmit={handleQuickCreationSubmit}
           onBack={handleQuickCreationBack}
