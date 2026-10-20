@@ -19,7 +19,7 @@ import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData, clearQuickDraft } from "@/components/briefing/QuickCreation";
 import { PurposeSelector } from "@/components/briefing/PurposeSelector";
-import { getPurposeStart, isPurposeId, mapQuickPurpose, type PurposeId, type QuickPurpose } from "@/lib/briefingPurpose";
+import { draftMatchesPurpose, getPurposeStart, isPurposeId, mapQuickPurpose, type PurposeId, type QuickPurpose } from "@/lib/briefingPurpose";
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
@@ -428,7 +428,7 @@ const Briefing = () => {
 
       // Finalidade escolhida (inclusive vinda do login) — segue direto o caminho certo
       if (isPurposeId(purposeFromUrl)) {
-        applyPurpose(purposeFromUrl);
+        applyPurpose(purposeFromUrl, true);
         return;
       }
       
@@ -1569,6 +1569,11 @@ const Briefing = () => {
 
   // Voltar do cabeçalho: durante edição volta para a confirmação; sem histórico pede confirmação antes de sair
   const handleHeaderBack = () => {
+    // Voltar do celular no formulário rápido: volta para a escolha da finalidade
+    if (creationMode === 'quick') {
+      handleQuickCreationBack();
+      return;
+    }
     if (isEditingSingleField) {
       setIsEditingSingleField(false);
       setEditingFieldStep(null);
@@ -2666,7 +2671,7 @@ const Briefing = () => {
   };
 
   // Inicia o caminho correto para a finalidade escolhida (não cria pedido nem usa crédito)
-  const applyPurpose = (purpose: PurposeId) => {
+  const applyPurpose = (purpose: PurposeId, restoreDraft = false) => {
     const urlParams = new URLSearchParams(window.location.search);
     urlParams.set('purpose', purpose);
     urlParams.delete('type');
@@ -2686,7 +2691,14 @@ const Briefing = () => {
       setCreationMode('quick');
       return;
     }
-    const data: BriefingFormData = { ...initialFormData, ...start.patch };
+    // Ao recarregar/voltar do login, mantém as respostas já salvas desta mesma finalidade
+    let savedDraft: Record<string, unknown> | null = null;
+    if (restoreDraft) {
+      try { savedDraft = JSON.parse(localStorage.getItem(BRIEFING_STORAGE_KEY) || 'null'); } catch { savedDraft = null; }
+    }
+    const data: BriefingFormData = draftMatchesPurpose(start.patch, savedDraft)
+      ? { ...initialFormData, ...(savedDraft as Partial<BriefingFormData>), ...start.patch }
+      : { ...initialFormData, ...start.patch };
     setQuickPurpose(null);
     setIsQuickMode(false);
     setCreationMode(null);
@@ -3018,6 +3030,10 @@ const Briefing = () => {
 
   // Handler para voltar do modo rápido
   const handleQuickCreationBack = () => {
+    const params = new URLSearchParams(window.location.search);
+    params.delete('purpose');
+    const qs = params.toString();
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
     setCreationMode(null);
     setQuickPurpose(null);
     setShowPurposeSelection(true);

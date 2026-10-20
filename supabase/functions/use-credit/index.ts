@@ -64,7 +64,7 @@ serve(async (req) => {
     // Get order to verify ownership and get details for notification
     const { data: orderData, error: orderFetchError } = await supabaseClient
       .from('orders')
-      .select('user_id, music_type, music_style, is_instrumental')
+      .select('user_id, music_type, music_style, is_instrumental, payment_status')
       .eq('id', orderId)
       .single();
     
@@ -74,6 +74,19 @@ serve(async (req) => {
 
     if (orderData.user_id !== userId) {
       throw new Error("Order does not belong to this user");
+    }
+
+    // Idempotency: an order already paid never consumes another credit
+    if (orderData.payment_status === 'PAID') {
+      logStep("Order already paid - no credit consumed", { orderId });
+      return new Response(JSON.stringify({
+        success: true,
+        already_paid: true,
+        message: "Pedido já estava pago",
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
     }
     
     // Get user profile for notification
@@ -338,23 +351,35 @@ serve(async (req) => {
         
         // Retry with fresh data
         const retryUsed = freshCredit.used_credits + 1;
-        const { error: retryError } = await supabaseClient
+        const { error: retryError, data: retryData } = await supabaseClient
           .from('user_credits')
           .update({ 
             used_credits: retryUsed,
             is_active: retryUsed < freshCredit.total_credits,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', freshCredit.id);
+          .eq('id', freshCredit.id)
+          .eq('used_credits', freshCredit.used_credits) // keep the optimistic lock on retry
+          .select();
         
         if (retryError) {
           throw new Error(`Error on retry updating credits: ${retryError.message}`);
         }
+        if (!retryData || retryData.length === 0) {
+          return new Response(JSON.stringify({
+            success: false,
+            error: "Crédito em uso por outro pedido. Tente novamente.",
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+        creditToUse.used_credits = freshCredit.used_credits;
         logStep("Credit consumed on retry", { newUsed: retryUsed });
       }
 
       // Update order to mark as paid via credits
-      const { error: orderError } = await supabaseClient
+      const { error: orderError, data: paidRows } = await supabaseClient
         .from('orders')
         .update({
           payment_status: 'PAID',
@@ -366,9 +391,11 @@ serve(async (req) => {
         })
 
         .eq('id', orderId)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .neq('payment_status', 'PAID') // a concurrent call may have paid it meanwhile
+        .select('id');
 
-      if (orderError) {
+      if (orderError || !paidRows || paidRows.length === 0) {
         // Rollback credit usage
         await supabaseClient
           .from('user_credits')
@@ -378,6 +405,12 @@ serve(async (req) => {
           })
           .eq('id', creditToUse.id);
         
+        if (!orderError) {
+          return new Response(JSON.stringify({ success: true, already_paid: true, message: "Pedido já estava pago" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
         throw new Error(`Error updating order: ${orderError.message}`);
       }
 

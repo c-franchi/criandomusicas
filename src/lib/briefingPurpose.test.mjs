@@ -52,3 +52,14 @@ test("Rejeita finalidade desconhecida na URL", () => {
   expect(isPurposeId("hack")).toBe(false);
   expect(isPurposeId("gift")).toBe(true);
 });
+
+import { draftMatchesPurpose as dmp, getPurposeStart as gps } from './briefingPurpose.ts';
+import { test as t2, expect as e2 } from 'bun:test';
+
+t2('saved jingle draft is restored only for jingle purpose', () => {
+  const saved = { musicType: 'corporativa', corporateFormat: 'jingle', isInstrumental: false, hasCustomLyric: false, story: 'x' };
+  e2(dmp(gps('company_jingle').patch, saved)).toBe(true);
+  e2(dmp(gps('company_anthem').patch, saved)).toBe(false);
+  e2(dmp(gps('faith').patch, saved)).toBe(false);
+  e2(dmp(gps('company_jingle').patch, null)).toBe(false);
+});
