@@ -175,7 +175,7 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
             )}
             
             {/* Section Anchors */}
-            {showAnchors && (
+            {showAnchors && isHomePage && (
               <>
                 <Separator className="mx-4" />
                 <div className="p-4">
@@ -205,6 +205,9 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
                 {tCommon('mobileMenu.menu', 'Menu')}
               </p>
               <nav className="space-y-1">
+                <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/')}><Music className="w-4 h-4" />{tHome('marketing.homeNav')}</Button>
+                <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/planos')}><Music className="w-4 h-4" />{tHome('marketing.packagesNav')}</Button>
+                <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/criadores')}><Play className="w-4 h-4" />{tHome('marketing.creatorsNav')}</Button>
                 {user ? (
                   <>
                     <button

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Hero from "@/components/Hero";
 import ProcessSteps from "@/components/ProcessSteps";
@@ -22,6 +23,7 @@ const CELEBRATION_DISMISS_KEY = 'celebration_dismissed_date';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation("home");
   const { closestDate, isLoading } = useUpcomingCelebrations(30);
   const [celebrationDismissed, setCelebrationDismissed] = useState(true); // Start as true to prevent flash
   const [showCelebration, setShowCelebration] = useState(false);
@@ -100,8 +102,8 @@ const Index = () => {
     <main className="min-h-screen bg-background">
       <SEO 
         canonical="/"
-        title="Músicas Personalizadas com IA"
-        description="Crie músicas personalizadas com inteligência artificial. Transforme sua história em uma canção única e emocionante. Presente perfeito para aniversário, casamento e datas especiais. Entrega em até 24h."
+        title={t("marketing.seoTitle")}
+        description={t("marketing.seoDescription")}
         keywords="música personalizada, criar música com IA, presente criativo, música para aniversário, música para casamento, homenagem musical, música exclusiva"
       />
       <Hero />
@@ -127,7 +129,6 @@ const Index = () => {
         </div>
       </div>
       
-      <PlanComparison />
       <InstrumentalShowcase />
       <WhyChooseUs />
       <CustomLyricHighlight />
@@ -135,6 +136,7 @@ const Index = () => {
       <Testimonials />
       <ReactionVideosShowcase />
       <FAQ />
+      <PlanComparison />
       <Footer />
       <CookieConsent />
       <ScrollToTop />

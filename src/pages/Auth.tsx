@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Music, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { safeAuthDestination } from '@/lib/marketing-routes';
 
 // Detect recovery mode synchronously on initial load
 const getInitialResetMode = () => {
@@ -25,6 +26,8 @@ const Auth = () => {
   const { t } = useTranslation('auth');
   const { t: tCommon } = useTranslation('common');
   const [searchParams] = useSearchParams();
+  const redirectDestination = safeAuthDestination(searchParams.get('redirect'));
+
   const [loading, setLoading] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
@@ -85,8 +88,8 @@ const Auth = () => {
 
         if (data.session?.user) {
           console.log('[Auth] Session established for:', data.session.user.email);
-          window.history.replaceState(null, '', '/');
-          window.location.href = '/';
+          window.history.replaceState(null, '', redirectDestination);
+          window.location.href = redirectDestination;
           return;
         }
       } catch (err) {
@@ -96,7 +99,7 @@ const Auth = () => {
     };
 
     handleHashCallback();
-  }, [toast, t]);
+  }, [toast, t, redirectDestination]);
 
   // Clean up URL hash after recovery mode is detected
   useEffect(() => {
@@ -133,7 +136,7 @@ const Auth = () => {
 
   // Redirect if already authenticated
   if (user && !resetPasswordMode && !isRecoverySession) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={redirectDestination} replace />;
   }
 
   const handleSignIn = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -264,7 +267,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth`,
+          redirectTo: `${window.location.origin}/auth?redirect=${encodeURIComponent(redirectDestination)}`,
           queryParams: {
             prompt: 'select_account', // Force account selection every time
             access_type: 'offline'

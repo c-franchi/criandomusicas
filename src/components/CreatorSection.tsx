@@ -1,482 +1,79 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Image, Users, Sparkles, Headphones, Crown, Check, Loader2 } from "lucide-react";
+import { Check, Crown, Loader2, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
-
-// Animation variants for staggered children
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut" as const,
-    },
-  },
-};
-
-const cardHoverVariants = {
-  rest: { 
-    scale: 1, 
-    y: 0,
-    boxShadow: "0 4px 24px -4px hsl(240 10% 10% / 0.08)"
-  },
-  hover: { 
-    scale: 1.02, 
-    y: -8,
-    boxShadow: "0 20px 40px -8px hsl(259 94% 51% / 0.25)",
-    transition: {
-      duration: 0.3,
-      ease: "easeOut" as const
-    }
-  },
-};
-
-// Credits mapping for creator plans (fallback values)
-const CREATOR_CREDITS: Record<string, number> = {
-  'creator_start': 40,
-  'creator_pro': 150,
-  'creator_studio': 230,
-};
+import { formatCurrency } from "@/lib/i18n-format";
+import { trackEvent } from "@/lib/analytics";
 
 interface CreatorPlan {
   id: string;
   name: string;
   credits: number;
-  price: number;
-  popular: boolean;
+  price_cents: number;
+  price_promo_cents: number | null;
+  is_popular: boolean;
 }
 
 const CreatorSection = () => {
   const { t, i18n } = useTranslation('pricing');
-  const [creatorPlans, setCreatorPlans] = useState<CreatorPlan[]>([]);
+  const [plans, setPlans] = useState<CreatorPlan[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Fetch creator plans from database
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setFailed(false);
     const fetchPlans = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('pricing_config')
-          .select('*')
-          .in('id', ['creator_start', 'creator_pro', 'creator_studio'])
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true });
-
-        if (error) throw error;
-
-        if (data && data.length > 0) {
-          setCreatorPlans(data.map(p => ({
-            id: p.id,
-            name: p.name,
-            credits: p.credits || CREATOR_CREDITS[p.id] || 40,
-            price: p.price_promo_cents || p.price_cents,
-            popular: p.is_popular || false,
-          })));
-        } else {
-          // Fallback to default values if no data
-          setCreatorPlans([
-            { id: 'creator_start', name: 'Creator Start', credits: 40, price: 4990, popular: false },
-            { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 8990, popular: true },
-            { id: 'creator_studio', name: 'Creator Studio', credits: 230, price: 11990, popular: false },
-          ]);
-        }
-      } catch (error) {
-        console.error('Error fetching creator plans:', error);
-        // Fallback to default values
-        setCreatorPlans([
-          { id: 'creator_start', name: 'Creator Start', credits: 40, price: 4990, popular: false },
-          { id: 'creator_pro', name: 'Creator Pro', credits: 150, price: 8990, popular: true },
-          { id: 'creator_studio', name: 'Creator Studio', credits: 230, price: 11990, popular: false },
-        ]);
-      } finally {
-        setLoading(false);
-      }
+      const { data, error } = await supabase.from('pricing_config').select('id,name,credits,price_cents,price_promo_cents,is_popular')
+        .in('id', ['creator_start', 'creator_pro', 'creator_studio']).eq('is_active', true).order('sort_order', { ascending: true });
+      if (!active) return;
+      if (error) { setFailed(true); setPlans([]); }
+      else setPlans((data || []).filter(p => typeof p.credits === 'number' && p.credits > 0).map(p => ({ ...p, credits: p.credits ?? 0, is_popular: p.is_popular ?? false })));
+      setLoading(false);
     };
-
-    fetchPlans();
-  }, []);
-
-  // Format price based on language
-  const formatPrice = (cents: number): string => {
-    const value = cents / 100;
-    if (i18n.language === 'pt-BR') {
-      return `R$ ${value.toFixed(2).replace('.', ',')}`;
-    }
-    return `R$ ${value.toFixed(2)}`;
-  };
-
-  // Get plan description with universal credits
-  const getPlanDescription = (planId: string, credits: number): string => {
-    const songWord = i18n.language === 'pt-BR' ? 'créditos' 
-      : i18n.language === 'es' ? 'créditos' 
-      : i18n.language === 'it' ? 'crediti' 
-      : 'credits';
-    
-    const monthWord = i18n.language === 'pt-BR' ? 'mês' 
-      : i18n.language === 'es' ? 'mes' 
-      : i18n.language === 'it' ? 'mese' 
-      : 'month';
-
-    if (planId === 'creator_start') {
-      const desc = i18n.language === 'pt-BR' ? 'Ideal para criadores que estão começando' 
-        : i18n.language === 'es' ? 'Ideal para creadores que están comenzando' 
-        : i18n.language === 'it' ? 'Ideale per creator che stanno iniziando' 
-        : 'Ideal for creators just starting out';
-      return `${credits} ${songWord}/${monthWord} • ${desc}`;
-    }
-    
-    if (planId === 'creator_pro') {
-      const desc = i18n.language === 'pt-BR' ? 'Para criadores de conteúdo frequentes' 
-        : i18n.language === 'es' ? 'Para creadores de contenido frecuentes' 
-        : i18n.language === 'it' ? 'Per creator di contenuti frequenti' 
-        : 'For frequent content creators';
-      return `${credits} ${songWord}/${monthWord} • ${desc}`;
-    }
-    
-    if (planId === 'creator_studio') {
-      const desc = i18n.language === 'pt-BR' ? 'Produção em escala para profissionais' 
-        : i18n.language === 'es' ? 'Producción a escala para profesionales' 
-        : i18n.language === 'it' ? 'Produzione su larga scala per professionisti' 
-        : 'Scale production for professionals';
-      return `${credits} ${songWord}/${monthWord} • ${desc}`;
-    }
-    
-    return `${credits} ${songWord}/${monthWord}`;
-  };
-
-  // Get features for Creator plans
-  const getCreatorFeatures = (): string[] => {
-    if (i18n.language === 'pt-BR') {
-      return [
-        'Créditos universais (vocal, instrumental, letra)',
-        'Letras curadas por humanos',
-        'Capas prontas para thumbnail',
-        'Entrega em até 24h',
-        '100% original e monetizável',
-      ];
-    }
-    if (i18n.language === 'es') {
-      return [
-        'Créditos universales (vocal, instrumental, letra)',
-        'Letras curadas por humanos',
-        'Portadas listas para miniatura',
-        'Entrega en hasta 24h',
-        '100% original y monetizable',
-      ];
-    }
-    if (i18n.language === 'it') {
-      return [
-        'Crediti universali (vocale, strumentale, testo)',
-        'Testi curati da umani',
-        'Copertine pronte per miniatura',
-        'Consegna entro 24h',
-        '100% originale e monetizzabile',
-      ];
-    }
-    return [
-      'Universal credits (vocal, instrumental, lyrics)',
-      'Human-curated lyrics',
-      'Thumbnail-ready covers',
-      'Delivery within 24h',
-      '100% original & monetizable',
-    ];
-  };
-
-  const features = getCreatorFeatures();
-
-  if (loading) {
-    return (
-      <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10 overflow-hidden" id="criadores">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </section>
-    );
-  }
-
+    void fetchPlans();
+    return () => { active = false; };
+  }, [attempt]);
+  const features = t('creatorLanding.planFeatures', { returnObjects: true }) as string[];
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-500/10 via-background to-pink-500/10 overflow-hidden" id="criadores">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Badge + Headline */}
-        <motion.div 
-          className="text-center mb-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <Badge className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-4 py-1.5 text-sm">
-              🎬 {t('creator.badge')}
-            </Badge>
-          </motion.div>
-          
-          <motion.h2 
-            className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {t('creator.title')} <span className="gradient-text">{t('creator.titleHighlight')}</span>
-          </motion.h2>
-          
-          <motion.p 
-            className="text-xl text-muted-foreground mb-4 max-w-3xl mx-auto"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            {t('creator.description')}
-          </motion.p>
-          
-          <motion.p 
-            className="text-muted-foreground text-sm max-w-2xl mx-auto mb-6"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            {t('creator.subdescription')}
-          </motion.p>
-          
-          {/* Universal credits badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.5 }}
-          >
-            <Badge className="bg-primary/20 text-primary border-primary/30">
-              🎵 {i18n.language === 'pt-BR' ? 'Créditos universais - use para qualquer tipo de música' : 'Universal credits - use for any type of music'}
-            </Badge>
-          </motion.div>
-        </motion.div>
-        
-        {/* Creator Plan Cards */}
-        <motion.div 
-          className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-10%" }}
-        >
-          {creatorPlans.map((plan, index) => (
-            <motion.div
-              key={plan.id}
-              variants={itemVariants}
-              whileHover="hover"
-              initial="rest"
-              animate="rest"
-            >
-              <motion.div variants={cardHoverVariants}>
-                <Card 
-                  className={`relative overflow-hidden h-full ${
-                    plan.popular 
-                      ? 'border-2 border-purple-500 shadow-lg shadow-purple-500/20' 
-                      : 'border-primary/20'
-                  }`}
-                >
-                  {plan.popular && (
-                    <motion.div 
-                      className="absolute top-0 right-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg"
-                      initial={{ x: 20, opacity: 0 }}
-                      whileInView={{ x: 0, opacity: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.5 + index * 0.1 }}
-                    >
-                      {i18n.language === 'pt-BR' ? 'POPULAR' : i18n.language === 'es' ? 'POPULAR' : i18n.language === 'it' ? 'POPOLARE' : 'POPULAR'}
-                    </motion.div>
-                  )}
-                  
-                  <CardHeader className="pb-4 text-center">
-                    <motion.div 
-                      className="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mb-4"
-                      whileHover={{ 
-                        scale: 1.1, 
-                        rotate: [0, -10, 10, 0],
-                        transition: { duration: 0.5 }
-                      }}
-                    >
-                      <Crown className="w-7 h-7 text-purple-400" />
-                    </motion.div>
-                    
-                    <CardTitle className="text-xl text-card-foreground font-bold mb-2">
-                      {plan.name}
-                    </CardTitle>
-                    
-                    <div className="text-3xl font-bold text-purple-400 mb-3">
-                      {formatPrice(plan.price)}
-                      <span className="text-sm font-normal text-muted-foreground">
-                        /{i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}
-                      </span>
-                    </div>
-                    
-                    <p className="text-sm text-muted-foreground leading-relaxed min-h-[40px]">
-                      {getPlanDescription(plan.id, plan.credits)}
-                    </p>
-                  </CardHeader>
-                  
-                  <CardContent className="pt-0">
-                    <ul className="space-y-2 mb-6">
-                      {features.map((feature, idx) => (
-                        <motion.li 
-                          key={idx} 
-                          className="flex items-center gap-2 text-sm text-muted-foreground"
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          viewport={{ once: true }}
-                          transition={{ delay: 0.6 + idx * 0.05 }}
-                        >
-                          <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                          {feature}
-                        </motion.li>
-                      ))}
-                    </ul>
-                    
-                    <Button 
-                      asChild 
-                      className={`w-full ${
-                        plan.popular 
-                          ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white' 
-                          : 'bg-purple-600 hover:bg-purple-700 text-white'
-                      }`}
-                    >
-                      <Link to="/planos#creator">
-                        {i18n.language === 'pt-BR' ? 'Assinar Agora' : i18n.language === 'es' ? 'Suscribirse' : i18n.language === 'it' ? 'Abbonati Ora' : 'Subscribe Now'}
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
-          ))}
-        </motion.div>
-        
-        {/* Diferenciais Grid */}
-        <motion.div 
-          className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-5%" }}
-        >
-          {[
-            { icon: FileText, titleKey: 'curatedLyrics', descKey: 'curatedLyricsDesc' },
-            { icon: Image, titleKey: 'readyCovers', descKey: 'readyCoversDesc' },
-            { icon: Users, titleKey: 'humanSupport', descKey: 'humanSupportDesc' },
-            { icon: Sparkles, titleKey: 'commercialUse', descKey: 'commercialUseDesc' },
-          ].map((item, index) => (
-            <motion.div key={item.titleKey} variants={itemVariants}>
-              <motion.div
-                whileHover={{ 
-                  y: -8, 
-                  scale: 1.02,
-                  transition: { duration: 0.3 }
-                }}
-              >
-                <Card className="border-primary/20 hover:border-primary/50 transition-colors h-full">
-                  <CardHeader className="pb-2">
-                    <motion.div 
-                      className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-3"
-                      whileHover={{ 
-                        scale: 1.15, 
-                        rotate: 360,
-                        transition: { duration: 0.6 }
-                      }}
-                    >
-                      <item.icon className="w-6 h-6 text-primary" />
-                    </motion.div>
-                    <CardTitle className="text-lg">{t(`creator.features.${item.titleKey}`)}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-muted-foreground text-sm">
-                    {t(`creator.features.${item.descKey}`)}
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </motion.div>
-          ))}
-        </motion.div>
-        
-        {/* Comparison Box */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <Card className="mb-12 p-6 sm:p-8 border-2 border-dashed border-primary/30 bg-gradient-to-r from-primary/5 to-accent/5">
-            <div className="flex flex-col lg:flex-row items-center gap-6">
-              <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
-                  <motion.div
-                    animate={{ 
-                      rotate: [0, 15, -15, 0],
-                      scale: [1, 1.1, 1]
-                    }}
-                    transition={{ 
-                      duration: 2, 
-                      repeat: Infinity, 
-                      repeatDelay: 3 
-                    }}
-                  >
-                    <Sparkles className="w-5 h-5 text-primary" />
-                  </motion.div>
-                  {t('creator.whyDifferent.title')}
-                </h3>
-                <p className="text-muted-foreground">
-                  <strong className="text-foreground">{t('creator.whyDifferent.youDescribe')}</strong> {t('creator.whyDifferent.weTakeCare')}
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <motion.div 
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/20 border border-green-500/40"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Headphones className="w-4 h-4 text-green-400" />
-                  <span className="text-sm font-medium text-green-400">{t('creator.badges.original')}</span>
-                </motion.div>
-                <motion.div 
-                  className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500/20 border border-blue-500/40"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Sparkles className="w-4 h-4 text-blue-400" />
-                  <span className="text-sm font-medium text-blue-400">{t('creator.badges.monetizable')}</span>
-                </motion.div>
-              </div>
-            </div>
-          </Card>
-        </motion.div>
+    <section className="py-16 sm:py-20 px-5 bg-secondary/30 scroll-mt-20" id="assinaturas">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-10">
+          <p className="text-sm text-primary font-semibold mb-3">{t('creator.badge')}</p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t('creatorLanding.plansTitle')}</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">{t('creatorLanding.plansDescription')}</p>
+        </div>
+        {loading ? <div className="min-h-80 flex justify-center items-center"><Loader2 className="w-8 h-8 animate-spin text-primary" aria-label={t('creatorLanding.loading')} /></div> : plans.length === 0 ? (
+          <div className="min-h-40 text-center"><p className="text-muted-foreground mb-4">{t('creatorLanding.unavailable')}</p>{failed && <Button variant="outline" onClick={() => setAttempt(n => n + 1)}>{t('creatorLanding.retry')}</Button>}</div>
+        ) : <div className="grid md:grid-cols-3 gap-6 items-stretch">
+          {plans.map(plan => <Card key={plan.id} className={`premium-card flex flex-col rounded-lg ${plan.is_popular ? 'ring-2 ring-primary' : ''}`}>
+            <CardHeader className="pb-4 pt-6">
+              <div className="flex items-center justify-between gap-2 mb-5"><Crown className="w-7 h-7 text-primary" />{plan.is_popular && <Badge>{t('popular')}</Badge>}</div>
+              <CardTitle className="text-2xl mb-3">{plan.name}</CardTitle>
+              {plan.price_promo_cents !== null && <p className="text-sm text-muted-foreground line-through">{formatCurrency(plan.price_cents, i18n.language, { convert: true })}</p>}
+              <p className="text-3xl font-bold text-primary break-words">{formatCurrency(plan.price_promo_cents ?? plan.price_cents, i18n.language, { convert: true })}<span className="text-sm text-muted-foreground font-normal"> /{t('creatorLanding.month')}</span></p>
+              <p className="text-sm font-semibold pt-2">{t('creatorLanding.credits', { count: plan.credits })}</p>
+              {plan.price_promo_cents !== null && <Badge variant="outline" className="w-fit">{t('badges.promo')}</Badge>}
+            </CardHeader>
+            <CardContent className="flex flex-col flex-1">
+              <ul className="space-y-3 mb-6 flex-1">{features.map(feature => <li key={feature} className="text-sm text-muted-foreground flex gap-2"><Check className="w-4 h-4 text-primary shrink-0 mt-0.5" />{feature}</li>)}</ul>
+              <Button asChild className="w-full h-auto min-h-12 py-3 whitespace-normal"><Link to={`/creator-checkout/${plan.id}`} onClick={() => trackEvent('select_creator_plan', { plan_id: plan.id, placement: 'criadores' })}>{t('creator.subscribe', { plan: plan.name })}<ArrowRight className="w-4 h-4 ml-2 shrink-0" /></Link></Button>
+            </CardContent>
+          </Card>)}
+        </div>}
+        <div className="mt-8 text-sm text-muted-foreground space-y-2 max-w-3xl mx-auto text-center leading-relaxed">
+          <p>{t('creatorLanding.renewal')}</p>
+          <p>{t('creatorLanding.cancellation')}</p>
+          <p>{t('creatorLanding.currencyNotice')}</p>
+          <Link to="/termos" className="text-primary underline underline-offset-4">{t('creatorLanding.readTerms')}</Link>
+        </div>
       </div>
     </section>
   );
 };
-
 export default CreatorSection;

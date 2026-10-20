@@ -62,7 +62,7 @@ const CreatorCheckout = () => {
   useEffect(() => {
     const fetchPlan = async () => {
       if (!planId) {
-        navigate('/planos');
+        navigate('/criadores');
         return;
       }
 
@@ -82,7 +82,7 @@ const CreatorCheckout = () => {
             description: "O plano selecionado não existe ou está inativo.",
             variant: "destructive",
           });
-          navigate('/planos');
+          navigate('/criadores');
           return;
         }
 
@@ -218,7 +218,7 @@ const CreatorCheckout = () => {
         {/* Back button */}
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/planos#creator')}
+          onClick={() => navigate('/criadores#assinaturas')}
           className="mb-6 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
