@@ -379,7 +379,7 @@ serve(async (req) => {
       }
 
       // Update order to mark as paid via credits
-      const { error: orderError } = await supabaseClient
+      const { error: orderError, data: paidRows } = await supabaseClient
         .from('orders')
         .update({
           payment_status: 'PAID',
