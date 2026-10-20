@@ -331,6 +331,7 @@
       "title": "Are you a content creator?",
       "description": "Explore music and tracks for YouTube, Reels, TikTok, podcasts and digital projects, with monthly plans and transparent usage terms.",
       "cta": "Explore solutions for creators"
-    }
+    },
+    "createCta": "Create my song"
   }
 }
