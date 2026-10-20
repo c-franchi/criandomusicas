@@ -408,5 +408,32 @@
   "universal": {
     "badge": "Crediti universali — per ogni tipo di musica",
     "usageHint": "Usali per voce, strumentali o il tuo testo"
+  },
+  "creatorCheckout": {
+    "back": "Torna ai piani",
+    "monthly": "Abbonamento mensile",
+    "voucher": "Usa un voucher",
+    "voucherHint": "Hai un codice sconto? Applicalo qui",
+    "code": "Inserisci il codice",
+    "apply": "Applica",
+    "remove": "Rimuovi",
+    "summary": "Riepilogo",
+    "discount": "Sconto voucher",
+    "total": "Totale",
+    "processing": "Elaborazione...",
+    "secure": "Sarai reindirizzato al pagamento sicuro. Consulta le condizioni nei termini.",
+    "firstMonth": "Primo mese senza addebito con questo voucher",
+    "error": "Errore",
+    "notFound": "Piano non trovato",
+    "notFoundDescription": "Il piano non esiste o non è attivo.",
+    "loadError": "Impossibile caricare il piano.",
+    "voucherApplied": "Voucher applicato!",
+    "voucherInvalid": "Voucher non valido",
+    "voucherInvalidDescription": "Codice non trovato o scaduto.",
+    "voucherError": "Impossibile verificare il voucher.",
+    "subscribeError": "Impossibile avviare l’abbonamento. Riprova.",
+    "discountApplied": "Sconto di {{amount}} applicato.",
+    "discountPercent": "{{percent}}% di sconto",
+    "discountAmount": "{{amount}} di sconto"
   }
 }

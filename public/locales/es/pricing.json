@@ -408,5 +408,32 @@
   "universal": {
     "badge": "Créditos universales — cualquier tipo de música",
     "usageHint": "Úsalos para voz, instrumentales o tu letra"
+  },
+  "creatorCheckout": {
+    "back": "Volver a los planes",
+    "monthly": "Suscripción mensual",
+    "voucher": "Usar un voucher",
+    "voucherHint": "¿Tienes un código de descuento? Aplícalo aquí",
+    "code": "Introduce el código",
+    "apply": "Aplicar",
+    "remove": "Quitar",
+    "summary": "Resumen",
+    "discount": "Descuento del voucher",
+    "total": "Total",
+    "processing": "Procesando...",
+    "secure": "Serás dirigido al pago seguro. Consulta las condiciones en los términos.",
+    "firstMonth": "Primer mes sin cargo con este voucher",
+    "error": "Error",
+    "notFound": "Plan no encontrado",
+    "notFoundDescription": "El plan no existe o está inactivo.",
+    "loadError": "No se pudo cargar el plan.",
+    "voucherApplied": "¡Voucher aplicado!",
+    "voucherInvalid": "Voucher inválido",
+    "voucherInvalidDescription": "Código no encontrado o caducado.",
+    "voucherError": "No se pudo validar el voucher.",
+    "subscribeError": "No se pudo iniciar la suscripción. Inténtalo de nuevo.",
+    "discountApplied": "Descuento de {{amount}} aplicado.",
+    "discountPercent": "{{percent}}% de descuento",
+    "discountAmount": "{{amount}} de descuento"
   }
 }

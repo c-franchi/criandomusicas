@@ -408,5 +408,32 @@
   "universal": {
     "badge": "Universal credits — for any music type",
     "usageHint": "Use for vocals, instrumentals or your lyrics"
+  },
+  "creatorCheckout": {
+    "back": "Back to plans",
+    "monthly": "Monthly subscription",
+    "voucher": "Use a voucher",
+    "voucherHint": "Have a discount code? Apply it here",
+    "code": "Enter code",
+    "apply": "Apply",
+    "remove": "Remove",
+    "summary": "Summary",
+    "discount": "Voucher discount",
+    "total": "Total",
+    "processing": "Processing...",
+    "secure": "You will be redirected to secure payment. See the Terms of Use for conditions.",
+    "firstMonth": "No first-month charge with this voucher",
+    "error": "Error",
+    "notFound": "Plan not found",
+    "notFoundDescription": "The selected plan does not exist or is inactive.",
+    "loadError": "Could not load the plan.",
+    "voucherApplied": "Voucher applied!",
+    "voucherInvalid": "Invalid voucher",
+    "voucherInvalidDescription": "Code not found or expired.",
+    "voucherError": "Could not validate the voucher.",
+    "subscribeError": "Could not start the subscription. Please try again.",
+    "discountApplied": "Discount of {{amount}} applied.",
+    "discountPercent": "{{percent}}% discount",
+    "discountAmount": "{{amount}} discount"
   }
 }

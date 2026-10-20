@@ -408,5 +408,32 @@
     "packagesCta": "Ver pacotes avulsos",
     "discreetLink": "Para produção mensal, conheça os planos para criadores",
     "delivery": "Acompanhe a produção e a entrega pela plataforma. Consulte os prazos nos Termos de Uso e confirme com o atendimento se tiver uma data específica."
+  },
+  "creatorCheckout": {
+    "back": "Voltar aos planos",
+    "monthly": "Assinatura mensal",
+    "voucher": "Usar voucher",
+    "voucherHint": "Tem um código de desconto? Aplique aqui",
+    "code": "Digite o código",
+    "apply": "Aplicar",
+    "remove": "Remover",
+    "summary": "Resumo",
+    "discount": "Desconto do voucher",
+    "total": "Total",
+    "processing": "Processando...",
+    "secure": "Você será direcionado ao pagamento seguro. Consulte as condições nos Termos de Uso.",
+    "firstMonth": "Primeiro mês sem cobrança pelo voucher",
+    "error": "Erro",
+    "notFound": "Plano não encontrado",
+    "notFoundDescription": "O plano selecionado não existe ou está inativo.",
+    "loadError": "Não foi possível carregar o plano.",
+    "voucherApplied": "Voucher aplicado!",
+    "voucherInvalid": "Voucher inválido",
+    "voucherInvalidDescription": "Código não encontrado ou expirado.",
+    "voucherError": "Não foi possível validar o voucher.",
+    "subscribeError": "Não foi possível iniciar a assinatura. Tente novamente.",
+    "discountApplied": "Desconto de {{amount}} aplicado.",
+    "discountPercent": "{{percent}}% de desconto",
+    "discountAmount": "{{amount}} de desconto"
   }
 }
