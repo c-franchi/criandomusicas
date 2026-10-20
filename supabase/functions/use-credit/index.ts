@@ -391,9 +391,11 @@ serve(async (req) => {
         })
 
         .eq('id', orderId)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .neq('payment_status', 'PAID') // a concurrent call may have paid it meanwhile
+        .select('id');
 
-      if (orderError) {
+      if (orderError || !paidRows || paidRows.length === 0) {
         // Rollback credit usage
         await supabaseClient
           .from('user_credits')
@@ -403,6 +405,12 @@ serve(async (req) => {
           })
           .eq('id', creditToUse.id);
         
+        if (!orderError) {
+          return new Response(JSON.stringify({ success: true, already_paid: true, message: "Pedido já estava pago" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
         throw new Error(`Error updating order: ${orderError.message}`);
       }
 
