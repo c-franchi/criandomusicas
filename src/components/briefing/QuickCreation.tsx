@@ -12,6 +12,7 @@ import { genreImages, voiceImages, typeImages } from "@/assets/briefing";
 import { cn } from "@/lib/utils";
 import { useBriefingTour } from "@/hooks/useBriefingTour";
 import { useSpeechToText } from "@/hooks/useSpeechToText";
+import type { QuickPurpose, Energy } from "@/lib/briefingPurpose";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -49,12 +50,25 @@ export interface QuickCreationData {
   additionalGenre?: string;
   voiceType?: string;
   songName?: string;
+  energy?: Energy;
+  moment?: string;
 }
+
+const DRAFT_KEY = 'quick_creation_draft';
+type Draft = { purpose: string; prompt: string; isInstrumental: boolean; style: string; additionalGenre: string; voiceType: string; songName: string; energy: Energy | ''; moment: string };
+const readDraft = (purpose: string): Partial<Draft> => {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null');
+    return d && d.purpose === purpose ? d : {};
+  } catch { return {}; }
+};
+export const clearQuickDraft = () => { try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignore */ } };
 
 interface QuickCreationProps {
   onSubmit: (data: QuickCreationData) => void;
   onBack: () => void;
-  onSwitchToDetailed: () => void;
+  onSwitchToDetailed: (data: QuickCreationData) => void;
+  purpose?: QuickPurpose | null;
   styleOptions: { id: string; label: string }[];
   voiceOptions: { id: string; label: string }[];
   credits?: number;
@@ -67,16 +81,31 @@ const QuickCreationComponent = ({
   styleOptions,
   voiceOptions,
   credits = 0,
+  purpose = null,
 }: QuickCreationProps) => {
   const { t } = useTranslation('briefing');
-  const [prompt, setPrompt] = useState("");
-  const [isInstrumental, setIsInstrumental] = useState(false);
-  const [style, setStyle] = useState("");
-  const [additionalGenre, setAdditionalGenre] = useState("");
-  const [showAdditionalGenre, setShowAdditionalGenre] = useState(false);
-  const [voiceType, setVoiceType] = useState("");
-  const [songName, setSongName] = useState("");
+  const draftKey = purpose || 'legacy';
+  const [draft] = useState(() => readDraft(draftKey));
+  const [prompt, setPrompt] = useState(draft.prompt || "");
+  const [isInstrumental, setIsInstrumental] = useState(!!draft.isInstrumental);
+  const [style, setStyle] = useState(draft.style || "");
+  const [additionalGenre, setAdditionalGenre] = useState(draft.additionalGenre || "");
+  const [showAdditionalGenre, setShowAdditionalGenre] = useState(!!draft.additionalGenre);
+  const [voiceType, setVoiceType] = useState(draft.voiceType || "");
+  const [songName, setSongName] = useState(draft.songName || "");
+  const [energy, setEnergy] = useState<Energy | ''>(draft.energy || "");
+  const [moment, setMoment] = useState(draft.moment || "");
+  const [showReview, setShowReview] = useState(false);
   const [showNoTitleConfirm, setShowNoTitleConfirm] = useState(false);
+  const isMotivational = purpose === 'company_team' || purpose === 'motivation';
+
+  // Autosave draft so nothing is lost when switching modes, going back or reloading
+  useEffect(() => {
+    const d: Draft = { purpose: draftKey, prompt, isInstrumental, style, additionalGenre, voiceType, songName, energy, moment };
+    if (prompt || style || voiceType || songName || additionalGenre || energy || moment) {
+      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(d)); } catch { /* ignore */ }
+    }
+  }, [draftKey, prompt, isInstrumental, style, additionalGenre, voiceType, songName, energy, moment]);
   const [copied, setCopied] = useState(false);
 
   // Speech-to-text for inline voice input
@@ -85,17 +114,7 @@ const QuickCreationComponent = ({
   // Tour for quick creation mode
   const { startTour } = useBriefingTour({ mode: 'quick' });
 
-  // Auto-start tour on first visit
-  useEffect(() => {
-    const hasSeenQuickTour = localStorage.getItem('quick_creation_tour_seen');
-    if (!hasSeenQuickTour) {
-      const timer = setTimeout(() => {
-        startTour();
-        localStorage.setItem('quick_creation_tour_seen', 'true');
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [startTour]);
+  // Tour is opt-in only ("Ver ajuda") so it never interrupts first-time visitors
 
   // Append speech transcript to prompt
   useEffect(() => {
@@ -116,8 +135,11 @@ const QuickCreationComponent = ({
       label: opt.label,
       imageSrc: genreImages[opt.id as keyof typeof genreImages] || genreImages.pop || ''
     }));
+    if (isMotivational) {
+      baseOptions.unshift({ id: 'auto', label: t('purpose.autoStyle', 'Deixe o sistema escolher'), imageSrc: genreImages.pop || '' });
+    }
     // Add infantil if not already present
-    if (!baseOptions.some(o => o.id === 'infantil')) {
+    if (!isMotivational && !baseOptions.some(o => o.id === 'infantil')) {
       baseOptions.push({
         id: 'infantil',
         label: 'Infantil',
@@ -125,7 +147,7 @@ const QuickCreationComponent = ({
       });
     }
     return baseOptions;
-  }, [styleOptions]);
+  }, [styleOptions, isMotivational, t]);
 
   // Map voice options with images (expanded options including children voices)
   const voiceOptionsWithImages = useMemo(() => {
@@ -143,27 +165,27 @@ const QuickCreationComponent = ({
       }));
   }, [voiceOptions]);
 
+  const collect = (): QuickCreationData => ({
+    prompt: prompt.trim(),
+    isInstrumental,
+    style,
+    additionalGenre: additionalGenre.trim() || undefined,
+    voiceType: isInstrumental ? undefined : voiceType,
+    songName: songName.trim() || undefined,
+    energy: isMotivational ? (energy || undefined) : undefined,
+    moment: purpose === 'motivation' ? (moment || undefined) : undefined,
+  });
+
   const doSubmit = () => {
-    onSubmit({
-      prompt: prompt.trim(),
-      isInstrumental,
-      style,
-      additionalGenre: additionalGenre.trim() || undefined,
-      voiceType: isInstrumental ? undefined : voiceType,
-      songName: songName.trim() || undefined,
-    });
+    clearQuickDraft();
+    onSubmit(collect());
   };
 
+  // First click opens a simple review; confirmation there creates the order
   const handleSubmit = () => {
-    if (!prompt.trim() || !style) return;
-    
-    // Se não tem título, mostrar confirmação
-    if (!songName.trim()) {
-      setShowNoTitleConfirm(true);
-      return;
-    }
-    
-    doSubmit();
+    if (!isValid) return;
+    setShowReview(true);
+    window.scrollTo({ top: 0 });
   };
 
   const handleConfirmNoTitle = () => {
@@ -172,6 +194,9 @@ const QuickCreationComponent = ({
   };
 
   const handleReset = () => {
+    clearQuickDraft();
+    setEnergy("");
+    setMoment("");
     setPrompt("");
     setIsInstrumental(false);
     setStyle("");
@@ -181,20 +206,14 @@ const QuickCreationComponent = ({
     setSongName("");
   };
 
-  const isValid = prompt.trim().length > 10 && style && (isInstrumental || voiceType);
+  const isValid = prompt.trim().length > 10 && !!style && (isInstrumental || !!voiceType);
   const isAtCharLimit = prompt.length >= 500;
 
-  const handleCopyAndSwitch = useCallback(() => {
-    navigator.clipboard.writeText(prompt).then(() => {
-      setCopied(true);
-      setTimeout(() => {
-        setCopied(false);
-        onSwitchToDetailed();
-      }, 800);
-    }).catch(() => {
-      onSwitchToDetailed();
-    });
-  }, [prompt, onSwitchToDetailed]);
+  // Text is carried over automatically into the detailed mode
+  const handleCopyAndSwitch = () => {
+    setCopied(true);
+    onSwitchToDetailed(collect());
+  };
   const handleStartTour = () => {
     startTour();
   };
