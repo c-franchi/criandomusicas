@@ -12,6 +12,7 @@ import ProfileOnboardingWrapper from "@/components/ProfileOnboardingWrapper";
 import TourWrapper from "@/components/TourWrapper";
 import ContinueFlowBar from "@/components/ContinueFlowBar";
 import { usePageTracking } from "@/hooks/usePageTracking";
+import LegacyCreatorRedirect from "@/components/LegacyCreatorRedirect";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -28,6 +29,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const TestOpenAI = lazy(() => import("./pages/TestOpenAI"));
 const OrderLyricsPage = lazy(() => import("./pages/OrderLyricsPage"));
 const Planos = lazy(() => import("./pages/Planos"));
+const Criadores = lazy(() => import("./pages/Criadores"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminSettings = lazy(() => import("./pages/AdminSettings"));
@@ -80,7 +82,7 @@ const App = () => (
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Critical routes - loaded immediately */}
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<LegacyCreatorRedirect><Index /></LegacyCreatorRedirect>} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/~oauth/callback" element={<Auth />} />
               <Route path="/auth/callback" element={<Auth />} />
@@ -89,7 +91,8 @@ const App = () => (
               <Route path="/briefing" element={<Briefing />} />
               <Route path="/criar-musica" element={<CreateSong />} />
               <Route path="/create-song" element={<CreateSong />} />
-              <Route path="/planos" element={<Planos />} />
+              <Route path="/planos" element={<LegacyCreatorRedirect><Planos /></LegacyCreatorRedirect>} />
+              <Route path="/criadores" element={<Criadores />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/perfil" element={<Profile />} />
               <Route path="/admin" element={<AdminDashboard />} />
