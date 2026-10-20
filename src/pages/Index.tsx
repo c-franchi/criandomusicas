@@ -48,13 +48,7 @@ const Index = () => {
     setCelebrationDismissed(false);
   }, [closestDate]);
 
-  // Show celebration modal after a short delay (only if not dismissed)
-  useEffect(() => {
-    if (!isLoading && closestDate && !celebrationDismissed) {
-      const timer = setTimeout(() => setShowCelebration(true), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, closestDate, celebrationDismissed]);
+  // Seasonal suggestions remain available from the footer, without interrupting a campaign visit.
 
   const handleCelebrationAccept = useCallback(() => {
     if (!closestDate) return;

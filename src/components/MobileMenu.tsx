@@ -80,11 +80,11 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
   const isHomePage = location.pathname === '/';
 
   const sectionAnchors = [
-    { id: 'processo', label: tHome('nav.process', 'Como Funciona'), icon: Sparkles },
-    { id: 'exemplos', label: tHome('nav.examples', 'Exemplos'), icon: Play },
-    { id: 'planos', label: tHome('nav.pricing', 'Planos'), icon: Crown },
-    { id: 'depoimentos', label: tHome('nav.testimonials', 'Depoimentos'), icon: Star },
-    { id: 'faq', label: tHome('nav.faq', 'Dúvidas'), icon: HelpCircle },
+    { id: 'processo', label: tHome('footer.howItWorks'), icon: Sparkles },
+    { id: 'exemplos', label: tHome('footer.examples'), icon: Play },
+    { id: 'planos', label: tHome('marketing.packagesNav'), icon: Crown },
+    { id: 'depoimentos', label: tHome('testimonials.title'), icon: Star },
+    { id: 'faq', label: tHome('faq.badge'), icon: HelpCircle },
   ];
 
   return (

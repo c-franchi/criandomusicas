@@ -37,7 +37,7 @@ const CustomLyricHighlight = () => {
   const features = [
     th('customLyric.features.ownLyric', { defaultValue: "Use sua própria letra ou poema" }),
     th('customLyric.features.quality', { defaultValue: "Áudio profissional de alta qualidade" }),
-    th('customLyric.features.delivery', { defaultValue: "Entrega em até 24h na plataforma" }),
+    th('customLyric.features.delivery', { defaultValue: "Acompanhe seu pedido na plataforma" }),
     th('customLyric.features.style', { defaultValue: "Escolha o estilo musical" })
   ];
 
@@ -46,12 +46,14 @@ const CustomLyricHighlight = () => {
     return formatCurrency(cents, i18n.language, { convert: true });
   };
 
-  const originalPrice = pricing?.price_cents || 4790;
-  const promoPrice = pricing?.price_promo_cents || pricing?.price_cents || 990;
+  if (!pricing) return null;
+
+  const originalPrice = pricing.price_cents;
+  const promoPrice = pricing.price_promo_cents ?? pricing.price_cents;
   const hasPromo = pricing?.price_promo_cents && pricing.price_promo_cents < pricing.price_cents;
   const discountPercent = hasPromo 
     ? Math.round((1 - promoPrice / originalPrice) * 100)
-    : 79;
+    : 0;
 
   return (
     <section className="py-16 relative overflow-hidden">
@@ -76,9 +78,7 @@ const CustomLyricHighlight = () => {
                   <Sparkles className="w-4 h-4 mr-2" />
                   {t('customLyric.badge')}
                 </Badge>
-                <Badge variant="outline" className="border-emerald-500/50 text-emerald-400 px-3 py-1">
-                  {discountPercent}% OFF
-                </Badge>
+                {hasPromo && <Badge variant="outline" className="border-primary/50 text-primary px-3 py-1">{t("customLyric.discount", { percent: discountPercent })}</Badge>}
               </div>
 
               <h2 className="text-3xl md:text-4xl font-bold">

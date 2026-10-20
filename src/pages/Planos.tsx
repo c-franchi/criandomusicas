@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, ArrowLeft } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, ArrowLeft } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,10 +42,6 @@ const getCreditsForPlan = (plan: PricingPlan): number => {
   const planId = plan.id;
   if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
-  // Creator plans - values from pricing_config
-  if (planId.includes('creator_studio')) return 230;
-  if (planId.includes('creator_pro')) return 150;
-  if (planId.includes('creator_start')) return 40;
   return 1;
 };
 
@@ -140,31 +136,13 @@ const Planos = () => {
     return translatedName || dbName;
   };
 
-  // Get translated plan description
-  const getPlanDescription = (plan: PricingPlan): string => {
-    const description = t(`plans.${plan.id}.description`, { defaultValue: '' });
-    if (description) return description;
-    
-    // Fallback descriptions for Creator plans
-    const credits = getCreditsForPlan(plan);
-    const songWord = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
-    
-    return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
-  };
-
   // Get translated features for universal plans (single, package, subscription)
   const getTranslatedFeatures = (planId: string): string[] => {
     const translatedFeatures = t(`vocalFeatures.${planId}`, { returnObjects: true, defaultValue: [] });
     if (Array.isArray(translatedFeatures) && translatedFeatures.length > 0 && typeof translatedFeatures[0] === 'string') {
       return translatedFeatures as string[];
     }
-    // Fallback to default features
-    const defaults: Record<string, string[]> = {
-      single: ['1 música completa', '2 letras personalizadas para escolher', 'Letra + áudio profissional', 'Alta qualidade', 'Entrega em até 24h'],
-      package: ['3 músicas completas', '2 letras personalizadas cada', 'Economia de 16%', 'Letra + áudio profissional', 'Alta qualidade', 'Entrega em até 24h', 'Suporte VIP'],
-      subscription: ['Até 5 músicas', '2 letras personalizadas cada', 'Letra + áudio profissional', 'Qualidade premium', 'Entrega em até 24h', 'Prioridade na fila']
-    };
-    return defaults[planId] || [];
+    return [];
   };
 
   const getButtonText = (plan: PricingPlan) => {
@@ -214,7 +192,7 @@ const Planos = () => {
 
   // Find single plan for savings calculation
   const singlePlan = plans.find(p => p.id === 'single');
-  const singlePrice = singlePlan ? (singlePlan.price_promo_cents || singlePlan.price_cents) : 990;
+  const singlePrice = singlePlan ? (singlePlan.price_promo_cents || singlePlan.price_cents) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background py-12 px-6">
@@ -289,7 +267,7 @@ const Planos = () => {
               const totalIfSingles = singlePrice * credits;
               const currentPrice = plan.price_promo_cents || plan.price_cents;
               const savings = totalIfSingles - currentPrice;
-              const savingsPercent = Math.round((savings / totalIfSingles) * 100);
+              const savingsPercent = totalIfSingles > 0 ? Math.round((savings / totalIfSingles) * 100) : 0;
               
               return (
                 <Card
@@ -464,7 +442,7 @@ const Planos = () => {
                   </div>
                 </div>
                 <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
-                  {customLyricPlan.name}
+                  {t('home:customLyric.cardTitle')}
                 </CardTitle>
                 <div className="space-y-1">
                   <CardDescription className="text-xl line-through text-muted-foreground">
@@ -485,12 +463,12 @@ const Planos = () => {
 
               <CardContent className="pb-8">
                 <ul className="space-y-4 mb-8">
-                  {customLyricPlan.features.map((feature, index) => (
+                  {['ownLyric', 'quality', 'delivery', 'style'].map((key, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
                         <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
                       </div>
-                      <span className="text-card-foreground leading-relaxed font-medium">{feature}</span>
+                      <span className="text-card-foreground leading-relaxed font-medium">{t(`home:customLyric.features.${key}`)}</span>
                     </li>
                   ))}
                 </ul>
