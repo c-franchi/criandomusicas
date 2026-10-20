@@ -23,7 +23,7 @@ import { getPurposeStart, isPurposeId, mapQuickPurpose, type PurposeId, type Qui
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
-import { analytics } from "@/lib/analytics";
+import { analytics, trackEvent } from "@/lib/analytics";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
   childAgeImages, childObjectiveImages, childThemeImages, childMoodImages, childStyleImages,
@@ -398,6 +398,15 @@ const Briefing = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, showConfirmation]);
+
+  // Ao chegar na pergunta da história, reaproveitar o texto já digitado (ex.: vindo do modo rápido)
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (last?.type === 'bot' && last.field === 'story' && formData.story && !inputValue) {
+      setInputValue(formData.story);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   // Atualizar input com transcrição de voz
   useEffect(() => {
@@ -2584,7 +2593,7 @@ const Briefing = () => {
     if (!hasEntryParams) {
       return (
         <PurposeSelector
-          onBack={handlePurposeBack}
+          onBack={() => navigate('/')}
           onSelect={(p) => navigate(`/auth?redirect=${encodeURIComponent(`/briefing?purpose=${p}`)}`)}
         />
       );
@@ -2662,7 +2671,7 @@ const Briefing = () => {
     urlParams.set('purpose', purpose);
     urlParams.delete('type');
     window.history.replaceState(window.history.state, '', `${window.location.pathname}?${urlParams.toString()}`);
-    analytics.trackEvent?.('briefing_purpose', { purpose });
+    trackEvent('briefing_purpose', { purpose });
     setShowPurposeSelection(false);
     setShowPlanSelection(false);
     const start = getPurposeStart(purpose);
