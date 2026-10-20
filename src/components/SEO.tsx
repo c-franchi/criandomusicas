@@ -1,3 +1,5 @@
+import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
@@ -12,25 +14,28 @@ interface SEOProps {
 }
 
 const BASE_URL = 'https://criandomusicas.com.br';
-const DEFAULT_IMAGE = `${BASE_URL}/og-image.jpg`;
 const SITE_NAME = 'Criando Músicas';
 
 const SEO = ({
   title,
-  description = 'Crie músicas personalizadas com inteligência artificial. Transforme sua história em uma canção única e emocionante. Entrega em até 24h diretamente na plataforma.',
+  description = 'Crie músicas personalizadas a partir da sua história. Conheça músicas para presentes, homenagens e projetos digitais.',
   keywords = 'música personalizada, criar música, presente criativo, música para aniversário, música para casamento, IA música',
   canonical,
   type = 'website',
-  image = DEFAULT_IMAGE,
+  image,
   noIndex = false,
   updatedAt,
 }: SEOProps) => {
+  const { pathname } = useLocation();
+  const { i18n } = useTranslation();
+  const locales: Record<string, string> = { 'pt-BR': 'pt_BR', en: 'en_US', es: 'es_ES', it: 'it_IT' };
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Músicas Personalizadas com IA`;
-  const fullCanonical = canonical ? `${BASE_URL}${canonical}` : BASE_URL;
-  const fullImage = image.startsWith('http') ? image : `${BASE_URL}${image}`;
+  const fullCanonical = `${BASE_URL}${canonical || pathname}`;
+  const fullImage = image?.startsWith('https://') ? image : undefined;
 
   return (
     <Helmet>
+      <html lang={i18n.language} />
       {/* Basic Meta Tags */}
       <title>{fullTitle}</title>
       <meta name="description" content={description} />
@@ -51,15 +56,15 @@ const SEO = ({
       <meta property="og:description" content={description} />
       <meta property="og:type" content={type} />
       <meta property="og:url" content={fullCanonical} />
-      <meta property="og:image" content={fullImage} />
+      {fullImage && <meta property="og:image" content={fullImage} />}
       <meta property="og:site_name" content={SITE_NAME} />
-      <meta property="og:locale" content="pt_BR" />
+      <meta property="og:locale" content={locales[i18n.language] || "pt_BR"} />
       
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={fullImage} />
+      {fullImage && <meta name="twitter:image" content={fullImage} />}
       
       {/* Article specific - for legal pages with update dates */}
       {updatedAt && (

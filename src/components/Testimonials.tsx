@@ -21,16 +21,6 @@ interface PublicReview {
   };
 }
 
-// Placeholder avatar URLs for users without profile photos
-const placeholderAvatars = [
-  "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-  "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face"
-];
-
 // Testimonial Card Component
 interface TestimonialCardProps {
   name: string;
@@ -81,58 +71,6 @@ const Testimonials = () => {
   const [reviews, setReviews] = useState<PublicReview[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Default testimonials as fallback - expanded for better social proof
-  const defaultTestimonials = [
-    {
-      name: "Maria Silva",
-      role: t('testimonials.roles.mother'),
-      content: t('testimonials.quotes.birthday'),
-      rating: 5,
-      musicType: "aniversario",
-      avatarUrl: placeholderAvatars[0]
-    },
-    {
-      name: "João Santos",
-      role: t('testimonials.roles.entrepreneur'),
-      content: t('testimonials.quotes.corporate'),
-      rating: 5,
-      musicType: "corporativo",
-      avatarUrl: placeholderAvatars[1]
-    },
-    {
-      name: "Ana Costa",
-      role: t('testimonials.roles.bride'),
-      content: t('testimonials.quotes.wedding'),
-      rating: 5,
-      musicType: "casamento",
-      avatarUrl: placeholderAvatars[2]
-    },
-    {
-      name: "Pedro Oliveira",
-      role: t('testimonials.roles.proudFather'),
-      content: t('testimonials.quotes.graduation'),
-      rating: 5,
-      musicType: "homenagem",
-      avatarUrl: placeholderAvatars[3]
-    },
-    {
-      name: "Carla Mendes",
-      role: t('testimonials.roles.wife'),
-      content: t('testimonials.quotes.anniversary'),
-      rating: 5,
-      musicType: "declaracao",
-      avatarUrl: placeholderAvatars[4]
-    },
-    {
-      name: "Ricardo Lima",
-      role: t('testimonials.roles.grandfather'),
-      content: t('testimonials.quotes.child'),
-      rating: 5,
-      musicType: "aniversario",
-      avatarUrl: placeholderAvatars[5]
-    }
-  ];
-
   useEffect(() => {
     const fetchPublicReviews = async () => {
       try {
@@ -178,7 +116,7 @@ const Testimonials = () => {
                 ...review,
                 profiles: { 
                   name: profileData?.name || null,
-                  avatar_url: profileData?.avatar_url || placeholderAvatars[index % placeholderAvatars.length]
+                  avatar_url: profileData?.avatar_url || null
                 },
                 orders: { music_type: orderData?.music_type || null }
               };
@@ -212,21 +150,13 @@ const Testimonials = () => {
   const hasRealReviews = reviews.length > 0;
   
   // Prepare testimonials for marquee
-  const testimonialData = hasRealReviews 
-    ? reviews.map(review => ({
-        name: review.profiles?.name || t('testimonials.verifiedClient'),
-        role: getMusicTypeLabel(review.orders?.music_type),
-        content: review.comment || '',
-        rating: review.rating,
-        avatarUrl: review.profiles?.avatar_url
-      }))
-    : defaultTestimonials.map(t => ({
-        name: t.name,
-        role: t.role,
-        content: t.content,
-        rating: t.rating,
-        avatarUrl: t.avatarUrl
-      }));
+  const testimonialData = reviews.map(review => ({
+    name: review.profiles?.name || t('testimonials.verifiedClient'),
+    role: getMusicTypeLabel(review.orders?.music_type),
+    content: review.comment || '', rating: Math.max(0, Math.min(5, Math.round(review.rating))),
+    avatarUrl: review.profiles?.avatar_url
+  }));
+  if (loading || !hasRealReviews) return null;
 
   // Split into two rows for alternating direction
   const row1 = testimonialData.slice(0, Math.ceil(testimonialData.length / 2));
@@ -236,26 +166,6 @@ const Testimonials = () => {
     <section className="section-spacing overflow-hidden" id="depoimentos" aria-labelledby="testimonials-heading">
       {/* Stats bar for social proof - constrained */}
       <div className="max-w-6xl mx-auto">
-        <motion.div 
-          className="flex flex-wrap justify-center gap-8 md:gap-16 mb-16 px-6"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          {[
-            { value: t('testimonials.stats.songs'), label: t('testimonials.stats.songsLabel') },
-            { value: t('testimonials.stats.rating'), label: t('testimonials.stats.ratingLabel') },
-            { value: t('testimonials.stats.satisfaction'), label: t('testimonials.stats.satisfactionLabel') },
-            { value: t('testimonials.stats.delivery'), label: t('testimonials.stats.deliveryLabel') },
-          ].map((stat, index) => (
-            <div key={index} className="text-center">
-              <div className="text-3xl md:text-5xl font-bold gradient-text mb-1">{stat.value}</div>
-              <div className="text-sm text-muted-foreground">{stat.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
         <motion.div 
           className="text-center mb-16 px-6"
           initial={{ opacity: 0, y: 20 }}
@@ -318,7 +228,7 @@ const Testimonials = () => {
         >
           <div className="inline-flex items-center gap-3 glass-card rounded-full px-6 py-3">
             <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
+              {[...Array(Math.round(reviews.reduce((total, review) => total + review.rating, 0) / reviews.length))].map((_, i) => (
                 <Star key={i} className="w-5 h-5 fill-[hsl(var(--gold))] text-[hsl(var(--gold))]" />
               ))}
             </div>

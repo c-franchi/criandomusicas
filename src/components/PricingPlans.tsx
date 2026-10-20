@@ -39,17 +39,7 @@ const PricingPlans = () => {
     if (Array.isArray(features) && features.length > 0 && typeof features[0] === 'string') {
       return features as string[];
     }
-    // Fallback with 24h delivery
-    switch (planId) {
-      case "single":
-        return ["1 universal credit", "Use for vocal, instrumental or custom lyrics", "Professional audio", "Premium quality", "Delivery within 24h", "Use anytime, no deadline!"];
-      case "package":
-        return ["3 universal credits", "Use for any type of music", "16% savings", "Professional audio", "Premium quality", "Delivery within 24h", "VIP support"];
-      case "subscription":
-        return ["5 universal credits", "Best value", "Premium quality", "Delivery within 24h", "Priority queue"];
-      default:
-        return [];
-    }
+    return [];
   };
 
   useEffect(() => {
@@ -63,11 +53,7 @@ const PricingPlans = () => {
 
       if (error) {
         console.error('Error fetching plans:', error);
-        setPlans([
-          { id: "single", name: "1 Crédito", price_display: "R$ 9,90", price_cents: 990, price_promo_cents: null, credits: 1, features: [], is_popular: false, is_active: true, sort_order: 1 },
-          { id: "package", name: "3 Créditos", price_display: "R$ 24,90", price_cents: 2490, price_promo_cents: null, credits: 3, features: [], is_popular: true, is_active: true, sort_order: 2 },
-          { id: "subscription", name: "5 Créditos", price_display: "R$ 39,90", price_cents: 3990, price_promo_cents: null, credits: 5, features: [], is_popular: false, is_active: true, sort_order: 3 }
-        ]);
+        setPlans([]);
       } else {
         const mappedPlans = (data || []).map(item => ({
           ...item,
@@ -151,6 +137,7 @@ const PricingPlans = () => {
           </Badge>
         </motion.div>
 
+        {plans.length === 0 && <p className="text-center text-muted-foreground">{t('creatorLanding.unavailable')}</p>}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-stretch justify-center">
           {plans.map((plan, index) => (
             <motion.div
@@ -163,13 +150,13 @@ const PricingPlans = () => {
               <Card 
                 className={`relative h-full flex flex-col transition-all duration-500 ${
                   plan.is_popular 
-                    ? "premium-card ring-2 ring-primary shadow-2xl scale-105" 
+                    ? "premium-card ring-2 ring-primary shadow-2xl" 
                     : "premium-card"
                 }`}
               >
                 {plan.is_popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                    <Badge className="bg-gradient-to-r from-primary to-accent text-white border-0 px-5 py-1.5 shadow-lg font-semibold">
+                    <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 px-5 py-1.5 shadow-lg font-semibold">
                       {t('popular')}
                     </Badge>
                   </div>
@@ -184,11 +171,11 @@ const PricingPlans = () => {
                 )}
 
                 <CardHeader className="text-center pb-4 pt-8">
-                  <div className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg bg-gradient-to-br from-primary to-accent text-white`}>
+                  <div className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg bg-gradient-to-br from-primary to-accent text-primary-foreground`}>
                     {getIcon(plan.id)}
                   </div>
                   <CardTitle className="text-2xl text-foreground">
-                    {plan.name}
+                    {t(`plans.${plan.id}.name`)}
                   </CardTitle>
                   
                   <div className="mt-4">
@@ -235,7 +222,7 @@ const PricingPlans = () => {
                       onClick={() => handlePlanSelect(plan.id)} 
                       className={`w-full rounded-xl py-6 text-base font-semibold ${
                         plan.is_popular 
-                          ? "bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white shadow-lg" 
+                          ? "bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground shadow-lg" 
                           : "bg-primary hover:bg-primary/90 text-primary-foreground"
                       }`}
                     >

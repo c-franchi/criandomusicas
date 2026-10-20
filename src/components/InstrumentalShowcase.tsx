@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,35 +19,8 @@ interface InstrumentalSample {
   coverUrl: string;
 }
 
-// Fallback samples
-const fallbackSamples: InstrumentalSample[] = [
-  {
-    id: "inst-1",
-    title: "Serenata ao Luar",
-    description: "Piano solo melancólico com toques de jazz, perfeito para momentos de reflexão",
-    style: "Jazz",
-    occasion: "Melancólico",
-    coverUrl: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?w=400&h=300&fit=crop"
-  },
-  {
-    id: "inst-2",
-    title: "Alma Brasileira",
-    description: "Violão clássico com influências de bossa nova e MPB contemporânea",
-    style: "MPB",
-    occasion: "Romântico",
-    coverUrl: "https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&h=300&fit=crop"
-  },
-  {
-    id: "inst-3",
-    title: "Horizonte Infinito",
-    description: "Orquestra épica com solo de violino, ideal para vídeos e apresentações",
-    style: "Clássico",
-    occasion: "Épico",
-    coverUrl: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?w=400&h=300&fit=crop"
-  }
-];
-
 const InstrumentalShowcase = () => {
+  const navigate = useNavigate();
   const { t } = useTranslation('home');
   const [samples, setSamples] = useState<InstrumentalSample[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +42,7 @@ const InstrumentalShowcase = () => {
           .limit(10);
 
         if (error || !data || data.length === 0) {
-          setSamples(fallbackSamples);
+          setSamples([]);
         } else {
           // Map database fields to component interface
           const mappedSamples = data.map(item => ({
@@ -83,7 +57,7 @@ const InstrumentalShowcase = () => {
           setSamples(mappedSamples);
         }
       } catch {
-        setSamples(fallbackSamples);
+        setSamples([]);
       } finally {
         setLoading(false);
       }
@@ -168,6 +142,8 @@ const InstrumentalShowcase = () => {
       </section>
     );
   }
+
+  if (!loading && samples.length === 0) return null;
 
   return (
     <section className="py-24 px-6 bg-gradient-to-b from-secondary/20 to-background" id="instrumentais">
@@ -277,13 +253,10 @@ const InstrumentalShowcase = () => {
         
         {/* CTA */}
         <div className="text-center mt-12">
-          <p className="text-muted-foreground mb-4">
-            💰 {t('instrumental.discount').replace('20%', '')} <span className="text-accent font-semibold">{t('instrumental.discountBadge')}</span>
-          </p>
           <Button 
             variant="outline" 
             className="border-accent/50 hover:bg-accent hover:text-white"
-            onClick={() => document.getElementById('planos')?.scrollIntoView({ behavior: 'smooth' })}
+            onClick={() => navigate('/briefing?type=instrumental')}
           >
             <Music className="w-4 h-4 mr-2" />
             {t('instrumental.cta')}

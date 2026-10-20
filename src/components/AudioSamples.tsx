@@ -1,3 +1,4 @@
+import sampleCover from "@/assets/briefing/genres/pop.jpg";
 import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,7 +53,7 @@ const AudioSampleCard = ({
     >
       <div className="relative h-48 overflow-hidden">
         <img 
-          src={sample.cover_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop"}
+          src={sample.cover_url || sampleCover}
           alt={`${t('samples.playButton')}: ${sample.title}`}
           className={`w-full h-full object-cover transition-transform duration-700 ${
             isPlaying ? 'scale-110' : 'group-hover:scale-105'
@@ -68,10 +69,10 @@ const AudioSampleCard = ({
         {/* Animated sound waves when playing */}
         {isPlaying && (
           <div className="absolute top-4 right-4 flex items-end gap-0.5">
-            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '12px', animationDelay: '0ms' }} />
-            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '18px', animationDelay: '150ms' }} />
-            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '10px', animationDelay: '300ms' }} />
-            <div className="w-1 bg-white rounded-full animate-pulse" style={{ height: '16px', animationDelay: '450ms' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-pulse" style={{ height: '12px', animationDelay: '0ms' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-pulse" style={{ height: '18px', animationDelay: '150ms' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-pulse" style={{ height: '10px', animationDelay: '300ms' }} />
+            <div className="w-1 bg-primary-foreground rounded-full animate-pulse" style={{ height: '16px', animationDelay: '450ms' }} />
           </div>
         )}
         
@@ -81,8 +82,8 @@ const AudioSampleCard = ({
             size="icon" 
             className={`absolute bottom-4 right-4 w-14 h-14 rounded-full transition-all duration-300 shadow-xl ${
               isPlaying 
-                ? 'bg-white text-primary hover:bg-white/90 scale-110' 
-                : 'bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white'
+                ? 'bg-primary-foreground text-primary hover:bg-primary-foreground/90 scale-110' 
+                : 'bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground'
             }`}
             onClick={(e) => {
               e.stopPropagation();
@@ -98,7 +99,7 @@ const AudioSampleCard = ({
           </Button>
         )}
         
-        <Badge className="absolute top-3 left-3 bg-gradient-to-r from-primary to-accent text-white border-0 shadow-lg">
+        <Badge className="absolute top-3 left-3 bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 shadow-lg">
           {sample.style}
         </Badge>
       </div>
@@ -136,7 +137,7 @@ const AudioSampleCard = ({
   );
 };
 
-const AudioSamples = () => {
+const AudioSamples = ({ audioType = "vocal" }: { audioType?: "vocal" | "instrumental" }) => {
   const { t } = useTranslation('home');
   const [samples, setSamples] = useState<AudioSample[]>([]);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
@@ -144,65 +145,8 @@ const AudioSamples = () => {
   const [loading, setLoading] = useState(true);
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  // Fallback samples
-  const fallbackSamples: AudioSample[] = [
-    {
-      id: "1",
-      title: t('samples.fallback.sample1.title', 'Tribute Song'),
-      description: t('samples.fallback.sample1.description', 'A special tribute for an unforgettable moment'),
-      style: t('samples.fallback.sample1.style', 'Pop'),
-      occasion: t('samples.fallback.sample1.occasion', 'Birthday'),
-      audio_url: "",
-      cover_url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop"
-    },
-    {
-      id: "2",
-      title: t('samples.fallback.sample2.title', 'Motivational Song'),
-      description: t('samples.fallback.sample2.description', 'An inspiring track to lift your spirits'),
-      style: t('samples.fallback.sample2.style', 'Rock'),
-      occasion: t('samples.fallback.sample2.occasion', 'Motivational'),
-      audio_url: "",
-      cover_url: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300&h=300&fit=crop"
-    },
-    {
-      id: "3",
-      title: t('samples.fallback.sample3.title', 'Romantic Song'),
-      description: t('samples.fallback.sample3.description', 'A beautiful melody to express love'),
-      style: t('samples.fallback.sample3.style', 'Bossa Nova'),
-      occasion: t('samples.fallback.sample3.occasion', 'Wedding'),
-      audio_url: "",
-      cover_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop"
-    },
-    {
-      id: "4",
-      title: t('samples.fallback.sample1.title', 'Tribute Song'),
-      description: t('samples.fallback.sample1.description', 'A special tribute for an unforgettable moment'),
-      style: "Sertanejo",
-      occasion: t('samples.fallback.sample1.occasion', 'Birthday'),
-      audio_url: "",
-      cover_url: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=300&h=300&fit=crop"
-    },
-    {
-      id: "5",
-      title: t('samples.fallback.sample2.title', 'Motivational Song'),
-      description: t('samples.fallback.sample2.description', 'An inspiring track to lift your spirits'),
-      style: "Gospel",
-      occasion: "Homenagem",
-      audio_url: "",
-      cover_url: "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=300&h=300&fit=crop"
-    },
-    {
-      id: "6",
-      title: t('samples.fallback.sample3.title', 'Romantic Song'),
-      description: t('samples.fallback.sample3.description', 'A beautiful melody to express love'),
-      style: "MPB",
-      occasion: "Declaração",
-      audio_url: "",
-      cover_url: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&h=300&fit=crop"
-    }
-  ];
 
   useEffect(() => {
     const fetchSamples = async () => {
@@ -211,17 +155,17 @@ const AudioSamples = () => {
           .from('audio_samples')
           .select('id, title, description, style, occasion, audio_url, cover_url, audio_type')
           .eq('is_active', true)
-          .eq('audio_type', 'vocal')
+          .eq('audio_type', audioType)
           .order('sort_order', { ascending: true })
           .limit(12);
 
         if (error || !data || data.length === 0) {
-          setSamples(fallbackSamples);
+          setSamples([]);
         } else {
-          setSamples(data as AudioSample[]);
+          setSamples((data as AudioSample[]).filter(sample => !!sample.audio_url));
         }
       } catch {
-        setSamples(fallbackSamples);
+        setSamples([]);
       } finally {
         setLoading(false);
       }
@@ -230,14 +174,12 @@ const AudioSamples = () => {
     fetchSamples();
 
     return () => {
-      if (audioElement) {
-        audioElement.pause();
-      }
+      audioRef.current?.pause();
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
       }
     };
-  }, []);
+  }, [audioType]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -281,7 +223,8 @@ const AudioSamples = () => {
         }
       };
       
-      audio.play();
+      audioRef.current = audio;
+      void audio.play().catch(() => setCurrentPlaying(null));
       setAudioElement(audio);
       setCurrentPlaying(sample.id);
       
@@ -301,6 +244,8 @@ const AudioSamples = () => {
       </section>
     );
   }
+
+  if (!loading && samples.length === 0) return null;
 
   return (
     <section className="section-spacing gradient-section overflow-hidden" id="exemplos">

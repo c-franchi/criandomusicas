@@ -9,7 +9,7 @@ import AudioSamples from "@/components/AudioSamples";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
-import creatorPhoto from "@/assets/hero-music.jpg";
+import creatorPhoto from "@/assets/creator-workspace.jpg";
 import { trackEvent } from "@/lib/analytics";
 
 export default function Criadores() {
@@ -23,7 +23,7 @@ export default function Criadores() {
     <main className="min-h-screen bg-background">
       <SEO canonical="/criadores" title={t('creatorLanding.seoTitle')} description={t('creatorLanding.seoDescription')} />
       <section className="marketing-hero relative flex items-center overflow-hidden">
-        <img src={creatorPhoto} alt="" className="absolute inset-0 w-full h-full object-cover" fetchPriority="high" />
+        <img src={creatorPhoto} alt="" width={1536} height={1024} className="absolute inset-0 w-full h-full object-cover" fetchPriority="high" />
         <div className="marketing-hero-overlay absolute inset-0" />
         <AppHeader variant="floating" showLogo showHomeButton showAnchors={false} />
         <div className="relative max-w-6xl mx-auto w-full px-5 pt-28 pb-14">
