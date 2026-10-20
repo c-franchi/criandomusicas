@@ -62,7 +62,7 @@ const ProcessSteps = () => {
             >
               <Card className="premium-card relative p-8 h-full">
                 <div className="absolute -top-4 left-6">
-                  <Badge className="bg-gradient-to-r from-primary to-accent text-white border-0 px-4 py-1.5 text-sm font-semibold shadow-lg">
+                  <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 px-4 py-1.5 text-sm font-semibold shadow-lg">
                     {step.badge}
                   </Badge>
                 </div>
@@ -96,20 +96,18 @@ const ProcessSteps = () => {
               <div className="flex-1 text-center sm:text-left">
                 <div className="flex items-center gap-2 justify-center sm:justify-start mb-1">
                   <h3 className="text-xl font-bold">
-                    {t('process.audioMode.title', '🎤 Modo Áudio')}
+                    {t('process.audioMode.title')}
                   </h3>
-                  <Badge className="text-xs px-2 py-0.5 bg-emerald-500 text-white border-0">
-                    Novo!
-                  </Badge>
+
                 </div>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  {t('process.audioMode.description', 'Grave ou envie um áudio cantando um trecho e nossa IA transcreve e transforma em uma música completa com letra profissional.')}
+                  {t('process.audioMode.description')}
                 </p>
               </div>
 
               <Button asChild size="lg" className="shrink-0 rounded-xl">
-                <Link to="/briefing?mode=audio">
-                  Experimentar
+                <Link to={user ? '/briefing?mode=audio' : '/auth?redirect=%2Fbriefing%3Fmode%3Daudio'}>
+                  {t('process.audioMode.cta')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Link>
               </Button>
@@ -141,13 +139,13 @@ const ProcessSteps = () => {
                 
                 <div className="flex flex-wrap gap-4 justify-center md:justify-start text-sm">
                   <div className="flex items-center gap-2 bg-background/50 px-4 py-2 rounded-full border border-primary/20">
-                    <Badge className="bg-accent text-white border-0 shadow-sm">
+                    <Badge className="bg-accent text-primary-foreground border-0 shadow-sm">
                       {t('process.packages.songs3')}
                     </Badge>
                     <span className="text-muted-foreground">{t('process.packages.savings16')}</span>
                   </div>
                   <div className="flex items-center gap-2 bg-background/50 px-4 py-2 rounded-full border border-primary/20">
-                    <Badge className="bg-primary text-white border-0 shadow-sm">
+                    <Badge className="bg-primary text-primary-foreground border-0 shadow-sm">
                       {t('process.packages.songs5')}
                     </Badge>
                     <span className="text-muted-foreground">{t('process.packages.bestSavings')}</span>

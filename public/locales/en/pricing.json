@@ -1,5 +1,5 @@
 {
-  "title": "Choose Your Plan",
+  "title": "Songs to give as gifts",
   "subtitle": "Plans for all special moments",
   "popular": "Most Popular",
   "features": {
@@ -70,36 +70,32 @@
     },
     "creator_start": {
       "name": "Creator Start",
-      "description": "40 songs/month for beginner creators",
+      "description": "Choose credits that match your production. One credit creates one vocal song, instrumental or song with your own lyrics.",
       "features": [
-        "Up to 40 songs/month",
-        "Auto-curated lyrics",
-        "Video-ready music",
-        "Commercial use allowed",
-        "Access to creation history",
-        "Ideal for beginner creators"
+        "Universal credits: vocals, instrumentals or your own lyrics",
+        "Orders and songs in your dashboard",
+        "Monthly renewal; credits do not roll over",
+        "Cancel through your dashboard"
       ]
     },
     "creator_pro": {
       "name": "Creator Pro",
-      "description": "150 songs/month for active creators",
+      "description": "Choose credits that match your production. One credit creates one vocal song, instrumental or song with your own lyrics.",
       "features": [
-        "Up to 150 songs/month",
-        "Everything from Creator Start",
-        "Dedicated VIP support",
-        "Priority queue",
-        "Ideal for professional creators"
+        "Universal credits: vocals, instrumentals or your own lyrics",
+        "Orders and songs in your dashboard",
+        "Monthly renewal; credits do not roll over",
+        "Cancel through your dashboard"
       ]
     },
     "creator_studio": {
       "name": "Creator Studio",
-      "description": "230 songs/month for professional studios",
+      "description": "Choose credits that match your production. One credit creates one vocal song, instrumental or song with your own lyrics.",
       "features": [
-        "Up to 230 songs/month",
-        "Everything from Creator Pro",
-        "Priority support",
-        "Project/channel organization",
-        "Ideal for studios and agencies"
+        "Universal credits: vocals, instrumentals or your own lyrics",
+        "Orders and songs in your dashboard",
+        "Monthly renewal; credits do not roll over",
+        "Cancel through your dashboard"
       ]
     },
     "creator_start_instrumental": {
@@ -145,14 +141,45 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 complete song", "2 personalized lyrics to choose", "Lyrics + professional audio", "Premium quality", "Delivery within 24h", "Use anytime, no deadline!"],
-    "package": ["3 complete songs", "2 personalized lyrics each", "16% savings", "Lyrics + professional audio", "Premium quality", "Delivery within 24h", "VIP support"],
-    "subscription": ["Up to 5 songs", "2 personalized lyrics each", "Lyrics + professional audio", "Premium quality", "Delivery within 24h", "Priority queue"]
+    "single": [
+      "1 complete song",
+      "2 personalized lyrics to choose",
+      "Lyrics + professional audio",
+      "Premium quality",
+      "Use anytime, no deadline!"
+    ],
+    "package": [
+      "3 complete songs",
+      "2 personalized lyrics each",
+      "Lyrics + professional audio",
+      "Premium quality"
+    ],
+    "subscription": [
+      "Up to 5 songs",
+      "2 personalized lyrics each",
+      "Lyrics + professional audio",
+      "Premium quality"
+    ]
   },
   "instrumentalFeatures": {
-    "single": ["1 complete instrumental track", "Custom arrangement", "Professional audio", "Premium quality", "Delivery within 24h", "Use anytime, no deadline!"],
-    "package": ["3 complete instrumental tracks", "Custom arrangements", "16% savings", "Professional audio", "Premium quality", "Delivery within 24h", "VIP support"],
-    "subscription": ["Up to 5 instrumental tracks", "Custom arrangements", "Premium quality", "Delivery within 24h", "Priority queue"]
+    "single": [
+      "1 complete instrumental track",
+      "Custom arrangement",
+      "Professional audio",
+      "Premium quality",
+      "Use anytime, no deadline!"
+    ],
+    "package": [
+      "3 complete instrumental tracks",
+      "Custom arrangements",
+      "Professional audio",
+      "Premium quality"
+    ],
+    "subscription": [
+      "Up to 5 instrumental tracks",
+      "Custom arrangements",
+      "Premium quality"
+    ]
   },
   "features_list": {
     "song": "Personalized song",
@@ -202,12 +229,12 @@
       "readyToPost": "Ready to Publish",
       "readyToPostDesc": "Songs, covers and everything ready to go live on your channels.",
       "commercialUse": "Commercial Use",
-      "commercialUseDesc": "100% original and monetizable. Use on any platform without issues."
+      "commercialUseDesc": "The Terms of Use provide for personal, non-commercial use. Commercial use requires a specific license; confirm conditions before publishing or monetizing."
     },
     "whyDifferent": {
       "title": "Why are we different?",
       "youDescribe": "You describe what you want.",
-      "weTakeCare": "We take care of everything: composition, production, mixing and delivery. No learning curve, no complex tools. Professional music in up to 24h."
+      "weTakeCare": "After payment, we create the lyrics. In complete mode you review before approval; in quick mode approval is automatic."
     },
     "whyUs": {
       "title": "Why creators choose us?",
@@ -216,14 +243,14 @@
       "lyricsAndMusic": "Lyrics + Music",
       "lyricsAndMusicDesc": "Get curated lyrics and produced music. All ready, no extra work.",
       "fastDelivery": "Fast Delivery",
-      "fastDeliveryDesc": "Professional music in up to 24h. No delays in your content production."
+      "fastDeliveryDesc": "Follow production and delivery on the platform. Check delivery terms and contact support if you have a specific date."
     },
     "badges": {
-      "original": "100% Original",
-      "monetizable": "Monetizable"
+      "original": "Personalized lyrics and song audio",
+      "monetizable": "Terms of Use"
     },
     "cta": "Explore Creator Plans",
-    "pricing": "Plans starting at $29.90/month • Cancel anytime",
+    "pricing": "Monthly renewing subscription. Unused credits do not roll over to the next cycle.",
     "creditTypeWarning": {
       "title": "Important about credits",
       "vocal": "Credits from this plan are exclusive for songs with vocals. They cannot be used to create instrumentals.",
@@ -235,23 +262,15 @@
     "questions": [
       {
         "q": "What are music credits?",
-        "a": "Each credit allows you to create 1 complete song. In one-time packages, credits never expire. In Creator subscriptions, they renew monthly."
+        "a": "One credit creates one song. One-time packages have no monthly fee and credits do not expire."
+      },
+      {
+        "q": "Can I make a song without lyrics (instrumental)?",
+        "a": "Yes! Instrumental songs are perfect for videos, podcasts or special moments. You choose the instruments and the mood you want."
       },
       {
         "q": "Can I use the songs in monetized videos?",
-        "a": "Yes! The songs created are 100% original and you have all rights for commercial use, including monetization on YouTube, TikTok and Instagram."
-      },
-      {
-        "q": "Do subscription credits accumulate?",
-        "a": "No. Creator subscription credits renew monthly and don't accumulate. If you prefer credits that never expire, choose one-time packages."
-      },
-      {
-        "q": "Can I cancel my subscription?",
-        "a": "Yes, you can cancel anytime. You continue with access until the end of the paid period and can use your remaining credits."
-      },
-      {
-        "q": "What's the difference between One-time and Subscription?",
-        "a": "One-time: Ideal for unique gifts. Credits never expire.\n\nCreator Subscription: Ideal for content creators who need songs in volume every month, with much lower unit price."
+        "a": "The Terms of Use provide for personal, non-commercial use. Commercial use requires a specific license; confirm conditions before publishing or monetizing."
       }
     ]
   },
@@ -264,11 +283,11 @@
     "discount": "{{percent}}% off!"
   },
   "footer": {
-    "guarantee": "🎵 100% satisfaction guarantee",
-    "delivery": "All plans include delivery within 24h directly on the platform and specialized technical support",
+    "guarantee": "In complete mode, choose and review lyrics before production. In quick mode, approval is automatic.",
+    "delivery": "Follow production and delivery on the platform. Check delivery terms and contact support if you have a specific date.",
     "back": "← Back to home",
     "payment": "💳 We accept Pix, credit and debit cards",
-    "satisfaction": "Satisfaction guaranteed."
+    "satisfaction": "In complete mode, choose and review lyrics before production. In quick mode, approval is automatic."
   },
   "errors": {
     "loginRequired": "You need to be logged in to choose a plan.",
@@ -282,9 +301,139 @@
     "loginNeededDescription": "Log in to subscribe to a Creator plan."
   },
   "seo": {
-    "title": "Plans and Pricing",
-    "description": "Choose the ideal plan to create your personalized music. Options from R$ 47.90 with delivery in up to 24h. Packages for vocal and instrumental songs."
+    "title": "One-time personalized song packages",
+    "description": "Choose a song or a package for gifts and tributes. Universal credits for vocals, instrumentals or your own lyrics, without a monthly fee."
   },
-  "noContract": "No contract • Cancel anytime",
-  "choosePlan": "Choose the ideal plan for you and start creating your personalized music now."
+  "noContract": "One-time purchase • No monthly fee • One-time credits do not expire",
+  "choosePlan": "Choose the ideal plan for you and start creating your personalized music now.",
+  "creatorLanding": {
+    "headline": "Music and tracks for",
+    "headlineHighlight": "your content.",
+    "subtitle": "Give your projects a sonic identity. Describe the idea, choose a style and create vocal songs, instrumentals or music with your own lyrics using monthly credits.",
+    "seoTitle": "Music and tracks for content creators",
+    "seoDescription": "Explore Creator Start, Pro and Studio monthly music plans for digital projects. Hear real samples and check credits and license conditions.",
+    "cta": "Explore monthly plans",
+    "samplesCta": "Hear real tracks",
+    "licenseShort": "Commercial use requires a specific license under the Terms of Use.",
+    "usesTitle": "A sonic identity for each project",
+    "useCases": [
+      {
+        "title": "YouTube and videos",
+        "description": "Tracks for intros, transitions and scenes in the mood you choose."
+      },
+      {
+        "title": "Reels and TikTok",
+        "description": "Music to accompany ideas, stories and short formats."
+      },
+      {
+        "title": "Podcasts",
+        "description": "Intros and instrumental backgrounds for your show’s identity."
+      },
+      {
+        "title": "Brands and digital projects",
+        "description": "Music aligned with your brand tone. Confirm the license for campaigns and commercial use."
+      }
+    ],
+    "processTitle": "From idea to music, at your pace",
+    "steps": [
+      {
+        "title": "Describe the project",
+        "description": "Share the theme, style and atmosphere. Choose vocals, instrumental or your own lyrics."
+      },
+      {
+        "title": "Shape the creation",
+        "description": "After payment or credit use, follow your selected mode. Review lyrics in complete mode; approval is automatic in quick mode."
+      },
+      {
+        "title": "Receive and track",
+        "description": "Track orders in your dashboard and download your music when ready."
+      }
+    ],
+    "plansTitle": "Monthly Creator plans",
+    "plansDescription": "Choose credits that match your production. One credit creates one vocal song, instrumental or song with your own lyrics.",
+    "planFeatures": [
+      "Universal credits: vocals, instrumentals or your own lyrics",
+      "Orders and songs in your dashboard",
+      "Monthly renewal; credits do not roll over",
+      "Cancel through your dashboard"
+    ],
+    "month": "month",
+    "credits": "{{count}} credits per month",
+    "loading": "Loading plans",
+    "unavailable": "Plans are currently unavailable. Please try again.",
+    "retry": "Try again",
+    "renewal": "Monthly renewing subscription. Unused credits do not roll over to the next cycle.",
+    "cancellation": "Cancel through your dashboard at any time. Access and remaining credits continue through the paid period.",
+    "currencyNotice": "Prices follow your region. Payment is processed in Brazilian reais (BRL).",
+    "readTerms": "Terms of Use",
+    "readRules": "Creation Guidelines",
+    "rightsTitle": "Usage rights and licenses",
+    "rights": [
+      "Current Terms of Use provide for personal, non-commercial use; commercial use requires a specific license. A subscription alone is not presented as authorization to monetize.",
+      "Before using music in advertising, monetized channels or client projects, confirm the license and conditions with support. Monetization, freedom from claims and complete rights ownership are not guaranteed.",
+      "Only upload lyrics, recordings and materials you can legally use. Creation Guidelines prohibit copying existing songs or violating third-party rights."
+    ],
+    "faqTitle": "Creator questions",
+    "faq": [
+      {
+        "q": "Do credits roll over?",
+        "a": "No. Subscription credits renew monthly and unused credits do not carry over."
+      },
+      {
+        "q": "Can I create vocals, instrumentals or use my lyrics?",
+        "a": "Yes. Credits are universal: one credit creates one song in any of these formats."
+      },
+      {
+        "q": "Does a subscription include a commercial license?",
+        "a": "Current Terms of Use require a specific license for commercial use. Confirm conditions with support before subscribing for that purpose."
+      },
+      {
+        "q": "How do I cancel?",
+        "a": "Through your user dashboard. You keep access and remaining credits until the paid period ends."
+      },
+      {
+        "q": "Do I need to sign in to see plans?",
+        "a": "No. Plans and samples are public; you need an account when you decide to subscribe."
+      },
+      {
+        "q": "When will I receive my music?",
+        "a": "Follow production and delivery on the platform. Check delivery terms and contact support if you have a specific date."
+      }
+    ],
+    "giftAlternative": "Looking for a song to give as a gift without subscribing?",
+    "packagesCta": "View one-time packages",
+    "discreetLink": "For monthly production, explore creator plans",
+    "delivery": "Follow production and delivery on the platform. Check delivery terms and contact support if you have a specific date."
+  },
+  "universal": {
+    "badge": "Universal credits — for any music type",
+    "usageHint": "Use for vocals, instrumentals or your lyrics"
+  },
+  "creatorCheckout": {
+    "back": "Back to plans",
+    "monthly": "Monthly subscription",
+    "voucher": "Use a voucher",
+    "voucherHint": "Have a discount code? Apply it here",
+    "code": "Enter code",
+    "apply": "Apply",
+    "remove": "Remove",
+    "summary": "Summary",
+    "discount": "Voucher discount",
+    "total": "Total",
+    "processing": "Processing...",
+    "secure": "You will be redirected to secure payment. See the Terms of Use for conditions.",
+    "firstMonth": "No first-month charge with this voucher",
+    "error": "Error",
+    "notFound": "Plan not found",
+    "notFoundDescription": "The selected plan does not exist or is inactive.",
+    "loadError": "Could not load the plan.",
+    "voucherApplied": "Voucher applied!",
+    "voucherInvalid": "Invalid voucher",
+    "voucherInvalidDescription": "Code not found or expired.",
+    "voucherError": "Could not validate the voucher.",
+    "subscribeError": "Could not start the subscription. Please try again.",
+    "discountApplied": "Discount of {{amount}} applied.",
+    "discountPercent": "{{percent}}% discount",
+    "discountAmount": "{{amount}} discount"
+  }
 }

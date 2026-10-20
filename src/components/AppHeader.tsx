@@ -88,6 +88,8 @@ const AppHeader = ({
               </Button>
             )}
 
+            {showAnchors && <Button asChild variant="ghost" size="sm"><Link to="/planos">{tCommon('home:marketing.packagesNav')}</Link></Button>}
+            <Button asChild variant="ghost" size="sm"><Link to="/criadores">{tCommon('home:marketing.creatorsNav')}</Link></Button>
             {/* Region Selector (includes language & currency) */}
             <RegionSelector variant="compact" />
             

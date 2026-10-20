@@ -12,12 +12,8 @@
     "ctaUseCredit": "Usar Crédito",
     "ctaQuickCreate": "Criar Rápido",
     "ctaComplete": "Modo Completo",
-    "socialProof": "Mais de 500 músicas criadas • Entrega rápida • Avaliações reais",
-    "stats": {
-      "songs": "Músicas Criadas",
-      "time": "Tempo Médio",
-      "rating": "Avaliação"
-    }
+    "socialProof": "",
+    "stats": {}
   },
   "process": {
     "title": "Como",
@@ -29,7 +25,7 @@
     },
     "step2": {
       "title": "Nós criamos a música",
-      "description": "Transformamos sua história em uma música única, no estilo que você escolher."
+      "description": "Após o pagamento, criamos a letra. No modo completo, você revisa antes de aprovar; no rápido, a aprovação é automática."
     },
     "step3": {
       "title": "Receba e compartilhe",
@@ -40,9 +36,14 @@
       "description": "Compre um pacote e crie múltiplas músicas pagando menos! Seus créditos ficam salvos e você usa quando quiser — sem precisar pagar a cada nova música.",
       "songs3": "3 músicas",
       "songs5": "5 músicas",
-      "savings16": "Economia de 16%",
-      "bestSavings": "Maior economia",
+      "savings16": "Créditos salvos para outros momentos",
+      "bestSavings": "Créditos salvos para outros momentos",
       "viewPackages": "Ver Pacotes"
+    },
+    "audioMode": {
+      "title": "Modo áudio",
+      "description": "Grave ou envie um áudio para usar como ponto de partida da sua música.",
+      "cta": "Criar com áudio"
     }
   },
   "samples": {
@@ -99,7 +100,7 @@
       "professional": "Edição profissional com efeitos",
       "transitions": "Transições cinematográficas",
       "sync": "Sincronização com a música",
-      "delivery": "Entrega em até 24h"
+      "delivery": "Acompanhe seu vídeo na plataforma"
     },
     "loopNotice": {
       "title": "Músicas mais longas?",
@@ -118,16 +119,7 @@
     "subtitle": "Histórias reais de quem já transformou momentos em música",
     "subtitleReal": "Avaliações reais de clientes que criaram músicas",
     "badge": "Depoimentos Reais",
-    "stats": {
-      "songs": "500+",
-      "songsLabel": "Músicas Criadas",
-      "rating": "5.0★",
-      "ratingLabel": "Avaliação Média",
-      "satisfaction": "100%",
-      "satisfactionLabel": "Satisfação",
-      "delivery": "24h",
-      "deliveryLabel": "Tempo Médio"
-    },
+    "stats": {},
     "musicTypes": {
       "tribute": "Homenagem",
       "romantic": "Romântica",
@@ -147,30 +139,22 @@
       "wife": "Esposa",
       "grandfather": "Avô"
     },
-    "quotes": {
-      "birthday": "A música ficou incrível! Meu filho amou o presente de aniversário.",
-      "corporate": "Usamos a música no evento da empresa. Foi um sucesso!",
-      "wedding": "A música do nosso casamento emocionou todos os convidados.",
-      "graduation": "A homenagem para a formatura da minha filha ficou perfeita.",
-      "anniversary": "Presente de bodas mais emocionante que já dei ao meu marido.",
-      "child": "Criei uma música para meu neto. Ele não parava de ouvir!"
-    },
-    "verifiedClient": "Cliente Verificado",
+    "verifiedClient": "Cliente",
     "ratingAria": "Avaliação",
-    "basedOn": "Baseado em {{count}} avaliações verificadas"
+    "basedOn": "{{count}} avaliações públicas"
   },
   "instrumental": {
     "title": "Trilhas",
     "titleHighlight": "Instrumentais",
     "subtitle": "Músicas sem vocal, perfeitas para vídeos, podcasts e projetos criativos",
     "badge": "100% Instrumental",
-    "discount": "20% de desconto",
-    "discountBadge": "-20%",
+    "discount": "",
+    "discountBadge": "",
     "features": [
       "Perfeito para vídeos e podcasts",
       "Ideal para conteúdo de fundo",
-      "Uso comercial liberado",
-      "Entrega em até 24h"
+      "Os Termos de Uso preveem uso pessoal e não comercial. Para uso comercial, é necessária licença específica; confirme as condições antes de publicar ou monetizar.",
+      "Acompanhe seu pedido"
     ],
     "cta": "Criar Trilha Instrumental",
     "styles": {
@@ -212,17 +196,17 @@
     },
     "feature5": {
       "title": "Sem promessas falsas",
-      "description": "Você aprova a letra antes. Sem surpresas, sem pegadinhas."
+      "description": "No modo completo, você escolhe e revisa a letra antes da produção. No modo rápido, a aprovação é automática."
     },
     "feature6": {
-      "title": "+500 músicas criadas",
-      "description": "Centenas de clientes satisfeitos já eternizaram seus momentos especiais."
+      "title": "Sua história, seus detalhes",
+      "description": "Nomes, lembranças e sentimentos ajudam a criar uma música com significado para você."
     },
     "howItWorks": {
       "title": "Como funciona criar uma música personalizada?",
       "p1": "Criar uma música personalizada com a Criando Músicas é simples e emocionante. Primeiro, você nos conta sua história - pode ser uma declaração de amor, uma homenagem a alguém especial, uma lembrança de infância ou qualquer momento que você queira eternizar em forma de música.",
       "p2": "Nossa tecnologia de inteligência artificial, combinada com produção musical profissional, transforma suas palavras em uma composição única. Você escolhe o estilo musical que mais combina - do sertanejo romântico ao pop animado, do gospel inspirador ao rock energético.",
-      "p3": "Em até 48 horas, você recebe sua música exclusiva diretamente no WhatsApp, pronta para emocionar, presentear e criar memórias inesquecíveis. É o presente perfeito para aniversários, casamentos, Dia das Mães, Dia dos Pais, formaturas e qualquer ocasião especial."
+      "p3": "Acompanhe a produção e a entrega pela plataforma. Consulte os prazos nos Termos de Uso e confirme com o atendimento se tiver uma data específica."
     }
   },
   "cta": {
@@ -232,13 +216,13 @@
     "badge": "Comece Agora",
     "benefits": [
       "Processo simples e rápido",
-      "Entrega em até 48 horas",
+      "Acompanhe seu pedido",
       "Música exclusiva e personalizada",
       "Opção de vídeo para compartilhar"
     ],
     "creditsAvailable": "Crédito disponível",
     "creditsAvailablePlural": "Créditos disponíveis",
-    "freeNextSong": "Crie sua próxima música sem pagar!",
+    "freeNextSong": "Use seus créditos para a próxima música",
     "completeSong": "Música completa personalizada",
     "limitedPromo": "Promoção por tempo limitado",
     "useCredit": "Usar meu crédito agora",
@@ -248,7 +232,7 @@
     "features": {
       "ownLyric": "Use sua própria letra ou poema",
       "quality": "Áudio profissional de alta qualidade",
-      "delivery": "Entrega em até 24h na plataforma",
+      "delivery": "Acompanhe seu pedido",
       "style": "Escolha o estilo musical"
     },
     "cardTitle": "Música com Letra Própria",
@@ -271,15 +255,15 @@
       },
       {
         "q": "Quanto tempo leva para receber minha música?",
-        "a": "O tempo médio de entrega é de até 48 horas após você aprovar a letra. Você acompanha tudo pela plataforma e recebe notificações quando sua música estiver pronta."
+        "a": "Acompanhe a produção e a entrega pela plataforma. Consulte os prazos nos Termos de Uso e confirme com o atendimento se tiver uma data específica."
       },
       {
         "q": "Posso pedir alterações na letra?",
-        "a": "Sim! Você recebe duas versões de letra para escolher e pode pedir ajustes antes de aprovar. Depois que você aprova, a música começa a ser produzida."
+        "a": "No modo completo, você escolhe e revisa a letra antes da produção. No modo rápido, a aprovação é automática."
       },
       {
         "q": "A música é realmente minha e exclusiva?",
-        "a": "Sim! Cada música é criada do zero, só para você. Ela nunca será vendida ou usada por outra pessoa. A música é sua para sempre."
+        "a": "A música é personalizada a partir da sua história. As condições de propriedade e uso estão nos Termos de Uso; não prometemos exclusividade absoluta."
       },
       {
         "q": "Quais estilos musicais vocês fazem?",
@@ -291,7 +275,7 @@
       },
       {
         "q": "Vocês fazem vídeo também?",
-        "a": "Sim! A partir de R$50, você pode receber um vídeo personalizado com fotos ou clipes, sincronizado com sua música. Perfeito para compartilhar nas redes sociais."
+        "a": "Sim. O vídeo é um serviço adicional, com fotos ou clipes sincronizados com sua música. Confira as opções e o valor atual na seção de vídeo."
       },
       {
         "q": "Como funciona o pagamento?",
@@ -299,23 +283,11 @@
       },
       {
         "q": "E se eu não gostar do resultado?",
-        "a": "Nossa taxa de satisfação é de 98%! Quanto mais detalhes você colocar no briefing, melhor fica a música. Você aprova a letra antes, então não tem surpresas."
+        "a": "No modo completo, você escolhe e revisa a letra antes da produção. No modo rápido, a aprovação é automática."
       },
       {
         "q": "Posso usar as músicas em vídeos monetizados?",
-        "a": "Sim! As músicas criadas são 100% originais e você tem todos os direitos para uso comercial, incluindo monetização no YouTube, TikTok, Instagram e outras plataformas."
-      },
-      {
-        "q": "Como funciona a assinatura Creator?",
-        "a": "Na assinatura, você recebe créditos todo mês para criar músicas. É ideal para criadores de conteúdo que precisam de várias músicas regularmente."
-      },
-      {
-        "q": "Os créditos da assinatura expiram?",
-        "a": "Sim, os créditos da assinatura Creator renovam mensalmente. Créditos não utilizados não acumulam para o mês seguinte."
-      },
-      {
-        "q": "Posso cancelar minha assinatura?",
-        "a": "Sim, você pode cancelar sua assinatura a qualquer momento pelo painel do usuário. Você continua com acesso até o fim do período pago."
+        "a": "Os Termos de Uso preveem uso pessoal e não comercial. Para uso comercial, é necessária licença específica; confirme as condições antes de publicar ou monetizar."
       }
     ]
   },
@@ -351,5 +323,32 @@
     "successDescription": "Responderemos em breve pelo email informado.",
     "errorTitle": "Erro ao enviar",
     "errorDescription": "Tente novamente ou entre em contato pelo WhatsApp."
+  },
+  "marketing": {
+    "giftBadge": "Músicas personalizadas para presentear e homenagear",
+    "headline": "Sua história merece virar",
+    "headlineHighlight": "música.",
+    "audioCta": "Criar com áudio",
+    "admin": "Administração",
+    "occasionsLabel": "Ocasiões especiais",
+    "occasions": [
+      "Aniversários",
+      "Casamentos",
+      "Declarações",
+      "Homenagens",
+      "Dia das Mães",
+      "Dia dos Pais"
+    ],
+    "creatorsNav": "Para criadores",
+    "packagesNav": "Pacotes avulsos",
+    "homeNav": "Início",
+    "menu": "Abrir menu",
+    "seoTitle": "Músicas personalizadas para presentear e homenagear",
+    "seoDescription": "Transforme histórias, lembranças e sentimentos em músicas personalizadas para aniversários, casamentos, declarações e homenagens. Conheça exemplos e pacotes avulsos.",
+    "creatorTeaser": {
+      "title": "Você é criador de conteúdo?",
+      "description": "Conheça soluções de música e trilhas para YouTube, Reels, TikTok, podcasts e projetos digitais, com planos mensais e condições de uso transparentes.",
+      "cta": "Conhecer soluções para criadores"
+    }
   }
 }

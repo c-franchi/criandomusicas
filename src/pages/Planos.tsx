@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, Video, Users, Star, Shield, ArrowLeft } from "lucide-react";
+import { Check, Crown, Zap, FileText, Sparkles, Music, HelpCircle, ArrowLeft } from "lucide-react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { Plan } from "@/lib/plan";
 import { useAuth } from "@/hooks/useAuth";
@@ -42,10 +42,6 @@ const getCreditsForPlan = (plan: PricingPlan): number => {
   const planId = plan.id;
   if (planId.includes('subscription') && !planId.includes('creator')) return 5;
   if (planId.includes('package')) return 3;
-  // Creator plans - values from pricing_config
-  if (planId.includes('creator_studio')) return 230;
-  if (planId.includes('creator_pro')) return 150;
-  if (planId.includes('creator_start')) return 40;
   return 1;
 };
 
@@ -62,7 +58,6 @@ const Planos = () => {
   const { toast } = useToast();
   const { t, i18n } = useTranslation('pricing');
   const [plans, setPlans] = useState<PricingPlan[]>([]);
-  const [creatorPlans, setCreatorPlans] = useState<PricingPlan[]>([]);
   const [customLyricPlan, setCustomLyricPlan] = useState<PricingPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
@@ -101,17 +96,9 @@ const Planos = () => {
           const universalPlans = data.filter(p => 
             ['single', 'package', 'subscription'].includes(p.id)
           );
-          const creator = data.filter(p => 
-            ['creator_start', 'creator_pro', 'creator_studio'].includes(p.id)
-          );
           const customLyric = data.find(p => p.id === 'single_custom_lyric');
           
           setPlans(universalPlans.map(p => ({ 
-            ...p, 
-            credits: p.credits || 1,
-            features: Array.isArray(p.features) ? p.features as string[] : [] 
-          })));
-          setCreatorPlans(creator.map(p => ({ 
             ...p, 
             credits: p.credits || 1,
             features: Array.isArray(p.features) ? p.features as string[] : [] 
@@ -149,75 +136,13 @@ const Planos = () => {
     return translatedName || dbName;
   };
 
-  // Get translated plan description
-  const getPlanDescription = (plan: PricingPlan): string => {
-    const description = t(`plans.${plan.id}.description`, { defaultValue: '' });
-    if (description) return description;
-    
-    // Fallback descriptions for Creator plans
-    const credits = getCreditsForPlan(plan);
-    const songWord = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
-    
-    return `${credits} ${songWord}/${i18n.language === 'pt-BR' ? 'mês' : i18n.language === 'es' ? 'mes' : i18n.language === 'it' ? 'mese' : 'month'}`;
-  };
-
-  // Get description for Creator plans with credits
-  const getCreatorPlanDescription = (plan: PricingPlan): string => {
-    const credits = getCreditsForPlan(plan);
-    const songType = i18n.language === 'pt-BR' ? 'músicas' : i18n.language === 'es' ? 'canciones' : i18n.language === 'it' ? 'canzoni' : 'songs';
-    const planId = plan.id;
-    
-    // Define descriptions for each plan tier
-    if (planId.includes('creator_start')) {
-      const desc = i18n.language === 'pt-BR' ? 'Ideal para criadores que estão começando' 
-        : i18n.language === 'es' ? 'Ideal para creadores que están comenzando' 
-        : i18n.language === 'it' ? 'Ideale per creator che stanno iniziando' 
-        : 'Ideal for creators just starting out';
-      return `${credits} ${songType}/mês • ${desc}`;
-    }
-    
-    if (planId.includes('creator_pro')) {
-      const desc = i18n.language === 'pt-BR' ? 'Para criadores de conteúdo frequentes' 
-        : i18n.language === 'es' ? 'Para creadores de contenido frecuentes' 
-        : i18n.language === 'it' ? 'Per creator di contenuti frequenti' 
-        : 'For frequent content creators';
-      return `${credits} ${songType}/mês • ${desc}`;
-    }
-    
-    if (planId.includes('creator_studio')) {
-      const desc = i18n.language === 'pt-BR' ? 'Produção em escala para profissionais' 
-        : i18n.language === 'es' ? 'Producción a escala para profesionales' 
-        : i18n.language === 'it' ? 'Produzione su larga scala per professionisti' 
-        : 'Scale production for professionals';
-      return `${credits} ${songType}/mês • ${desc}`;
-    }
-    
-    return '';
-  };
-
-  // Get translated features for Creator plans
-  const getCreatorPlanFeatures = (planId: string, dbFeatures: string[]): string[] => {
-    const translatedFeatures = t(`plans.${planId}.features`, { returnObjects: true, defaultValue: [] });
-    if (Array.isArray(translatedFeatures) && translatedFeatures.length > 0 && typeof translatedFeatures[0] === 'string') {
-      return translatedFeatures as string[];
-    }
-    // Fallback to DB features if translations not available
-    return dbFeatures.length > 0 ? dbFeatures : [];
-  };
-
   // Get translated features for universal plans (single, package, subscription)
   const getTranslatedFeatures = (planId: string): string[] => {
     const translatedFeatures = t(`vocalFeatures.${planId}`, { returnObjects: true, defaultValue: [] });
     if (Array.isArray(translatedFeatures) && translatedFeatures.length > 0 && typeof translatedFeatures[0] === 'string') {
       return translatedFeatures as string[];
     }
-    // Fallback to default features
-    const defaults: Record<string, string[]> = {
-      single: ['1 música completa', '2 letras personalizadas para escolher', 'Letra + áudio profissional', 'Alta qualidade', 'Entrega em até 24h'],
-      package: ['3 músicas completas', '2 letras personalizadas cada', 'Economia de 16%', 'Letra + áudio profissional', 'Alta qualidade', 'Entrega em até 24h', 'Suporte VIP'],
-      subscription: ['Até 5 músicas', '2 letras personalizadas cada', 'Letra + áudio profissional', 'Qualidade premium', 'Entrega em até 24h', 'Prioridade na fila']
-    };
-    return defaults[planId] || [];
+    return [];
   };
 
   const getButtonText = (plan: PricingPlan) => {
@@ -233,6 +158,7 @@ const Planos = () => {
         description: t('errors.loginRequired'),
         variant: "destructive",
       });
+      navigate(`/auth?redirect=${encodeURIComponent(`/briefing?planId=${planId}`)}`);
       return;
     }
 
@@ -266,7 +192,7 @@ const Planos = () => {
 
   // Find single plan for savings calculation
   const singlePlan = plans.find(p => p.id === 'single');
-  const singlePrice = singlePlan ? (singlePlan.price_promo_cents || singlePlan.price_cents) : 990;
+  const singlePrice = singlePlan ? (singlePlan.price_promo_cents || singlePlan.price_cents) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background py-12 px-6">
@@ -274,7 +200,7 @@ const Planos = () => {
         canonical="/planos"
         title={t('seo.title')}
         description={t('seo.description')}
-        keywords="planos música personalizada, preços música IA, pacote músicas, assinatura música, quanto custa música personalizada"
+        keywords="pacotes música personalizada, presente musical, homenagem, compra avulsa"
       />
       
       {/* Header Navigation */}
@@ -302,7 +228,7 @@ const Planos = () => {
         )}
 
         {/* Section: Para Presentes e Homenagens (order-2 - AFTER Creator) */}
-        <div className="text-center mb-8 order-2 pt-16 border-t border-border/30">
+        <div className="text-center mb-8 order-2 pt-4">
           <Badge className="mb-4 bg-primary/20 text-primary border-primary/30 px-4 py-2">
             {t('section.giftsTitle')}
           </Badge>
@@ -310,7 +236,7 @@ const Planos = () => {
             <div className="p-3 rounded-xl bg-gradient-to-r from-primary to-accent music-glow">
               <Crown className="w-8 h-8 text-primary-foreground" />
             </div>
-            <h2 className="text-4xl font-bold gradient-text">{t('section.giftsSubtitle')}</h2>
+            <h1 className="text-3xl sm:text-4xl font-bold gradient-text">{t('section.giftsSubtitle')}</h1>
           </div>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed mb-8">
             {t('section.giftsDescription')}
@@ -332,7 +258,7 @@ const Planos = () => {
           <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 pt-4 mb-16">
             {plans.map((plan) => {
               const hasPromo = plan.price_promo_cents !== null;
-              const displayPrice = hasPromo ? formatPrice(plan.price_promo_cents!) : formatPrice(plan.price_cents);
+              const displayPrice = hasPromo ? formatPrice(plan.price_promo_cents ?? plan.price_cents) : formatPrice(plan.price_cents);
               const originalPrice = hasPromo ? formatPrice(plan.price_cents) : null;
               const credits = getCreditsForPlan(plan);
               const pricePerCredit = getPricePerCredit(plan);
@@ -341,7 +267,7 @@ const Planos = () => {
               const totalIfSingles = singlePrice * credits;
               const currentPrice = plan.price_promo_cents || plan.price_cents;
               const savings = totalIfSingles - currentPrice;
-              const savingsPercent = Math.round((savings / totalIfSingles) * 100);
+              const savingsPercent = totalIfSingles > 0 ? Math.round((savings / totalIfSingles) * 100) : 0;
               
               return (
                 <Card
@@ -463,220 +389,6 @@ const Planos = () => {
         )}
         </div>
 
-        {/* ========== SECTION: Para Criadores de Conteúdo (order-1 - FIRST) ========== */}
-        <div id="creator" className="mb-16 pt-8 order-1">
-          <div className="text-center mb-12">
-            <Badge className="mb-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-400 border-purple-500/30 px-4 py-2">
-              {t('section.creatorTitle')}
-            </Badge>
-            <h1 className="text-4xl font-bold gradient-text mb-4">
-              {t('section.creatorSubtitle')}
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed mb-6">
-              {t('section.creatorDescription')}
-            </p>
-            
-            {/* Universal credits badge */}
-            <Badge className="bg-primary/20 text-primary border-primary/30">
-              🎵 {t('universal.creatorBadge', { defaultValue: 'Créditos universais - crie vocal, instrumental ou com sua letra' })}
-            </Badge>
-          </div>
-
-          {/* Diferenciais Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-              <FileText className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.curatedLyrics')}</h4>
-              <p className="text-sm text-muted-foreground">{t('creator.features.curatedLyricsDesc')}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-              <Video className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.readyToPost')}</h4>
-              <p className="text-sm text-muted-foreground">{t('creator.features.readyToPostDesc')}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-              <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.commercialUse')}</h4>
-              <p className="text-sm text-muted-foreground">{t('creator.features.commercialUseDesc')}</p>
-            </div>
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/20 text-center">
-              <Users className="w-8 h-8 text-primary mx-auto mb-2" />
-              <h4 className="font-semibold text-foreground mb-1">{t('creator.features.humanSupport')}</h4>
-              <p className="text-sm text-muted-foreground">{t('creator.features.humanSupportDesc')}</p>
-            </div>
-          </div>
-
-          {/* Creator Plans Grid */}
-          {loading ? (
-            <div className="flex justify-center items-center py-16">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-          ) : (
-            <div className="grid lg:grid-cols-3 gap-8 mb-12 pt-4">
-              {creatorPlans.map((plan) => {
-                const credits = getCreditsForPlan(plan);
-                const pricePerMusic = Math.round((plan.price_promo_cents || plan.price_cents) / credits);
-                const isPopular = plan.is_popular || plan.id.includes('creator_pro');
-                
-                // Icons based on plan
-                const PlanIcon = plan.id.includes('studio') ? Crown : 
-                                 plan.id.includes('pro') ? Star : Zap;
-                
-                return (
-                  <Card
-                    key={plan.id}
-                    className={`relative h-full flex flex-col transition-all duration-300 hover:scale-105 hover:shadow-2xl overflow-visible premium-card ${
-                      isPopular 
-                        ? "ring-2 ring-purple-500 border-purple-500/50 shadow-lg shadow-purple-500/20" 
-                        : "border-border/50 hover:border-purple-500/30"
-                    }`}
-                  >
-                    {isPopular && (
-                      <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-4 py-1 shadow-lg">
-                        ⭐ {t('popular')}
-                      </Badge>
-                    )}
-
-                    {/* Credits Badge */}
-                    <Badge className="absolute -top-3 right-4 z-10 bg-purple-500 text-white px-3 py-1 font-bold shadow-lg">
-                      <Music className="w-3 h-3 mr-1" />
-                      {t('badges.musicsPerMonth', { count: credits })}
-                    </Badge>
-
-                    <CardHeader className="text-center pb-4 pt-8">
-                      {/* Icon */}
-                      <div className="flex justify-center mb-4">
-                        <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg shadow-purple-500/30">
-                          <PlanIcon className="w-8 h-8 text-white" />
-                        </div>
-                      </div>
-                      
-                      {/* Plan Name */}
-                      <CardTitle className="text-2xl mb-3 text-card-foreground font-bold">
-                        {getPlanName(plan.id, plan.name)}
-                      </CardTitle>
-                      
-                      {/* Description with min-height for alignment */}
-                      <div className="mb-4 min-h-[52px] flex items-center justify-center">
-                        <p className="text-sm text-muted-foreground leading-relaxed text-center px-2">
-                          {getCreatorPlanDescription(plan) || `${credits} músicas/mês`}
-                        </p>
-                      </div>
-                      
-                      {/* Price */}
-                      <CardDescription className="text-4xl font-bold text-purple-400">
-                        {formatPrice(plan.price_promo_cents || plan.price_cents)}
-                        <span className="text-base font-normal text-muted-foreground block mt-1">/mês</span>
-                      </CardDescription>
-
-                      {/* Price per music */}
-                      <div className="mt-3 space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          {t('pricePerMusic', { price: formatPrice(pricePerMusic) })}
-                        </p>
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                          {t('badges.renewsMonthly')}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="flex-1 flex flex-col">
-                      <ul className="space-y-3 mb-8 flex-1">
-                        {getCreatorPlanFeatures(plan.id, plan.features).map((feature, index) => (
-                          <li key={index} className="flex items-start gap-3">
-                            <div className="p-1 rounded-full bg-purple-500/20 mt-0.5">
-                              <Check className="w-3 h-3 text-purple-400 flex-shrink-0" />
-                            </div>
-                            <span className="text-card-foreground leading-relaxed text-sm">{feature}</span>
-                          </li>
-                        ))}
-                        {/* Universal credit benefit */}
-                        <li className="flex items-start gap-3">
-                          <div className="p-1 rounded-full bg-purple-500/20 mt-0.5">
-                            <Music className="w-3 h-3 text-purple-400 flex-shrink-0" />
-                          </div>
-                          <span className="text-purple-400 leading-relaxed text-sm">
-                            {t('universal.usageHint', { defaultValue: 'Use para vocal, instrumental ou letra própria' })}
-                          </span>
-                        </li>
-                      </ul>
-
-                      <div className="mt-auto">
-                        <Button
-                          onClick={() => {
-                            if (!user) {
-                              toast({
-                                title: t('toasts.loginNeeded'),
-                                description: t('toasts.loginNeededDescription'),
-                                variant: "destructive",
-                              });
-                              navigate(`/auth?redirect=/creator-checkout/${plan.id}`);
-                              return;
-                            }
-                            
-                            // Navigate to Creator checkout page with voucher support
-                            navigate(`/creator-checkout/${plan.id}`);
-                          }}
-                          className={`w-full py-3 font-semibold transition-all duration-300 ${
-                            isPopular 
-                              ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-white shadow-lg shadow-purple-500/30" 
-                              : "bg-purple-600 hover:bg-purple-500 text-white"
-                          }`}
-                        >
-                          {t('creator.subscribe', { plan: getPlanName(plan.id, plan.name) })}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-              );
-            })}
-            </div>
-          )}
-
-          {/* Universal Credits Info */}
-          <div className="mt-6 p-4 rounded-lg bg-primary/10 border border-primary/30 max-w-3xl mx-auto">
-            <div className="flex items-start gap-3">
-              <Music className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium text-primary">
-                  {t('creator.universalCredits.title', { defaultValue: 'Créditos Universais' })}
-                </p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {t('creator.universalCredits.description', { defaultValue: 'Use seus créditos para criar músicas vocais, instrumentais ou com sua própria letra. Flexibilidade total!' })}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Why Choose Us Section */}
-          <Card className="border-purple-500/20 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 mt-8">
-            <CardHeader className="text-center">
-              <CardTitle className="text-xl text-purple-400">
-                {t('creator.whyUs.title')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid md:grid-cols-3 gap-6 text-center">
-                <div>
-                  <div className="text-3xl mb-2">🎯</div>
-                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.noPrompts')}</h4>
-                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.noPromptsDesc')}</p>
-                </div>
-                <div>
-                  <div className="text-3xl mb-2">✨</div>
-                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.lyricsAndMusic')}</h4>
-                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.lyricsAndMusicDesc')}</p>
-                </div>
-                <div>
-                  <div className="text-3xl mb-2">⚡</div>
-                  <h4 className="font-semibold text-foreground mb-1">{t('creator.whyUs.fastDelivery')}</h4>
-                  <p className="text-sm text-muted-foreground">{t('creator.whyUs.fastDeliveryDesc')}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
         {/* How Credits Work Section (order-3) */}
         <Card className="mb-16 border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 order-3">
           <CardHeader className="text-center">
@@ -730,7 +442,7 @@ const Planos = () => {
                   </div>
                 </div>
                 <CardTitle className="text-2xl mb-2 text-card-foreground font-bold">
-                  {customLyricPlan.name}
+                  {t('home:customLyric.cardTitle')}
                 </CardTitle>
                 <div className="space-y-1">
                   <CardDescription className="text-xl line-through text-muted-foreground">
@@ -751,12 +463,12 @@ const Planos = () => {
 
               <CardContent className="pb-8">
                 <ul className="space-y-4 mb-8">
-                  {customLyricPlan.features.map((feature, index) => (
+                  {['ownLyric', 'quality', 'delivery', 'style'].map((key, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <div className="p-1 rounded-full bg-green-500/20 mt-0.5">
                         <Check className="w-3 h-3 text-green-400 flex-shrink-0" />
                       </div>
-                      <span className="text-card-foreground leading-relaxed font-medium">{feature}</span>
+                      <span className="text-card-foreground leading-relaxed font-medium">{t(`home:customLyric.features.${key}`)}</span>
                     </li>
                   ))}
                 </ul>
@@ -781,6 +493,7 @@ const Planos = () => {
           <p className="text-muted-foreground text-xs">
             {t('footer.delivery')}
           </p>
+          <Button asChild variant="link" className="mt-4 h-auto whitespace-normal"><Link to="/criadores">{t('creatorLanding.discreetLink')}</Link></Button>
         </div>
       </div>
     </div>

@@ -80,11 +80,11 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
   const isHomePage = location.pathname === '/';
 
   const sectionAnchors = [
-    { id: 'processo', label: tHome('nav.process', 'Como Funciona'), icon: Sparkles },
-    { id: 'exemplos', label: tHome('nav.examples', 'Exemplos'), icon: Play },
-    { id: 'planos', label: tHome('nav.pricing', 'Planos'), icon: Crown },
-    { id: 'depoimentos', label: tHome('nav.testimonials', 'Depoimentos'), icon: Star },
-    { id: 'faq', label: tHome('nav.faq', 'Dúvidas'), icon: HelpCircle },
+    { id: 'processo', label: tHome('footer.howItWorks'), icon: Sparkles },
+    { id: 'exemplos', label: tHome('footer.examples'), icon: Play },
+    { id: 'planos', label: tHome('marketing.packagesNav'), icon: Crown },
+    { id: 'depoimentos', label: tHome('testimonials.title'), icon: Star },
+    { id: 'faq', label: tHome('faq.badge'), icon: HelpCircle },
   ];
 
   return (
@@ -93,6 +93,7 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
         <Button 
           variant="ghost" 
           size="icon" 
+          aria-label={tHome('marketing.menu')}
           className="md:hidden relative w-10 h-10 rounded-xl bg-background/50 backdrop-blur-sm border border-border/50"
         >
           <Menu className="w-5 h-5" />
@@ -175,7 +176,7 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
             )}
             
             {/* Section Anchors */}
-            {showAnchors && (
+            {showAnchors && isHomePage && (
               <>
                 <Separator className="mx-4" />
                 <div className="p-4">
@@ -205,6 +206,9 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
                 {tCommon('mobileMenu.menu', 'Menu')}
               </p>
               <nav className="space-y-1">
+                <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/')}><Music className="w-4 h-4" />{tHome('marketing.homeNav')}</Button>
+                <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/planos')}><Music className="w-4 h-4" />{tHome('marketing.packagesNav')}</Button>
+                <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/criadores')}><Play className="w-4 h-4" />{tHome('marketing.creatorsNav')}</Button>
                 {user ? (
                   <>
                     <button

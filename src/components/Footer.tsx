@@ -81,6 +81,7 @@ const Footer = () => {
                   {t('footer.pricing')}
                 </Link>
               </li>
+              <li><Link to="/criadores" className="hover:text-primary transition-colors text-sm">{t('marketing.creatorsNav')}</Link></li>
               {/* Discreet celebration link - only show on homepage with active celebration */}
               {hasCelebration && window.location.pathname === '/' && (
                 <li>
