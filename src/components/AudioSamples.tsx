@@ -7,7 +7,6 @@ import { Play, Pause, Volume2, Music } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
-import { Marquee } from "@/components/ui/marquee";
 import { Progress } from "@/components/ui/progress";
 
 interface AudioSample {
@@ -269,8 +268,8 @@ const AudioSamples = ({ audioType = "vocal" }: { audioType?: "vocal" | "instrume
           </p>
         </motion.div>
         
-        {/* Single Marquee Row */}
-        <Marquee direction="left" speed="normal" pauseOnHover>
+        {/* Stable, swipeable players remain clickable on mobile and keyboard-accessible. */}
+        <div className="flex gap-5 overflow-x-auto px-5 pb-6 snap-x snap-proximity">
           {samples.map((sample) => {
             const isPlaying = currentPlaying === sample.id;
             const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
@@ -288,7 +287,7 @@ const AudioSamples = ({ audioType = "vocal" }: { audioType?: "vocal" | "instrume
               />
             );
           })}
-        </Marquee>
+        </div>
       </div>
     </section>
   );

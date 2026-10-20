@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { formatCurrency } from "@/lib/i18n-format";
 import { motion } from "framer-motion";
+import { useAuth } from "@/hooks/useAuth";
 
 interface PricingPlan {
   id: string;
@@ -24,6 +25,7 @@ interface PricingPlan {
 
 const PricingPlans = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { t, i18n, ready } = useTranslation('pricing');
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -99,7 +101,8 @@ const PricingPlans = () => {
   const handlePlanSelect = (planId: string) => {
     const params = new URLSearchParams();
     params.set('planId', planId);
-    navigate(`/briefing?${params.toString()}`);
+    const destination = `/briefing?${params.toString()}`;
+    navigate(user ? destination : `/auth?redirect=${encodeURIComponent(destination)}`);
   };
 
   if (loading || !ready) {

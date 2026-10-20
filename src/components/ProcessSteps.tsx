@@ -106,7 +106,7 @@ const ProcessSteps = () => {
               </div>
 
               <Button asChild size="lg" className="shrink-0 rounded-xl">
-                <Link to="/briefing?mode=audio">
+                <Link to={user ? '/briefing?mode=audio' : '/auth?redirect=%2Fbriefing%3Fmode%3Daudio'}>
                   {t('process.audioMode.cta')}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Link>
