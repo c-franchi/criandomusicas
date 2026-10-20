@@ -19,7 +19,7 @@ import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { QuickCreation, QuickCreationData, clearQuickDraft } from "@/components/briefing/QuickCreation";
 import { PurposeSelector } from "@/components/briefing/PurposeSelector";
-import { getPurposeStart, isPurposeId, mapQuickPurpose, type PurposeId, type QuickPurpose } from "@/lib/briefingPurpose";
+import { draftMatchesPurpose, getPurposeStart, isPurposeId, mapQuickPurpose, type PurposeId, type QuickPurpose } from "@/lib/briefingPurpose";
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
