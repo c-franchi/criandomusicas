@@ -93,6 +93,7 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
         <Button 
           variant="ghost" 
           size="icon" 
+          aria-label={tHome('marketing.menu')}
           className="md:hidden relative w-10 h-10 rounded-xl bg-background/50 backdrop-blur-sm border border-border/50"
         >
           <Menu className="w-5 h-5" />
