@@ -14,7 +14,6 @@ import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
 import ScrollToTop from "@/components/ScrollToTop";
-import PlanComparison from "@/components/PlanComparison";
 import PinnedScrollSections from "@/components/PinnedScrollSections";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
@@ -116,7 +115,7 @@ const Index = () => {
         <ProcessSteps />
       </div>
       
-      {/* Pinned Scroll Sections: AudioSamples, PricingPlans, CreatorSection */}
+      {/* Pinned Scroll Sections: AudioSamples, PricingPlans */}
       <div id="tour-examples">
         <div id="tour-plans">
           <PinnedScrollSections />
@@ -130,7 +129,6 @@ const Index = () => {
       <Testimonials />
       <ReactionVideosShowcase />
       <FAQ />
-      <PlanComparison />
       <Footer />
       <CookieConsent />
       <ScrollToTop />
