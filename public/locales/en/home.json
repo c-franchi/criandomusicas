@@ -12,12 +12,8 @@
     "ctaUseCredit": "Use Credit",
     "ctaQuickCreate": "Quick Create",
     "ctaComplete": "Complete Mode",
-    "socialProof": "Over 500 songs created • Fast delivery • Real reviews",
-    "stats": {
-      "songs": "Songs Created",
-      "time": "Average Time",
-      "rating": "Rating"
-    }
+    "socialProof": "",
+    "stats": {}
   },
   "process": {
     "title": "How it",
@@ -29,7 +25,7 @@
     },
     "step2": {
       "title": "We create the song",
-      "description": "We transform your story into a unique song, in the style you choose."
+      "description": "After payment, we create the lyrics. In complete mode you review before approval; in quick mode approval is automatic."
     },
     "step3": {
       "title": "Receive and share",
@@ -40,9 +36,14 @@
       "description": "Buy a package and create multiple songs paying less! Your credits are saved and you use them whenever you want — no need to pay for each new song.",
       "songs3": "3 songs",
       "songs5": "5 songs",
-      "savings16": "16% savings",
-      "bestSavings": "Best savings",
+      "savings16": "Credits saved for other moments",
+      "bestSavings": "Credits saved for other moments",
       "viewPackages": "View Packages"
+    },
+    "audioMode": {
+      "title": "Audio mode",
+      "description": "Record or upload audio as a starting point for your song.",
+      "cta": "Create with audio"
     }
   },
   "samples": {
@@ -99,7 +100,7 @@
       "professional": "Professional editing with effects",
       "transitions": "Cinematic transitions",
       "sync": "Music synchronization",
-      "delivery": "Delivery within 24h"
+      "delivery": "Track your video on the platform"
     },
     "loopNotice": {
       "title": "Longer songs?",
@@ -118,16 +119,7 @@
     "subtitle": "Real stories from those who turned moments into music",
     "subtitleReal": "Real reviews from customers who created songs",
     "badge": "Real Testimonials",
-    "stats": {
-      "songs": "500+",
-      "songsLabel": "Songs Created",
-      "rating": "5.0★",
-      "ratingLabel": "Average Rating",
-      "satisfaction": "100%",
-      "satisfactionLabel": "Satisfaction",
-      "delivery": "24h",
-      "deliveryLabel": "Average Time"
-    },
+    "stats": {},
     "musicTypes": {
       "tribute": "Tribute",
       "romantic": "Romantic",
@@ -147,30 +139,22 @@
       "wife": "Wife",
       "grandfather": "Grandfather"
     },
-    "quotes": {
-      "birthday": "The song was amazing! My son loved the birthday gift.",
-      "corporate": "We used the song at our company event. It was a hit!",
-      "wedding": "Our wedding song moved all the guests to tears.",
-      "graduation": "The tribute for my daughter's graduation was perfect.",
-      "anniversary": "The most touching anniversary gift I've ever given my husband.",
-      "child": "I created a song for my grandson. He couldn't stop listening!"
-    },
-    "verifiedClient": "Verified Customer",
+    "verifiedClient": "Customer",
     "ratingAria": "Rating",
-    "basedOn": "Based on {{count}} verified reviews"
+    "basedOn": "{{count}} public reviews"
   },
   "instrumental": {
     "title": "Instrumental",
     "titleHighlight": "Tracks",
     "subtitle": "Music without vocals, perfect for videos, podcasts and creative projects",
     "badge": "100% Instrumental",
-    "discount": "20% off",
-    "discountBadge": "-20%",
+    "discount": "",
+    "discountBadge": "",
     "features": [
       "Perfect for videos and podcasts",
       "Ideal for background content",
-      "Commercial use allowed",
-      "Delivery within 24h"
+      "The Terms of Use provide for personal, non-commercial use. Commercial use requires a specific license; confirm conditions before publishing or monetizing.",
+      "Track your order"
     ],
     "cta": "Create Instrumental Track",
     "styles": {
@@ -212,17 +196,17 @@
     },
     "feature5": {
       "title": "No false promises",
-      "description": "You approve the lyrics first. No surprises, no gimmicks."
+      "description": "In complete mode, choose and review lyrics before production. In quick mode, approval is automatic."
     },
     "feature6": {
-      "title": "+500 songs created",
-      "description": "Hundreds of satisfied customers have already immortalized their special moments."
+      "title": "Your story, your details",
+      "description": "Names, memories and feelings help create a song that means something to you."
     },
     "howItWorks": {
       "title": "How does creating a personalized song work?",
       "p1": "Creating a personalized song with Criando Músicas is simple and exciting. First, you tell us your story - it can be a love declaration, a tribute to someone special, a childhood memory or any moment you want to eternalize in music.",
       "p2": "Our artificial intelligence technology, combined with professional music production, transforms your words into a unique composition. You choose the musical style that best fits - from romantic country to upbeat pop, from inspiring gospel to energetic rock.",
-      "p3": "Within 48 hours, you receive your exclusive song directly on WhatsApp, ready to move hearts, give as a gift and create unforgettable memories. It's the perfect gift for birthdays, weddings, Mother's Day, Father's Day, graduations and any special occasion."
+      "p3": "Follow production and delivery on the platform. Check delivery terms and contact support if you have a specific date."
     }
   },
   "cta": {
@@ -232,13 +216,13 @@
     "badge": "Start Now",
     "benefits": [
       "Simple and fast process",
-      "Delivery within 48 hours",
+      "Track your order",
       "Exclusive and personalized song",
       "Video option to share"
     ],
     "creditsAvailable": "Credit available",
     "creditsAvailablePlural": "Credits available",
-    "freeNextSong": "Create your next song for free!",
+    "freeNextSong": "Use your credits for your next song",
     "completeSong": "Complete personalized song",
     "limitedPromo": "Limited time offer",
     "useCredit": "Use my credit now",
@@ -248,7 +232,7 @@
     "features": {
       "ownLyric": "Use your own lyrics or poem",
       "quality": "High quality professional audio",
-      "delivery": "Delivery within 24h on the platform",
+      "delivery": "Track your order",
       "style": "Choose the musical style"
     },
     "cardTitle": "Song with Your Own Lyrics",
@@ -271,15 +255,15 @@
       },
       {
         "q": "How long does it take to receive my song?",
-        "a": "The average delivery time is up to 48 hours after you approve the lyrics. You track everything on the platform and receive notifications when your song is ready."
+        "a": "Follow production and delivery on the platform. Check delivery terms and contact support if you have a specific date."
       },
       {
         "q": "Can I request changes to the lyrics?",
-        "a": "Yes! You receive two versions of lyrics to choose from and can request adjustments before approving. After you approve, the song production begins."
+        "a": "In complete mode, choose and review lyrics before production. In quick mode, approval is automatic."
       },
       {
         "q": "Is the song really mine and exclusive?",
-        "a": "Yes! Each song is created from scratch, just for you. It will never be sold or used by anyone else. The song is yours forever."
+        "a": "Your song is personalized from your story. Ownership and usage conditions are in the Terms of Use; absolute exclusivity is not promised."
       },
       {
         "q": "What musical styles do you make?",
@@ -291,7 +275,7 @@
       },
       {
         "q": "Do you make videos too?",
-        "a": "Yes! Starting at $10, you can receive a personalized video with photos or clips, synchronized with your song. Perfect for sharing on social media."
+        "a": "Yes. Video is an additional service with photos or clips synchronized to your song. See the video section for current options and pricing."
       },
       {
         "q": "How does payment work?",
@@ -299,23 +283,11 @@
       },
       {
         "q": "What if I don't like the result?",
-        "a": "Our satisfaction rate is 98%! The more details you put in the briefing, the better the song gets. You approve the lyrics before, so there are no surprises."
+        "a": "In complete mode, choose and review lyrics before production. In quick mode, approval is automatic."
       },
       {
         "q": "Can I use the songs in monetized videos?",
-        "a": "Yes! The songs created are 100% original and you have all rights for commercial use, including monetization on YouTube, TikTok, Instagram and other platforms."
-      },
-      {
-        "q": "How does the Creator subscription work?",
-        "a": "With the subscription, you receive credits every month to create songs. It's ideal for content creators who need multiple songs regularly."
-      },
-      {
-        "q": "Do subscription credits expire?",
-        "a": "Yes, Creator subscription credits renew monthly. Unused credits don't accumulate to the next month."
-      },
-      {
-        "q": "Can I cancel my subscription?",
-        "a": "Yes, you can cancel your subscription at any time through the user panel. You continue with access until the end of the paid period."
+        "a": "The Terms of Use provide for personal, non-commercial use. Commercial use requires a specific license; confirm conditions before publishing or monetizing."
       }
     ]
   },
@@ -333,5 +305,32 @@
     "contact": "Contact",
     "copyright": "© 2025 Criando Músicas. All rights reserved.",
     "developedBy": "Developed by"
+  },
+  "marketing": {
+    "giftBadge": "Personalized songs for gifts and tributes",
+    "headline": "Your story deserves to become",
+    "headlineHighlight": "music.",
+    "audioCta": "Create with audio",
+    "admin": "Administration",
+    "occasionsLabel": "Special occasions",
+    "occasions": [
+      "Birthdays",
+      "Weddings",
+      "Love declarations",
+      "Tributes",
+      "Mother’s Day",
+      "Father’s Day"
+    ],
+    "creatorsNav": "For creators",
+    "packagesNav": "One-time packages",
+    "homeNav": "Home",
+    "menu": "Open menu",
+    "seoTitle": "Personalized songs for gifts and tributes",
+    "seoDescription": "Turn stories, memories and feelings into personalized songs for birthdays, weddings, declarations and tributes. Explore real samples and one-time packages.",
+    "creatorTeaser": {
+      "title": "Are you a content creator?",
+      "description": "Explore music and tracks for YouTube, Reels, TikTok, podcasts and digital projects, with monthly plans and transparent usage terms.",
+      "cta": "Explore solutions for creators"
+    }
   }
 }

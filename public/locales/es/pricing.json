@@ -1,5 +1,5 @@
 {
-  "title": "Elige Tu Plan",
+  "title": "Canciones para regalar",
   "subtitle": "Planes para todos los momentos especiales",
   "popular": "Más Popular",
   "features": {
@@ -69,37 +69,33 @@
       "description": "Para quien crea mucho"
     },
     "creator_start": {
-      "name": "Creador Inicial",
-      "description": "40 canciones/mes para creadores principiantes",
+      "name": "Creator Start",
+      "description": "Elige créditos acordes a tu producción. Un crédito crea una canción con voz, instrumental o con tu propia letra.",
       "features": [
-        "Hasta 40 canciones/mes",
-        "Letras curadas automáticamente",
-        "Música lista para videos",
-        "Uso comercial liberado",
-        "Acceso al historial de creaciones",
-        "Ideal para creadores principiantes"
+        "Créditos universales: voz, instrumentales o tu letra",
+        "Pedidos y canciones en tu panel",
+        "Renovación mensual; los créditos no se acumulan",
+        "Cancelación desde el panel"
       ]
     },
     "creator_pro": {
-      "name": "Creador Pro",
-      "description": "150 canciones/mes para creadores activos",
+      "name": "Creator Pro",
+      "description": "Elige créditos acordes a tu producción. Un crédito crea una canción con voz, instrumental o con tu propia letra.",
       "features": [
-        "Hasta 150 canciones/mes",
-        "Todo del Creator Start",
-        "Soporte VIP dedicado",
-        "Prioridad en la cola",
-        "Ideal para creadores profesionales"
+        "Créditos universales: voz, instrumentales o tu letra",
+        "Pedidos y canciones en tu panel",
+        "Renovación mensual; los créditos no se acumulan",
+        "Cancelación desde el panel"
       ]
     },
     "creator_studio": {
-      "name": "Creador Estudio",
-      "description": "230 canciones/mes para estudios profesionales",
+      "name": "Creator Studio",
+      "description": "Elige créditos acordes a tu producción. Un crédito crea una canción con voz, instrumental o con tu propia letra.",
       "features": [
-        "Hasta 230 canciones/mes",
-        "Todo del Creator Pro",
-        "Atención prioritaria",
-        "Organización por proyectos/canales",
-        "Ideal para estudios y agencias"
+        "Créditos universales: voz, instrumentales o tu letra",
+        "Pedidos y canciones en tu panel",
+        "Renovación mensual; los créditos no se acumulan",
+        "Cancelación desde el panel"
       ]
     },
     "creator_start_instrumental": {
@@ -145,14 +141,45 @@
     "discountBadge": "-20%"
   },
   "vocalFeatures": {
-    "single": ["1 canción completa", "2 letras personalizadas para elegir", "Letra + audio profesional", "Calidad premium", "Entrega en hasta 24h", "¡Úsalo cuando quieras, sin límite!"],
-    "package": ["3 canciones completas", "2 letras personalizadas cada", "16% de ahorro", "Letra + audio profesional", "Calidad premium", "Entrega en hasta 24h", "Soporte VIP"],
-    "subscription": ["Hasta 5 canciones", "2 letras personalizadas cada", "Letra + audio profesional", "Calidad premium", "Entrega en hasta 24h", "Prioridad en cola"]
+    "single": [
+      "1 canción completa",
+      "2 letras personalizadas para elegir",
+      "Letra + audio profesional",
+      "Calidad premium",
+      "¡Úsalo cuando quieras, sin límite!"
+    ],
+    "package": [
+      "3 canciones completas",
+      "2 letras personalizadas cada",
+      "Letra + audio profesional",
+      "Calidad premium"
+    ],
+    "subscription": [
+      "Hasta 5 canciones",
+      "2 letras personalizadas cada",
+      "Letra + audio profesional",
+      "Calidad premium"
+    ]
   },
   "instrumentalFeatures": {
-    "single": ["1 pista instrumental completa", "Arreglo personalizado", "Audio profesional", "Calidad premium", "Entrega en hasta 24h", "¡Úsalo cuando quieras, sin límite!"],
-    "package": ["3 pistas instrumentales completas", "Arreglos personalizados", "16% de ahorro", "Audio profesional", "Calidad premium", "Entrega en hasta 24h", "Soporte VIP"],
-    "subscription": ["Hasta 5 pistas instrumentales", "Arreglos personalizados", "Calidad premium", "Entrega en hasta 24h", "Prioridad en cola"]
+    "single": [
+      "1 pista instrumental completa",
+      "Arreglo personalizado",
+      "Audio profesional",
+      "Calidad premium",
+      "¡Úsalo cuando quieras, sin límite!"
+    ],
+    "package": [
+      "3 pistas instrumentales completas",
+      "Arreglos personalizados",
+      "Audio profesional",
+      "Calidad premium"
+    ],
+    "subscription": [
+      "Hasta 5 pistas instrumentales",
+      "Arreglos personalizados",
+      "Calidad premium"
+    ]
   },
   "features_list": {
     "song": "Canción personalizada",
@@ -202,12 +229,12 @@
       "readyToPost": "Listo para Publicar",
       "readyToPostDesc": "Canciones, portadas y todo listo para subir a tus canales.",
       "commercialUse": "Uso Comercial",
-      "commercialUseDesc": "100% original y monetizable. Usa en cualquier plataforma sin problemas."
+      "commercialUseDesc": "Los términos contemplan uso personal y no comercial. El uso comercial requiere una licencia específica; confirma las condiciones antes de publicar o monetizar."
     },
     "whyDifferent": {
       "title": "¿Por qué somos diferentes?",
       "youDescribe": "Tú describes lo que quieres.",
-      "weTakeCare": "Nosotros nos encargamos de todo: composición, producción, mezcla y entrega. Sin curva de aprendizaje, sin herramientas complejas. Música profesional en hasta 24h."
+      "weTakeCare": "Tras el pago, creamos la letra. En modo completo revisas antes de aprobar; en modo rápido la aprobación es automática."
     },
     "whyUs": {
       "title": "¿Por qué los creadores nos eligen?",
@@ -216,14 +243,14 @@
       "lyricsAndMusic": "Letra + Música",
       "lyricsAndMusicDesc": "Recibe letra curada y música producida. Todo listo, sin trabajo extra.",
       "fastDelivery": "Entrega Rápida",
-      "fastDeliveryDesc": "Música profesional en hasta 24h. Sin atrasos en tu producción de contenido."
+      "fastDeliveryDesc": "Sigue la producción y entrega en la plataforma. Consulta los plazos en los términos y contacta con nosotros si tienes una fecha específica."
     },
     "badges": {
-      "original": "100% Original",
-      "monetizable": "Monetizable"
+      "original": "Letra personalizada y audio de la canción",
+      "monetizable": "Términos de Uso"
     },
     "cta": "Explorar Planes Creator",
-    "pricing": "Planes desde €29,90/mes • Cancela cuando quieras",
+    "pricing": "Suscripción con renovación mensual. Los créditos sin usar no pasan al siguiente ciclo.",
     "creditTypeWarning": {
       "title": "Importante sobre los créditos",
       "vocal": "Los créditos de este plan son exclusivos para canciones con voz. No pueden usarse para crear instrumentales.",
@@ -235,23 +262,15 @@
     "questions": [
       {
         "q": "¿Qué son los créditos de música?",
-        "a": "Cada crédito te permite crear 1 canción completa. En los paquetes únicos, los créditos nunca expiran. En las suscripciones Creator, se renuevan mensualmente."
+        "a": "Un crédito crea una canción. Los paquetes únicos no tienen mensualidad y los créditos no caducan."
+      },
+      {
+        "q": "¿Puedo hacer una canción sin letra (instrumental)?",
+        "a": "¡Sí! Las canciones instrumentales son perfectas para videos, podcasts o momentos especiales. Eliges los instrumentos y el clima que deseas."
       },
       {
         "q": "¿Puedo usar las canciones en videos monetizados?",
-        "a": "¡Sí! Las canciones creadas son 100% originales y tienes todos los derechos para uso comercial, incluyendo monetización en YouTube, TikTok e Instagram."
-      },
-      {
-        "q": "¿Los créditos de suscripción se acumulan?",
-        "a": "No. Los créditos de suscripciones Creator se renuevan mensualmente y no se acumulan. Si prefieres créditos que nunca expiren, elige los paquetes únicos."
-      },
-      {
-        "q": "¿Puedo cancelar mi suscripción?",
-        "a": "Sí, puedes cancelar en cualquier momento. Continúas con acceso hasta el final del período pagado y puedes usar tus créditos restantes."
-      },
-      {
-        "q": "¿Cuál es la diferencia entre Único y Suscripción?",
-        "a": "Único: Ideal para regalos únicos. Los créditos nunca expiran.\n\nSuscripción Creator: Ideal para creadores de contenido que necesitan canciones en volumen cada mes, con precio unitario mucho más bajo."
+        "a": "Los términos contemplan uso personal y no comercial. El uso comercial requiere una licencia específica; confirma las condiciones antes de publicar o monetizar."
       }
     ]
   },
@@ -264,11 +283,11 @@
     "discount": "¡{{percent}}% de descuento!"
   },
   "footer": {
-    "guarantee": "🎵 Garantía de satisfacción del 100%",
-    "delivery": "Todos los planes incluyen entrega en hasta 24h directamente en la plataforma y soporte técnico especializado",
+    "guarantee": "En modo completo, elige y revisa la letra antes de producir. En modo rápido, la aprobación es automática.",
+    "delivery": "Sigue la producción y entrega en la plataforma. Consulta los plazos en los términos y contacta con nosotros si tienes una fecha específica.",
     "back": "← Volver al inicio",
     "payment": "💳 Aceptamos Pix, tarjeta de crédito y débito",
-    "satisfaction": "Garantía de satisfacción."
+    "satisfaction": "En modo completo, elige y revisa la letra antes de producir. En modo rápido, la aprobación es automática."
   },
   "errors": {
     "loginRequired": "Necesitas estar conectado para elegir un plan.",
@@ -282,9 +301,112 @@
     "loginNeededDescription": "Inicia sesión para suscribirte a un plan Creator."
   },
   "seo": {
-    "title": "Planes y Precios",
-    "description": "Elige el plan ideal para crear tu música personalizada. Opciones desde R$ 47,90 con entrega en hasta 24h. Paquetes para canciones vocales e instrumentales."
+    "title": "Paquetes únicos de canciones personalizadas",
+    "description": "Elige una canción o un paquete para regalos y homenajes. Créditos universales para voz, instrumentales o tu propia letra, sin mensualidad."
   },
-  "noContract": "Sin contrato • Cancela cuando quieras",
-  "choosePlan": "Elige el plan ideal para ti y comienza a crear tu música personalizada ahora."
+  "noContract": "Compra única • Sin mensualidad • Créditos únicos sin caducidad",
+  "choosePlan": "Elige el plan ideal para ti y comienza a crear tu música personalizada ahora.",
+  "creatorLanding": {
+    "headline": "Música y pistas para",
+    "headlineHighlight": "tu contenido.",
+    "subtitle": "Dale identidad sonora a tus proyectos. Describe la idea, elige un estilo y crea canciones con voz, instrumentales o con tu propia letra usando créditos mensuales.",
+    "seoTitle": "Música y pistas para creadores de contenido",
+    "seoDescription": "Conoce los planes mensuales Creator Start, Pro y Studio para proyectos digitales. Escucha ejemplos reales y consulta créditos y licencias.",
+    "cta": "Conocer planes mensuales",
+    "samplesCta": "Escuchar pistas reales",
+    "licenseShort": "El uso comercial requiere una licencia específica según los términos.",
+    "usesTitle": "Una identidad sonora para cada proyecto",
+    "useCases": [
+      {
+        "title": "YouTube y videos",
+        "description": "Pistas para aperturas, transiciones y escenas con el ambiente que elijas."
+      },
+      {
+        "title": "Reels y TikTok",
+        "description": "Música para acompañar ideas, narrativas y formatos cortos."
+      },
+      {
+        "title": "Podcasts",
+        "description": "Cabeceras y fondos instrumentales para la identidad de tu programa."
+      },
+      {
+        "title": "Marcas y proyectos digitales",
+        "description": "Creaciones acordes al tono de tu marca. Confirma la licencia para campañas y uso comercial."
+      }
+    ],
+    "processTitle": "De la idea a la música, a tu ritmo",
+    "steps": [
+      {
+        "title": "Describe el proyecto",
+        "description": "Indica tema, estilo y ambiente. Elige voz, instrumental o tu propia letra."
+      },
+      {
+        "title": "Define la creación",
+        "description": "Tras el pago o uso de crédito, sigue el modo elegido. En completo revisas la letra; en rápido la aprobación es automática."
+      },
+      {
+        "title": "Recibe y sigue",
+        "description": "Sigue tus pedidos en el panel y descarga la música cuando esté lista."
+      }
+    ],
+    "plansTitle": "Planes mensuales Creator",
+    "plansDescription": "Elige créditos acordes a tu producción. Un crédito crea una canción con voz, instrumental o con tu propia letra.",
+    "planFeatures": [
+      "Créditos universales: voz, instrumentales o tu letra",
+      "Pedidos y canciones en tu panel",
+      "Renovación mensual; los créditos no se acumulan",
+      "Cancelación desde el panel"
+    ],
+    "month": "mes",
+    "credits": "{{count}} créditos al mes",
+    "loading": "Cargando planes",
+    "unavailable": "Los planes no están disponibles. Inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "renewal": "Suscripción con renovación mensual. Los créditos sin usar no pasan al siguiente ciclo.",
+    "cancellation": "Cancela desde el panel cuando quieras. El acceso y créditos restantes continúan hasta el final del período pagado.",
+    "currencyNotice": "Precios según tu región. El pago se procesa en reales brasileños (BRL).",
+    "readTerms": "Términos de Uso",
+    "readRules": "Reglas de Creación",
+    "rightsTitle": "Derechos de uso y licencias",
+    "rights": [
+      "Los términos actuales contemplan uso personal y no comercial; el uso comercial exige una licencia específica. La suscripción por sí sola no se presenta como autorización de monetización.",
+      "Antes de usar música en publicidad, canales monetizados o proyectos de clientes, confirma la licencia con el soporte. No garantizamos monetización, ausencia de reclamaciones ni titularidad integral.",
+      "Envía únicamente letras, grabaciones y materiales que puedas utilizar legalmente. Las reglas prohíben copiar canciones existentes o vulnerar derechos de terceros."
+    ],
+    "faqTitle": "Dudas de creadores",
+    "faq": [
+      {
+        "q": "¿Se acumulan los créditos?",
+        "a": "No. Los créditos de suscripción se renuevan mensualmente y los no utilizados no pasan al siguiente ciclo."
+      },
+      {
+        "q": "¿Puedo crear voz, instrumental o usar mi letra?",
+        "a": "Sí. Los créditos son universales: un crédito crea una canción en cualquiera de esos formatos."
+      },
+      {
+        "q": "¿La suscripción incluye licencia comercial?",
+        "a": "Los términos actuales requieren una licencia específica para uso comercial. Confirma las condiciones con el soporte antes de contratar para ese fin."
+      },
+      {
+        "q": "¿Cómo cancelo?",
+        "a": "Desde el panel. Mantienes acceso y créditos restantes hasta el final del período pagado."
+      },
+      {
+        "q": "¿Necesito entrar para ver los planes?",
+        "a": "No. Los planes y ejemplos son públicos; necesitas una cuenta al decidir suscribirte."
+      },
+      {
+        "q": "¿Cuándo recibo la música?",
+        "a": "Sigue la producción y entrega en la plataforma. Consulta los plazos en los términos y contacta con nosotros si tienes una fecha específica."
+      }
+    ],
+    "giftAlternative": "¿Quieres una canción para regalar sin suscripción?",
+    "packagesCta": "Ver paquetes únicos",
+    "discreetLink": "Para producción mensual, conoce los planes para creadores",
+    "delivery": "Sigue la producción y entrega en la plataforma. Consulta los plazos en los términos y contacta con nosotros si tienes una fecha específica."
+  },
+  "universal": {
+    "badge": "Créditos universales — cualquier tipo de música",
+    "usageHint": "Úsalos para voz, instrumentales o tu letra"
+  }
 }

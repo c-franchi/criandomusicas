@@ -1,5 +1,7 @@
-import { describe, expect, test } from 'bun:test';
-import { getLegacyCreatorDestination, safeAuthDestination } from './marketing-routes';
+import { describe, test } from 'node:test';
+import assert from 'node:assert/strict';
+const expect = value => ({ toBe: expected => assert.equal(value, expected), toBeNull: () => assert.equal(value, null) });
+import { getLegacyCreatorDestination, safeAuthDestination } from './marketing-routes.ts';
 
 describe('campaign compatibility', () => {
   test('home creator anchor reaches dedicated page', () => {

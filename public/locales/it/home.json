@@ -12,12 +12,8 @@
     "ctaUseCredit": "Usa Credito",
     "ctaQuickCreate": "Crea Veloce",
     "ctaComplete": "Modo Completo",
-    "socialProof": "Oltre 500 canzoni create • Consegna veloce • Recensioni reali",
-    "stats": {
-      "songs": "Canzoni Create",
-      "time": "Tempo Medio",
-      "rating": "Valutazione"
-    }
+    "socialProof": "",
+    "stats": {}
   },
   "process": {
     "title": "Come",
@@ -29,7 +25,7 @@
     },
     "step2": {
       "title": "Creiamo la canzone",
-      "description": "Trasformiamo la tua storia in una canzone unica, nello stile che scegli."
+      "description": "Dopo il pagamento creiamo il testo. In modalità completa lo rivedi prima di approvare; in modalità rapida l’approvazione è automatica."
     },
     "step3": {
       "title": "Ricevi e condividi",
@@ -40,9 +36,14 @@
       "description": "Acquista un pacchetto e crea più canzoni pagando meno! I tuoi crediti vengono salvati e li usi quando vuoi — senza dover pagare per ogni nuova canzone.",
       "songs3": "3 canzoni",
       "songs5": "5 canzoni",
-      "savings16": "16% di risparmio",
-      "bestSavings": "Maggior risparmio",
+      "savings16": "Crediti salvati per altri momenti",
+      "bestSavings": "Crediti salvati per altri momenti",
       "viewPackages": "Vedi Pacchetti"
+    },
+    "audioMode": {
+      "title": "Modalità audio",
+      "description": "Registra o carica un audio come punto di partenza della tua canzone.",
+      "cta": "Crea con audio"
     }
   },
   "samples": {
@@ -99,7 +100,7 @@
       "professional": "Editing professionale con effetti",
       "transitions": "Transizioni cinematografiche",
       "sync": "Sincronizzazione con la musica",
-      "delivery": "Consegna entro 24h"
+      "delivery": "Segui il tuo video sulla piattaforma"
     },
     "loopNotice": {
       "title": "Canzoni più lunghe?",
@@ -118,16 +119,7 @@
     "subtitle": "Storie vere di chi ha trasformato momenti in musica",
     "subtitleReal": "Recensioni reali di clienti che hanno creato canzoni",
     "badge": "Testimonianze Reali",
-    "stats": {
-      "songs": "500+",
-      "songsLabel": "Canzoni Create",
-      "rating": "5.0★",
-      "ratingLabel": "Valutazione Media",
-      "satisfaction": "100%",
-      "satisfactionLabel": "Soddisfazione",
-      "delivery": "24h",
-      "deliveryLabel": "Tempo Medio"
-    },
+    "stats": {},
     "musicTypes": {
       "tribute": "Omaggio",
       "romantic": "Romantica",
@@ -147,30 +139,22 @@
       "wife": "Moglie",
       "grandfather": "Nonno"
     },
-    "quotes": {
-      "birthday": "La canzone è stata fantastica! Mio figlio ha adorato il regalo di compleanno.",
-      "corporate": "Abbiamo usato la canzone all'evento aziendale. È stato un successo!",
-      "wedding": "La canzone del nostro matrimonio ha commosso tutti gli ospiti.",
-      "graduation": "L'omaggio per la laurea di mia figlia è stato perfetto.",
-      "anniversary": "Il regalo di anniversario più emozionante che abbia mai fatto a mio marito.",
-      "child": "Ho creato una canzone per mio nipote. Non smetteva di ascoltarla!"
-    },
-    "verifiedClient": "Cliente Verificato",
+    "verifiedClient": "Cliente",
     "ratingAria": "Valutazione",
-    "basedOn": "Basato su {{count}} recensioni verificate"
+    "basedOn": "{{count}} recensioni pubbliche"
   },
   "instrumental": {
     "title": "Tracce",
     "titleHighlight": "Strumentali",
     "subtitle": "Musica senza voce, perfetta per video, podcast e progetti creativi",
     "badge": "100% Strumentale",
-    "discount": "20% di sconto",
-    "discountBadge": "-20%",
+    "discount": "",
+    "discountBadge": "",
     "features": [
       "Perfetto per video e podcast",
       "Ideale per contenuti di sottofondo",
-      "Uso commerciale consentito",
-      "Consegna entro 24h"
+      "I termini prevedono uso personale e non commerciale. Per uso commerciale serve una licenza specifica; conferma le condizioni prima di pubblicare o monetizzare.",
+      "Segui il tuo ordine"
     ],
     "cta": "Crea Traccia Strumentale",
     "styles": {
@@ -212,17 +196,17 @@
     },
     "feature5": {
       "title": "Nessuna falsa promessa",
-      "description": "Approvi il testo prima. Niente sorprese, niente trucchi."
+      "description": "In modalità completa scegli e rivedi il testo prima della produzione. In modalità rapida l’approvazione è automatica."
     },
     "feature6": {
-      "title": "+500 canzoni create",
-      "description": "Centinaia di clienti soddisfatti hanno già immortalato i loro momenti speciali."
+      "title": "La tua storia, i tuoi dettagli",
+      "description": "Nomi, ricordi e sentimenti aiutano a creare una canzone significativa per te."
     },
     "howItWorks": {
       "title": "Come funziona creare una canzone personalizzata?",
       "p1": "Creare una canzone personalizzata con Criando Músicas è semplice ed emozionante. Prima di tutto, ci racconti la tua storia - può essere una dichiarazione d'amore, un omaggio a qualcuno di speciale, un ricordo d'infanzia o qualsiasi momento che vuoi immortalare in forma di musica.",
       "p2": "La nostra tecnologia di intelligenza artificiale, combinata con la produzione musicale professionale, trasforma le tue parole in una composizione unica. Scegli lo stile musicale che meglio si adatta - dal country romantico al pop vivace, dal gospel ispiratore al rock energico.",
-      "p3": "Entro 48 ore, ricevi la tua canzone esclusiva direttamente su WhatsApp, pronta per emozionare, regalare e creare ricordi indimenticabili. È il regalo perfetto per compleanni, matrimoni, Festa della Mamma, Festa del Papà, lauree e qualsiasi occasione speciale."
+      "p3": "Segui produzione e consegna sulla piattaforma. Consulta i tempi nei termini e contatta l’assistenza per una data specifica."
     }
   },
   "cta": {
@@ -232,13 +216,13 @@
     "badge": "Inizia Ora",
     "benefits": [
       "Processo semplice e veloce",
-      "Consegna entro 48 ore",
+      "Segui il tuo ordine",
       "Canzone esclusiva e personalizzata",
       "Opzione video da condividere"
     ],
     "creditsAvailable": "Credito disponibile",
     "creditsAvailablePlural": "Crediti disponibili",
-    "freeNextSong": "Crea la tua prossima canzone gratis!",
+    "freeNextSong": "Usa i tuoi crediti per la prossima canzone",
     "completeSong": "Canzone completa personalizzata",
     "limitedPromo": "Promozione a tempo limitato",
     "useCredit": "Usa il mio credito ora",
@@ -248,7 +232,7 @@
     "features": {
       "ownLyric": "Usa il tuo testo o poesia",
       "quality": "Audio professionale di alta qualità",
-      "delivery": "Consegna entro 24h sulla piattaforma",
+      "delivery": "Segui il tuo ordine",
       "style": "Scegli lo stile musicale"
     },
     "cardTitle": "Canzone con Il Tuo Testo",
@@ -271,15 +255,15 @@
       },
       {
         "q": "Quanto tempo ci vuole per ricevere la mia canzone?",
-        "a": "Il tempo medio di consegna è di massimo 48 ore dopo aver approvato il testo. Segui tutto sulla piattaforma e ricevi notifiche quando la tua canzone è pronta."
+        "a": "Segui produzione e consegna sulla piattaforma. Consulta i tempi nei termini e contatta l’assistenza per una data specifica."
       },
       {
         "q": "Posso chiedere modifiche al testo?",
-        "a": "Sì! Ricevi due versioni del testo tra cui scegliere e puoi chiedere modifiche prima di approvare. Dopo l'approvazione, inizia la produzione della canzone."
+        "a": "In modalità completa scegli e rivedi il testo prima della produzione. In modalità rapida l’approvazione è automatica."
       },
       {
         "q": "La canzone è veramente mia ed esclusiva?",
-        "a": "Sì! Ogni canzone viene creata da zero, solo per te. Non sarà mai venduta o usata da nessun altro. La canzone è tua per sempre."
+        "a": "La canzone è personalizzata dalla tua storia. Proprietà e uso seguono i termini; non promettiamo esclusività assoluta."
       },
       {
         "q": "Quali stili musicali fate?",
@@ -291,7 +275,7 @@
       },
       {
         "q": "Fate anche video?",
-        "a": "Sì! A partire da €10, puoi ricevere un video personalizzato con foto o clip, sincronizzato con la tua canzone. Perfetto per condividere sui social."
+        "a": "Sì. Il video è un servizio aggiuntivo con foto o clip sincronizzate alla canzone. Consulta opzioni e prezzo attuale nella sezione video."
       },
       {
         "q": "Come funziona il pagamento?",
@@ -299,23 +283,11 @@
       },
       {
         "q": "E se non mi piace il risultato?",
-        "a": "Il nostro tasso di soddisfazione è del 98%! Più dettagli metti nel briefing, migliore sarà la canzone. Approvi il testo prima, quindi niente sorprese."
+        "a": "In modalità completa scegli e rivedi il testo prima della produzione. In modalità rapida l’approvazione è automatica."
       },
       {
         "q": "Posso usare le canzoni in video monetizzati?",
-        "a": "Sì! Le canzoni create sono 100% originali e hai tutti i diritti per uso commerciale, inclusa la monetizzazione su YouTube, TikTok, Instagram e altre piattaforme."
-      },
-      {
-        "q": "Come funziona l'abbonamento Creator?",
-        "a": "Con l'abbonamento, ricevi crediti ogni mese per creare canzoni. È ideale per i creatori di contenuti che hanno bisogno di più canzoni regolarmente."
-      },
-      {
-        "q": "I crediti dell'abbonamento scadono?",
-        "a": "Sì, i crediti dell'abbonamento Creator si rinnovano mensilmente. I crediti non utilizzati non si accumulano per il mese successivo."
-      },
-      {
-        "q": "Posso cancellare il mio abbonamento?",
-        "a": "Sì, puoi cancellare il tuo abbonamento in qualsiasi momento dal pannello utente. Continui ad avere accesso fino alla fine del periodo pagato."
+        "a": "I termini prevedono uso personale e non commerciale. Per uso commerciale serve una licenza specifica; conferma le condizioni prima di pubblicare o monetizzare."
       }
     ]
   },
@@ -333,5 +305,32 @@
     "contact": "Contatto",
     "copyright": "© 2025 Criando Músicas. Tutti i diritti riservati.",
     "developedBy": "Sviluppato da"
+  },
+  "marketing": {
+    "giftBadge": "Canzoni personalizzate da regalare e dedicare",
+    "headline": "La tua storia merita di diventare",
+    "headlineHighlight": "musica.",
+    "audioCta": "Crea con audio",
+    "admin": "Amministrazione",
+    "occasionsLabel": "Occasioni speciali",
+    "occasions": [
+      "Compleanni",
+      "Matrimoni",
+      "Dichiarazioni",
+      "Dediche",
+      "Festa della Mamma",
+      "Festa del Papà"
+    ],
+    "creatorsNav": "Per creator",
+    "packagesNav": "Pacchetti una tantum",
+    "homeNav": "Home",
+    "menu": "Apri menu",
+    "seoTitle": "Canzoni personalizzate da regalare e dedicare",
+    "seoDescription": "Trasforma storie, ricordi e sentimenti in canzoni personalizzate per compleanni, matrimoni, dichiarazioni e dediche. Ascolta esempi e scopri i pacchetti.",
+    "creatorTeaser": {
+      "title": "Sei un creator di contenuti?",
+      "description": "Scopri soluzioni musicali per YouTube, Reels, TikTok, podcast e progetti digitali, con piani mensili e condizioni di utilizzo trasparenti.",
+      "cta": "Scopri le soluzioni per creator"
+    }
   }
 }
