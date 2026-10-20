@@ -1,5 +1,6 @@
 # Marketing / UX reorganization
 - [x] Focus HOME on gifts, samples and one-time packs; preserve creation modes.
+- [x] Remove all creator content from HOME (PlanComparison teaser removed).
 - [x] Dedicated public /criadores with dynamic subscription plans and rights information.
 - [x] One-time-only /planos, nav/footer and legacy campaign links.
 - [x] Audit marketing claims, four languages, metadata, sitemap and existing route analytics.
