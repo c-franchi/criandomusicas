@@ -47,7 +47,7 @@ const PaymentGateway = () => {
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
-      navigate("/auth");
+      navigate(`/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
       return;
     }
     if (!orderId) {

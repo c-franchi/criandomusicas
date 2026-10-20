@@ -75,6 +75,18 @@ export const getPurposeStart = (purpose: PurposeId): PurposeStart => {
   }
 };
 
+/** A saved detailed draft belongs to this purpose when its defining fields match the purpose patch. */
+export const draftMatchesPurpose = (
+  patch: PurposeFormPatch,
+  saved: Record<string, unknown> | null | undefined,
+): boolean => {
+  if (!saved) return false;
+  const keys: (keyof PurposeFormPatch)[] = ['musicType', 'corporateFormat', 'isInstrumental', 'hasCustomLyric'];
+  const defined = keys.filter(k => patch[k] !== undefined);
+  if (defined.length === 0) return false;
+  return defined.every(k => (saved[k] ?? (typeof patch[k] === 'boolean' ? false : '')) === patch[k]);
+};
+
 export type Energy = 'calma' | 'crescente' | 'intensa';
 
 export interface QuickMappingInput {
