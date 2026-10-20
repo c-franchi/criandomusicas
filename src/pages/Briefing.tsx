@@ -17,7 +17,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
-import { QuickCreation, QuickCreationData } from "@/components/briefing/QuickCreation";
+import { QuickCreation, QuickCreationData, clearQuickDraft } from "@/components/briefing/QuickCreation";
+import { PurposeSelector } from "@/components/briefing/PurposeSelector";
+import { getPurposeStart, isPurposeId, mapQuickPurpose, type PurposeId, type QuickPurpose } from "@/lib/briefingPurpose";
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
@@ -254,6 +256,9 @@ const Briefing = () => {
   
   // Creation mode state (quick vs detailed vs audio)
   const [creationMode, setCreationMode] = useState<'quick' | 'detailed' | 'audio' | null>(null);
+  // Purpose-first entry ("Qual é a finalidade da sua música?")
+  const [showPurposeSelection, setShowPurposeSelection] = useState(false);
+  const [quickPurpose, setQuickPurpose] = useState<QuickPurpose | null>(null);
   
   // Celebration banner state - check localStorage for dismissed state
   const CELEBRATION_DISMISS_KEY = 'celebration_dismissed_date';
@@ -410,6 +415,13 @@ const Briefing = () => {
       const typeFromUrl = urlParams.get('type'); // vocal, instrumental, custom_lyric
       const modeFromUrl = urlParams.get('mode'); // audio
       const startAsInstrumental = urlParams.get('instrumental') === 'true';
+      const purposeFromUrl = urlParams.get('purpose');
+
+      // Finalidade escolhida (inclusive vinda do login) — segue direto o caminho certo
+      if (isPurposeId(purposeFromUrl)) {
+        applyPurpose(purposeFromUrl);
+        return;
+      }
       
       // Se tem mode=audio na URL, ir direto para o modo áudio
       if (modeFromUrl === 'audio') {
@@ -449,18 +461,8 @@ const Briefing = () => {
           setCurrentStep(22);
           addBotMessage(chatFlow[22]); // customLyricText
         } else {
-          // vocal - ir direto para criação rápida
-          setFormData(prev => ({ 
-            ...prev, 
-            isInstrumental: false, 
-            hasCustomLyric: false,
-            // Limpar campos de celebração de sessões anteriores
-            celebrationType: undefined,
-            celebrationName: undefined,
-            celebrationEmoji: undefined,
-          }));
-          setSelectedPlanId('single');
-          setCreationMode('quick'); // Ativar modo rápido ao invés do chat
+          // vocal - perguntar a finalidade antes (evita classificar tudo como homenagem)
+          setShowPurposeSelection(true);
         }
         return;
       }
@@ -504,9 +506,9 @@ const Briefing = () => {
         return;
       }
       
-      // Se não tem planId na URL, mostrar seleção de pacote primeiro
+      // Se não tem planId na URL, perguntar a finalidade primeiro
       if (!planIdFromUrl) {
-        setShowPlanSelection(true);
+        setShowPurposeSelection(true);
         return;
       }
       
@@ -2575,7 +2577,19 @@ const Briefing = () => {
   };
 
   if (!loading && !user) {
-    return <Navigate to="/auth" replace />;
+    const params = new URLSearchParams(window.location.search);
+    const hasEntryParams = ['planId', 'mode', 'purpose', 'celebration', 'instrumental'].some(k => params.has(k))
+      || (params.has('type') && params.get('type') !== 'vocal');
+    // Visitante escolhe a finalidade sem login; depois do login continua no mesmo ponto
+    if (!hasEntryParams) {
+      return (
+        <PurposeSelector
+          onBack={handlePurposeBack}
+          onSelect={(p) => navigate(`/auth?redirect=${encodeURIComponent(`/briefing?purpose=${p}`)}`)}
+        />
+      );
+    }
+    return <Navigate to={`/auth?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`} replace />;
   }
 
   if (loading) {
@@ -2642,26 +2656,76 @@ const Briefing = () => {
     }
   };
 
-  // Handler para ir para modo detalhado - volta para seleção de pacotes com imagens
-  const handleSwitchToDetailed = () => {
-    setCreationMode(null); // Volta para a tela de seleção de pacote (com imagens)
-    setIsQuickMode(false); // Modo detalhado
-    // Limpa qualquer dado anterior para começar do zero
-    setFormData(prev => ({
-      ...initialFormData,
-      celebrationType: undefined,
-      celebrationName: undefined,
-      celebrationEmoji: undefined,
-    }));
-    setCurrentStep(0);
+  // Inicia o caminho correto para a finalidade escolhida (não cria pedido nem usa crédito)
+  const applyPurpose = (purpose: PurposeId) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('purpose', purpose);
+    urlParams.delete('type');
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}?${urlParams.toString()}`);
+    analytics.trackEvent?.('briefing_purpose', { purpose });
+    setShowPurposeSelection(false);
+    setShowPlanSelection(false);
+    const start = getPurposeStart(purpose);
+    if (start.kind === 'audio') {
+      setCreationMode('audio');
+      return;
+    }
+    setSelectedPlanId(start.planId);
+    if (start.kind === 'quick') {
+      setQuickPurpose(start.quickPurpose);
+      setIsQuickMode(true);
+      setCreationMode('quick');
+      return;
+    }
+    const data: BriefingFormData = { ...initialFormData, ...start.patch };
+    setQuickPurpose(null);
+    setIsQuickMode(false);
+    setCreationMode(null);
+    setFormData(data);
     setMessages([]);
-    // Mostrar seleção de pacote novamente (página com imagens grandes)
-    setShowPlanSelection(true);
+    setStepHistory([]);
+    setCurrentStep(start.step);
+    setTimeout(() => addBotMessage(chatFlow[start.step], start.step, data), 300);
+  };
+
+  const handlePurposeBack = () => navigate('/');
+
+  // Handler para ir para modo detalhado — leva junto tudo o que foi digitado
+  const handleSwitchToDetailed = (quick: QuickCreationData) => {
+    const mapped = mapQuickPurpose(quickPurpose, quick);
+    const data: BriefingFormData = {
+      ...initialFormData,
+      story: quick.prompt,
+      isInstrumental: quick.isInstrumental,
+      style: quick.style === 'auto' ? '' : quick.style,
+      customStyle: quick.additionalGenre || '',
+      voiceType: quick.voiceType || '',
+      songName: quick.songName || '',
+      autoGenerateName: !quick.songName,
+      ...(quickPurpose ? {
+        musicType: mapped.musicType,
+        motivationalMoment: mapped.motivationalMoment,
+        motivationalIntensity: quick.energy,
+      } : {}),
+    };
+    setCreationMode(null);
+    setIsQuickMode(false);
+    setShowPlanSelection(false);
+    setFormData(data);
+    setMessages([]);
+    setStepHistory([]);
+    let step = data.musicType ? getNextStep(1, data) : 1;
+    // Motivacional de equipe já tem o momento definido
+    if (step === 34 && data.motivationalMoment) step = 35;
+    setCurrentStep(step);
+    setTimeout(() => addBotMessage(chatFlow[step], step, data), 300);
   };
 
   // Handler para criação rápida
   const handleQuickCreationSubmit = async (data: QuickCreationData) => {
     // Converter QuickCreationData para BriefingFormData
+    // Tipo/emoção/clima conforme a finalidade escolhida (sem fixar homenagem para tudo)
+    const mapped = mapQuickPurpose(quickPurpose, data);
     const newFormData: BriefingFormData = {
       ...initialFormData,
       story: data.prompt,
@@ -2669,10 +2733,13 @@ const Briefing = () => {
       style: data.style,
       customStyle: data.additionalGenre || '',
       voiceType: data.voiceType || '',
-      musicType: data.style === 'infantil' ? 'infantil' : 'homenagem', // Infantil quando selecionado
-      emotion: 'amor',        // Default para criação rápida
-      rhythm: 'moderado',     // Default - valores válidos: lento, moderado, animado
-      atmosphere: 'festivo',  // Default - valores válidos: intimo, festivo, melancolico, epico, leve, misterioso
+      musicType: mapped.musicType,
+      emotion: mapped.emotion,
+      rhythm: mapped.rhythm,
+      atmosphere: mapped.atmosphere,
+      motivationalMoment: mapped.motivationalMoment,
+      motivationalIntensity: mapped.motivationalIntensity,
+      motivationalNarrative: mapped.motivationalNarrative,
       autoGenerateName: !data.songName, // Automático se não fornecer nome
       songName: data.songName || '',    // Nome da música se fornecido
       emotionIntensity: 3,    // Default
@@ -2943,7 +3010,8 @@ const Briefing = () => {
   // Handler para voltar do modo rápido
   const handleQuickCreationBack = () => {
     setCreationMode(null);
-    setShowPlanSelection(true);
+    setQuickPurpose(null);
+    setShowPurposeSelection(true);
     setSelectedPlanId(null);
   };
 
@@ -3018,6 +3086,11 @@ const Briefing = () => {
       setTimeout(() => addBotMessage(chatFlow[10], 10), 1000);
     }
   };
+
+  // Tela de finalidade (primeira tela)
+  if (showPurposeSelection) {
+    return <PurposeSelector onBack={handlePurposeBack} onSelect={applyPurpose} />;
+  }
 
   // Tela de seleção de pacote
   if (showPlanSelection) {
@@ -3255,6 +3328,8 @@ const Briefing = () => {
           onSubmit={handleQuickCreationSubmit}
           onBack={handleQuickCreationBack}
           onSwitchToDetailed={handleSwitchToDetailed}
+          purpose={quickPurpose}
+          key={quickPurpose || 'legacy'}
           styleOptions={styleOptions}
           voiceOptions={voiceTypeOptions}
           credits={totalVocal}
