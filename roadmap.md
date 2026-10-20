@@ -8,3 +8,5 @@
 - [ ] Authenticated briefing and checkout completion: no session available; self-session mint failed because requester has no matching app account.
 - [ ] Owner/legal confirmation of mode-specific delivery and commercial license: terms say 24h lyrics, 3–7 business days production and separate commercial license; marketing promises removed, contracts unchanged.
 - [ ] Distinct non-JavaScript social previews require approved server-rendering/hosting work beyond the current client-side SEO; no platform migration performed.
+- [x] Fluxo de criação por finalidade (Home CTA único, /briefing finalidade, empresa/motivacional, resumo)
+- [ ] Testar fluxo logado no celular (sem sessão de teste disponível)
