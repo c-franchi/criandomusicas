@@ -275,5 +275,18 @@
     "progress": "{{current}} of {{total}}",
     "startTour": "Start Tour",
     "startTourDesc": "Discover the platform"
+  },
+  "maintenance": {
+    "seoTitle": "Maintenance",
+    "badge": "A pause to create new feelings",
+    "defaultTitle": "We are preparing something special.",
+    "defaultMessage": "Criando Músicas is undergoing maintenance for new features. We will be back soon to turn feelings into gifts you can hear.",
+    "signature": "Criando Músicas — feelings that become songs.",
+    "retry": "Check again",
+    "adminLogin": "Administrator access",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "adminBanner": "Maintenance is active. You are browsing as an administrator.",
+    "manage": "Manage maintenance"
   }
 }

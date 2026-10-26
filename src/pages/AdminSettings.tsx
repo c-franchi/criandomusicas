@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,14 +64,19 @@ import VideoOrdersManager from "@/components/admin/VideoOrdersManager";
 import ReactionVideosManager from "@/components/admin/ReactionVideosManager";
 import ReviewsManager from "@/components/admin/ReviewsManager";
 import PricingManager from "@/components/admin/PricingManager";
+import MaintenanceManager from "@/components/admin/MaintenanceManager";
 import { BarChart3 } from "lucide-react";
 
 const AdminSettings = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   
-  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions' | 'reviews' | 'analytics'>('pricing');
+  const [configTab, setConfigTab] = useState<'pricing' | 'vouchers' | 'audio' | 'pix' | 'videos' | 'reactions' | 'reviews' | 'analytics' | 'maintenance'>(searchParams.get('tab') === 'maintenance' ? 'maintenance' : 'pricing');
+  useEffect(() => {
+    if (searchParams.get('tab') === 'maintenance') setConfigTab('maintenance');
+  }, [searchParams]);
   
   // Pricing
   const [pricingConfigs, setPricingConfigs] = useState<PricingConfig[]>([]);
@@ -523,6 +528,7 @@ const AdminSettings = () => {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
         <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)} className="space-y-6">
           <TabsList className="w-full flex flex-wrap gap-1 bg-card/50 border border-border/50 p-1.5 h-auto">
+            <TabsTrigger value="maintenance" className="flex-1 min-w-[100px] text-xs sm:text-sm py-2">Manutenção</TabsTrigger>
             <TabsTrigger value="pricing" className="flex-1 min-w-[100px] text-xs sm:text-sm py-2">
               <DollarSign className="w-4 h-4 mr-1.5" />
               Preços
@@ -558,6 +564,7 @@ const AdminSettings = () => {
           </TabsList>
           
           {/* PRICING TAB */}
+          <TabsContent value="maintenance"><MaintenanceManager /></TabsContent>
           <TabsContent value="pricing" className="space-y-4">
             <PricingManager />
           </TabsContent>

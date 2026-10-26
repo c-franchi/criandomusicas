@@ -1,5 +1,7 @@
 # Presentes musicais — desenvolvimento separado
 
+> Atualização de escopo: o usuário autorizou o merge e testes no ambiente real, com manutenção ativa para visitantes. A operação da manutenção e suas validações estão em `docs/manutencao.md`. As restrições de não publicar abaixo descrevem a fase de desenvolvimento anterior a essa autorização.
+
 ## Base verificada em 26/10/2026
 
 - Repositório `c-franchi/criandomusicas`, base `4040b199a7cda96a21c0b16dc47c43a37c0ce58e`.

@@ -14,6 +14,12 @@ export type Database = {
   }
   public: {
     Tables: {
+      site_maintenance: {
+        Row: { id: boolean; enabled: boolean; title: string; message: string; updated_at: string }
+        Insert: { id?: boolean; enabled?: boolean; title?: string; message?: string; updated_at?: string }
+        Update: { enabled?: boolean; title?: string; message?: string }
+        Relationships: []
+      }
       audio_inputs: {
         Row: {
           created_at: string

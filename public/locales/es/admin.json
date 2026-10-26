@@ -53,5 +53,24 @@
       "email": "Notificaciones por correo",
       "push": "Notificaciones push"
     }
+  },
+  "maintenance": {
+    "title": "Página de mantenimiento",
+    "description": "Muestra un aviso a los visitantes mientras preparas el sitio. Los administradores autenticados siguen accediendo a todas las páginas para probar.",
+    "currentEnabled": "Estado actual: mantenimiento activo para visitantes.",
+    "currentDisabled": "Estado actual: sitio abierto a visitantes.",
+    "enabledLabel": "Mostrar página de mantenimiento",
+    "enabledHelp": "El cambio se aplica al guardar. El acceso administrativo sigue disponible.",
+    "titleLabel": "Título de la página",
+    "messageLabel": "Mensaje para visitantes",
+    "delay": "Después de guardar, los visitantes con la versión actual reciben el cambio en hasta 15 segundos mientras la página esté activa y conectada. La vista previa muestra el último mensaje guardado.",
+    "save": "Guardar mantenimiento",
+    "preview": "Vista previa",
+    "loading": "Cargando configuración…",
+    "loadError": "No se pudo cargar la configuración. No se guardaron cambios.",
+    "retry": "Reintentar",
+    "saveError": "No se pudo guardar el mantenimiento",
+    "activated": "Mantenimiento activado",
+    "deactivated": "Sitio abierto a visitantes"
   }
 }

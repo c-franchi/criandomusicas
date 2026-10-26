@@ -1258,6 +1258,9 @@ const AdminDashboard = () => {
                   <span className="sm:hidden">Config</span>
                 </Link>
               </Button>
+              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <Link to="/admin/configuracoes?tab=maintenance">Manutenção</Link>
+              </Button>
               
               <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/admin/marketing">

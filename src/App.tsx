@@ -13,6 +13,9 @@ import TourWrapper from "@/components/TourWrapper";
 import ContinueFlowBar from "@/components/ContinueFlowBar";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import LegacyCreatorRedirect from "@/components/LegacyCreatorRedirect";
+import MaintenanceGate from "@/components/MaintenanceGate";
+import MaintenancePage from "@/pages/Maintenance";
+import { useMaintenance } from "@/hooks/useMaintenance";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -54,6 +57,11 @@ const RouteTracker = () => {
   return null;
 };
 
+const MaintenancePreview = () => {
+  const { data } = useMaintenance();
+  return <MaintenancePage title={data?.title} message={data?.message} />;
+};
+
 // PWA Update Handler Component with visual banner
 const PWAUpdateHandler = () => {
   const { showUpdateBanner, forceUpdate, dismissBanner } = usePWAUpdate();
@@ -73,10 +81,11 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <PWAUpdateHandler />
-        <ProfileOnboardingWrapper />
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <MaintenanceGate>
+          <ProfileOnboardingWrapper />
           <TourWrapper />
           <RouteTracker />
           <ContinueFlowBar />
@@ -85,6 +94,7 @@ const App = () => (
               {/* Critical routes - loaded immediately */}
               <Route path="/" element={<LegacyCreatorRedirect><Index /></LegacyCreatorRedirect>} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/manutencao" element={<MaintenancePreview />} />
               <Route path="/~oauth/callback" element={<Auth />} />
               <Route path="/auth/callback" element={<Auth />} />
               
@@ -124,6 +134,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </MaintenanceGate>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

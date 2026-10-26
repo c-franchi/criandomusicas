@@ -53,5 +53,24 @@
       "email": "Notificações por e-mail",
       "push": "Notificações push"
     }
+  },
+  "maintenance": {
+    "title": "Página de manutenção",
+    "description": "Exiba um aviso para os visitantes enquanto prepara o site. Administradores autenticados continuam acessando todas as páginas para testar.",
+    "currentEnabled": "Estado atual: manutenção ativa para visitantes.",
+    "currentDisabled": "Estado atual: site aberto para visitantes.",
+    "enabledLabel": "Exibir página de manutenção",
+    "enabledHelp": "A alteração será aplicada ao clicar em Salvar. O acesso administrativo permanece disponível.",
+    "titleLabel": "Título da página",
+    "messageLabel": "Mensagem para os visitantes",
+    "delay": "Após salvar, os visitantes com a versão atual recebem a alteração em até 15 segundos, enquanto a página estiver ativa e conectada. A prévia exibe a última mensagem salva.",
+    "save": "Salvar manutenção",
+    "preview": "Visualizar página",
+    "loading": "Carregando configuração…",
+    "loadError": "Não foi possível carregar a configuração. Nenhuma alteração foi salva.",
+    "retry": "Tentar novamente",
+    "saveError": "Não foi possível salvar a manutenção",
+    "activated": "Manutenção ativada",
+    "deactivated": "Site liberado para visitantes"
   }
 }
