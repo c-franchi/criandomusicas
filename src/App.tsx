@@ -40,6 +40,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const MusicRules = lazy(() => import("./pages/MusicRules"));
 const MusicShare = lazy(() => import("./pages/MusicShare"));
+const MusicalGiftProduct = lazy(() => import("./pages/MusicalGiftProduct"));
 const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
 const CreatorCheckout = lazy(() => import("./pages/CreatorCheckout"));
@@ -89,6 +90,9 @@ const App = () => (
               
               {/* Lazy loaded routes */}
               <Route path="/briefing" element={<Briefing />} />
+              <Route path="/cartao-digital" element={<MusicalGiftProduct product="digital" />} />
+              <Route path="/musicas-curtas" element={<MusicalGiftProduct product="short" />} />
+              <Route path="/cartao-fisico" element={<MusicalGiftProduct product="physical" />} />
               <Route path="/criar-musica" element={<CreateSong />} />
               <Route path="/create-song" element={<CreateSong />} />
               <Route path="/planos" element={<LegacyCreatorRedirect><Planos /></LegacyCreatorRedirect>} />

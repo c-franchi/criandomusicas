@@ -333,5 +333,174 @@
       "cta": "Scopri le soluzioni per creator"
     },
     "createCta": "Crea la mia canzone"
+  },
+  "gifts": {
+    "label": "Regali musicali",
+    "title": "UN REGALO DIVERSO. UN’EMOZIONE CHE RESTA.",
+    "description": "Sorprendi una persona speciale con una canzone emozionante, una melodia divertente da condividere in famiglia o un biglietto con una musica da ricordare.",
+    "previewNotice": "In sviluppo: scopri la proposta. Questi nuovi prodotti non sono ancora acquistabili.",
+    "back": "Torna ai regali musicali",
+    "exploreModels": "Scopri i modelli",
+    "exploreDuration": "Esplora i formati",
+    "demoLabel": "Un assaggio dell’esperienza",
+    "durationLabel": "Scegli una durata da esplorare",
+    "upTo": "Fino a {{seconds}} secondi",
+    "durationNote": "Il limite scelto guiderà la produzione. La durata non sarà necessariamente esatta.",
+    "themeLabel": "Esplora le occasioni",
+    "howItWorks": "Come funzionerà",
+    "included": "Cosa include la proposta",
+    "occasions": "Una canzone per ogni occasione",
+    "otherProducts": "Altri regali musicali",
+    "art": {
+      "forYou": "Un regalo per te",
+      "song": "La tua storia in una canzone.",
+      "littleSong": "Piccola canzone.",
+      "bigFeeling": "Un sentimento che merita di essere ascoltato.",
+      "keep": "Da ascoltare e custodire.",
+      "qrIllustration": "QR illustrativo. Non usare per la stampa."
+    },
+    "modalities": {
+      "title": "Due modi per creare il tuo regalo",
+      "existing": {
+        "title": "Ho già la mia canzone",
+        "description": "Scegli un brano disponibile nel tuo account e autorizzato all’uso. Personalizza il biglietto e la dedica senza ordinare un’altra canzone."
+      },
+      "new": {
+        "title": "Voglio creare una canzone",
+        "description": "Racconta la tua storia con il processo attuale di Criando Músicas. Il regalo sarà disponibile dopo il pagamento, il completamento della canzone e la preparazione del biglietto."
+      }
+    },
+    "demo": {
+      "title": "Hai ricevuto un regalo speciale.",
+      "reveal": "Apri la dimostrazione",
+      "revealedTitle": "Certi sentimenti diventano canzoni.",
+      "dedication": "Un ricordo dei nostri momenti, un pensiero in ogni parola. Qui appariranno la dedica e la firma di chi invia il regalo.",
+      "reset": "Rivedi l’apertura",
+      "shortTitle": "La tua idea in una canzone.",
+      "shortDescription": "Nomi, ricordi e battute tra amici possono ispirare un piccolo omaggio. Tu scegli il tono e lo stile musicale.",
+      "noAudio": "Questa dimostrazione non contiene audio. La canzone dell’ordine sarà associata in una fase successiva.",
+      "disclaimer": "Esempio visivo con contenuti illustrativi. Questa dimostrazione non crea né salva ordini."
+    },
+    "commercial": {
+      "title": "Disponibilità e condizioni",
+      "pending": "Prezzo, tempi e opzioni di consegna saranno mostrati prima dell’acquisto, dopo la configurazione commerciale e l’integrazione degli ordini.",
+      "unavailable": "Acquisto non ancora disponibile"
+    },
+    "products": {
+      "digital": {
+        "name": "Biglietto Musicale Digitale",
+        "cardTitle": "La tua storia merita una canzone. E un regalo speciale.",
+        "headline": "La tua storia merita una canzone. E un regalo speciale.",
+        "description": "Crea un regalo unico con una canzone personalizzata, una dedica e un biglietto digitale interattivo. Condividilo via WhatsApp o email e trasforma i sentimenti in una sorpresa indimenticabile.",
+        "cta": "CREA IL MIO REGALO MUSICALE",
+        "experienceTitle": "Il primo tocco fa già parte della sorpresa.",
+        "experienceDescription": "Esplora un’occasione e guarda un esempio di apertura. Temi, foto, nomi e messaggi saranno personalizzabili nel percorso completo.",
+        "included": [
+          "Un brano esistente autorizzato o una nuova creazione, secondo la modalità.",
+          "Biglietto con nomi, dedica e foto facoltativa.",
+          "Link individuale con apertura, lettore e testo disponibile.",
+          "Testo sincronizzato quando sono disponibili i tempi."
+        ],
+        "steps": [
+          "Scegli un brano esistente o una nuova creazione.",
+          "Personalizza il biglietto e controlla l’anteprima.",
+          "Verifica le condizioni e paga.",
+          "Dopo la preparazione, condividi il regalo tramite un canale disponibile."
+        ],
+        "occasions": [
+          "Natale",
+          "Amore e relazioni",
+          "Compleanno",
+          "Famiglia",
+          "Nascita",
+          "Amicizia",
+          "Gratitudine",
+          "Omaggio",
+          "Matrimonio",
+          "Senza occasione speciale"
+        ],
+        "conditions": "Il regalo a pagamento si attiva solo dopo la conferma del pagamento e la preparazione della canzone e del biglietto. La disponibilità segue i termini del servizio."
+      },
+      "short": {
+        "name": "Canzoni Brevi Personalizzate",
+        "cardTitle": "Piccole canzoni. Grandi risate ed emozioni.",
+        "headline": "30 SECONDI CHE POSSONO DIVENTARE IL RICORDO PIÙ BELLO DELLA GIORNATA.",
+        "description": "Crea una breve canzone per far ridere, emozionare o celebrare un giorno speciale. Personalizza il testo, scegli lo stile e sorprendi con una canzone dedicata.",
+        "cta": "CREA LA MIA CANZONE BREVE",
+        "experienceTitle": "Pochi secondi. Un tocco tutto tuo.",
+        "experienceDescription": "Un omaggio affettuoso, una sorpresa di Babbo Natale segreto o una battuta che solo la famiglia capisce. Scopri i due formati.",
+        "included": [
+          "Formati fino a 15 o fino a 30 secondi.",
+          "Testo ispirato ai nomi e ai dettagli che fornisci.",
+          "Scelta di tono, stile musicale e lingua.",
+          "Possibilità di aggiungere un biglietto digitale secondo le condizioni configurate."
+        ],
+        "steps": [
+          "Scegli l’occasione e la durata.",
+          "Racconta i dettagli e scegli tono, stile e lingua.",
+          "Controlla il riepilogo, le condizioni e il pagamento.",
+          "Ricevi la canzone al termine della produzione."
+        ],
+        "occasions": [
+          "Babbo Natale segreto",
+          "Natale in famiglia",
+          "Scherzi rispettosi tra amici",
+          "Compleanno",
+          "Coppie",
+          "Famiglia",
+          "Saluti e ringraziamenti",
+          "Altre occasioni"
+        ],
+        "conditions": "Le canzoni seguono il processo reale di produzione. Questa pagina non simula la generazione. Le condizioni del biglietto aggiuntivo saranno mostrate prima dell’acquisto."
+      },
+      "physical": {
+        "name": "Biglietto Musicale Stampato",
+        "cardTitle": "Un regalo da tenere in mano che tocca il cuore.",
+        "headline": "UN BIGLIETTO DA CUSTODIRE. UNA CANZONE DA SENTIRE.",
+        "description": "Un biglietto stampato, un messaggio speciale e un QR code che rivela una canzone personalizzata. Ideale insieme a fiori, cioccolatini, regali di compleanno e dichiarazioni d’amore.",
+        "cta": "CREA IL MIO BIGLIETTO STAMPATO",
+        "experienceTitle": "Il biglietto tra le mani. L’emozione sul telefono.",
+        "experienceDescription": "Il QR individuale aprirà la stessa esperienza musicale del biglietto digitale. L’illustrazione mostra il concetto; formato, carta e finiture dipendono dalle opzioni di stampa disponibili.",
+        "included": [
+          "Nomi, messaggio e foto facoltativa.",
+          "Un brano esistente autorizzato o una nuova creazione.",
+          "QR individuale che porta al regalo musicale.",
+          "Anteprima e verifica prima della stampa."
+        ],
+        "steps": [
+          "Scegli l’occasione e un modello disponibile.",
+          "Personalizza il messaggio e associa la canzone.",
+          "Controlla anteprima, consegna e pagamento.",
+          "Dopo preparazione e verifica, il biglietto passa alla stampa e alla consegna."
+        ],
+        "occasions": [
+          "Natale",
+          "Compleanno",
+          "San Valentino",
+          "Matrimonio",
+          "Nascita",
+          "Festa della Mamma",
+          "Festa del Papà",
+          "Ringraziamento",
+          "Omaggio",
+          "Fiori e cioccolatini",
+          "Regalo aziendale",
+          "Senza occasione speciale"
+        ],
+        "conditions": "Stampa, ritiro, spedizione e costi dipendono dall’operatività disponibile. Questa dimostrazione non include tracciamento automatico né un QR pronto per la stampa."
+      }
+    },
+    "themes": {
+      "christmas": "Natale",
+      "love": "Amore e relazioni",
+      "birthday": "Compleanno",
+      "family": "Famiglia",
+      "birth": "Nascita",
+      "friendship": "Amicizia",
+      "gratitude": "Gratitudine",
+      "tribute": "Omaggio",
+      "wedding": "Matrimonio",
+      "any": "Senza occasione speciale"
+    }
   }
 }
