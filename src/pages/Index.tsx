@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import Hero from "@/components/Hero";
+import MusicalGiftsSection from "@/components/gifts/MusicalGiftsSection";
 import ProcessSteps from "@/components/ProcessSteps";
 import InstrumentalShowcase from "@/components/InstrumentalShowcase";
 import WhyChooseUs from "@/components/WhyChooseUs";
@@ -100,6 +101,7 @@ const Index = () => {
         keywords="música personalizada, criar música com IA, presente criativo, música para aniversário, música para casamento, homenagem musical, música exclusiva"
       />
       <Hero />
+      <MusicalGiftsSection />
       
       {/* Celebration Popup - shows as modal for event dates */}
       {closestDate && showCelebration && (

@@ -333,5 +333,174 @@
       "cta": "Explore solutions for creators"
     },
     "createCta": "Create my song"
+  },
+  "gifts": {
+    "label": "Musical gifts",
+    "title": "A DIFFERENT GIFT. A FEELING THAT STAYS.",
+    "description": "Surprise someone special with a song made to move them, a fun tune to share with family, or a gift card with a melody to remember.",
+    "previewNotice": "In development: explore the concept. These new products are not yet available to purchase.",
+    "back": "Back to musical gifts",
+    "exploreModels": "Explore the cards",
+    "exploreDuration": "Explore the formats",
+    "demoLabel": "A glimpse of the experience",
+    "durationLabel": "Choose a duration to explore",
+    "upTo": "Up to {{seconds}} seconds",
+    "durationNote": "The selected limit will guide production. The duration is not necessarily exact.",
+    "themeLabel": "Explore the occasions",
+    "howItWorks": "How it will work",
+    "included": "What the concept includes",
+    "occasions": "A song for every occasion",
+    "otherProducts": "Other musical gifts",
+    "art": {
+      "forYou": "A gift for you",
+      "song": "Your story in a song.",
+      "littleSong": "A little song.",
+      "bigFeeling": "A feeling that deserves to be heard.",
+      "keep": "To hear and treasure.",
+      "qrIllustration": "Illustrative QR. Do not use for printing."
+    },
+    "modalities": {
+      "title": "Two ways to create your gift",
+      "existing": {
+        "title": "I already have my song",
+        "description": "Choose an available track from your account that you are authorized to use. Personalize the card and message without ordering another song."
+      },
+      "new": {
+        "title": "I want to create a song",
+        "description": "Tell your story through the existing Criando Músicas process. The gift becomes available after payment, song completion and card preparation."
+      }
+    },
+    "demo": {
+      "title": "You received a special gift.",
+      "reveal": "Reveal the demonstration",
+      "revealedTitle": "Some feelings become songs.",
+      "dedication": "A memory of our moments, a little love in every word. This space will hold the sender’s dedication and signature.",
+      "reset": "See the opening again",
+      "shortTitle": "Your idea fits in a song.",
+      "shortDescription": "Names, memories and inside jokes can inspire a little tribute. You choose the mood and musical style.",
+      "noAudio": "This demonstration has no audio. The ordered song will be connected in a later stage.",
+      "disclaimer": "Visual example with illustrative content. This demonstration does not create or save an order."
+    },
+    "commercial": {
+      "title": "Availability and conditions",
+      "pending": "Price, timing and delivery options will be shown before purchase, after commercial setup and order integration.",
+      "unavailable": "Purchase not yet available"
+    },
+    "products": {
+      "digital": {
+        "name": "Digital Musical Card",
+        "cardTitle": "Your story deserves a song. And a special gift.",
+        "headline": "Your story deserves a song. And a special gift.",
+        "description": "Create a unique gift with a personalized song, a dedication and an interactive digital card. Share it through WhatsApp or email and turn feelings into a memorable surprise.",
+        "cta": "CREATE MY MUSICAL GIFT",
+        "experienceTitle": "The first touch is part of the surprise.",
+        "experienceDescription": "Explore an occasion and see an opening example. Themes, photos, names and messages will be customizable in the full flow.",
+        "included": [
+          "An authorized existing song or a new creation, depending on the option.",
+          "Card with names, a dedication and an optional photo.",
+          "Individual link with opening, player and available lyrics.",
+          "Synchronized lyrics when timestamps are available."
+        ],
+        "steps": [
+          "Choose an existing song or a new creation.",
+          "Personalize the card and check the preview.",
+          "Review the conditions and pay.",
+          "After preparation, share the gift through an available channel."
+        ],
+        "occasions": [
+          "Christmas",
+          "Love and relationships",
+          "Birthday",
+          "Family",
+          "New baby",
+          "Friendship",
+          "Gratitude",
+          "Tribute",
+          "Wedding",
+          "Just because"
+        ],
+        "conditions": "Paid gifts activate only after payment confirmation and preparation of the song and card. Availability follows the terms of service."
+      },
+      "short": {
+        "name": "Short Personalized Songs",
+        "cardTitle": "Little songs. Big laughs and feelings.",
+        "headline": "30 SECONDS THAT COULD BECOME THE BEST MEMORY OF THE DAY.",
+        "description": "Create a short song to make someone laugh, feel loved or celebrate a special day. Personalize the lyrics, choose a style and surprise them with their own song.",
+        "cta": "CREATE MY SHORT SONG",
+        "experienceTitle": "A few seconds. Your personal touch.",
+        "experienceDescription": "A heartfelt tribute, a Secret Santa reveal or a joke only your family understands. Explore both formats.",
+        "included": [
+          "Formats up to 15 or up to 30 seconds.",
+          "Lyrics inspired by the names and details you provide.",
+          "Choice of mood, musical style and language.",
+          "Optional digital card, subject to configured conditions."
+        ],
+        "steps": [
+          "Choose the occasion and duration.",
+          "Share the details and choose mood, style and language.",
+          "Review the summary, conditions and payment.",
+          "Receive the song after production is complete."
+        ],
+        "occasions": [
+          "Secret Santa",
+          "Family Christmas",
+          "Respectful jokes among friends",
+          "Birthday",
+          "Couples",
+          "Family",
+          "Farewells and thank yous",
+          "Other occasions"
+        ],
+        "conditions": "Songs follow the real production process. There is no simulated generation on this page. Digital card add-on conditions will be shown before purchase."
+      },
+      "physical": {
+        "name": "Printed Musical Card",
+        "cardTitle": "A gift to hold that touches the heart.",
+        "headline": "A CARD TO TREASURE. A SONG TO FEEL.",
+        "description": "A printed card, a special message and a QR code that reveals a personalized song. Ideal alongside flowers, chocolates, birthday gifts and declarations of love.",
+        "cta": "CREATE MY PRINTED CARD",
+        "experienceTitle": "The card in your hands. The feeling on your phone.",
+        "experienceDescription": "An individual QR code will open the same musical experience as the digital card. The illustration shows the concept; format, paper and finish depend on available printing options.",
+        "included": [
+          "Names, a message and an optional photo.",
+          "An authorized existing song or a new creation.",
+          "Individual QR code linking to the musical gift.",
+          "Preview and review before release for printing."
+        ],
+        "steps": [
+          "Choose the occasion and an available design.",
+          "Personalize the message and associate the song.",
+          "Check the preview, delivery options and payment.",
+          "After preparation and review, the card proceeds to printing and delivery."
+        ],
+        "occasions": [
+          "Christmas",
+          "Birthday",
+          "Valentine’s Day",
+          "Wedding",
+          "New baby",
+          "Mother’s Day",
+          "Father’s Day",
+          "Thanks",
+          "Tribute",
+          "Flowers and chocolates",
+          "Corporate gift",
+          "Just because"
+        ],
+        "conditions": "Printing, pickup, shipping and costs depend on available operations. This demonstration has no automatic tracking or print-ready QR code."
+      }
+    },
+    "themes": {
+      "christmas": "Christmas",
+      "love": "Love and relationships",
+      "birthday": "Birthday",
+      "family": "Family",
+      "birth": "New baby",
+      "friendship": "Friendship",
+      "gratitude": "Gratitude",
+      "tribute": "Tribute",
+      "wedding": "Wedding",
+      "any": "Just because"
+    }
   }
 }

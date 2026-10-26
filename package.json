@@ -6,6 +6,8 @@
   "scripts": {
     "prebuild": "node scripts/verify-static-assets.js prebuild",
     "dev": "vite",
+    "dev:gifts": "vite --config vite.gifts.config.ts",
+    "build:gifts": "vite build --config vite.gifts.config.ts",
     "build": "vite build",
     "postbuild": "node scripts/verify-static-assets.js postbuild",
     "build:dev": "vite build --mode development",

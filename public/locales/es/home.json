@@ -333,5 +333,174 @@
       "cta": "Conocer soluciones para creadores"
     },
     "createCta": "Crear mi canción"
+  },
+  "gifts": {
+    "label": "Regalos musicales",
+    "title": "UN REGALO DIFERENTE. UNA EMOCIÓN QUE PERDURA.",
+    "description": "Sorprende a alguien especial con una canción para emocionar, una melodía divertida para compartir en familia o una tarjeta con música para recordar.",
+    "previewNotice": "En desarrollo: conoce la propuesta. Estos nuevos productos todavía no se pueden comprar.",
+    "back": "Volver a los regalos musicales",
+    "exploreModels": "Conocer los modelos",
+    "exploreDuration": "Explorar los formatos",
+    "demoLabel": "Una muestra de la experiencia",
+    "durationLabel": "Elige una duración para explorar",
+    "upTo": "Hasta {{seconds}} segundos",
+    "durationNote": "El límite elegido orientará la producción. La duración no será necesariamente exacta.",
+    "themeLabel": "Explora las ocasiones",
+    "howItWorks": "Cómo funcionará",
+    "included": "Qué incluye la propuesta",
+    "occasions": "Una canción para cada ocasión",
+    "otherProducts": "Otros regalos musicales",
+    "art": {
+      "forYou": "Un regalo para ti",
+      "song": "Tu historia en una canción.",
+      "littleSong": "Pequeña canción.",
+      "bigFeeling": "Un sentimiento que merece escucharse.",
+      "keep": "Para escuchar y guardar.",
+      "qrIllustration": "QR ilustrativo. No usar para imprimir."
+    },
+    "modalities": {
+      "title": "Dos formas de crear tu regalo",
+      "existing": {
+        "title": "Ya tengo mi canción",
+        "description": "Elige una canción disponible en tu cuenta y autorizada para su uso. Personaliza la tarjeta y el mensaje sin encargar otra canción."
+      },
+      "new": {
+        "title": "Quiero crear una canción",
+        "description": "Cuenta tu historia mediante el proceso actual de Criando Músicas. El regalo estará disponible después del pago, la finalización de la canción y la preparación de la tarjeta."
+      }
+    },
+    "demo": {
+      "title": "Has recibido un regalo especial.",
+      "reveal": "Revelar la demostración",
+      "revealedTitle": "Hay sentimientos que se vuelven canción.",
+      "dedication": "Un recuerdo de nuestros momentos, un cariño en cada palabra. Este espacio incluirá la dedicatoria y la firma de quien lo envía.",
+      "reset": "Ver la apertura de nuevo",
+      "shortTitle": "Tu idea cabe en una canción.",
+      "shortDescription": "Nombres, recuerdos y bromas internas pueden inspirar un pequeño homenaje. Tú eliges el tono y el estilo musical.",
+      "noAudio": "Esta demostración no contiene audio. La canción del pedido se asociará en una próxima etapa.",
+      "disclaimer": "Ejemplo visual con contenido ilustrativo. Esta demostración no crea ni guarda pedidos."
+    },
+    "commercial": {
+      "title": "Disponibilidad y condiciones",
+      "pending": "Precio, plazos y opciones de entrega se mostrarán antes de comprar, tras configurar las condiciones comerciales y la integración de pedidos.",
+      "unavailable": "Compra aún no disponible"
+    },
+    "products": {
+      "digital": {
+        "name": "Tarjeta Musical Digital",
+        "cardTitle": "Tu historia merece una canción. Y un regalo especial.",
+        "headline": "Tu historia merece una canción. Y un regalo especial.",
+        "description": "Crea un regalo único con una canción personalizada, una dedicatoria y una tarjeta digital interactiva. Compártelo por WhatsApp o correo y convierte los sentimientos en una sorpresa inolvidable.",
+        "cta": "CREAR MI REGALO MUSICAL",
+        "experienceTitle": "El primer toque ya es parte de la sorpresa.",
+        "experienceDescription": "Explora una ocasión y descubre un ejemplo de apertura. Temas, fotos, nombres y mensajes se podrán personalizar en el proceso completo.",
+        "included": [
+          "Una canción existente autorizada o una nueva creación, según la modalidad.",
+          "Tarjeta con nombres, dedicatoria y foto opcional.",
+          "Enlace individual con apertura, reproductor y letra disponible.",
+          "Letra sincronizada cuando haya marcas de tiempo."
+        ],
+        "steps": [
+          "Elige una canción existente o una nueva creación.",
+          "Personaliza la tarjeta y revisa la vista previa.",
+          "Comprueba las condiciones y realiza el pago.",
+          "Después de prepararlo, comparte el regalo por un canal disponible."
+        ],
+        "occasions": [
+          "Navidad",
+          "Amor y relaciones",
+          "Cumpleaños",
+          "Familia",
+          "Nacimiento",
+          "Amistad",
+          "Gratitud",
+          "Homenaje",
+          "Boda",
+          "Sin ocasión especial"
+        ],
+        "conditions": "El regalo de pago se activará tras confirmar el pago y preparar la canción y la tarjeta. La disponibilidad seguirá los términos del servicio."
+      },
+      "short": {
+        "name": "Canciones Cortas Personalizadas",
+        "cardTitle": "Pequeñas canciones. Grandes risas y emociones.",
+        "headline": "30 SEGUNDOS QUE PUEDEN SER EL MEJOR RECUERDO DEL DÍA.",
+        "description": "Crea una canción corta para hacer reír, emocionar o celebrar una fecha especial. Personaliza la letra, elige el estilo musical y sorprende con una canción para esa persona.",
+        "cta": "CREAR MI CANCIÓN CORTA",
+        "experienceTitle": "Pocos segundos. Un toque muy tuyo.",
+        "experienceDescription": "Un homenaje cariñoso, una revelación de amigo invisible o esa broma que solo entiende tu familia. Conoce los dos formatos.",
+        "included": [
+          "Formatos de hasta 15 o hasta 30 segundos.",
+          "Letra inspirada en los nombres y detalles que proporciones.",
+          "Elección de tono, estilo musical e idioma.",
+          "Opción de añadir tarjeta digital según las condiciones configuradas."
+        ],
+        "steps": [
+          "Elige la ocasión y la duración.",
+          "Cuenta los detalles y elige tono, estilo e idioma.",
+          "Revisa el resumen, las condiciones y el pago.",
+          "Recibe la canción cuando termine la producción."
+        ],
+        "occasions": [
+          "Amigo invisible",
+          "Navidad en familia",
+          "Bromas respetuosas entre amigos",
+          "Cumpleaños",
+          "Parejas",
+          "Familia",
+          "Despedidas y agradecimientos",
+          "Otras ocasiones"
+        ],
+        "conditions": "Las canciones seguirán el proceso real de producción. No hay generación simulada en esta página. Las condiciones de la tarjeta adicional se mostrarán antes de comprar."
+      },
+      "physical": {
+        "name": "Tarjeta Musical Impresa",
+        "cardTitle": "Un regalo que llega a las manos y toca el corazón.",
+        "headline": "UNA TARJETA PARA GUARDAR. UNA CANCIÓN PARA SENTIR.",
+        "description": "Una tarjeta impresa, un mensaje especial y un código QR que revela una canción personalizada. Ideal para acompañar flores, chocolates, regalos de cumpleaños y declaraciones de amor.",
+        "cta": "CREAR MI TARJETA IMPRESA",
+        "experienceTitle": "La tarjeta en las manos. La emoción en el móvil.",
+        "experienceDescription": "El QR individual llevará a la misma experiencia musical de la tarjeta digital. La ilustración muestra el concepto; formato, papel y acabado dependerán de las opciones de impresión disponibles.",
+        "included": [
+          "Nombres, mensaje y foto opcional.",
+          "Una canción existente autorizada o una nueva creación.",
+          "QR individual que enlaza al regalo musical.",
+          "Vista previa y revisión antes de liberar la impresión."
+        ],
+        "steps": [
+          "Elige la ocasión y un modelo disponible.",
+          "Personaliza el mensaje y asocia la canción.",
+          "Revisa la vista previa, entrega y pago.",
+          "Después de prepararla y revisarla, la tarjeta pasa a impresión y entrega."
+        ],
+        "occasions": [
+          "Navidad",
+          "Cumpleaños",
+          "San Valentín",
+          "Boda",
+          "Nacimiento",
+          "Día de la Madre",
+          "Día del Padre",
+          "Agradecimiento",
+          "Homenaje",
+          "Flores y chocolates",
+          "Regalo corporativo",
+          "Sin ocasión especial"
+        ],
+        "conditions": "Impresión, recogida, envío y costes dependerán de la operación disponible. Esta demostración no incluye seguimiento automático ni QR listo para imprimir."
+      }
+    },
+    "themes": {
+      "christmas": "Navidad",
+      "love": "Amor y relaciones",
+      "birthday": "Cumpleaños",
+      "family": "Familia",
+      "birth": "Nacimiento",
+      "friendship": "Amistad",
+      "gratitude": "Gratitud",
+      "tribute": "Homenaje",
+      "wedding": "Boda",
+      "any": "Sin ocasión especial"
+    }
   }
 }

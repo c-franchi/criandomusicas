@@ -275,5 +275,18 @@
     "progress": "{{current}} de {{total}}",
     "startTour": "Ver Tour",
     "startTourDesc": "Conheça a plataforma"
+  },
+  "maintenance": {
+    "seoTitle": "Manutenção",
+    "badge": "Uma pausa para criar novas emoções",
+    "defaultTitle": "Estamos preparando novas emoções.",
+    "defaultMessage": "A Criando Músicas está em manutenção para receber novidades. Em breve estaremos de volta para transformar sentimentos em presentes que podem ser ouvidos.",
+    "signature": "Criando Músicas — sentimentos que viram canção.",
+    "retry": "Verificar novamente",
+    "adminLogin": "Acesso administrativo",
+    "privacy": "Privacidade",
+    "terms": "Termos",
+    "adminBanner": "Manutenção ativa. Você está navegando como administrador.",
+    "manage": "Gerenciar manutenção"
   }
 }

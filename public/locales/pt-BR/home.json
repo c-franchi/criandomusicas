@@ -351,5 +351,174 @@
       "cta": "Conhecer soluções para criadores"
     },
     "createCta": "Criar minha música"
+  },
+  "gifts": {
+    "label": "Presentes musicais",
+    "title": "UM PRESENTE DIFERENTE. UMA EMOÇÃO QUE FICA.",
+    "description": "Surpreenda alguém especial com uma música feita para emocionar, uma canção divertida para compartilhar com a família ou um cartão-presente com uma melodia que será lembrada para sempre.",
+    "previewNotice": "Em desenvolvimento: conheça a proposta. As compras destes novos produtos ainda não estão disponíveis.",
+    "back": "Voltar aos presentes musicais",
+    "exploreModels": "Conhecer os modelos",
+    "exploreDuration": "Explorar os formatos",
+    "demoLabel": "Uma ideia da experiência",
+    "durationLabel": "Escolha a duração para conhecer a proposta",
+    "upTo": "Até {{seconds}} segundos",
+    "durationNote": "O limite escolhido orientará a produção. A duração não será necessariamente exata.",
+    "themeLabel": "Explore as ocasiões",
+    "howItWorks": "Como vai funcionar",
+    "included": "O que a proposta inclui",
+    "occasions": "Uma música para cada ocasião",
+    "otherProducts": "Outros presentes musicais",
+    "art": {
+      "forYou": "Um presente para você",
+      "song": "Sua história em uma canção.",
+      "littleSong": "Pequena canção.",
+      "bigFeeling": "Um sentimento que merece ser ouvido.",
+      "keep": "Para ouvir e guardar.",
+      "qrIllustration": "QR ilustrativo. Não utilizar para impressão."
+    },
+    "modalities": {
+      "title": "Duas formas de criar seu presente",
+      "existing": {
+        "title": "Já tenho minha música",
+        "description": "Escolha uma faixa disponível na sua conta e autorizada para uso. Personalize o cartão, a dedicatória e a ocasião sem encomendar outra música."
+      },
+      "new": {
+        "title": "Quero criar uma música",
+        "description": "Conte sua história pelo processo de criação da Criando Músicas. O presente ficará disponível após o pagamento, a conclusão da música e a preparação do cartão."
+      }
+    },
+    "demo": {
+      "title": "Você recebeu um presente especial.",
+      "reveal": "Revelar a demonstração",
+      "revealedTitle": "Tem sentimentos que viram canção.",
+      "dedication": "Uma lembrança dos nossos momentos, um carinho em cada palavra. Este espaço receberá a dedicatória e a assinatura de quem enviou.",
+      "reset": "Ver a abertura novamente",
+      "shortTitle": "Sua ideia cabe em uma canção.",
+      "shortDescription": "Nomes, histórias e piadas internas podem inspirar uma pequena homenagem. Você escolhe o tom e o estilo musical.",
+      "noAudio": "Esta demonstração não contém áudio. A música do pedido será associada em uma próxima etapa.",
+      "disclaimer": "Exemplo visual com conteúdo ilustrativo. Nenhum pedido é criado ou salvo nesta demonstração."
+    },
+    "commercial": {
+      "title": "Disponibilidade e condições",
+      "pending": "Preço, prazo e opções de entrega serão apresentados antes da compra, após a configuração comercial e a integração dos pedidos.",
+      "unavailable": "Compra ainda não disponível"
+    },
+    "products": {
+      "digital": {
+        "name": "Cartão Musical Digital",
+        "cardTitle": "Sua história merece uma música. E um presente especial.",
+        "headline": "Sua história merece uma música. E um presente especial.",
+        "description": "Crie um presente único com uma música personalizada, uma dedicatória e um cartão digital interativo. Envie pelo WhatsApp ou e-mail e transforme palavras e sentimentos em uma surpresa inesquecível.",
+        "cta": "CRIAR MEU PRESENTE MUSICAL",
+        "experienceTitle": "O primeiro toque já faz parte da surpresa.",
+        "experienceDescription": "Explore uma ocasião e veja um exemplo de abertura. Os temas, a foto, os nomes e a mensagem serão personalizáveis no fluxo completo.",
+        "included": [
+          "Música existente autorizada ou uma nova criação, conforme a modalidade.",
+          "Cartão com nomes, dedicatória e foto opcional.",
+          "Link individual com abertura, player e letra disponível.",
+          "Letra sincronizada quando houver marcações de tempo."
+        ],
+        "steps": [
+          "Escolha entre uma música existente e uma nova criação.",
+          "Personalize o cartão e confira a prévia.",
+          "Confira as condições e efetue o pagamento.",
+          "Após a preparação, compartilhe o presente pelo canal disponível."
+        ],
+        "occasions": [
+          "Natal",
+          "Amor e relacionamento",
+          "Aniversário",
+          "Família",
+          "Nascimento",
+          "Amizade",
+          "Gratidão",
+          "Homenagem",
+          "Casamento",
+          "Sem ocasião especial"
+        ],
+        "conditions": "O presente pago será ativado somente após a confirmação do pagamento e a preparação do cartão e da música. A disponibilidade seguirá os termos do serviço."
+      },
+      "short": {
+        "name": "Músicas Curtas Personalizadas",
+        "cardTitle": "Pequenas músicas. Grandes risadas e emoções.",
+        "headline": "30 SEGUNDOS QUE PODEM VIRAR A MELHOR LEMBRANÇA DO DIA.",
+        "description": "Crie uma música curtinha para fazer alguém rir, se emocionar ou tornar uma data ainda mais especial. Personalize a letra, escolha o estilo musical e surpreenda com uma canção feita para aquela pessoa.",
+        "cta": "CRIAR MINHA MÚSICA CURTA",
+        "experienceTitle": "Poucos segundos. Um toque só seu.",
+        "experienceDescription": "Uma homenagem carinhosa, uma revelação de amigo secreto ou aquela piada que só a família entende. Conheça os dois formatos.",
+        "included": [
+          "Formatos de até 15 ou até 30 segundos.",
+          "Letra inspirada nos nomes e detalhes que você informar.",
+          "Escolha de tom, estilo musical e idioma.",
+          "Opção de adicionar cartão digital, conforme as condições configuradas."
+        ],
+        "steps": [
+          "Escolha a ocasião e a duração.",
+          "Conte os detalhes e escolha tom, estilo e idioma.",
+          "Confira o resumo, as condições e o pagamento.",
+          "Receba a música após a conclusão da produção."
+        ],
+        "occasions": [
+          "Amigo secreto",
+          "Natal em família",
+          "Zoação respeitosa entre amigos",
+          "Aniversário",
+          "Casais",
+          "Família",
+          "Despedidas e agradecimentos",
+          "Outras ocasiões"
+        ],
+        "conditions": "As músicas seguirão o processo real de produção. Não há geração simulada nesta página. O adicional de cartão digital terá suas condições informadas antes da compra."
+      },
+      "physical": {
+        "name": "Cartão Musical Físico",
+        "cardTitle": "Um presente que chega às mãos e toca o coração.",
+        "headline": "UM CARTÃO PARA GUARDAR. UMA MÚSICA PARA SENTIR.",
+        "description": "Um cartão impresso, uma mensagem especial e um QR Code que revela uma música personalizada. Perfeito para acompanhar flores, chocolates, presentes de aniversário, declarações de amor e outras ocasiões especiais.",
+        "cta": "CRIAR MEU CARTÃO FÍSICO",
+        "experienceTitle": "O cartão nas mãos. A emoção no celular.",
+        "experienceDescription": "O QR Code individual levará à mesma experiência musical do cartão digital. A ilustração apresenta o conceito; formato, papel e acabamento dependem das opções de impressão disponíveis.",
+        "included": [
+          "Nomes, mensagem e foto opcional.",
+          "Associação a uma música existente autorizada ou a uma nova criação.",
+          "QR Code individual apontando para o presente musical.",
+          "Prévia e conferência antes da liberação para impressão."
+        ],
+        "steps": [
+          "Escolha a ocasião e o modelo disponível.",
+          "Personalize a mensagem e associe a música.",
+          "Confira a prévia, as opções de entrega e o pagamento.",
+          "Após a preparação e a conferência, o cartão segue para impressão e entrega."
+        ],
+        "occasions": [
+          "Natal",
+          "Aniversário",
+          "Dia dos Namorados",
+          "Casamento",
+          "Nascimento",
+          "Dia das Mães",
+          "Dia dos Pais",
+          "Agradecimento",
+          "Homenagem",
+          "Flores e chocolates",
+          "Presente corporativo",
+          "Sem ocasião especial"
+        ],
+        "conditions": "Impressão, retirada, envio e frete dependem da operação disponível. Não há rastreamento automático nem QR Code pronto para impressão nesta demonstração."
+      }
+    },
+    "themes": {
+      "christmas": "Natal",
+      "love": "Amor e relacionamento",
+      "birthday": "Aniversário",
+      "family": "Família",
+      "birth": "Nascimento",
+      "friendship": "Amizade",
+      "gratitude": "Gratidão",
+      "tribute": "Homenagem",
+      "wedding": "Casamento",
+      "any": "Sem ocasião especial"
+    }
   }
 }

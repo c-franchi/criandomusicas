@@ -53,5 +53,24 @@
       "email": "Email notifications",
       "push": "Push notifications"
     }
+  },
+  "maintenance": {
+    "title": "Maintenance page",
+    "description": "Display a notice for visitors while preparing the site. Signed-in administrators can still access all pages to test.",
+    "currentEnabled": "Current state: maintenance is active for visitors.",
+    "currentDisabled": "Current state: site is open to visitors.",
+    "enabledLabel": "Display maintenance page",
+    "enabledHelp": "Changes apply when you save. Administrator access remains available.",
+    "titleLabel": "Page title",
+    "messageLabel": "Message for visitors",
+    "delay": "After saving, visitors with the current version receive changes within 15 seconds while the page is active and online. Preview shows the last saved message.",
+    "save": "Save maintenance",
+    "preview": "Preview page",
+    "loading": "Loading settings…",
+    "loadError": "Settings could not be loaded. No changes were saved.",
+    "retry": "Try again",
+    "saveError": "Could not save maintenance settings",
+    "activated": "Maintenance activated",
+    "deactivated": "Site opened to visitors"
   }
 }

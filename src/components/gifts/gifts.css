@@ -1,0 +1,21 @@
+.gift-artwork {
+  position: relative;
+  display: flex;
+  min-height: 320px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(140deg, hsl(var(--primary) / .12), hsl(var(--accent) / .09), hsl(var(--background)));
+}
+.gift-artwork-short { background: linear-gradient(140deg, hsl(var(--accent) / .15), hsl(var(--primary) / .1)); }
+.gift-artwork-physical { background: linear-gradient(140deg, #eae3ef, #f4e9df); }
+.gift-phone { transform: rotate(-5deg); }
+.gift-theme {
+  background: linear-gradient(150deg, hsl(var(--primary) / .08), hsl(var(--accent) / .04));
+}
+.gift-reveal { animation: gift-reveal .5s ease-out both; }
+@keyframes gift-reveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .gift-reveal { animation: none; }
+}

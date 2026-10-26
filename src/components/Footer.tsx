@@ -60,6 +60,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-6 text-foreground">{t('footer.product')}</h4>
             <ul className="space-y-4 text-muted-foreground">
+              <li><Link to="/cartao-digital" className="hover:text-primary transition-colors">{t('gifts.products.digital.name')}</Link></li>
+              <li><Link to="/musicas-curtas" className="hover:text-primary transition-colors">{t('gifts.products.short.name')}</Link></li>
+              <li><Link to="/cartao-fisico" className="hover:text-primary transition-colors">{t('gifts.products.physical.name')}</Link></li>
               <li>
                 <button 
                   onClick={() => scrollToSection('processo')} 

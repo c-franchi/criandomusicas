@@ -13,6 +13,9 @@ import TourWrapper from "@/components/TourWrapper";
 import ContinueFlowBar from "@/components/ContinueFlowBar";
 import { usePageTracking } from "@/hooks/usePageTracking";
 import LegacyCreatorRedirect from "@/components/LegacyCreatorRedirect";
+import MaintenanceGate from "@/components/MaintenanceGate";
+import MaintenancePage from "@/pages/Maintenance";
+import { useMaintenance } from "@/hooks/useMaintenance";
 
 // Critical path - load immediately
 import Index from "./pages/Index";
@@ -40,6 +43,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const MusicRules = lazy(() => import("./pages/MusicRules"));
 const MusicShare = lazy(() => import("./pages/MusicShare"));
+const MusicalGiftProduct = lazy(() => import("./pages/MusicalGiftProduct"));
 const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
 const CreatorCheckout = lazy(() => import("./pages/CreatorCheckout"));
@@ -51,6 +55,11 @@ const queryClient = new QueryClient();
 const RouteTracker = () => {
   usePageTracking();
   return null;
+};
+
+const MaintenancePreview = () => {
+  const { data } = useMaintenance();
+  return <MaintenancePage title={data?.title} message={data?.message} />;
 };
 
 // PWA Update Handler Component with visual banner
@@ -72,10 +81,11 @@ const App = () => (
     <AuthProvider>
       <TooltipProvider>
         <PWAUpdateHandler />
-        <ProfileOnboardingWrapper />
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <MaintenanceGate>
+          <ProfileOnboardingWrapper />
           <TourWrapper />
           <RouteTracker />
           <ContinueFlowBar />
@@ -84,11 +94,15 @@ const App = () => (
               {/* Critical routes - loaded immediately */}
               <Route path="/" element={<LegacyCreatorRedirect><Index /></LegacyCreatorRedirect>} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/manutencao" element={<MaintenancePreview />} />
               <Route path="/~oauth/callback" element={<Auth />} />
               <Route path="/auth/callback" element={<Auth />} />
               
               {/* Lazy loaded routes */}
               <Route path="/briefing" element={<Briefing />} />
+              <Route path="/cartao-digital" element={<MusicalGiftProduct product="digital" />} />
+              <Route path="/musicas-curtas" element={<MusicalGiftProduct product="short" />} />
+              <Route path="/cartao-fisico" element={<MusicalGiftProduct product="physical" />} />
               <Route path="/criar-musica" element={<CreateSong />} />
               <Route path="/create-song" element={<CreateSong />} />
               <Route path="/planos" element={<LegacyCreatorRedirect><Planos /></LegacyCreatorRedirect>} />
@@ -120,6 +134,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </MaintenanceGate>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
