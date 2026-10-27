@@ -774,6 +774,25 @@
       "flowers": "Flores",
       "celebration": "Celebración",
       "classic": "Clásico"
-    }
+    },
+    "socialTitle": "Compartir mi regalo",
+    "socialHelp": "Envía el enlace de la tarjeta liberada para abrir el regalo y escuchar la canción.",
+    "socialNative": "Enviar a redes sociales y aplicaciones",
+    "instagramHelp": "Instagram: usa compartir en el móvil cuando acepte enlaces, o copia el enlace en un mensaje, bio o sticker de enlace de Stories. Las aplicaciones dependen del dispositivo.",
+    "shareFallback": "No se pudo abrir compartir. Usa los botones de las redes o copia el enlace.",
+    "printLayout": "Formato de impresión",
+    "bookletLayout": "Tarjeta plegable — doble cara",
+    "singleLayout": "Tarjeta simple — una cara",
+    "paperSize": "Tamaño del papel",
+    "letterPaper": "Carta (Letter)",
+    "bookletOutside": "Exterior: contraportada izquierda · portada derecha",
+    "bookletInside": "Interior: mensaje izquierda · música derecha",
+    "bookletKeepsake": "Un regalo para guardar. Una canción para sentir.",
+    "bookletOpen": "Abre para descubrir tu regalo",
+    "bookletInstruction1": "Imprime ambas páginas en una hoja, a doble cara y en horizontal. En dúplex automático, gira por el borde corto.",
+    "bookletInstruction2": "Dobla la hoja por la línea de puntos. La portada queda a la derecha del exterior.",
+    "bookletInstruction3": "Sin dúplex automático: imprime la página 1, vuelve a colocar la hoja según tu impresora e imprime la página 2. Prueba primero en papel común.",
+    "printScaleHelp": "Usa el mismo papel en navegador e impresora, escala 100%, sin encabezados ni pies y con fondos activados. Comprueba la orientación y el QR antes de entregar.",
+    "printOrPdf": "Imprimir o guardar como PDF"
   }
 }

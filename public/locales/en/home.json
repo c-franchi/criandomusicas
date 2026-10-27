@@ -774,6 +774,25 @@
       "flowers": "Flowers",
       "celebration": "Celebration",
       "classic": "Classic"
-    }
+    },
+    "socialTitle": "Share my gift",
+    "socialHelp": "Send the released card link. Recipients can open the gift and listen to the song.",
+    "socialNative": "Share to social networks and apps",
+    "instagramHelp": "Instagram: use phone sharing when the app accepts links, or copy the link into a message, bio or Stories link sticker. Available apps depend on your device.",
+    "shareFallback": "Sharing could not open. Use the network buttons or copy the link below.",
+    "printLayout": "Print layout",
+    "bookletLayout": "Folded card — double sided",
+    "singleLayout": "Simple card — single sided",
+    "paperSize": "Paper size",
+    "letterPaper": "Letter",
+    "bookletOutside": "Outside: back cover on left · front cover on right",
+    "bookletInside": "Inside: message on left · music on right",
+    "bookletKeepsake": "A gift to keep. A song to feel.",
+    "bookletOpen": "Open to discover your gift",
+    "bookletInstruction1": "Print both pages on the same sheet, double sided, in landscape. For automatic duplex, select flip on the short edge.",
+    "bookletInstruction2": "Fold the sheet in half along the dotted line. The front cover is on the right of the outside face.",
+    "bookletInstruction3": "No automatic duplex? Print page 1, reload according to your printer and print page 2. Test on plain paper first.",
+    "printScaleHelp": "Match the paper size in the browser and printer. Use 100% scale, disable headers/footers and enable background graphics. Check orientation and test the QR code before gifting.",
+    "printOrPdf": "Print or save as PDF"
   }
 }

@@ -1,3 +1,4 @@
+import GiftShare from "./GiftShare";
 import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { visibleGiftProducts } from "@/components/gifts/products";
@@ -219,6 +220,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </p>
         )}
       </div>
+      {g.status === "ACTIVE" && <div className="mb-7"><GiftShare url={url}/></div>}
       {g.status !== "ACTIVE" && audio.data?.audio_url && <section role="status" className="mb-7 space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-5"><h2 className="font-semibold">{t("giftFlow.readyForRelease")}</h2><p className="text-sm">{t("giftFlow.releaseNextStep")}</p>{isAdmin && <Button asChild><Link to={`/admin/presentes?presente=${g.id}`}>{t("giftFlow.reviewAndRelease")}</Link></Button>}</section>}
       {g.music_source === "new" && !audio.data?.audio_url && (
         <section
@@ -384,47 +386,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
               <code className="block break-all rounded-xl bg-muted p-3 text-xs">
                 {url}
               </code>
-              <div className="flex flex-wrap gap-3">
-                <Button asChild>
-                  <a href={url} target="_blank" rel="noopener noreferrer">
-                    {t("giftFlow.openGift")}
-                  </a>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(url);
-                      toast({ title: t("giftFlow.copied") });
-                    } catch {
-                      setError(t("giftFlow.copyError"));
-                    }
-                  }}
-                >
-                  {t("giftFlow.copyLink")}
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <Button asChild variant="outline">
-                  <a
-                    href={`https://wa.me/?text=${encodeURIComponent(url)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    WhatsApp
-                  </a>
-                </Button>
-                <Button asChild variant="outline">
-                  <a
-                    href={`mailto:?subject=${encodeURIComponent(t("giftFlow.received"))}&body=${encodeURIComponent(url)}`}
-                  >
-                    {t("giftFlow.email")}
-                  </a>
-                </Button>
-              </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {t("giftFlow.manualDelivery")}
-              </p>
+              <Button asChild><a href={url} target="_blank" rel="noopener noreferrer">{t("giftFlow.openGift")}</a></Button>
               <GiftQr url={url} />
               {g.product === "physical" && (
                 <>
