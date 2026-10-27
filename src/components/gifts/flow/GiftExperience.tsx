@@ -146,19 +146,19 @@ export default function GiftExperience({
           preload="metadata"
           onLoadedMetadata={() => onDuration?.(audio.current?.duration || 0)}
           onTimeUpdate={() => setTime(audio.current?.currentTime || 0)}
+          onError={() => setNotice(t("giftFlow.audioLoadError"))}
           className={`mx-auto mt-6 w-full max-w-md ${revealed ? "block" : "hidden"}`}
         />
       ) : (
-        revealed && (
-          <p className="mt-6 flex items-center justify-center gap-2 text-sm text-white/70">
-            <Music2 className="h-4 w-4" />
-            {t(
-              preview
-                ? "giftFlow.previewAudioPending"
-                : "giftFlow.audioPending",
-            )}
-          </p>
-        )
+        <p
+          role="status"
+          className="mt-6 flex items-center justify-center gap-2 text-sm text-white/70"
+        >
+          <Music2 className="h-4 w-4" />
+          {t(
+            preview ? "giftFlow.previewAudioPending" : "giftFlow.audioPending",
+          )}
+        </p>
       )}
       {revealed && (
         <>

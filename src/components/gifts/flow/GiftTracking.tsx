@@ -1,3 +1,6 @@
+import { useGiftAvailability } from "@/hooks/useGiftAvailability";
+import { useAdminRole } from "@/hooks/useAdminRole";
+import { visibleGiftProducts } from "@/components/gifts/products";
 import { useState } from "react";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -23,12 +26,13 @@ export function GiftList() {
   const { user, loading } = useAuth();
   const { t, i18n } = useTranslation("home");
   const query = useGiftList();
+  const { physicalEnabled } = useGiftAvailability();
   if (loading) return <PageLoader />;
   if (!user) return <Navigate to="/auth?redirect=%2Fpresentes" replace />;
   return (
     <GiftShell title={t("giftFlow.myGifts")}>
       <div className="mb-7 flex flex-wrap gap-3">
-        {["digital", "short", "physical"].map((p) => (
+        {visibleGiftProducts(physicalEnabled).map(({ id: p }) => (
           <Button
             key={p}
             asChild
@@ -105,6 +109,9 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const audio = useGiftAudio(g);
+  const { user } = useAuth();
+  const { isAdmin } = useAdminRole(user?.id);
+  const { physicalEnabled } = useGiftAvailability();
   const history = useQuery({
     queryKey: ["gift-history", g.id],
     queryFn: async () => {
@@ -212,6 +219,40 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </p>
         )}
       </div>
+      {g.music_source === "new" && !audio.data?.audio_url && (
+        <section
+          role="status"
+          className="mb-7 space-y-4 rounded-2xl border border-primary/30 bg-primary/5 p-5"
+        >
+          <h2 className="text-lg font-semibold">
+            {t("giftFlow.musicNotReadyTitle")}
+          </h2>
+          <p className="text-sm leading-relaxed">
+            {t(
+              g.production_order_id
+                ? "giftFlow.musicProductionPending"
+                : "giftFlow.musicProductionNotStarted",
+            )}
+          </p>
+          {isAdmin && (
+            <Button asChild variant="outline">
+              <Link to={`/admin/presentes?presente=${g.id}`}>
+                {t("giftFlow.manageProduction")}
+              </Link>
+            </Button>
+          )}
+        </section>
+      )}
+      {g.product === "physical" && !physicalEnabled && (
+        <section className="mb-7 space-y-4 rounded-xl border border-border p-5">
+          <p className="text-sm">{t("giftFlow.physicalDisabledBody")}</p>
+          <Button asChild>
+            <Link to="/presentes/novo?produto=digital">
+              {t("giftFlow.chooseDigital")}
+            </Link>
+          </Button>
+        </section>
+      )}
       {g.status === "AWAITING_PAYMENT" && (
         <Button
           className="mb-6"

@@ -1,3 +1,4 @@
+import GiftAvailabilityProvider from '@/components/gifts/GiftAvailabilityProvider';
 import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -97,6 +98,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <MaintenanceGate>
+          <GiftAvailabilityProvider>
           <PageHelpers />
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -150,6 +152,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          </GiftAvailabilityProvider>
           </MaintenanceGate>
         </BrowserRouter>
       </TooltipProvider>
