@@ -497,6 +497,7 @@ const Dashboard = () => {
           <ReceivedCreditsNotification variant="banner" />
         </motion.div>
 
+        <Button asChild variant="outline" className="mb-5 mt-5 min-h-12"><Link to="/presentes">{t('home:giftFlow.myGifts')}</Link></Button>
         {/* Header */}
         <motion.div 
           className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8"

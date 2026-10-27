@@ -11,6 +11,15 @@
     <meta name="author" content="Criando Músicas" />
     <meta name="robots" data-rh="true" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="googlebot" content="index, follow" />
+    <script>
+      if (window.location.pathname.startsWith('/presente/')) {
+        document.querySelector('meta[name="robots"]').setAttribute('content', 'noindex, nofollow');
+        document.querySelector('meta[name="googlebot"]').setAttribute('content', 'noindex, nofollow');
+        var giftReferrer = document.createElement('meta');
+        giftReferrer.name = 'referrer'; giftReferrer.content = 'no-referrer';
+        document.head.appendChild(giftReferrer);
+      }
+    </script>
     <!-- Geographic SEO -->
     <meta name="geo.region" content="BR" />
     <meta name="geo.placename" content="Brasil" />
@@ -148,12 +157,17 @@
     <meta name="facebook-domain-verification" content="punfm6szvcn88zlho0k9z861axpmb5" />
 
     <!-- Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-338TEK08MW"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-338TEK08MW', { send_page_view: false });
+      if (!window.location.pathname.startsWith('/presente/')) {
+        var analyticsScript = document.createElement('script');
+        analyticsScript.async = true;
+        analyticsScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-338TEK08MW';
+        document.head.appendChild(analyticsScript);
+        gtag('js', new Date());
+        gtag('config', 'G-338TEK08MW', { send_page_view: false });
+      }
     </script>
   </head>
 

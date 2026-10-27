@@ -43,3 +43,11 @@ test('login, recovery, legal pages and payment confirmation stay reachable', () 
   }
   for (const path of ['/auth/unknown', '/administer', '/pagamento/123']) assert.equal(isMaintenanceExemptPath(path), false);
 });
+
+test('only complete gift tokens remain accessible during maintenance', () => {
+  const path = '/presente/' + 'a1'.repeat(32);
+  assert.equal(maintenanceDecision({ ...state, path }), 'allow');
+  for (const invalid of ['/presentes', '/presentes/novo', '/presente/123', path + '/extra']) {
+    assert.equal(isMaintenanceExemptPath(invalid), false);
+  }
+});

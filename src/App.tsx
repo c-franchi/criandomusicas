@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { usePWAUpdate } from "@/hooks/usePWAUpdate";
 import PageLoader from "@/components/PageLoader";
@@ -43,6 +43,12 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const MusicRules = lazy(() => import("./pages/MusicRules"));
 const MusicShare = lazy(() => import("./pages/MusicShare"));
+const GiftWizard = lazy(() => import('./components/gifts/flow/GiftWizard'));
+const GiftTracking = lazy(() => import('./components/gifts/flow/GiftTracking'));
+const GiftList = lazy(() => import('./components/gifts/flow/GiftTracking').then(module => ({default:module.GiftList})));
+const PublicGift = lazy(() => import('./components/gifts/flow/PublicGift'));
+const GiftPrint = lazy(() => import('./components/gifts/flow/GiftPrint'));
+const AdminGifts = lazy(() => import('./components/gifts/flow/AdminGifts'));
 const MusicalGiftProduct = lazy(() => import("./pages/MusicalGiftProduct"));
 const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
@@ -51,6 +57,12 @@ const AdminEmailMarketing = lazy(() => import("./pages/AdminEmailMarketing"));
 const PaymentGateway = lazy(() => import("./pages/PaymentGateway"));
 
 const queryClient = new QueryClient();
+
+const PageHelpers = () => {
+  const {pathname} = useLocation();
+  if (pathname.startsWith('/presente/')) return null;
+  return <><ProfileOnboardingWrapper /><TourWrapper /><RouteTracker /><ContinueFlowBar /></>;
+};
 
 const RouteTracker = () => {
   usePageTracking();
@@ -85,10 +97,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <MaintenanceGate>
-          <ProfileOnboardingWrapper />
-          <TourWrapper />
-          <RouteTracker />
-          <ContinueFlowBar />
+          <PageHelpers />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Critical routes - loaded immediately */}
@@ -99,6 +108,13 @@ const App = () => (
               <Route path="/auth/callback" element={<Auth />} />
               
               {/* Lazy loaded routes */}
+              <Route path="/presentes" element={<GiftList />} />
+              <Route path="/presentes/novo" element={<GiftWizard />} />
+              <Route path="/presentes/:id/editar" element={<GiftWizard />} />
+              <Route path="/presentes/:id/imprimir" element={<GiftPrint />} />
+              <Route path="/presentes/:id" element={<GiftTracking />} />
+              <Route path="/presente/:token" element={<PublicGift />} />
+              <Route path="/admin/presentes" element={<AdminGifts />} />
               <Route path="/briefing" element={<Briefing />} />
               <Route path="/cartao-digital" element={<MusicalGiftProduct product="digital" />} />
               <Route path="/musicas-curtas" element={<MusicalGiftProduct product="short" />} />

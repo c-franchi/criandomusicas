@@ -18,7 +18,7 @@ const hasMarketingConsent = (): boolean => {
 };
 
 const injectPixelScript = () => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || window.location.pathname.startsWith("/presente/")) return;
   if ((window as any).fbq) return;
   /* eslint-disable */
   // Facebook Pixel base code
@@ -43,7 +43,7 @@ const injectPixelScript = () => {
 };
 
 export const initMetaPixel = () => {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || window.location.pathname.startsWith("/presente/")) return;
   if (!META_PIXEL_ID) return;
   if (initialized) return;
   if (!hasMarketingConsent()) return;

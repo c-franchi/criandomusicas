@@ -17,7 +17,7 @@ declare global {
 }
 
 export const trackPageView = (path: string, title?: string) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/')) return;
   if (window.gtag && GA4_ID) {
     window.gtag('config', GA4_ID, {
       page_path: path,
@@ -38,7 +38,7 @@ export const trackEvent = (
   name: string,
   params: Record<string, unknown> = {},
 ) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/')) return;
   try {
     window.gtag?.('event', name, params);
   } catch (e) {
@@ -51,7 +51,7 @@ export const trackPixel = (
   name: string,
   params: Record<string, unknown> = {},
 ) => {
-  if (typeof window === 'undefined' || !window.fbq) return;
+  if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/') || !window.fbq) return;
   try {
     window.fbq('track', name, params);
   } catch (e) {
@@ -86,7 +86,7 @@ export const analytics = {
     trackEvent('apply_voucher', { code, success }),
   purchase: (params: { value: number; currency?: string; transaction_id?: string; event_id?: string }) => {
     const { value, currency = 'BRL', transaction_id, event_id } = params;
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/')) return;
     // Dedupe: never fire the same purchase twice (page refresh, re-verify, etc.)
     const dedupeKey = `analytics_purchase_${transaction_id || event_id || value}`;
     try {

@@ -1,6 +1,6 @@
 export const maintenanceQueryKey = ['site-maintenance'] as const;
 
-export const isMaintenanceExemptPath = (path: string) => [
+export const isMaintenanceExemptPath = (path: string) => /^\/presente\/[a-f0-9]{64}\/?$/.test(path) || [
   '/auth', '/auth/callback', '/~oauth/callback', '/pagamento-sucesso',
   '/privacidade', '/termos', '/regras', '/manutencao',
 ].includes(path.replace(/\/+$/, '') || '/');

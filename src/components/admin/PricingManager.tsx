@@ -36,6 +36,7 @@ const PricingManager = () => {
       const { data, error } = await supabase
         .from('pricing_config')
         .select('*')
+        .not('id', 'like', 'gift_%')
         .order('sort_order', { ascending: true });
 
       if (error) throw error;
