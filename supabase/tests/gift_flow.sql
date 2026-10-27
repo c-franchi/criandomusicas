@@ -20,7 +20,8 @@ begin
  perform public.musical_gift_action(g,'publish','{"reviewed":true}');
  result:=public.get_musical_gift(token);
  if result->>'recipient_name'<>'Fixture recipient' or result->>'audio_url'<>'https://example.com/gift-test-audio.mp3' or result->>'is_test'<>'true' then raise exception 'Published gift mismatch';end if;
- if result ?| array['owner_id','details','receipt_path','amount_cents','payment_confirmed_at','approved_by','public_token'] then raise exception 'Private fields leaked';end if;
+ if result ?| array['owner_id','receipt_path','amount_cents','payment_confirmed_at','approved_by','public_token'] then raise exception 'Private fields leaked';end if;
+ if (result->'details') - 'card_design' is distinct from '{}'::jsonb then raise exception 'Private gift details leaked';end if;
  execute 'reset role';
  update public.musical_gifts set available_from=now()+interval '1 day' where id=g;
  execute 'set local role authenticated';
