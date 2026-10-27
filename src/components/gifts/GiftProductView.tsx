@@ -1,3 +1,4 @@
+import { useGiftAvailability } from '@/hooks/useGiftAvailability';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -5,13 +6,14 @@ import { ArrowLeft, ArrowRight, Check, Gift, Heart, Music2, RotateCcw } from 'lu
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import GiftArtwork from '@/components/gifts/GiftArtwork';
-import { giftProducts, type GiftProduct } from '@/components/gifts/products';
+import { visibleGiftProducts, type GiftProduct } from '@/components/gifts/products';
 import '@/components/gifts/gifts.css';
 
 const themes = ['christmas', 'love', 'birthday', 'family', 'birth', 'friendship', 'gratitude', 'tribute', 'wedding', 'any'] as const;
 
 function GiftProductContent({ product }: { product: GiftProduct }) {
   const { t } = useTranslation('home');
+  const { physicalEnabled } = useGiftAvailability();
   const [theme, setTheme] = useState<typeof themes[number]>('love');
   const [revealed, setRevealed] = useState(false);
   const [duration, setDuration] = useState<15 | 30>(30);
@@ -72,13 +74,16 @@ function GiftProductContent({ product }: { product: GiftProduct }) {
         </section>
 
         <section className="mx-auto max-w-6xl px-5 pb-16"><h2 className="mb-6 text-2xl font-bold">{t('gifts.occasions')}</h2><ul className="flex flex-wrap gap-3">{occasions.map(occasion => <li key={occasion} className="rounded-full border border-border bg-card px-4 py-3 text-sm">{occasion}</li>)}</ul></section>
-        <nav aria-label={t('gifts.otherProducts')} className="border-t border-border px-5 py-10"><div className="mx-auto flex max-w-6xl flex-wrap gap-3">{giftProducts.filter(item => item.id !== product).map(item => <Button key={item.id} asChild variant="outline" className="h-auto min-h-12 whitespace-normal py-3"><Link to={item.path}>{t(`gifts.products.${item.id}.name`)}<ArrowRight className="h-4 w-4" /></Link></Button>)}</div></nav>
+        <nav aria-label={t('gifts.otherProducts')} className="border-t border-border px-5 py-10"><div className="mx-auto flex max-w-6xl flex-wrap gap-3">{visibleGiftProducts(physicalEnabled).filter(item => item.id !== product).map(item => <Button key={item.id} asChild variant="outline" className="h-auto min-h-12 whitespace-normal py-3"><Link to={item.path}>{t(`gifts.products.${item.id}.name`)}<ArrowRight className="h-4 w-4" /></Link></Button>)}</div></nav>
       </main>
     </div>
   );
 }
 
 export default function GiftProductView({ product }: { product: GiftProduct }) {
+  const { physicalEnabled, loading } = useGiftAvailability();
+  const { t } = useTranslation('home');
+  if (product === 'physical' && !physicalEnabled) return <main className="mx-auto max-w-xl px-5 py-16"><SEO title={t('giftFlow.physicalDisabledTitle')} noIndex /><h1 className="text-3xl font-semibold">{t('giftFlow.physicalDisabledTitle')}</h1><p className="my-6 text-muted-foreground">{t(loading ? 'giftFlow.loading' : 'giftFlow.physicalDisabledBody')}</p><Button asChild><Link to="/cartao-digital">{t('giftFlow.chooseDigital')}</Link></Button></main>;
   // Reset the presentation when navigating between products that share this lazy page.
   return <GiftProductContent key={product} product={product} />;
 }

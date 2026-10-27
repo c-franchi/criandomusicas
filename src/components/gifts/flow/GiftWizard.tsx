@@ -1,3 +1,4 @@
+import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -20,6 +21,7 @@ import {
   useGift,
   useGiftCatalog,
   useGiftCommands,
+  useGiftAudio,
   useOwnedGiftMusic,
 } from "@/hooks/useMusicalGifts";
 import {
@@ -42,6 +44,7 @@ export default function GiftWizard() {
   const [params] = useSearchParams();
   const loc = useLocation();
   const draft = useGift(id);
+  const availability = useGiftAvailability();
   const { t } = useTranslation("home");
   if (loading) return <PageLoader />;
   if (!user)
@@ -56,6 +59,26 @@ export default function GiftWizard() {
     return (
       <GiftShell title={t("giftFlow.create")}>
         <p role="alert">{t("giftFlow.loadError")}</p>
+      </GiftShell>
+    );
+  if (
+    (draft.data?.product || params.get("produto")) === "physical" &&
+    !availability.physicalEnabled
+  )
+    return (
+      <GiftShell title={t("giftFlow.physicalDisabledTitle")}>
+        <p className="mb-6 text-muted-foreground">
+          {t(
+            availability.loading
+              ? "giftFlow.loading"
+              : "giftFlow.physicalDisabledBody",
+          )}
+        </p>
+        <Button asChild>
+          <Link to="/presentes/novo?produto=digital">
+            {t("giftFlow.chooseDigital")}
+          </Link>
+        </Button>
       </GiftShell>
     );
   if (draft.data && draft.data.status !== "DRAFT")
@@ -111,6 +134,7 @@ function Editor({
         version: 0,
       },
   );
+  const previewAudio = useGiftAudio(form as MusicalGift);
   const [step, setStep] = useState(0);
   const [authorized, setAuthorized] = useState(!!initial?.source_order_id);
   const [busy, setBusy] = useState(false);
@@ -601,11 +625,19 @@ function Editor({
           <div className="grid gap-7 md:grid-cols-2">
             <GiftExperience
               key={JSON.stringify([form.theme, form.photo_data])}
-              data={form as MusicalGift}
+              data={{ ...form, ...previewAudio.data } as MusicalGift}
               preview
             />
             <div className="space-y-4">
               <h3 className="font-semibold">{t("giftFlow.summary")}</h3>
+              {form.music_source === "new" && (
+                <p
+                  role="status"
+                  className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed"
+                >
+                  {t("giftFlow.newMusicPreview")}
+                </p>
+              )}
               <p>{t(`gifts.products.${form.product}.name`)}</p>
               <p>
                 {t("giftFlow.recipient")}: {form.recipient_name}

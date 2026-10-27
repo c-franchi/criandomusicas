@@ -715,10 +715,21 @@
       "gift_qr_review_required": "Check QR readability before releasing printing.",
       "gift_invalid_photo": "Choose a valid JPG, PNG or WebP photo up to 8 MB.",
       "gift_physical_schedule_unavailable": "For printed cards, leave the release date empty at this stage.",
-      "gift_invalid_music_type": "Check the song details and save the draft again."
+      "gift_invalid_music_type": "Check the song details and save the draft again.",
+      "gift_physical_disabled": "Physical cards are disabled. Please choose a digital card."
     },
     "messageOptional": "Optional message",
     "durationExceeded": "The audio exceeds the selected duration. Upload the correct version before release.",
-    "cancelOrder": "Cancel unpaid order"
+    "cancelOrder": "Cancel unpaid order",
+    "physicalDisabledTitle": "Physical cards are disabled",
+    "physicalDisabledBody": "We currently offer digital musical cards. Creating physical cards is disabled.",
+    "chooseDigital": "Create a digital card",
+    "physicalToggleHelp": "This control shows or hides physical cards in the storefront and allows or blocks new physical orders and tests. Keep it off to offer digital gifts only.",
+    "newMusicPreview": "This is a visual preview: your new song has not been produced yet. Saving or creating a test does not automatically generate audio. Production must be started in the admin panel; the gift can only be released once the track is ready.",
+    "musicNotReadyTitle": "The song is not ready yet",
+    "musicProductionNotStarted": "Song production has not started. This card is a preview without audio. After order confirmation or test approval, an administrator must start production and prepare the track before releasing the gift.",
+    "musicProductionPending": "The production order exists, but no track is ready yet. Lyrics and audio must be prepared through the existing process. The gift link will only become available after completion and review.",
+    "manageProduction": "Open production in admin",
+    "audioLoadError": "The audio could not be loaded. Check your connection and reopen the gift. If it continues, contact the sender."
   }
 }

@@ -5,3 +5,5 @@ export const giftProducts = [
 ] as const;
 
 export type GiftProduct = typeof giftProducts[number]['id'];
+
+export const visibleGiftProducts = (physicalEnabled = false) => giftProducts.filter(product => product.id !== 'physical' || physicalEnabled);

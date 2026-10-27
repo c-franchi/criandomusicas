@@ -733,10 +733,21 @@
       "gift_qr_review_required": "Confira a leitura do QR Code antes de liberar a impressão.",
       "gift_invalid_photo": "Escolha uma foto JPG, PNG ou WebP válida, com até 8 MB.",
       "gift_physical_schedule_unavailable": "Para cartões físicos, deixe a data de liberação vazia nesta etapa.",
-      "gift_invalid_music_type": "Confira os dados da música e salve o rascunho novamente."
+      "gift_invalid_music_type": "Confira os dados da música e salve o rascunho novamente.",
+      "gift_physical_disabled": "Os cartões físicos estão desabilitados. Escolha um cartão digital."
     },
     "messageOptional": "Mensagem opcional",
     "durationExceeded": "O áudio ultrapassa a duração escolhida. Envie a versão correta antes de liberar.",
-    "cancelOrder": "Cancelar pedido não pago"
+    "cancelOrder": "Cancelar pedido não pago",
+    "physicalDisabledTitle": "Cartões físicos desabilitados",
+    "physicalDisabledBody": "No momento, oferecemos cartões musicais digitais. A criação de cartões físicos está desabilitada.",
+    "chooseDigital": "Criar cartão digital",
+    "physicalToggleHelp": "Este controle mostra ou oculta o cartão físico na vitrine e permite ou bloqueia novos pedidos e testes físicos. Mantenha desabilitado para trabalhar somente com presentes digitais.",
+    "newMusicPreview": "Esta é uma prévia visual: a música nova ainda não foi produzida. Salvar ou criar um teste não gera áudio automaticamente. A produção precisa ser iniciada no ADM; o presente só poderá ser liberado depois que a faixa estiver pronta.",
+    "musicNotReadyTitle": "A música ainda não está pronta",
+    "musicProductionNotStarted": "A produção da música ainda não foi iniciada. Este cartão é uma prévia e não possui áudio. Após a confirmação do pedido ou aprovação do teste, o ADM precisa iniciar a produção e preparar a faixa antes de liberar o presente.",
+    "musicProductionPending": "O pedido de produção já foi criado, mas ainda não há uma faixa pronta. A letra e o áudio precisam ser preparados pelo processo atual. O link do presente ficará disponível somente após a conclusão e a conferência.",
+    "manageProduction": "Abrir produção no ADM",
+    "audioLoadError": "Não foi possível carregar o áudio. Confira sua conexão e tente abrir o presente novamente. Se continuar, avise quem enviou o cartão."
   }
 }

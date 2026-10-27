@@ -6,7 +6,7 @@ import { ThemeProvider } from 'next-themes';
 import { useTranslation } from 'react-i18next';
 import MusicalGiftsSection from '@/components/gifts/MusicalGiftsSection';
 import GiftProductView from '@/components/gifts/GiftProductView';
-import { giftProducts } from '@/components/gifts/products';
+import { giftProducts, visibleGiftProducts } from '@/components/gifts/products';
 import '@/lib/i18n';
 import '@/index.css';
 
@@ -17,7 +17,7 @@ export default function Preview() {
       <header className="border-b border-border bg-card px-5 py-4">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
           <Link to="/" className="font-bold gradient-text">Criando Músicas</Link>
-          <nav aria-label={t('gifts.label')} className="flex flex-wrap gap-4 text-sm">{giftProducts.map(item => <Link key={item.id} to={item.path} className="py-2 hover:text-primary">{t(`gifts.products.${item.id}.name`)}</Link>)}</nav>
+          <nav aria-label={t('gifts.label')} className="flex flex-wrap gap-4 text-sm">{visibleGiftProducts().map(item => <Link key={item.id} to={item.path} className="py-2 hover:text-primary">{t(`gifts.products.${item.id}.name`)}</Link>)}</nav>
           <div className="flex gap-2">{['pt-BR', 'en', 'es', 'it'].map(lang => <button key={lang} onClick={() => i18n.changeLanguage(lang)} aria-pressed={i18n.language === lang} className="min-h-11 rounded-lg border border-border px-2 text-xs aria-pressed:bg-primary aria-pressed:text-primary-foreground">{lang}</button>)}</div>
         </div>
       </header>

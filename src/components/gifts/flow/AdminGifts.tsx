@@ -1,5 +1,6 @@
+import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,7 +37,10 @@ export default function AdminGifts() {
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
   const { t } = useTranslation("home");
   const list = useGiftList(true);
-  const [selected, setSelected] = useState<string>();
+  const [params] = useSearchParams();
+  const [selected, setSelected] = useState<string | undefined>(
+    params.get("presente") || undefined,
+  );
   if (loading || roleLoading) return <PageLoader />;
   if (!user)
     return <Navigate to="/auth?redirect=%2Fadmin%2Fpresentes" replace />;
@@ -102,6 +106,7 @@ export default function AdminGifts() {
 }
 function GiftAdminDetail({ id }: { id: string }) {
   const query = useGift(id);
+  const { physicalEnabled } = useGiftAvailability();
   const g = query.data;
   const audio = useGiftAudio(g);
   const commands = useGiftCommands();
@@ -161,6 +166,8 @@ function GiftAdminDetail({ id }: { id: string }) {
   if (query.isPending) return <PageLoader />;
   if (query.isError || !g) return <p role="alert">{t("giftFlow.loadError")}</p>;
   const url = g.status === "ACTIVE" ? giftUrl(g.public_token) : "";
+  const physicalTestBlocked =
+    g.product === "physical" && g.is_test && !physicalEnabled;
   return (
     <div className="space-y-6">
       <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
@@ -189,6 +196,16 @@ function GiftAdminDetail({ id }: { id: string }) {
           <p className="whitespace-pre-line break-words text-sm">
             {t("giftFlow.address")}: {g.details.address}
           </p>
+        )}
+        {physicalTestBlocked && (
+          <div className="space-y-3 rounded-xl border border-border p-4">
+            <p className="text-sm">{t("giftFlow.physicalDisabledBody")}</p>
+            <Button asChild variant="outline">
+              <Link to="/presentes/novo?produto=digital">
+                {t("giftFlow.chooseDigital")}
+              </Link>
+            </Button>
+          </div>
         )}
         {g.music_source === "new" && (
           <details>
@@ -266,7 +283,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             </Button>
           </div>
         )}
-        {g.music_source === "new" &&
+        {!physicalTestBlocked && g.music_source === "new" &&
           ["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
             <div className="flex flex-wrap gap-3">
               {!g.production_order_id ? (
@@ -325,56 +342,59 @@ function GiftAdminDetail({ id }: { id: string }) {
             {t("giftFlow.productionId")}: {g.production_order_id}
           </p>
         )}
-        {["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
-          <div className="space-y-4 border-t border-border pt-5">
-            <p className="text-sm text-muted-foreground">
-              {t("giftFlow.releaseRequirements")}
-            </p>
-            <label className="flex items-start gap-3 text-sm">
-              <Checkbox
-                checked={reviewed}
-                onCheckedChange={(v) => setReviewed(v === true)}
-              />
-              {t("giftFlow.reviewGift")}
-            </label>
-            {g.product === "short" && (
+        {!physicalTestBlocked &&
+          ["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
+            <div className="space-y-4 border-t border-border pt-5">
+              <p className="text-sm text-muted-foreground">
+                {t("giftFlow.releaseRequirements")}
+              </p>
               <label className="flex items-start gap-3 text-sm">
                 <Checkbox
-                  checked={durationChecked}
-                  onCheckedChange={(v) => setDurationChecked(v === true)}
+                  checked={reviewed}
+                  onCheckedChange={(v) => setReviewed(v === true)}
                 />
-                {t("giftFlow.reviewDuration", { seconds: g.duration_seconds })}
+                {t("giftFlow.reviewGift")}
               </label>
-            )}
-            {g.product === "short" &&
-              audioDuration !== null &&
-              audioDuration > (g.duration_seconds || 0) + 0.05 && (
-                <p role="alert" className="text-sm text-destructive">
-                  {t("giftFlow.durationExceeded")}
-                </p>
+              {g.product === "short" && (
+                <label className="flex items-start gap-3 text-sm">
+                  <Checkbox
+                    checked={durationChecked}
+                    onCheckedChange={(v) => setDurationChecked(v === true)}
+                  />
+                  {t("giftFlow.reviewDuration", {
+                    seconds: g.duration_seconds,
+                  })}
+                </label>
               )}
-            <Button
-              disabled={
-                busy ||
-                !reviewed ||
-                !audio.data?.audio_url ||
-                (g.product === "short" &&
-                  (!durationChecked ||
-                    audioDuration === null ||
-                    !Number.isFinite(audioDuration) ||
-                    audioDuration > (g.duration_seconds || 0) + 0.05))
-              }
-              onClick={() =>
-                void action("publish", {
-                  reviewed: true,
-                  duration_checked: durationChecked,
-                })
-              }
-            >
-              {t("giftFlow.publish")}
-            </Button>
-          </div>
-        )}
+              {g.product === "short" &&
+                audioDuration !== null &&
+                audioDuration > (g.duration_seconds || 0) + 0.05 && (
+                  <p role="alert" className="text-sm text-destructive">
+                    {t("giftFlow.durationExceeded")}
+                  </p>
+                )}
+              <Button
+                disabled={
+                  busy ||
+                  !reviewed ||
+                  !audio.data?.audio_url ||
+                  (g.product === "short" &&
+                    (!durationChecked ||
+                      audioDuration === null ||
+                      !Number.isFinite(audioDuration) ||
+                      audioDuration > (g.duration_seconds || 0) + 0.05))
+                }
+                onClick={() =>
+                  void action("publish", {
+                    reviewed: true,
+                    duration_checked: durationChecked,
+                  })
+                }
+              >
+                {t("giftFlow.publish")}
+              </Button>
+            </div>
+          )}
         {g.status === "ACTIVE" && (
           <div className="space-y-4 border-t border-border pt-5">
             <Button asChild>
@@ -578,6 +598,7 @@ function PriceEditor({ price }: { price: GiftPrice }) {
                 .single();
               if (error) throw error;
               void qc.invalidateQueries({ queryKey: ["gift-catalog"] });
+              void qc.invalidateQueries({ queryKey: ["gift-availability"] });
               toast({ title: t("giftFlow.saved") });
             } catch {
               setError(t("giftFlow.genericError"));
@@ -612,6 +633,9 @@ function OperationsEditor({ initial }: { initial: GiftOperations }) {
   return (
     <section className="space-y-5 rounded-2xl border border-border bg-card p-5">
       <h2 className="text-xl font-semibold">{t("giftFlow.operation")}</h2>
+      <p className="text-sm text-muted-foreground">
+        {t("giftFlow.physicalToggleHelp")}
+      </p>
       {(
         ["physical_enabled", "pickup_enabled", "shipping_enabled"] as const
       ).map((key) => (
@@ -683,6 +707,7 @@ function OperationsEditor({ initial }: { initial: GiftOperations }) {
               .single();
             if (error) throw error;
             void qc.invalidateQueries({ queryKey: ["gift-catalog"] });
+            void qc.invalidateQueries({ queryKey: ["gift-availability"] });
             toast({ title: t("giftFlow.saved") });
           } catch {
             setError(t("giftFlow.genericError"));

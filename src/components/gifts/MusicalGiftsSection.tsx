@@ -1,14 +1,17 @@
+import { useGiftAvailability } from '@/hooks/useGiftAvailability';
 import { Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import GiftArtwork from './GiftArtwork';
-import { giftProducts } from './products';
+import { visibleGiftProducts } from './products';
 import './gifts.css';
 
 export default function MusicalGiftsSection() {
   const { t } = useTranslation('home');
+  const { physicalEnabled } = useGiftAvailability();
+  const products = visibleGiftProducts(physicalEnabled);
   useEffect(() => {
     if (window.location.hash === '#presentes-musicais') {
       document.getElementById('presentes-musicais')?.scrollIntoView();
@@ -22,8 +25,8 @@ export default function MusicalGiftsSection() {
           <h2 id="musical-gifts-title" className="text-3xl font-bold leading-tight sm:text-4xl">{t('gifts.title')}</h2>
           <p className="mt-5 text-base leading-relaxed text-muted-foreground">{t('gifts.description')}</p>
         </div>
-        <div className="grid gap-6 md:grid-cols-3">
-          {giftProducts.map(({ id, path }) => (
+        <div className={`grid gap-6 ${products.length === 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+          {products.map(({ id, path }) => (
             <article key={id} className="flex min-w-0 flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm transition-shadow hover:shadow-xl">
               <Link to={path} aria-label={t(`gifts.products.${id}.name`)} tabIndex={-1} className="block"><GiftArtwork product={id} /></Link>
               <div className="flex flex-1 flex-col p-6">

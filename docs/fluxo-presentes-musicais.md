@@ -47,3 +47,9 @@ As rotas de presente desativam analytics de marketing e usam noindex/referrer no
 - Renderização de 80 combinações de idioma/tema/cartão e decodificação independente do QR Code.
 
 Ainda requer validação humana autenticada no site publicado: pagamento real com conferência bancária, produção/upload reais, reprodução móvel, envio manual, leitura de prova impressa e conferência visual em dispositivos. Nenhum pagamento, mensagem externa ou despacho foi realizado pelos testes.
+
+## Atualização: foco em cartões digitais
+
+Cartões físicos ficam desabilitados por padrão. O controle existente em ADM → Presentes musicais → Preços e operação governa também a vitrine, as opções de criação, os links diretos e a criação/teste no banco. Falha ao carregar a configuração mantém o produto oculto. Pedidos anteriores são preservados; pedidos físicos já pagos podem concluir o atendimento mesmo após desligar novas vendas.
+
+A prévia de música nova avisa explicitamente que não gera áudio. O acompanhamento distingue produção ainda não iniciada de produção sem faixa pronta e oferece acesso direto ao presente no ADM. A opção de música existente já pronta permite ouvir a faixa na prévia. Publicação continua bloqueada sem uma faixa READY real; não há geração de música simulada.

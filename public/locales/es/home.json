@@ -715,10 +715,21 @@
       "gift_qr_review_required": "Comprueba la lectura del QR antes de imprimir.",
       "gift_invalid_photo": "Elige una foto JPG, PNG o WebP válida de hasta 8 MB.",
       "gift_physical_schedule_unavailable": "Para tarjetas físicas, deja vacía la fecha de habilitación.",
-      "gift_invalid_music_type": "Revisa los datos de la canción y vuelve a guardar."
+      "gift_invalid_music_type": "Revisa los datos de la canción y vuelve a guardar.",
+      "gift_physical_disabled": "Las tarjetas físicas están deshabilitadas. Elige una tarjeta digital."
     },
     "messageOptional": "Mensaje opcional",
     "durationExceeded": "El audio supera la duración elegida. Sube la versión correcta antes de habilitar.",
-    "cancelOrder": "Cancelar pedido sin pagar"
+    "cancelOrder": "Cancelar pedido sin pagar",
+    "physicalDisabledTitle": "Tarjetas físicas deshabilitadas",
+    "physicalDisabledBody": "Actualmente ofrecemos tarjetas musicales digitales. La creación de tarjetas físicas está deshabilitada.",
+    "chooseDigital": "Crear tarjeta digital",
+    "physicalToggleHelp": "Este control muestra u oculta las tarjetas físicas en la tienda y permite o bloquea nuevos pedidos y pruebas físicas. Manténgalo desactivado para ofrecer solo regalos digitales.",
+    "newMusicPreview": "Esta es una vista previa visual: la canción nueva aún no se ha producido. Guardar o crear una prueba no genera audio automáticamente. La producción debe iniciarse en el panel administrativo; el regalo solo se podrá liberar cuando la pista esté lista.",
+    "musicNotReadyTitle": "La canción aún no está lista",
+    "musicProductionNotStarted": "La producción de la canción aún no se ha iniciado. Esta tarjeta es una vista previa sin audio. Tras confirmar el pedido o aprobar la prueba, el administrador debe iniciar la producción y preparar la pista antes de liberar el regalo.",
+    "musicProductionPending": "El pedido de producción ya existe, pero aún no hay una pista lista. La letra y el audio deben prepararse mediante el proceso actual. El enlace estará disponible tras completar y revisar el regalo.",
+    "manageProduction": "Abrir producción en administración",
+    "audioLoadError": "No se pudo cargar el audio. Comprueba tu conexión y vuelve a abrir el regalo. Si continúa, avisa a quien envió la tarjeta."
   }
 }
