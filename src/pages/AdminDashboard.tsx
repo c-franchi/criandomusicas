@@ -577,7 +577,7 @@ const AdminDashboard = () => {
       });
 
       setOrders(prev => prev.map(o => 
-        o.id === orderId ? { ...o, payment_status: 'PAID', status: isInstrumental ? 'LYRICS_APPROVED' : 'LYRICS_PENDING' } : o
+        o.id === orderId ? { ...o, payment_status: 'PAID', status: newStatus } : o
       ));
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
