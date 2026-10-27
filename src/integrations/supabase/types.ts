@@ -1,4 +1,3 @@
-import type { MusicalGift, GiftOperations } from '../../lib/gifts'
 export type Json =
   | string
   | number
@@ -15,16 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      musical_gifts: { Row: MusicalGift; Insert: never; Update: never; Relationships: [] }
-      gift_operations: { Row: GiftOperations; Insert: never; Update: Partial<Omit<GiftOperations,'id'|'updated_at'>>; Relationships: [] }
-      musical_gift_events: { Row: {id:string;gift_id:string;event:string;actor_id:string|null;created_at:string}; Insert:never;Update:never;Relationships:[] }
-
-      site_maintenance: {
-        Row: { id: boolean; enabled: boolean; title: string; message: string; updated_at: string }
-        Insert: { id?: boolean; enabled?: boolean; title?: string; message?: string; updated_at?: string }
-        Update: { enabled?: boolean; title?: string; message?: string }
-        Relationships: []
-      }
       audio_inputs: {
         Row: {
           created_at: string
@@ -331,6 +320,39 @@ export type Database = {
           },
         ]
       }
+      gift_operations: {
+        Row: {
+          id: boolean
+          physical_enabled: boolean
+          pickup_enabled: boolean
+          print_format: string | null
+          production_estimate: string | null
+          shipping_enabled: boolean
+          shipping_fee_cents: number | null
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          physical_enabled?: boolean
+          pickup_enabled?: boolean
+          print_format?: string | null
+          production_estimate?: string | null
+          shipping_enabled?: boolean
+          shipping_fee_cents?: number | null
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          physical_enabled?: boolean
+          pickup_enabled?: boolean
+          print_format?: string | null
+          production_estimate?: string | null
+          shipping_enabled?: boolean
+          shipping_fee_cents?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lyrics: {
         Row: {
           approved_at: string | null
@@ -404,6 +426,190 @@ export type Database = {
           transaction_id?: string
         }
         Relationships: []
+      }
+      musical_gift_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event: string
+          gift_id: string
+          id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event: string
+          gift_id: string
+          id?: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event?: string
+          gift_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musical_gift_events_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "musical_gifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      musical_gifts: {
+        Row: {
+          admin_message: string | null
+          amount_cents: number | null
+          approved_by: string | null
+          audio_duration_seconds: number | null
+          available_from: string | null
+          checkout_order_id: string | null
+          created_at: string
+          dedication: string
+          delivery_channel: string
+          details: Json
+          duration_seconds: number | null
+          has_card: boolean
+          id: string
+          is_test: boolean
+          lyric_cues: Json
+          lyrics_generation_started_at: string | null
+          music_source: string
+          occasion: string
+          owner_id: string
+          payment_confirmed_at: string | null
+          photo_data: string | null
+          plan_id: string | null
+          product: string
+          production_order_id: string | null
+          public_token: string
+          receipt_path: string | null
+          recipient_name: string
+          sender_name: string
+          shipping_cents: number
+          shipping_status: string
+          source_order_id: string | null
+          status: string
+          stripe_session_id: string | null
+          theme: string
+          track_version: number
+          tracking_code: string | null
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          admin_message?: string | null
+          amount_cents?: number | null
+          approved_by?: string | null
+          audio_duration_seconds?: number | null
+          available_from?: string | null
+          checkout_order_id?: string | null
+          created_at?: string
+          dedication?: string
+          delivery_channel?: string
+          details?: Json
+          duration_seconds?: number | null
+          has_card?: boolean
+          id?: string
+          is_test?: boolean
+          lyric_cues?: Json
+          lyrics_generation_started_at?: string | null
+          music_source: string
+          occasion?: string
+          owner_id: string
+          payment_confirmed_at?: string | null
+          photo_data?: string | null
+          plan_id?: string | null
+          product: string
+          production_order_id?: string | null
+          public_token?: string
+          receipt_path?: string | null
+          recipient_name?: string
+          sender_name?: string
+          shipping_cents?: number
+          shipping_status?: string
+          source_order_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          theme?: string
+          track_version?: number
+          tracking_code?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          admin_message?: string | null
+          amount_cents?: number | null
+          approved_by?: string | null
+          audio_duration_seconds?: number | null
+          available_from?: string | null
+          checkout_order_id?: string | null
+          created_at?: string
+          dedication?: string
+          delivery_channel?: string
+          details?: Json
+          duration_seconds?: number | null
+          has_card?: boolean
+          id?: string
+          is_test?: boolean
+          lyric_cues?: Json
+          lyrics_generation_started_at?: string | null
+          music_source?: string
+          occasion?: string
+          owner_id?: string
+          payment_confirmed_at?: string | null
+          photo_data?: string | null
+          plan_id?: string | null
+          product?: string
+          production_order_id?: string | null
+          public_token?: string
+          receipt_path?: string | null
+          recipient_name?: string
+          sender_name?: string
+          shipping_cents?: number
+          shipping_status?: string
+          source_order_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          theme?: string
+          track_version?: number
+          tracking_code?: string | null
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "musical_gifts_checkout_order_id_fkey"
+            columns: ["checkout_order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musical_gifts_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_config"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musical_gifts_production_order_id_fkey"
+            columns: ["production_order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "musical_gifts_source_order_id_fkey"
+            columns: ["source_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_logs: {
         Row: {
@@ -945,12 +1151,36 @@ export type Database = {
           },
         ]
       }
+      site_maintenance: {
+        Row: {
+          enabled: boolean
+          id: boolean
+          message: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          id?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          id?: boolean
+          message?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tracks: {
         Row: {
           allow_home_display: boolean | null
-          duration_seconds: number | null
           audio_url: string | null
           created_at: string
+          duration_seconds: number | null
           error_message: string | null
           id: string
           order_id: string
@@ -960,9 +1190,9 @@ export type Database = {
         }
         Insert: {
           allow_home_display?: boolean | null
-          duration_seconds?: number | null
           audio_url?: string | null
           created_at?: string
+          duration_seconds?: number | null
           error_message?: string | null
           id?: string
           order_id: string
@@ -972,9 +1202,9 @@ export type Database = {
         }
         Update: {
           allow_home_display?: boolean | null
-          duration_seconds?: number | null
           audio_url?: string | null
           created_at?: string
+          duration_seconds?: number | null
           error_message?: string | null
           id?: string
           order_id?: string
@@ -1288,16 +1518,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      save_musical_gift: { Args:{p_id:string;p_data:Json;p_expected_version?:number};Returns:string }
-      musical_gift_action: { Args:{p_id:string;p_action:string;p_data?:Json};Returns:Json }
-      get_musical_gift: { Args:{p_token:string};Returns:Json }
-
+      claim_gift_lyrics: { Args: { p_order_id: string }; Returns: boolean }
+      confirm_gift_stripe: {
+        Args: { p_amount: number; p_order_id: string; p_session: string }
+        Returns: boolean
+      }
+      get_musical_gift: { Args: { p_token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      musical_gift_action: {
+        Args: { p_action: string; p_data?: Json; p_id: string }
+        Returns: Json
+      }
+      save_musical_gift: {
+        Args: { p_data: Json; p_expected_version?: number; p_id: string }
+        Returns: string
       }
     }
     Enums: {
