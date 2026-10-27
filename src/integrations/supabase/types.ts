@@ -14,13 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      gift_backgrounds: {
-        Row: { id: string; label: string; image_data: string; is_active: boolean; created_at: string }
-        Insert: { id?: string; label: string; image_data: string; is_active?: boolean; created_at?: string }
-        Update: { label?: string; image_data?: string; is_active?: boolean }
-        Relationships: []
-      }
-
       audio_inputs: {
         Row: {
           created_at: string
@@ -326,6 +319,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      gift_backgrounds: {
+        Row: {
+          created_at: string
+          id: string
+          image_data: string
+          is_active: boolean
+          label: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_data: string
+          is_active?: boolean
+          label: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_data?: string
+          is_active?: boolean
+          label?: string
+        }
+        Relationships: []
       }
       gift_operations: {
         Row: {
