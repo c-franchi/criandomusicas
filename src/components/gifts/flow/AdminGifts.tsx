@@ -28,6 +28,7 @@ import {
   type GiftOperations,
 } from "@/lib/gifts";
 import { getLocalizedPrice } from "@/lib/i18n-format";
+import type { MusicalGift, GiftPresentation } from "@/lib/gifts";
 import GiftShell from "./GiftShell";
 import GiftQr from "./GiftQr";
 import GiftExperience from "./GiftExperience";
@@ -108,7 +109,7 @@ function GiftAdminDetail({ id }: { id: string }) {
   const { user } = useAuth();
   const query = useGift(id);
   const { physicalEnabled } = useGiftAvailability();
-  const g = query.data;
+  const g = query.data as unknown as MusicalGift;
   const audio = useGiftAudio(g);
   const commands = useGiftCommands();
   const { t, i18n } = useTranslation("home");
@@ -526,7 +527,7 @@ function GiftAdminDetail({ id }: { id: string }) {
       </section>
       <GiftExperience
         key={g.version}
-        data={{ ...g, ...audio.data }}
+        data={{ ...g, ...audio.data } as unknown as GiftPresentation}
         preview
         onDuration={setAudioDuration}
       />

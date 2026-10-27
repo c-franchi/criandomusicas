@@ -166,7 +166,7 @@ export default function Checkout() {
 
         const { data: gift, error: giftError } = await supabase.from('musical_gifts').select('*').eq('checkout_order_id', orderId).maybeSingle();
         if (giftError) throw giftError;
-        setGiftOrder(gift);
+        setGiftOrder(gift as never);
         if (gift && data.payment_status === 'PAID') { navigate(`/presentes/${gift.id}`); return; }
         // If already paid, redirect based on order type
         if (data.payment_status === 'PAID') {

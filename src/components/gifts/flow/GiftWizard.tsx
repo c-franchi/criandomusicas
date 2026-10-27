@@ -89,7 +89,7 @@ export default function GiftWizard() {
   return (
     <Editor
       key={id || params.get("produto")}
-      initial={draft.data}
+      initial={draft.data as unknown as MusicalGift}
       product={params.get("produto") || "digital"}
     />
   );
@@ -225,7 +225,7 @@ function Editor({
       .eq("id", id)
       .single();
     if (error) throw error;
-    patch(data);
+    patch(data as unknown as Partial<MusicalGift>);
     return id;
   };
   const finish = async (action?: string) => {

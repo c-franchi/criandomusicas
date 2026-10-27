@@ -251,7 +251,7 @@ const AdminDashboard = () => {
         })
       );
 
-      setOrders(ordersWithDetails);
+      setOrders(ordersWithDetails as unknown as AdminOrder[]);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
