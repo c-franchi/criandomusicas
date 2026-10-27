@@ -119,3 +119,22 @@ test("image fields reject active schemes and mapping preserves funny, romantic a
     "infantil",
   );
 });
+
+test("card duration selects a distinct configured price and never adds the standalone short-card fee", () => {
+  const full = {...gift, music_source:"new"};
+  const short = {...full, duration_seconds:15};
+  const prices=[price("gift_digital_new",5000),price("gift_digital_new_15",1700),price("gift_digital_new_30",2300),price("gift_short_card",300)];
+  assert.equal(giftPlanId(short),"gift_digital_new_15");
+  assert.equal(quoteGift(short,prices),1700);
+  assert.equal(quoteGift({...short,duration_seconds:30},prices),2300);
+  assert.equal(quoteGift(full,prices),5000);
+  assert.equal(quoteGift(short,[price("gift_digital_new",5000)]),null);
+});
+test("customer printing needs no postal operation or shipping charge and still honors the physical switch",()=>{
+ const card={...gift,product:"physical",music_source:"new",duration_seconds:30,details:{fulfillment:"self_print"}};
+ const prices=[price("gift_physical_new_30",2500)];
+ const ops={physical_enabled:true,print_format:"A5",pickup_enabled:false,shipping_enabled:false,shipping_fee_cents:null};
+ assert.equal(quoteGift(card,prices,ops),2500);
+ assert.equal(quoteGift(card,prices,{...ops,physical_enabled:false}),null);
+ assert.equal(quoteGift(card,prices,{...ops,print_format:null}),null);
+});

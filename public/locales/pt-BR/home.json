@@ -472,24 +472,25 @@
         "conditions": "As músicas seguirão o processo real de produção. Não há geração simulada nesta página. O adicional de cartão digital terá suas condições informadas antes da compra."
       },
       "physical": {
-        "name": "Cartão Musical Físico",
+        "name": "Cartão Musical para Imprimir",
         "cardTitle": "Um presente que chega às mãos e toca o coração.",
         "headline": "UM CARTÃO PARA GUARDAR. UMA MÚSICA PARA SENTIR.",
-        "description": "Um cartão impresso, uma mensagem especial e um QR Code que revela uma música personalizada. Perfeito para acompanhar flores, chocolates, presentes de aniversário, declarações de amor e outras ocasiões especiais.",
-        "cta": "CRIAR MEU CARTÃO FÍSICO",
+        "description": "Personalize um cartão com sua foto, dedicatória e um QR Code que revela a música. Você imprime em casa ou em uma gráfica de sua escolha e entrega junto do presente.",
+        "cta": "CRIAR MEU CARTÃO PARA IMPRIMIR",
         "experienceTitle": "O cartão nas mãos. A emoção no celular.",
-        "experienceDescription": "O QR Code individual levará à mesma experiência musical do cartão digital. A ilustração apresenta o conceito; formato, papel e acabamento dependem das opções de impressão disponíveis.",
+        "experienceDescription": "Um cartão para imprimir com QR Code individual. Quem recebe escaneia, abre o presente na plataforma e ouve a música.",
         "included": [
-          "Nomes, mensagem e foto opcional.",
-          "Associação a uma música existente autorizada ou a uma nova criação.",
-          "QR Code individual apontando para o presente musical.",
-          "Prévia e conferência antes da liberação para impressão."
+          "Cartão personalizado para impressão pelo cliente.",
+          "QR Code individual que abre a experiência musical.",
+          "Foto, nomes e dedicatória personalizados.",
+          "Música e letra na página do presente."
         ],
         "steps": [
-          "Escolha a ocasião e o modelo disponível.",
-          "Personalize a mensagem e associe a música.",
-          "Confira a prévia, as opções de entrega e o pagamento.",
-          "Após a preparação e a conferência, o cartão segue para impressão e entrega."
+          "Escolha música existente ou nova, duração e modelo do cartão.",
+          "Preencha os nomes, a dedicatória e adicione sua foto.",
+          "Confira o pedido, pague e aprove a letra quando houver música nova.",
+          "Após a produção e a conferência, imprima o cartão ou salve como PDF.",
+          "Confira a leitura do QR Code e entregue seu presente."
         ],
         "occasions": [
           "Natal",
@@ -505,7 +506,7 @@
           "Presente corporativo",
           "Sem ocasião especial"
         ],
-        "conditions": "Impressão, retirada, envio e frete dependem da operação disponível. Não há rastreamento automático nem QR Code pronto para impressão nesta demonstração."
+        "conditions": "A impressão e a entrega são feitas por você. O arquivo para impressão é liberado depois da confirmação do pagamento, aprovação da letra, produção musical e conferência do cartão."
       }
     },
     "themes": {
@@ -586,7 +587,7 @@
     "pricePending": "Preço ou entrega aguardando configuração",
     "pixHelp": "Use o mesmo checkout da plataforma, com PIX ou cartão. O comprovante PIX será conferido pelo ADM antes de liberar a escolha e aprovação da letra.",
     "productionHelp": "Uma música nova seguirá o processo de produção atual. O cartão só será liberado quando a música estiver pronta e o presente for conferido.",
-    "shippingIncluded": "O total inclui o frete fixo configurado quando a opção for envio. Não há rastreamento automático.",
+    "shippingIncluded": "Depois da aprovação e da música pronta, você recebe o cartão para imprimir ou salvar em PDF. O QR Code abre a música na plataforma. Sem impressão ou envio pelos Correios incluídos.",
     "proceedPix": "Confirmar e ir ao pagamento",
     "canSaveDraft": "Você já pode salvar o rascunho. A compra será liberada quando preço e condições estiverem configurados.",
     "adminTest": "Criar teste do ADM, sem cobrança",
@@ -623,7 +624,7 @@
     "availabilityTerms": "Disponibilidade conforme os termos do serviço",
     "notPrintReady": "O cartão precisa estar liberado antes da prova de impressão.",
     "printProof": "Prova de impressão do cartão",
-    "printHelp": "Confira nomes, mensagem, imagem e leitura do QR em uma impressão de prova. Ajuste papel e escala no diálogo de impressão conforme o formato disponível.",
+    "printHelp": "Depois da aprovação e da música pronta, você recebe o cartão para imprimir ou salvar em PDF. O QR Code abre a música na plataforma. Sem impressão ou envio pelos Correios incluídos.",
     "print": "Imprimir prova",
     "scan": "Aponte a câmera do celular para ouvir seu presente.",
     "adminTitle": "Gestão de presentes musicais",
@@ -661,7 +662,7 @@
     "invalidPrice": "Informe um preço válido. Para vender, o valor deve ser maior que zero.",
     "operation": "Impressão e entrega física",
     "shippingFee": "Frete fixo em R$ (vazio = não configurado)",
-    "operationHelp": "Cadastre somente opções reais. O andamento de impressão e entrega é registrado manualmente; não há integração automática com transportadoras.",
+    "operationHelp": "A impressão pelo cliente não tem frete. Só habilite retirada ou envio se sua operação realmente oferecer esses serviços.",
     "invalidOperation": "Confira formato, meios de entrega e frete antes de habilitar a operação.",
     "channels": {
       "link": "Copiar link",
@@ -747,7 +748,7 @@
     "physicalDisabledTitle": "Cartões físicos desabilitados",
     "physicalDisabledBody": "No momento, oferecemos cartões musicais digitais. A criação de cartões físicos está desabilitada.",
     "chooseDigital": "Criar cartão digital",
-    "physicalToggleHelp": "Este controle mostra ou oculta o cartão físico na vitrine e permite ou bloqueia novos pedidos e testes físicos. Mantenha desabilitado para trabalhar somente com presentes digitais.",
+    "physicalToggleHelp": "Habilita cartões para o próprio cliente imprimir. Retirada e envio postal só aparecem se configurados separadamente.",
     "newMusicPreview": "Esta é uma prévia visual: a música nova ainda não foi produzida. Salvar ou criar um teste não gera áudio automaticamente. A produção precisa ser iniciada no ADM; o presente só poderá ser liberado depois que a faixa estiver pronta.",
     "musicNotReadyTitle": "A música ainda não está pronta",
     "musicProductionNotStarted": "A produção da música ainda não foi iniciada. Este cartão é uma prévia e não possui áudio. Após a confirmação do pedido ou aprovação do teste, o ADM precisa iniciar a produção e preparar a faixa antes de liberar o presente.",
@@ -763,6 +764,34 @@
     "musicStage": "Etapa da música",
     "approvalDone": "Letra selecionada para aprovação / produção",
     "approvalPending": "Aguardando aprovação da letra pelo cliente",
-    "shortLyricGuidance": "Música curta de até {{seconds}}s: mantenha no máximo {{words}} palavras e {{lines}} linhas cantadas, sem repetir o refrão. O áudio final será conferido e nunca poderá ultrapassar 40 segundos."
+    "shortLyricGuidance": "Música curta de até {{seconds}}s: mantenha no máximo {{words}} palavras e {{lines}} linhas cantadas, sem repetir o refrão. O áudio final será conferido e nunca poderá ultrapassar 40 segundos.",
+    "entryTitle": "Quero fazer minha música",
+    "withCardQuestion": "Quer transformar sua música em um cartão-presente?",
+    "withCard": "Música com cartão",
+    "songOnly": "Somente a música",
+    "cardFormat": "Como será o cartão?",
+    "printAtHome": "Físico — eu mesmo imprimo",
+    "selfPrintHelp": "Depois da aprovação e da música pronta, você recebe o cartão para imprimir ou salvar em PDF. O QR Code abre a música na plataforma. Sem impressão ou envio pelos Correios incluídos.",
+    "fullSong": "Música completa — duração padrão",
+    "returningToGift": "Voltando para o acompanhamento do seu cartão…",
+    "followGift": "Acompanhar meu presente",
+    "readyForRelease": "Música pronta — falta liberar o cartão",
+    "releaseNextStep": "A música já está anexada. O ADM deve conferir a prévia e marcar “Conferi o presente” para liberar o link e a impressão.",
+    "reviewAndRelease": "Conferir e liberar cartão",
+    "total": "Total do pedido",
+    "cardDesign": "Escolha o fundo do cartão",
+    "backgroundHelp": "O fundo decora o cartão. Sua foto permanece na frente, junto dos nomes e da mensagem.",
+    "backgroundAdmin": "Fundos enviados pela equipe",
+    "backgroundUploadHelp": "Envie uma arte sem dados pessoais, nomes ou QR Code. Ela ficará disponível na galeria pública de modelos. Use JPG, PNG ou WEBP; o sistema ajusta o tamanho.",
+    "backgroundName": "Nome do modelo",
+    "backgroundImage": "Imagem de fundo",
+    "hideBackground": "Ocultar das novas escolhas",
+    "showBackground": "Mostrar nas novas escolhas",
+    "designs": {
+      "hearts": "Corações",
+      "flowers": "Flores",
+      "celebration": "Celebração",
+      "classic": "Clássico"
+    }
   }
 }

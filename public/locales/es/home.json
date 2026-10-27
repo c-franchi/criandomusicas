@@ -454,24 +454,25 @@
         "conditions": "Las canciones seguirán el proceso real de producción. No hay generación simulada en esta página. Las condiciones de la tarjeta adicional se mostrarán antes de comprar."
       },
       "physical": {
-        "name": "Tarjeta Musical Impresa",
+        "name": "Tarjeta Musical para Imprimir",
         "cardTitle": "Un regalo que llega a las manos y toca el corazón.",
         "headline": "UNA TARJETA PARA GUARDAR. UNA CANCIÓN PARA SENTIR.",
-        "description": "Una tarjeta impresa, un mensaje especial y un código QR que revela una canción personalizada. Ideal para acompañar flores, chocolates, regalos de cumpleaños y declaraciones de amor.",
-        "cta": "CREAR MI TARJETA IMPRESA",
+        "description": "Personaliza una tarjeta con tu foto, dedicatoria y un QR que revela la canción. Imprímela en casa o en la imprenta que elijas y entrégala con el regalo.",
+        "cta": "CREAR MI TARJETA PARA IMPRIMIR",
         "experienceTitle": "La tarjeta en las manos. La emoción en el móvil.",
-        "experienceDescription": "El QR individual llevará a la misma experiencia musical de la tarjeta digital. La ilustración muestra el concepto; formato, papel y acabado dependerán de las opciones de impresión disponibles.",
+        "experienceDescription": "Una tarjeta para imprimir con QR individual. Quien la recibe lo escanea y escucha la canción en la plataforma.",
         "included": [
-          "Nombres, mensaje y foto opcional.",
-          "Una canción existente autorizada o una nueva creación.",
-          "QR individual que enlaza al regalo musical.",
-          "Vista previa y revisión antes de liberar la impresión."
+          "Tarjeta personalizada para imprimir.",
+          "QR individual para la experiencia musical.",
+          "Tu foto, nombres y dedicatoria.",
+          "Música y letra en la página del regalo."
         ],
         "steps": [
-          "Elige la ocasión y un modelo disponible.",
-          "Personaliza el mensaje y asocia la canción.",
-          "Revisa la vista previa, entrega y pago.",
-          "Después de prepararla y revisarla, la tarjeta pasa a impresión y entrega."
+          "Elige música nueva o existente, duración y diseño.",
+          "Añade nombres, dedicatoria y foto.",
+          "Revisa, paga y aprueba la letra de la música nueva.",
+          "Tras la producción y revisión, imprime o guarda como PDF.",
+          "Comprueba el QR y entrega tu regalo."
         ],
         "occasions": [
           "Navidad",
@@ -487,7 +488,7 @@
           "Regalo corporativo",
           "Sin ocasión especial"
         ],
-        "conditions": "Impresión, recogida, envío y costes dependerán de la operación disponible. Esta demostración no incluye seguimiento automático ni QR listo para imprimir."
+        "conditions": "La impresión y la entrega las realizas tú. Se habilita tras el pago, aprobación de letra, producción musical y revisión de la tarjeta."
       }
     },
     "themes": {
@@ -568,7 +569,7 @@
     "pricePending": "Precio o entrega pendiente de configuración",
     "pixHelp": "Usa el mismo checkout de la plataforma, con PIX o tarjeta. El administrador comprobará el recibo PIX antes de habilitar la elección y aprobación de la letra.",
     "productionHelp": "Las canciones nuevas siguen el proceso actual. El regalo se libera cuando la canción esté lista y se haya revisado.",
-    "shippingIncluded": "Para envíos, el total incluye el coste fijo configurado. No hay seguimiento automático.",
+    "shippingIncluded": "Tras la aprobación y la producción, podrás imprimir la tarjeta o guardarla como PDF. El QR abre la canción en la plataforma. No incluye impresión ni envío postal.",
     "proceedPix": "Confirmar e ir al pago",
     "canSaveDraft": "Ya puedes guardar el borrador. La compra se habilita al configurar precio y condiciones.",
     "adminTest": "Crear prueba del administrador, sin cobro",
@@ -605,7 +606,7 @@
     "availabilityTerms": "Disponibilidad según los términos del servicio",
     "notPrintReady": "La tarjeta debe estar habilitada antes de la prueba de impresión.",
     "printProof": "Prueba de impresión de tarjeta",
-    "printHelp": "Revisa nombres, mensaje, foto y lectura del QR en una prueba impresa. Ajusta papel y escala al formato disponible.",
+    "printHelp": "Tras la aprobación y la producción, podrás imprimir la tarjeta o guardarla como PDF. El QR abre la canción en la plataforma. No incluye impresión ni envío postal.",
     "print": "Imprimir prueba",
     "scan": "Apunta la cámara del móvil para escuchar tu regalo.",
     "adminTitle": "Gestión de regalos musicales",
@@ -643,7 +644,7 @@
     "invalidPrice": "Introduce un precio válido. Para vender debe ser mayor que cero.",
     "operation": "Impresión y entrega física",
     "shippingFee": "Envío fijo en R$ (vacío = sin configurar)",
-    "operationHelp": "Configura solo opciones reales. Impresión y entrega se registran manualmente; no hay integración automática con transportistas.",
+    "operationHelp": "La impresión por el cliente no tiene portes. Habilita recogida o envío solo si los ofreces.",
     "invalidOperation": "Revisa formato, formas de entrega y costes antes de habilitar la operación.",
     "channels": {
       "link": "Copiar enlace",
@@ -729,7 +730,7 @@
     "physicalDisabledTitle": "Tarjetas físicas deshabilitadas",
     "physicalDisabledBody": "Actualmente ofrecemos tarjetas musicales digitales. La creación de tarjetas físicas está deshabilitada.",
     "chooseDigital": "Crear tarjeta digital",
-    "physicalToggleHelp": "Este control muestra u oculta las tarjetas físicas en la tienda y permite o bloquea nuevos pedidos y pruebas físicas. Manténgalo desactivado para ofrecer solo regalos digitales.",
+    "physicalToggleHelp": "Habilita tarjetas para que el cliente las imprima. Recogida y envío solo aparecen si están configurados.",
     "newMusicPreview": "Esta es una vista previa visual: la canción nueva aún no se ha producido. Guardar o crear una prueba no genera audio automáticamente. La producción debe iniciarse en el panel administrativo; el regalo solo se podrá liberar cuando la pista esté lista.",
     "musicNotReadyTitle": "La canción aún no está lista",
     "musicProductionNotStarted": "La producción de la canción aún no se ha iniciado. Esta tarjeta es una vista previa sin audio. Tras confirmar el pedido o aprobar la prueba, el administrador debe iniciar la producción y preparar la pista antes de liberar el regalo.",
@@ -745,6 +746,34 @@
     "musicStage": "Etapa de la canción",
     "approvalDone": "Letra seleccionada para aprobación / producción",
     "approvalPending": "Pendiente de aprobación de letra por el cliente",
-    "shortLyricGuidance": "Canción de hasta {{seconds}}s: máximo {{words}} palabras y {{lines}} líneas cantadas, sin repetir el estribillo. Se comprobará el audio final y nunca podrá superar 40 segundos."
+    "shortLyricGuidance": "Canción de hasta {{seconds}}s: máximo {{words}} palabras y {{lines}} líneas cantadas, sin repetir el estribillo. Se comprobará el audio final y nunca podrá superar 40 segundos.",
+    "entryTitle": "Quiero crear mi música",
+    "withCardQuestion": "¿Quieres una tarjeta de regalo con tu canción?",
+    "withCard": "Música con tarjeta",
+    "songOnly": "Solo la música",
+    "cardFormat": "Formato de la tarjeta",
+    "printAtHome": "Físico — lo imprimo yo",
+    "selfPrintHelp": "Tras la aprobación y la producción, podrás imprimir la tarjeta o guardarla como PDF. El QR abre la canción en la plataforma. No incluye impresión ni envío postal.",
+    "fullSong": "Canción completa — duración estándar",
+    "returningToGift": "Volviendo al seguimiento de tu regalo…",
+    "followGift": "Seguir mi regalo",
+    "readyForRelease": "Música lista — falta liberar la tarjeta",
+    "releaseNextStep": "La música ya está adjunta. El administrador debe revisar la vista previa y confirmar la revisión para liberar el enlace y la impresión.",
+    "reviewAndRelease": "Revisar y liberar tarjeta",
+    "total": "Total del pedido",
+    "cardDesign": "Elige el fondo de la tarjeta",
+    "backgroundHelp": "El fondo decora la tarjeta. Tu foto permanece delante, con los nombres y el mensaje.",
+    "backgroundAdmin": "Fondos del equipo",
+    "backgroundUploadHelp": "Sube una imagen sin datos personales, nombres ni QR. Estará en la galería pública de modelos. Usa JPG, PNG o WEBP; el sistema ajusta el tamaño.",
+    "backgroundName": "Nombre del modelo",
+    "backgroundImage": "Imagen de fondo",
+    "hideBackground": "Ocultar de nuevas selecciones",
+    "showBackground": "Mostrar en nuevas selecciones",
+    "designs": {
+      "hearts": "Corazones",
+      "flowers": "Flores",
+      "celebration": "Celebración",
+      "classic": "Clásico"
+    }
   }
 }

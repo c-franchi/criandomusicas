@@ -162,7 +162,7 @@ const CTA = () => {
                 ? 'bg-gradient-to-r from-success to-emerald-500 hover:from-emerald-400 hover:to-green-400' 
                 : ''
             }`}
-            onClick={() => navigate('/briefing')}
+            onClick={() => navigate('/escolher-musica')}
           >
             {user && hasCredits ? (
               <>

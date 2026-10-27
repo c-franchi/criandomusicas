@@ -174,3 +174,18 @@ export function useGiftAudio(g?: MusicalGift) {
     refetchInterval: 15000,
   });
 }
+
+export function useGiftBackgrounds(enabled = true) {
+  return useQuery({
+    queryKey: ["gift-backgrounds"],
+    enabled,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("gift_backgrounds")
+        .select("id,label,image_data,is_active")
+        .order("created_at");
+      if (error) throw error;
+      return data;
+    },
+  });
+}

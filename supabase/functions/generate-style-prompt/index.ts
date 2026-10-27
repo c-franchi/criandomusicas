@@ -330,14 +330,14 @@ serve(async (req) => {
     const supabaseKeyCheck = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseCheck = createClient(supabaseUrlCheck, supabaseKeyCheck);
 
-    const {data: giftContext,error: giftError}=await supabaseCheck.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at').eq('production_order_id',orderId).maybeSingle();
+    const {data: giftContext,error: giftError}=await supabaseCheck.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,photo_data').eq('production_order_id',orderId).maybeSingle();
     if(giftError) throw giftError;
     if(giftContext){
       if(!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
       if(isInstrumental) throw Error('gift_lyrics_approval_required');
       const internal=req.headers.get('Authorization')===`Bearer ${supabaseKeyCheck}`;
       if(!internal){const {data:{user},error}=await supabaseCheck.auth.getUser((req.headers.get('Authorization')||'').replace('Bearer ',''));if(error||!user||user.id!==giftContext.owner_id) throw Error('gift_forbidden');}
-      if(giftContext.product==='short' && !inspectShortLyric(approvedLyrics||'',giftContext.duration_seconds||30).valid) throw Error('gift_lyric_too_long');
+      if(!!giftContext.duration_seconds && !inspectShortLyric(approvedLyrics||'',giftContext.duration_seconds||30).valid) throw Error('gift_lyric_too_long');
     }
     const { data: existingOrder, error: orderError } = await supabaseCheck
       .from('orders')
@@ -345,7 +345,7 @@ serve(async (req) => {
       .eq('id', orderId)
       .single();
 
-    if (giftContext?.product !== 'short' && !orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
+    if (!giftContext?.duration_seconds && !orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
       // Já tem style_prompt customizado, apenas atualizar status e final_prompt se necessário
       console.log("Order already has custom style_prompt, skipping generation");
       
@@ -852,7 +852,7 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
     ${cleanedLyrics}`;
     }
 
-    if(giftContext?.product==='short'){
+    if(!!giftContext?.duration_seconds){
       const duration=`SHORT SONG: maximum ${Math.min(giftContext.duration_seconds||30,40)} seconds total. Sing the stanza once. No intro, outro, repeated chorus or solo. End promptly.`;
       stylePrompt=duration+' '+String(stylePrompt||'').slice(0,780);
       finalPrompt=duration+'\n'+finalPrompt;
@@ -873,15 +873,17 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
       updated_at: new Date().toISOString()
     };
 
+    if (giftContext?.photo_data) updateData.cover_url = giftContext.photo_data;
+
     // Salvar capa SEM depender do coverMode
-    if (customCoverUrl) {
+    if (customCoverUrl && !giftContext?.photo_data) {
       updateData.cover_url = customCoverUrl;
-      console.log("Saving custom cover URL:", customCoverUrl, "mode:", coverMode);
+      console.log("Saving customer cover, mode:", coverMode);
     }
 
 
     // Trigger cover enhancement if user selected enhanced mode
-    if (customCoverUrl && coverMode === 'enhanced') {
+    if (!giftContext && customCoverUrl && coverMode === 'enhanced') {
       try {
         const supabaseClient = createClient(supabaseUrl, supabaseKey);
         // Non-blocking: enhance cover in background after saving the original

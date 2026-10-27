@@ -454,24 +454,25 @@
         "conditions": "Songs follow the real production process. There is no simulated generation on this page. Digital card add-on conditions will be shown before purchase."
       },
       "physical": {
-        "name": "Printed Musical Card",
+        "name": "Printable Musical Card",
         "cardTitle": "A gift to hold that touches the heart.",
         "headline": "A CARD TO TREASURE. A SONG TO FEEL.",
-        "description": "A printed card, a special message and a QR code that reveals a personalized song. Ideal alongside flowers, chocolates, birthday gifts and declarations of love.",
-        "cta": "CREATE MY PRINTED CARD",
+        "description": "Create a card with your photo, dedication and a QR code revealing the song. Print it at home or at a print shop of your choice and give it with your gift.",
+        "cta": "CREATE MY PRINTABLE CARD",
         "experienceTitle": "The card in your hands. The feeling on your phone.",
-        "experienceDescription": "An individual QR code will open the same musical experience as the digital card. The illustration shows the concept; format, paper and finish depend on available printing options.",
+        "experienceDescription": "A printable card with an individual QR code. The recipient scans it, opens the gift on the platform and listens to the song.",
         "included": [
-          "Names, a message and an optional photo.",
-          "An authorized existing song or a new creation.",
-          "Individual QR code linking to the musical gift.",
-          "Preview and review before release for printing."
+          "Personalized card for you to print.",
+          "Individual QR code opening the musical experience.",
+          "Your photo, names and dedication.",
+          "Song and lyrics on the gift page."
         ],
         "steps": [
-          "Choose the occasion and an available design.",
-          "Personalize the message and associate the song.",
-          "Check the preview, delivery options and payment.",
-          "After preparation and review, the card proceeds to printing and delivery."
+          "Choose an existing or new song, duration and card design.",
+          "Add names, a dedication and your photo.",
+          "Review the order, pay and approve lyrics for a new song.",
+          "After production and review, print the card or save as PDF.",
+          "Check the QR code and give your gift."
         ],
         "occasions": [
           "Christmas",
@@ -487,7 +488,7 @@
           "Corporate gift",
           "Just because"
         ],
-        "conditions": "Printing, pickup, shipping and costs depend on available operations. This demonstration has no automatic tracking or print-ready QR code."
+        "conditions": "You arrange printing and delivery. Printing becomes available after payment, lyric approval, music production and gift review."
       }
     },
     "themes": {
@@ -568,7 +569,7 @@
     "pricePending": "Price or delivery awaiting configuration",
     "pixHelp": "Use the same platform checkout with PIX or card. The administrator checks PIX receipts before lyric selection and approval are released.",
     "productionHelp": "New songs follow the current production process. Gifts are released only when the song is ready and the gift is reviewed.",
-    "shippingIncluded": "For shipping, the total includes the configured fixed delivery cost. There is no automatic tracking.",
+    "shippingIncluded": "After approval and music production, print your card or save it as a PDF. The QR code opens the song on the platform. Printing and postal delivery are not included.",
     "proceedPix": "Confirm and continue to payment",
     "canSaveDraft": "You can save the draft now. Purchase becomes available when pricing and conditions are configured.",
     "adminTest": "Create an admin test, no charge",
@@ -605,7 +606,7 @@
     "availabilityTerms": "Availability subject to service terms",
     "notPrintReady": "The card must be released before a print proof.",
     "printProof": "Card print proof",
-    "printHelp": "Check names, message, photo and QR readability on a printed proof. Set paper and scale in the print dialog for the available format.",
+    "printHelp": "After approval and music production, print your card or save it as a PDF. The QR code opens the song on the platform. Printing and postal delivery are not included.",
     "print": "Print proof",
     "scan": "Point your phone camera at the code to hear your gift.",
     "adminTitle": "Musical gift management",
@@ -643,7 +644,7 @@
     "invalidPrice": "Enter a valid price. Sales require an amount greater than zero.",
     "operation": "Printing and physical delivery",
     "shippingFee": "Fixed shipping in R$ (empty = not configured)",
-    "operationHelp": "Configure only real options. Printing and delivery progress are recorded manually; there is no automatic carrier integration.",
+    "operationHelp": "Customer printing has no shipping fee. Enable pickup or shipping only if your operation provides them.",
     "invalidOperation": "Check format, delivery methods and costs before enabling operations.",
     "channels": {
       "link": "Copy link",
@@ -729,7 +730,7 @@
     "physicalDisabledTitle": "Physical cards are disabled",
     "physicalDisabledBody": "We currently offer digital musical cards. Creating physical cards is disabled.",
     "chooseDigital": "Create a digital card",
-    "physicalToggleHelp": "This control shows or hides physical cards in the storefront and allows or blocks new physical orders and tests. Keep it off to offer digital gifts only.",
+    "physicalToggleHelp": "Enable cards for customers to print themselves. Pickup and postal delivery appear only when configured.",
     "newMusicPreview": "This is a visual preview: your new song has not been produced yet. Saving or creating a test does not automatically generate audio. Production must be started in the admin panel; the gift can only be released once the track is ready.",
     "musicNotReadyTitle": "The song is not ready yet",
     "musicProductionNotStarted": "Song production has not started. This card is a preview without audio. After order confirmation or test approval, an administrator must start production and prepare the track before releasing the gift.",
@@ -745,6 +746,34 @@
     "musicStage": "Music stage",
     "approvalDone": "Lyrics selected for approval / production",
     "approvalPending": "Waiting for customer lyric approval",
-    "shortLyricGuidance": "Short song up to {{seconds}}s: keep at most {{words}} words and {{lines}} sung lines, without repeating the chorus. Final audio is checked and must never exceed 40 seconds."
+    "shortLyricGuidance": "Short song up to {{seconds}}s: keep at most {{words}} words and {{lines}} sung lines, without repeating the chorus. Final audio is checked and must never exceed 40 seconds.",
+    "entryTitle": "Create my song",
+    "withCardQuestion": "Would you like a gift card with your song?",
+    "withCard": "Song with a gift card",
+    "songOnly": "Song only",
+    "cardFormat": "Card format",
+    "printAtHome": "Physical — I print it myself",
+    "selfPrintHelp": "After approval and music production, print your card or save it as a PDF. The QR code opens the song on the platform. Printing and postal delivery are not included.",
+    "fullSong": "Full song — standard duration",
+    "returningToGift": "Returning to your gift…",
+    "followGift": "Follow my gift",
+    "readyForRelease": "Music ready — card awaiting release",
+    "releaseNextStep": "The song is attached. An administrator must check the preview and confirm the gift review to release the link and printing.",
+    "reviewAndRelease": "Review and release card",
+    "total": "Order total",
+    "cardDesign": "Choose your card background",
+    "backgroundHelp": "The background decorates the card. Your photo stays in front with the names and message.",
+    "backgroundAdmin": "Team background gallery",
+    "backgroundUploadHelp": "Upload artwork without personal data, names or QR codes. It will appear in the public template gallery. Use JPG, PNG or WEBP; the system resizes the image.",
+    "backgroundName": "Template name",
+    "backgroundImage": "Background image",
+    "hideBackground": "Hide from new selections",
+    "showBackground": "Show in new selections",
+    "designs": {
+      "hearts": "Hearts",
+      "flowers": "Flowers",
+      "celebration": "Celebration",
+      "classic": "Classic"
+    }
   }
 }

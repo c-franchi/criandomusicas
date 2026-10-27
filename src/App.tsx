@@ -44,6 +44,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfUse = lazy(() => import("./pages/TermsOfUse"));
 const MusicRules = lazy(() => import("./pages/MusicRules"));
 const MusicShare = lazy(() => import("./pages/MusicShare"));
+const MusicEntry = lazy(() => import("./components/gifts/flow/MusicEntry"));
 const GiftWizard = lazy(() => import('./components/gifts/flow/GiftWizard'));
 const GiftTracking = lazy(() => import('./components/gifts/flow/GiftTracking'));
 const GiftList = lazy(() => import('./components/gifts/flow/GiftTracking').then(module => ({default:module.GiftList})));
@@ -110,6 +111,7 @@ const App = () => (
               <Route path="/auth/callback" element={<Auth />} />
               
               {/* Lazy loaded routes */}
+              <Route path="/escolher-musica" element={<MusicEntry />} />
               <Route path="/presentes" element={<GiftList />} />
               <Route path="/presentes/novo" element={<GiftWizard />} />
               <Route path="/presentes/:id/editar" element={<GiftWizard />} />

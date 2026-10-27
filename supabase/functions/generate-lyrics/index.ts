@@ -379,7 +379,7 @@ serve(async (req) => {
       autoApprove=false;
       language=giftContext.details?.language || language;
     }
-    const shortSeconds = giftContext?.product==='short' ? Math.min(giftContext.duration_seconds || 30,40) : null;
+    const shortSeconds = !!giftContext?.duration_seconds ? Math.min(giftContext.duration_seconds || 30,40) : null;
     let orderInfo: { is_preview?: boolean; plan_id?: string; user_id?: string } | null = null;
     
     if (!isStandaloneMode) {

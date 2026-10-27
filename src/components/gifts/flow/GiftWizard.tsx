@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import GiftDesignPicker from "./GiftDesignPicker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -91,15 +92,21 @@ export default function GiftWizard() {
       key={id || params.get("produto")}
       initial={draft.data as unknown as MusicalGift}
       product={params.get("produto") || "digital"}
+      duration={params.get("duracao")}
+      source={params.get("origem")}
     />
   );
 }
 function Editor({
   initial,
   product,
+  duration,
+  source,
 }: {
   initial?: MusicalGift;
   product: string;
+  duration: string | null;
+  source: string | null;
 }) {
   const { t, i18n } = useTranslation("home");
   const { user } = useAuth();
@@ -109,6 +116,7 @@ function Editor({
   const commands = useGiftCommands();
   const { styleOptions } = useBriefingTranslations();
   const music = useOwnedGiftMusic();
+  const { physicalEnabled } = useGiftAvailability();
   const catalog = useGiftCatalog();
   const [form, setForm] = useState<Partial<MusicalGift>>(
     () =>
@@ -117,7 +125,8 @@ function Editor({
         product: ["digital", "short", "physical"].includes(product)
           ? (product as MusicalGift["product"])
           : "digital",
-        music_source: product === "short" ? "new" : "existing",
+        music_source:
+          source === "new" || product === "short" ? "new" : "existing",
         track_version: 1,
         recipient_name: "",
         sender_name: "",
@@ -126,14 +135,19 @@ function Editor({
         theme: "love",
         photo_data: null,
         has_card: product !== "short",
-        duration_seconds: 30,
+        duration_seconds: ["15", "30"].includes(duration || "")
+          ? Number(duration)
+          : product === "short"
+            ? 30
+            : null,
         delivery_channel: "link",
         available_from: null,
         details: {
           tone: "emotional",
           language: "Português",
           style: "pop",
-          fulfillment: "pickup",
+          fulfillment: product === "physical" ? "self_print" : "pickup",
+          card_design: "hearts",
         },
         version: 0,
       },
@@ -295,6 +309,18 @@ function Editor({
           ),
         )}
       </ol>
+      <div
+        className="mb-5 rounded-xl border border-primary/30 p-4 text-sm"
+        role="status"
+        aria-live="polite"
+      >
+        {t("giftFlow.total")}:{" "}
+        <strong>
+          {total === null
+            ? t("giftFlow.pricePending")
+            : getLocalizedPrice(total, i18n.language, "BRL").formatted}
+        </strong>
+      </div>
       <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
         <h2
           id="gift-step-title"
@@ -311,6 +337,37 @@ function Editor({
             <p className="font-medium">
               {t(`gifts.products.${form.product}.name`)}
             </p>
+            {form.has_card && (
+              <fieldset className="space-y-3">
+                <legend className="font-medium">
+                  {t("giftFlow.cardFormat")}
+                </legend>
+                <div className="flex flex-wrap gap-3">
+                  {(["digital", "physical"] as const)
+                    .filter((p) => p !== "physical" || physicalEnabled)
+                    .map((p) => (
+                      <Button
+                        key={p}
+                        variant={form.product === p ? "default" : "outline"}
+                        aria-pressed={form.product === p}
+                        onClick={() => {
+                          patch({ product: p });
+                          details({
+                            fulfillment:
+                              p === "physical" ? "self_print" : "pickup",
+                          });
+                        }}
+                      >
+                        {t(
+                          p === "physical"
+                            ? "giftFlow.printAtHome"
+                            : "gifts.products.digital.name",
+                        )}
+                      </Button>
+                    ))}
+                </div>
+              </fieldset>
+            )}
             {form.product !== "short" && (
               <div className="grid gap-3 sm:grid-cols-2">
                 {(["existing", "new"] as const).map((source) => (
@@ -320,7 +377,7 @@ function Editor({
                       form.music_source === source ? "default" : "outline"
                     }
                     onClick={() =>
-                      patch({ music_source: source, source_order_id: null })
+                      patch({ music_source: source, source_order_id: null, track_version: 1, duration_seconds: source === "existing" ? null : form.duration_seconds })
                     }
                     className="h-auto min-h-14 whitespace-normal py-3"
                     aria-pressed={form.music_source === source}
@@ -330,30 +387,59 @@ function Editor({
                 ))}
               </div>
             )}
+            {form.music_source === "new" && (
+              <fieldset className="space-y-3">
+                <legend className="font-medium">
+                  {t("giftFlow.duration")}
+                </legend>
+                <div className="flex flex-wrap gap-3">
+                  {(form.product === "short" ? [15, 30] : [15, 30, null]).map(
+                    (seconds) => (
+                      <Button
+                        key={seconds || "normal"}
+                        variant={
+                          form.duration_seconds === seconds
+                            ? "default"
+                            : "outline"
+                        }
+                        aria-pressed={form.duration_seconds === seconds}
+                        onClick={() => patch({ duration_seconds: seconds })}
+                      >
+                        {seconds
+                          ? t("gifts.upTo", { seconds })
+                          : t("giftFlow.fullSong")}
+                      </Button>
+                    ),
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("gifts.durationNote")}
+                </p>
+              </fieldset>
+            )}
             {form.product === "short" && (
-              <>
-                <Label htmlFor="duration">{t("giftFlow.duration")}</Label>
-                <select
-                  id="duration"
-                  value={form.duration_seconds || 30}
-                  className={selectClass}
-                  onChange={(e) =>
-                    patch({ duration_seconds: Number(e.target.value) })
+              <label className="flex items-center gap-3 text-sm">
+                <Checkbox
+                  checked={!!form.has_card}
+                  onCheckedChange={(value) =>
+                    patch({ has_card: value === true })
                   }
-                >
-                  <option value={15}>{t("gifts.upTo", { seconds: 15 })}</option>
-                  <option value={30}>{t("gifts.upTo", { seconds: 30 })}</option>
-                </select>
-                <label className="flex items-center gap-3 text-sm">
-                  <Checkbox
-                    checked={!!form.has_card}
-                    onCheckedChange={(value) =>
-                      patch({ has_card: value === true })
-                    }
-                  />
-                  {t("giftFlow.addCard")}
-                </label>
-              </>
+                />
+                {t("giftFlow.addCard")}
+              </label>
+            )}
+            {form.music_source === "new" && (
+              <section className="space-y-3" aria-label={t("giftFlow.style")}>
+                <h3 className="font-medium">{t("giftFlow.style")}</h3>
+                <ImageCardGrid
+                  options={genreOptions}
+                  selectedId={form.details?.style}
+                  onSelect={(style) => details({ style })}
+                  title={t("giftFlow.style")}
+                  variant="square"
+                  showOther={false}
+                />
+              </section>
             )}
             {form.music_source === "existing" && (
               <>
@@ -432,7 +518,30 @@ function Editor({
           <div className="space-y-5">
             {field("recipient_name", "recipient")}
             {field("sender_name", "sender")}
-            {field("occasion", "occasion")}
+            <div className="space-y-2">
+              <Label htmlFor="gift-occasion">{t("giftFlow.occasion")}</Label>
+              <select
+                id="gift-occasion"
+                className={selectClass}
+                value={form.occasion || "any"}
+                onChange={(e) =>
+                  patch({
+                    occasion: e.target.value,
+                    theme: e.target.value as MusicalGift["theme"],
+                  })
+                }
+              >
+                {giftThemes.map((theme) => (
+                  <option key={theme} value={theme}>
+                    {t("gifts.themes." + theme)}
+                  </option>
+                ))}
+                {form.occasion &&
+                  !giftThemes.includes(
+                    form.occasion as MusicalGift["theme"],
+                  ) && <option value={form.occasion}>{form.occasion}</option>}
+              </select>
+            </div>
             {form.music_source === "new" && (
               <>
                 {(["relationship", "feelings", "story", "notes"] as const).map(
@@ -451,17 +560,6 @@ function Editor({
                     </div>
                   ),
                 )}
-                <section className="space-y-3" aria-label={t("giftFlow.style")}>
-                  <h3 className="text-sm font-medium">{t("giftFlow.style")}</h3>
-                  <ImageCardGrid
-                    options={genreOptions}
-                    selectedId={form.details?.style}
-                    onSelect={(style) => details({ style })}
-                    title={t("giftFlow.style")}
-                    variant="square"
-                    showOther={false}
-                  />
-                </section>
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="tone">{t("giftFlow.tone")}</Label>
@@ -526,6 +624,10 @@ function Editor({
                     ))}
                   </select>
                 </div>
+                <GiftDesignPicker
+                  details={form.details || {}}
+                  onChange={details}
+                />
                 <div className="space-y-2">
                   <Label htmlFor="photo">{t("giftFlow.photo")}</Label>
                   <Input
@@ -639,8 +741,15 @@ function Editor({
                   className={selectClass}
                   onChange={(e) => details({ fulfillment: e.target.value })}
                 >
-                  <option value="pickup">{t("giftFlow.pickup")}</option>
-                  <option value="shipping">{t("giftFlow.shipping")}</option>
+                  <option value="self_print">
+                    {t("giftFlow.printAtHome")}
+                  </option>
+                  {catalog.data?.operations.pickup_enabled && (
+                    <option value="pickup">{t("giftFlow.pickup")}</option>
+                  )}
+                  {catalog.data?.operations.shipping_enabled && (
+                    <option value="shipping">{t("giftFlow.shipping")}</option>
+                  )}
                 </select>
                 {form.details?.fulfillment === "shipping" && (
                   <div className="space-y-2">
@@ -679,7 +788,7 @@ function Editor({
               <p>
                 {t("giftFlow.recipient")}: {form.recipient_name}
               </p>
-              {form.product === "short" && (
+              {form.duration_seconds && (
                 <p>{t("gifts.upTo", { seconds: form.duration_seconds })}</p>
               )}
               <p className="text-2xl font-semibold">

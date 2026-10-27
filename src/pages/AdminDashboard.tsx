@@ -686,7 +686,7 @@ const AdminDashboard = () => {
     setUploadingMusic(`${order.id}-v${version}`);
     try {
       let shortDuration: number | null=null;
-      if(order.gift?.product==='short'){
+      if(!!order.gift?.duration_seconds){
         shortDuration=await readAudioDuration(file);
         const limit=Math.min(order.gift.duration_seconds||30,40);
         if(shortDuration>limit+0.05) throw new Error(`O áudio tem ${shortDuration.toFixed(1)} segundos. Este pedido permite até ${limit}s; envie uma versão mais curta.`);
@@ -1343,7 +1343,7 @@ const AdminDashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-        <div className="mb-6 flex flex-wrap gap-2" aria-label="Tipo de solicitação">{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label} ({orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length})</Button>)}</div>
+        <div className="mb-6 flex flex-wrap gap-2" aria-label="Tipo de solicitação">{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Cartões para imprimir']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label} ({orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length})</Button>)}</div>
         {/* Stats Cards */}
         <AdminStatsCards statusCounts={statusCounts} />
 

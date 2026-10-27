@@ -167,7 +167,7 @@ const OrderDetails = () => {
 
         if (orderError) throw orderError;
         const {data:gift}=await supabase.from('musical_gifts').select('id,music_source').eq('checkout_order_id',orderId).maybeSingle();
-        if(gift?.music_source==='existing'){navigate(`/presentes/${gift.id}`);return;}
+        if(gift){navigate(`/presentes/${gift.id}`);return;}
         setOrder(orderData);
 
         // Fetch lyrics
