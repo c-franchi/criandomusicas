@@ -19,3 +19,13 @@
 @media (prefers-reduced-motion: reduce) {
   .gift-reveal { animation: none; }
 }
+
+.gift-design-layer {position:absolute;inset:0;pointer-events:none;z-index:-1;border-radius:inherit;overflow:hidden}
+.gift-design-hearts {background-image:radial-gradient(ellipse at 5% 5%,#f472b640,transparent 40%),radial-gradient(ellipse at 100% 100%,#a78bfa50,transparent 45%)}
+.gift-design-hearts::before {content:'♥';position:absolute;left:3%;top:1%;font-size:7rem;color:#f9a8d425;transform:rotate(-18deg);pointer-events:none}
+.gift-design-hearts::after {content:'♥';position:absolute;right:1%;bottom:1%;font-size:9rem;color:#f9a8d420;transform:rotate(16deg);pointer-events:none}
+.gift-design-flowers {background-image:radial-gradient(circle at 5% 5%,#f9a8d450 0 8%,transparent 9%),radial-gradient(circle at 17% 0%,#a78bfa40 0 9%,transparent 10%),radial-gradient(circle at 100% 100%,#f9a8d450 0 10%,transparent 11%),radial-gradient(circle at 87% 100%,#86efac30 0 8%,transparent 9%)}
+.gift-design-celebration {background-image:radial-gradient(circle,#fcd34d90 1px,transparent 2px),radial-gradient(circle,#c4b5fd70 2px,transparent 3px);background-size:31px 47px,71px 53px}
+.gift-design-classic {background-image:linear-gradient(135deg,#c4b5fd20,transparent 35%,transparent 65%,#fcd34d25)}
+.gift-print-card {isolation:isolate;position:relative;overflow:hidden;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+@media print {.gift-print-card{width:148mm;max-width:100%;padding:12mm!important}.gift-print-card img{break-inside:avoid}}

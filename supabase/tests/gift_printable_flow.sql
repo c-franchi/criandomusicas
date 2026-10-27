@@ -1,0 +1,67 @@
+-- Execute inside BEGIN/ROLLBACK. No external generation or payment.
+do $$
+declare adm uuid; uid uuid; gid uuid; oid uuid; lid uuid; bg uuid; token text; product text; d jsonb; result jsonb; v integer;
+ photo text:='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNwAAAABJRU5ErkJggg==';
+begin
+ select user_id into adm from public.user_roles where role='admin' limit 1;
+ select id into uid from auth.users where not public.has_role(id,'admin') limit 1;
+ update public.pricing_config set is_active=true,price_cents=1700,price_promo_cents=null where id in ('gift_digital_new_15','gift_physical_new_15');
+ update public.gift_operations set physical_enabled=true,pickup_enabled=false,shipping_enabled=false,shipping_fee_cents=null,print_format='A5';
+ perform set_config('request.jwt.claims',json_build_object('sub',uid,'role','authenticated')::text,true);
+ execute 'set local role authenticated';
+ begin insert into public.gift_backgrounds(label,image_data) values('Forbidden',photo);raise exception 'Customer can upload public backgrounds';exception when insufficient_privilege then null;end;
+ execute 'reset role';
+ perform set_config('request.jwt.claims',json_build_object('sub',adm,'role','authenticated')::text,true);
+ execute 'set local role authenticated';
+ insert into public.gift_backgrounds(label,image_data) values('Fixture background',photo) returning id into bg;
+ execute 'reset role';
+ foreach product in array array['digital','physical'] loop
+  perform set_config('request.jwt.claims',json_build_object('sub',uid,'role','authenticated')::text,true);
+  execute 'set local role authenticated';
+  gid:=gen_random_uuid();
+  d:=jsonb_build_object('product',product,'music_source','new','duration_seconds',15,'recipient_name','Fixture','sender_name','Fixture','dedication','A gift for you','photo_data',photo,'details',jsonb_build_object('story','A personal story sufficiently long for this fixture.','style','pop','language','Português','music_type','homenagem','fulfillment','self_print','card_design','flowers','background_id',bg));
+  perform public.save_musical_gift(gid,d,0);
+  result:=public.musical_gift_action(gid,'submit');oid:=(result->>'checkout_order_id')::uuid;
+  if (select duration_seconds from public.musical_gifts where id=gid)<>15 then raise exception 'Card lost duration';end if;
+  if (select amount_cents from public.musical_gifts where id=gid)<>1700 then raise exception 'Incorrect quote / unwanted addon';end if;
+  if (select shipping_cents from public.musical_gifts where id=gid)<>0 then raise exception 'Self-print charged shipping';end if;
+  if (select plan_id from public.orders where id=oid)<>'gift_'||product||'_new_15' then raise exception 'Wrong duration price';end if;
+  if (select music_structure from public.orders where id=oid)<>'verse' then raise exception 'Short card uses full-song structure';end if;
+  begin perform public.musical_gift_action(gid,'publish','{"reviewed":true}');raise exception 'Customer can publish';exception when others then if sqlerrm<>'gift_forbidden' then raise;end if;end;
+  execute 'reset role';
+  perform set_config('request.jwt.claims',json_build_object('sub',adm,'role','authenticated')::text,true);
+  execute 'set local role authenticated';
+  update public.orders set payment_status='PAID',status='LYRICS_PENDING' where id=oid;
+  execute 'reset role';
+  begin insert into public.lyrics(order_id,version,title,body) values(oid,'A','Fixture',repeat('word ',21));raise exception 'Short card accepted long lyrics';exception when others then if sqlerrm<>'gift_lyric_too_long' then raise;end if;end;
+  insert into public.lyrics(order_id,version,title,body,is_approved) values(oid,'A','Fixture',E'Uma canção para você\nUm carinho para guardar',true) returning id into lid;
+  update public.orders set approved_lyric_id=lid,status='LYRICS_APPROVED',cover_url='https://example.com/generated-cover.jpg' where id=oid;
+  if (select cover_url from public.orders where id=oid) is distinct from photo then raise exception 'User photo overwritten';end if;
+  begin insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/card.mp3',16);raise exception 'Short card accepted long audio';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
+  insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/card.mp3',14);
+  update public.orders set status='COMPLETED' where id=oid;
+  perform set_config('request.jwt.claims',json_build_object('sub',adm,'role','authenticated')::text,true);
+  execute 'set local role authenticated';
+  begin perform public.musical_gift_action(gid,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":16}');raise exception 'Release ignored duration';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
+  perform public.musical_gift_action(gid,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":14}');
+  select public_token into token from public.musical_gifts where id=gid;
+  update public.gift_backgrounds set is_active=false where id=bg;
+  execute 'reset role';
+  execute 'set local role anon';
+  result:=public.get_musical_gift(token);
+  if result->>'photo_data' is distinct from photo or result->>'background_data' is distinct from photo then raise exception 'Wrong gift artwork';end if;
+  if result->'details' ? 'story' or result->'details' ? 'address' then raise exception 'Private story exposed';end if;
+  if result->>'audio_url'<>'https://example.com/card.mp3' then raise exception 'Wrong audio';end if;
+  begin perform 1 from public.musical_gifts where id=gid;raise exception 'Anonymous can read private gift';exception when insufficient_privilege then null;end;
+  execute 'reset role';
+  -- Owner can read the released card for printing; another customer cannot.
+  perform set_config('request.jwt.claims',json_build_object('sub',uid,'role','authenticated')::text,true);
+  execute 'set local role authenticated';
+  if not exists(select 1 from public.musical_gifts where id=gid and status='ACTIVE') then raise exception 'Owner cannot read printable card';end if;
+  execute 'reset role';
+  perform set_config('request.jwt.claims',json_build_object('sub',adm,'role','authenticated')::text,true);
+  execute 'set local role authenticated';
+  update public.gift_backgrounds set is_active=true where id=bg;
+  execute 'reset role';
+ end loop;
+end $$;

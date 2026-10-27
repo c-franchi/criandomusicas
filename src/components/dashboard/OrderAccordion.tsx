@@ -1,3 +1,5 @@
+import { useGiftList } from "@/hooks/useMusicalGifts";
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -46,6 +48,8 @@ export const OrderAccordion = ({
   stuckOrderIds,
   onRetryOrder,
 }: OrderAccordionProps) => {
+  const gifts = useGiftList();
+  const {t: th} = useTranslation("home");
   const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null);
 
   const handleRetry = async (orderId: string) => {
@@ -61,6 +65,7 @@ export const OrderAccordion = ({
   return (
     <Accordion type="single" collapsible className="w-full space-y-2">
       {orders.map((order) => {
+        const gift=gifts.data?.find(g=>g.checkout_order_id===order.id || g.production_order_id===order.id);
         const isStuck = stuckOrderIds?.has(order.id) ?? false;
         const isRetrying = retryingOrderId === order.id;
 
@@ -84,6 +89,7 @@ export const OrderAccordion = ({
                     <p className="font-semibold text-xs sm:text-base truncate">
                       {order.song_title || order.lyric_title || `${order.music_type || 'Música'}`}
                     </p>
+                    {gift && <p className="text-xs font-medium text-primary">{th(`gifts.products.${gift.product}.name`)} · {th(`giftFlow.status.${gift.status}`)}</p>}
                     <p className="text-xs text-muted-foreground truncate">
                       {order.music_style || 'Estilo'} • {new Date(order.created_at || '').toLocaleDateString()}
                     </p>
@@ -170,9 +176,9 @@ export const OrderAccordion = ({
                     </Button>
                   ) : (
                     <Button asChild size="sm" className="flex-1 sm:flex-none">
-                      <Link to={`/pedido/${order.id}`}>
+                      <Link to={gift ? `/presentes/${gift.id}` : `/pedido/${order.id}`}>
                         <ExternalLink className="w-4 h-4 mr-2" />
-                        {t('order.view')}
+                        {gift ? th('giftFlow.followGift') : t('order.view')}
                       </Link>
                     </Button>
                   )}

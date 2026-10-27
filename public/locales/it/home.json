@@ -454,24 +454,25 @@
         "conditions": "Le canzoni seguono il processo reale di produzione. Questa pagina non simula la generazione. Le condizioni del biglietto aggiuntivo saranno mostrate prima dell’acquisto."
       },
       "physical": {
-        "name": "Biglietto Musicale Stampato",
+        "name": "Biglietto Musicale da Stampare",
         "cardTitle": "Un regalo da tenere in mano che tocca il cuore.",
         "headline": "UN BIGLIETTO DA CUSTODIRE. UNA CANZONE DA SENTIRE.",
-        "description": "Un biglietto stampato, un messaggio speciale e un QR code che rivela una canzone personalizzata. Ideale insieme a fiori, cioccolatini, regali di compleanno e dichiarazioni d’amore.",
-        "cta": "CREA IL MIO BIGLIETTO STAMPATO",
+        "description": "Personalizza un biglietto con foto, dedica e QR che rivela la canzone. Stampalo a casa o in una tipografia a tua scelta e consegnalo con il regalo.",
+        "cta": "CREA IL MIO BIGLIETTO DA STAMPARE",
         "experienceTitle": "Il biglietto tra le mani. L’emozione sul telefono.",
-        "experienceDescription": "Il QR individuale aprirà la stessa esperienza musicale del biglietto digitale. L’illustrazione mostra il concetto; formato, carta e finiture dipendono dalle opzioni di stampa disponibili.",
+        "experienceDescription": "Un biglietto da stampare con QR individuale. Chi lo riceve lo scansiona e ascolta la canzone sulla piattaforma.",
         "included": [
-          "Nomi, messaggio e foto facoltativa.",
-          "Un brano esistente autorizzato o una nuova creazione.",
-          "QR individuale che porta al regalo musicale.",
-          "Anteprima e verifica prima della stampa."
+          "Biglietto personalizzato da stampare.",
+          "QR individuale per l’esperienza musicale.",
+          "Foto, nomi e dedica.",
+          "Musica e testo sulla pagina regalo."
         ],
         "steps": [
-          "Scegli l’occasione e un modello disponibile.",
-          "Personalizza il messaggio e associa la canzone.",
-          "Controlla anteprima, consegna e pagamento.",
-          "Dopo preparazione e verifica, il biglietto passa alla stampa e alla consegna."
+          "Scegli musica nuova o esistente, durata e modello.",
+          "Aggiungi nomi, dedica e foto.",
+          "Controlla, paga e approva il testo della nuova canzone.",
+          "Dopo produzione e revisione, stampa o salva in PDF.",
+          "Verifica il QR e consegna il regalo."
         ],
         "occasions": [
           "Natale",
@@ -487,7 +488,7 @@
           "Regalo aziendale",
           "Senza occasione speciale"
         ],
-        "conditions": "Stampa, ritiro, spedizione e costi dipendono dall’operatività disponibile. Questa dimostrazione non include tracciamento automatico né un QR pronto per la stampa."
+        "conditions": "Stampa e consegna sono a tuo carico. Disponibile dopo pagamento, approvazione del testo, produzione musicale e revisione del biglietto."
       }
     },
     "themes": {
@@ -568,7 +569,7 @@
     "pricePending": "Prezzo o consegna in attesa di configurazione",
     "pixHelp": "Usa lo stesso checkout della piattaforma, con PIX o carta. L’amministratore verifica la ricevuta PIX prima di abilitare la scelta e l’approvazione del testo.",
     "productionHelp": "Le nuove canzoni seguono il processo attuale. Il regalo viene attivato quando la canzone è pronta e verificata.",
-    "shippingIncluded": "Per la spedizione, il totale include il costo fisso configurato. Non è previsto tracciamento automatico.",
+    "shippingIncluded": "Dopo l’approvazione e la produzione, puoi stampare il biglietto o salvarlo in PDF. Il QR apre la canzone sulla piattaforma. Stampa e spedizione non sono incluse.",
     "proceedPix": "Conferma e vai al pagamento",
     "canSaveDraft": "Puoi salvare la bozza. L’acquisto sarà disponibile dopo la configurazione di prezzi e condizioni.",
     "adminTest": "Crea un test amministratore, senza addebito",
@@ -605,7 +606,7 @@
     "availabilityTerms": "Disponibilità secondo i termini del servizio",
     "notPrintReady": "Il biglietto deve essere attivato prima della prova di stampa.",
     "printProof": "Prova di stampa del biglietto",
-    "printHelp": "Controlla nomi, messaggio, foto e leggibilità QR su una prova stampata. Imposta carta e scala secondo il formato disponibile.",
+    "printHelp": "Dopo l’approvazione e la produzione, puoi stampare il biglietto o salvarlo in PDF. Il QR apre la canzone sulla piattaforma. Stampa e spedizione non sono incluse.",
     "print": "Stampa prova",
     "scan": "Inquadra il codice con il telefono per ascoltare il regalo.",
     "adminTitle": "Gestione dei regali musicali",
@@ -643,7 +644,7 @@
     "invalidPrice": "Inserisci un prezzo valido. Per vendere deve essere maggiore di zero.",
     "operation": "Stampa e consegna fisica",
     "shippingFee": "Spedizione fissa in R$ (vuoto = non configurato)",
-    "operationHelp": "Configura solo opzioni reali. Stampa e consegna vengono registrate manualmente; non è prevista integrazione automatica con corrieri.",
+    "operationHelp": "La stampa del cliente non ha costi di spedizione. Abilita ritiro o spedizione solo se disponibili.",
     "invalidOperation": "Controlla formato, modalità di consegna e costi prima di abilitare l’operatività.",
     "channels": {
       "link": "Copia link",
@@ -729,7 +730,7 @@
     "physicalDisabledTitle": "Biglietti fisici disabilitati",
     "physicalDisabledBody": "Al momento offriamo biglietti musicali digitali. La creazione di biglietti fisici è disabilitata.",
     "chooseDigital": "Crea un biglietto digitale",
-    "physicalToggleHelp": "Questo controllo mostra o nasconde i biglietti fisici nella vetrina e consente o blocca nuovi ordini e test fisici. Lascialo disattivato per offrire solo regali digitali.",
+    "physicalToggleHelp": "Abilita biglietti che il cliente stampa da sé. Ritiro e spedizione appaiono solo se configurati.",
     "newMusicPreview": "Questa è un’anteprima visiva: il nuovo brano non è ancora stato prodotto. Salvare o creare un test non genera automaticamente l’audio. La produzione deve essere avviata nel pannello amministrativo; il regalo potrà essere pubblicato solo quando la traccia sarà pronta.",
     "musicNotReadyTitle": "Il brano non è ancora pronto",
     "musicProductionNotStarted": "La produzione del brano non è ancora iniziata. Questo biglietto è un’anteprima senza audio. Dopo la conferma dell’ordine o l’approvazione del test, l’amministratore deve avviare la produzione e preparare la traccia prima di pubblicare il regalo.",
@@ -745,6 +746,34 @@
     "musicStage": "Fase del brano",
     "approvalDone": "Testo selezionato per approvazione / produzione",
     "approvalPending": "In attesa dell’approvazione del testo da parte del cliente",
-    "shortLyricGuidance": "Brano fino a {{seconds}}s: massimo {{words}} parole e {{lines}} righe cantate, senza ripetere il ritornello. L’audio finale sarà verificato e non potrà mai superare 40 secondi."
+    "shortLyricGuidance": "Brano fino a {{seconds}}s: massimo {{words}} parole e {{lines}} righe cantate, senza ripetere il ritornello. L’audio finale sarà verificato e non potrà mai superare 40 secondi.",
+    "entryTitle": "Voglio creare la mia musica",
+    "withCardQuestion": "Vuoi una carta regalo con la tua canzone?",
+    "withCard": "Musica con biglietto",
+    "songOnly": "Solo la musica",
+    "cardFormat": "Formato del biglietto",
+    "printAtHome": "Fisico — lo stampo io",
+    "selfPrintHelp": "Dopo l’approvazione e la produzione, puoi stampare il biglietto o salvarlo in PDF. Il QR apre la canzone sulla piattaforma. Stampa e spedizione non sono incluse.",
+    "fullSong": "Canzone completa — durata standard",
+    "returningToGift": "Ritorno al tuo regalo…",
+    "followGift": "Segui il mio regalo",
+    "readyForRelease": "Musica pronta — biglietto in attesa di rilascio",
+    "releaseNextStep": "La musica è allegata. L’amministratore deve controllare l’anteprima e confermare la revisione per rendere disponibili il link e la stampa.",
+    "reviewAndRelease": "Controlla e rilascia il biglietto",
+    "total": "Totale dell’ordine",
+    "cardDesign": "Scegli lo sfondo del biglietto",
+    "backgroundHelp": "Lo sfondo decora il biglietto. La tua foto resta in primo piano con nomi e messaggio.",
+    "backgroundAdmin": "Sfondi del team",
+    "backgroundUploadHelp": "Carica un’immagine senza dati personali, nomi o QR. Sarà nella galleria pubblica dei modelli. Usa JPG, PNG o WEBP; il sistema ridimensiona l’immagine.",
+    "backgroundName": "Nome del modello",
+    "backgroundImage": "Immagine di sfondo",
+    "hideBackground": "Nascondi dalle nuove scelte",
+    "showBackground": "Mostra nelle nuove scelte",
+    "designs": {
+      "hearts": "Cuori",
+      "flowers": "Fiori",
+      "celebration": "Festa",
+      "classic": "Classico"
+    }
   }
 }

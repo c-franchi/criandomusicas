@@ -38,7 +38,7 @@ A opção “Criar teste do ADM, sem cobrança” continua restrita a presentes 
 
 ## Entrega e configuração
 
-- Cartão físico permanece desabilitado. O controle em “Preços e operação” governa vitrine, links de criação e bloqueio no banco. Pedidos históricos são preservados.
+- Cartão físico habilitado como cartão para impressão pelo próprio comprador. Após a liberação no ADM, o dono do pedido pode abrir `/presentes/:id/imprimir`, imprimir ou salvar como PDF pelo navegador. O QR abre a mesma página musical; impressão e envio postal não estão incluídos. A configuração permite desabilitar novos cartões físicos. Pedidos históricos são preservados.
 - WhatsApp e e-mail são compartilhamento manual. A data programada controla quando o link abre; não dispara mensagens automaticamente.
 - Link aleatório de 256 bits, sem expiração comercial fixa, sujeito à disponibilidade do serviço e aos termos. É informação privada que pode ser repassada por quem a recebe.
 - QR Code é gerado a partir do link real. Letra sincronizada depende de marcações LRC reais. Fotografias são otimizadas e limitadas.
@@ -51,3 +51,15 @@ Migração `20261027135827_unify_gift_order_and_lyric_flow.sql` adiciona víncul
 Arquivos de backend alterados: `create-payment`, `verify-payment`, `generate-lyrics`, `generate-style-prompt` e `_shared/shortLyrics.ts`. Essas funções precisam ser publicadas no backend, além da publicação do frontend no Lovable.
 
 Testes SQL usam transações com rollback. Não cobram, não disparam mensagens e não alteram os pedidos reais do usuário. Pagamento real, geração com IA e reprodução móvel continuam exigindo validação autenticada com uma solicitação real.
+
+## Entrada unificada, imagem e modelos (27/10/2026)
+
+A chamada principal “Criar minha música” abre `/escolher-musica`: com cartão ou somente música; cartão digital ou para imprimir; até 15s, até 30s ou duração padrão. Música completa sem cartão mantém o briefing original. Os cartões novos também permitem escolher 15s/30s; cada combinação tem preço próprio em `pricing_config` e o total é recalculado na personalização. Valores ausentes/inativos bloqueiam a compra.
+
+A aprovação da letra retorna ao acompanhamento do presente. Pedidos cuja música já está pronta exibem a pendência de conferência/liberação. “Concluído” na produção musical não libera automaticamente o cartão; `/admin/presentes` exige a conferência. Na lista de pedidos do comprador, o tipo e estado do presente são identificados e o botão abre o cartão.
+
+A foto original otimizada do comprador tem prioridade sobre qualquer capa gerada. Na aprovação do presente não se pede uma segunda capa; o banco preserva a foto no pedido de produção. Existem quatro fundos decorativos: corações, flores, celebração e clássico. O ADM pode enviar JPG/PNG/WEBP para a galeria de fundos e ocultar modelos de novas escolhas sem quebrar presentes existentes. A galeria só pode conter artes públicas, sem dados pessoais. O presente público recebe apenas o desenho e imagem de fundo, sem história ou endereço privados.
+
+A geração de fundos por prompt não foi integrada. Depende da escolha do provedor, credencial e custo. As artes prontas e a galeria enviada pelo ADM funcionam sem essa dependência.
+
+Migração: `20261027164133_printable_gift_flow.sql`. Backend atualizado: `generate-lyrics` e `generate-style-prompt`, para aplicar o mesmo limite às músicas curtas com cartão digital ou impresso.

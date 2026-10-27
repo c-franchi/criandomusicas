@@ -1,3 +1,4 @@
+import GiftBackground from "./GiftBackground";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -83,9 +84,10 @@ export default function GiftExperience({
   };
   return (
     <section
-      className={`relative overflow-hidden rounded-3xl bg-gradient-to-br ${themeStyles[data.theme] || themeStyles.any} p-6 text-center text-white shadow-2xl sm:p-10`}
+      className={`relative isolate overflow-hidden rounded-3xl bg-gradient-to-br ${themeStyles[data.theme] || themeStyles.any} p-6 text-center text-white shadow-2xl sm:p-10`}
       aria-label={t("giftFlow.preview")}
     >
+      <GiftBackground details={data.details} backgroundData={data.background_data}/>
       <p className="mb-6 text-xs uppercase tracking-[.2em] text-white/75">
         Criando Músicas
       </p>

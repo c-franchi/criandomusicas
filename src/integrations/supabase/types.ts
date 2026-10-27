@@ -14,6 +14,13 @@ export type Database = {
   }
   public: {
     Tables: {
+      gift_backgrounds: {
+        Row: { id: string; label: string; image_data: string; is_active: boolean; created_at: string }
+        Insert: { id?: string; label: string; image_data: string; is_active?: boolean; created_at?: string }
+        Update: { label?: string; image_data?: string; is_active?: boolean }
+        Relationships: []
+      }
+
       audio_inputs: {
         Row: {
           created_at: string

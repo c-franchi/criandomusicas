@@ -219,6 +219,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </p>
         )}
       </div>
+      {g.status !== "ACTIVE" && audio.data?.audio_url && <section role="status" className="mb-7 space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-5"><h2 className="font-semibold">{t("giftFlow.readyForRelease")}</h2><p className="text-sm">{t("giftFlow.releaseNextStep")}</p>{isAdmin && <Button asChild><Link to={`/admin/presentes?presente=${g.id}`}>{t("giftFlow.reviewAndRelease")}</Link></Button>}</section>}
       {g.music_source === "new" && !audio.data?.audio_url && (
         <section
           role="status"
@@ -261,7 +262,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
             </Link>
           </Button>
         )}
-      {g.production_order_id && (g.is_test || g.payment_confirmed_at) && (
+      {g.production_order_id && !audio.data?.approved_lyric_id && (g.is_test || g.payment_confirmed_at) && (
         <section className="mb-7 space-y-4 rounded-xl border border-primary/30 p-5">
           <h2 className="font-semibold">
             {t("giftFlow.customerApprovalTitle")}
@@ -427,7 +428,8 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
               <GiftQr url={url} />
               {g.product === "physical" && (
                 <>
-                  <p>{t("giftFlow.shippingStatus." + g.shipping_status)}</p>
+                  <Button asChild variant="outline"><Link to={`/presentes/${g.id}/imprimir`}>{t("giftFlow.print")}</Link></Button>
+                  {g.details.fulfillment !== "self_print" && <p>{t("giftFlow.shippingStatus." + g.shipping_status)}</p>}
                   {g.tracking_code && (
                     <p className="break-all text-sm">
                       {t("giftFlow.trackingCode")}: {g.tracking_code}
@@ -440,13 +442,6 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
             <p className="text-sm leading-relaxed text-muted-foreground">
               {t("giftFlow.releaseRequirements")}
             </p>
-          )}
-          {g.production_order_id && (
-            <Button asChild variant="outline">
-              <Link to={`/pedido/${g.production_order_id}`}>
-                {t("giftFlow.followMusic")}
-              </Link>
-            </Button>
           )}
           <h3 className="border-t border-border pt-5 font-semibold">
             {t("giftFlow.history")}

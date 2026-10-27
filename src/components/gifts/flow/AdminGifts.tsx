@@ -1,3 +1,4 @@
+import GiftBackgroundAdmin from "./GiftBackgroundAdmin";
 import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useEffect, useState } from "react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
@@ -191,7 +192,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             {new Date(g.available_from).toLocaleString(i18n.language)}
           </p>
         )}
-        {g.product === "short" && (
+        {!!g.duration_seconds && (
           <p>{t("gifts.upTo", { seconds: g.duration_seconds })}</p>
         )}
         {g.details.address && (
@@ -236,6 +237,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             </dl>
           </details>
         )}
+        {audio.data?.audio_url && g.status !== "ACTIVE" && <div role="status" className="rounded-xl border border-primary/40 bg-primary/5 p-4"><h3 className="font-semibold">{t("giftFlow.readyForRelease")}</h3><p className="mt-2 text-sm">{t("giftFlow.releaseNextStep")}</p><a href="#gift-release" className="mt-3 inline-block text-primary underline">{t("giftFlow.reviewAndRelease")}</a></div>}
         {g.checkout_order_id && (
           <div className="space-y-3 rounded-xl border border-primary/30 p-4">
             <p className="text-sm">{t("giftFlow.unifiedOrderHelp")}</p>
@@ -262,7 +264,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                   : "giftFlow.approvalPending",
               )}
             </p>
-            {g.owner_id === user?.id && (
+            {g.owner_id === user?.id && !audio.data?.approved_lyric_id && (
               <Button asChild variant="outline">
                 <Link to={`/criar-musica?orderId=${g.production_order_id}`}>
                   {t("giftFlow.reviewLyrics")}
@@ -350,7 +352,7 @@ function GiftAdminDetail({ id }: { id: string }) {
         )}
         {!physicalTestBlocked &&
           ["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
-            <div className="space-y-4 border-t border-border pt-5">
+            <div id="gift-release" className="space-y-4 border-t border-border pt-5">
               <p className="text-sm text-muted-foreground">
                 {t("giftFlow.releaseRequirements")}
               </p>
@@ -361,7 +363,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                 />
                 {t("giftFlow.reviewGift")}
               </label>
-              {g.product === "short" && (
+              {!!g.duration_seconds && (
                 <label className="flex items-start gap-3 text-sm">
                   <Checkbox
                     checked={durationChecked}
@@ -372,7 +374,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                   })}
                 </label>
               )}
-              {g.product === "short" &&
+              {!!g.duration_seconds &&
                 audioDuration !== null &&
                 audioDuration > (g.duration_seconds || 0) + 0.05 && (
                   <p role="alert" className="text-sm text-destructive">
@@ -386,7 +388,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                   !audio.data?.audio_url ||
                   (g.music_source === "new" &&
                     !audio.data?.approved_lyric_id) ||
-                  (g.product === "short" &&
+                  (!!g.duration_seconds &&
                     (!durationChecked ||
                       audioDuration === null ||
                       !Number.isFinite(audioDuration) ||
@@ -455,7 +457,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                     </Button>
                   </>
                 )}
-                {g.shipping_status === "PRINT_READY" && (
+                {g.shipping_status === "PRINT_READY" && g.details.fulfillment !== "self_print" && (
                   <>
                     <Label htmlFor="tracking-code">
                       {t("giftFlow.trackingCode")}
@@ -474,7 +476,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                     </Button>
                   </>
                 )}
-                {["PRINT_READY", "SHIPPED"].includes(g.shipping_status) && (
+                {g.details.fulfillment !== "self_print" && ["PRINT_READY", "SHIPPED"].includes(g.shipping_status) && (
                   <Button
                     variant="outline"
                     disabled={busy}
@@ -547,6 +549,7 @@ function GiftCommerce() {
       {catalog.data.prices.map((p) => (
         <PriceEditor key={p.id} price={p} />
       ))}
+      <GiftBackgroundAdmin />
       <OperationsEditor initial={catalog.data.operations} />
     </div>
   );
@@ -691,8 +694,7 @@ function OperationsEditor({ initial }: { initial: GiftOperations }) {
           if (
             (cents !== null && (!Number.isFinite(cents) || cents < 0)) ||
             (ops.physical_enabled &&
-              (!ops.print_format?.trim() ||
-                (!ops.pickup_enabled && !ops.shipping_enabled))) ||
+              !ops.print_format?.trim()) ||
             (ops.shipping_enabled && cents === null)
           ) {
             setError(t("giftFlow.invalidOperation"));

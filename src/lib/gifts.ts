@@ -30,6 +30,8 @@ export interface GiftDetails {
   notes?: string;
   music_type?: string;
   fulfillment?: string;
+  card_design?: string;
+  background_id?: string;
   address?: string;
 }
 export type MusicalGift = {
@@ -93,6 +95,8 @@ export interface GiftPresentation {
   theme: string;
   photo_data?: string | null;
   occasion?: string;
+  details?: GiftDetails;
+  background_data?: string | null;
   audio_url?: string | null;
   title?: string;
   cover_url?: string | null;
@@ -113,7 +117,7 @@ export function giftPlanId(
 ) {
   return g.product === "short"
     ? `gift_short_${g.duration_seconds}`
-    : `gift_${g.product}_${g.music_source}`;
+    : `gift_${g.product}_${g.music_source}${g.music_source === "new" && g.duration_seconds ? "_" + g.duration_seconds : ""}`;
 }
 export function quoteGift(
   g: Pick<
@@ -137,6 +141,7 @@ export function quoteGift(
   }
   if (g.product === "physical") {
     if (!ops?.physical_enabled || !ops.print_format?.trim()) return null;
+    if (g.details.fulfillment === "self_print") return total;
     if (g.details.fulfillment === "pickup" && ops.pickup_enabled) return total;
     if (
       g.details.fulfillment !== "shipping" ||

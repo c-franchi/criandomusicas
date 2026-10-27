@@ -95,21 +95,23 @@ const GeneratingProgressBar = ({ t }: { t: (key: string) => string }) => {
 };
 
 // Auto-redirect effect for complete step
-const useAutoRedirect = (step: Step, navigate: ReturnType<typeof useNavigate>) => {
+const useAutoRedirect = (step: Step, navigate: ReturnType<typeof useNavigate>, destination: string) => {
   useEffect(() => {
     if (step === 'complete') {
       const timer = setTimeout(() => {
-        navigate('/dashboard');
+        navigate(destination);
       }, 3000);
       return () => clearTimeout(timer);
     }
-  }, [step, navigate]);
+  }, [step, navigate, destination]);
 };
 
 const CreateSong = () => {
   const { t } = useTranslation('dashboard');
   const { t: th } = useTranslation('home');
   const [generationError,setGenerationError]=useState<string | null>(null);
+  const [giftId, setGiftId] = useState<string | null>(null);
+  const [giftPhoto, setGiftPhoto] = useState<string | null>(null);
   const [giftLimit, setGiftLimit] = useState<number | null>(null);
   const { t: tc } = useTranslation('common');
   const navigate = useNavigate();
@@ -141,7 +143,7 @@ const CreateSong = () => {
   const [isEnhancingCover, setIsEnhancingCover] = useState(false);
   const coverInputRef = useRef<HTMLInputElement>(null);
   // Auto-redirect to dashboard after complete
-  useAutoRedirect(step, navigate);
+  useAutoRedirect(step, navigate, giftId ? `/presentes/${giftId}` : "/dashboard");
 
   // Back to home handler
   const handleBackToHome = () => {
@@ -149,7 +151,7 @@ const CreateSong = () => {
       // Don't allow leaving during generation
       return;
     }
-    navigate('/');
+    navigate(giftId ? `/presentes/${giftId}` : '/');
   };
 
 
@@ -205,11 +207,14 @@ const CreateSong = () => {
         return;
       }
 
-      const { data: gift, error: giftError } = await supabase.from('musical_gifts').select('id,music_source,is_test,payment_confirmed_at,product,duration_seconds').or(`production_order_id.eq.${existingOrderId},checkout_order_id.eq.${existingOrderId}`).maybeSingle();
+      const { data: gift, error: giftError } = await supabase.from('musical_gifts').select('id,music_source,is_test,payment_confirmed_at,product,duration_seconds,photo_data').or(`production_order_id.eq.${existingOrderId},checkout_order_id.eq.${existingOrderId}`).maybeSingle();
       if (giftError) throw giftError;
       if(gift?.music_source==='existing'){navigate(`/presentes/${gift.id}`);return;}
       if (gift && !gift.is_test && !gift.payment_confirmed_at) { navigate(`/checkout/${existingOrderId}`); return; }
-      if (gift?.product === 'short') setGiftLimit(gift.duration_seconds);
+      setGiftId(gift?.id || null);
+      setGiftPhoto(gift?.photo_data || null);
+      setGiftLimit(gift?.duration_seconds || null);
+      if (gift && orderData.approved_lyric_id) { navigate(`/presentes/${gift.id}`, {replace:true}); return; }
       setOrderId(existingOrderId);
 
       // 2. Se tem letra customizada, ir direto para geração de style prompt
@@ -554,8 +559,8 @@ const CreateSong = () => {
         songTitle: editedTitle,
         pronunciations: customPronunciations || pronunciations,
         hasCustomLyric: briefingData.hasCustomLyric || false,
-        customCoverUrl,
-        coverMode,
+        customCoverUrl: giftPhoto || customCoverUrl,
+        coverMode: giftId ? "original" : coverMode,
         briefing: {
           musicType: briefingData.musicType,
           emotion: briefingData.emotion,
@@ -842,7 +847,7 @@ const CreateSong = () => {
 
           {/* Back button */}
           <div className="text-center">
-            <Button variant="outline" onClick={() => navigate('/briefing')}>
+            <Button variant="outline" onClick={() => navigate(giftId ? `/presentes/${giftId}` : '/briefing')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               {t('createSong.backToBriefing')}
             </Button>
@@ -942,7 +947,7 @@ const CreateSong = () => {
           </Card>
 
           {/* Custom Cover Image Upload */}
-          <Card className="mb-6">
+          {!giftId && <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImagePlus className="w-5 h-5" />
@@ -1020,7 +1025,7 @@ const CreateSong = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* No refunds warning */}
           <Card className="mb-6 border-red-500/30 bg-red-500/5">
@@ -1220,7 +1225,7 @@ const CreateSong = () => {
           </Card>
 
           {/* Custom Cover Image Upload (same as editing step) */}
-          <Card className="mb-6">
+          {!giftId && <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImagePlus className="w-5 h-5" />
@@ -1298,7 +1303,7 @@ const CreateSong = () => {
                 </div>
               )}
             </CardContent>
-          </Card>
+          </Card>}
 
           {/* No refunds warning */}
           <Card className="mb-6 border-red-500/30 bg-red-500/5">
@@ -1369,7 +1374,7 @@ const CreateSong = () => {
               {t('createSong.readyForStep2')}
             </p>
             <p className="text-sm text-muted-foreground mt-2">
-              {t('createSong.redirectingToDashboard', 'Redirecionando para o painel em 3 segundos...')}
+              {giftId ? th('giftFlow.returningToGift') : t('createSong.redirectingToDashboard', 'Redirecionando para o painel em 3 segundos...')}
             </p>
           </div>
 
@@ -1417,9 +1422,9 @@ const CreateSong = () => {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button onClick={() => navigate('/dashboard')}>
+            <Button onClick={() => navigate(giftId ? `/presentes/${giftId}` : '/dashboard')}>
               <ArrowRight className="w-4 h-4 mr-2" />
-              {t('createSong.goToDashboard')}
+              {giftId ? th('giftFlow.followGift') : t('createSong.goToDashboard')}
             </Button>
           </div>
         </div>
