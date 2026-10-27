@@ -566,10 +566,10 @@
     "address": "Indirizzo completo (via, numero, interno, città, provincia e CAP)",
     "summary": "Riepilogo del regalo",
     "pricePending": "Prezzo o consegna in attesa di configurazione",
-    "pixHelp": "PIX utilizza la configurazione attuale di Criando Músicas. Invia la ricevuta per la verifica dell’amministratore. La carta per questi nuovi prodotti non è ancora disponibile.",
+    "pixHelp": "Usa lo stesso checkout della piattaforma, con PIX o carta. L’amministratore verifica la ricevuta PIX prima di abilitare la scelta e l’approvazione del testo.",
     "productionHelp": "Le nuove canzoni seguono il processo attuale. Il regalo viene attivato quando la canzone è pronta e verificata.",
     "shippingIncluded": "Per la spedizione, il totale include il costo fisso configurato. Non è previsto tracciamento automatico.",
-    "proceedPix": "Conferma e continua con PIX",
+    "proceedPix": "Conferma e vai al pagamento",
     "canSaveDraft": "Puoi salvare la bozza. L’acquisto sarà disponibile dopo la configurazione di prezzi e condizioni.",
     "adminTest": "Crea un test amministratore, senza addebito",
     "previous": "Indietro",
@@ -716,7 +716,12 @@
       "gift_invalid_photo": "Scegli una foto JPG, PNG o WebP valida fino a 8 MB.",
       "gift_physical_schedule_unavailable": "Per i biglietti stampati, lascia vuota la data di disponibilità.",
       "gift_invalid_music_type": "Controlla i dati della canzone e salva nuovamente.",
-      "gift_physical_disabled": "I biglietti fisici sono disabilitati. Scegli un biglietto digitale."
+      "gift_physical_disabled": "I biglietti fisici sono disabilitati. Scegli un biglietto digitale.",
+      "gift_lyric_too_long": "Il testo è troppo lungo. Riduci parole e righe senza ripetere il ritornello.",
+      "gift_lyrics_approval_required": "Il cliente deve approvare il testo prima della produzione e pubblicazione.",
+      "gift_audio_duration_invalid": "L’audio supera la durata selezionata o la durata non è stata verificata.",
+      "gift_order_mismatch": "I dati del pagamento non corrispondono all’ordine. Ricarica la pagina.",
+      "gift_payment_forbidden": "Il pagamento deve essere confermato tramite il processo autorizzato."
     },
     "messageOptional": "Messaggio facoltativo",
     "durationExceeded": "L’audio supera la durata scelta. Carica la versione corretta prima dell’attivazione.",
@@ -730,6 +735,16 @@
     "musicProductionNotStarted": "La produzione del brano non è ancora iniziata. Questo biglietto è un’anteprima senza audio. Dopo la conferma dell’ordine o l’approvazione del test, l’amministratore deve avviare la produzione e preparare la traccia prima di pubblicare il regalo.",
     "musicProductionPending": "L’ordine di produzione esiste, ma non c’è ancora una traccia pronta. Testo e audio devono essere preparati attraverso il processo attuale. Il link sarà disponibile solo dopo il completamento e la verifica.",
     "manageProduction": "Apri la produzione nel pannello admin",
-    "audioLoadError": "Impossibile caricare l’audio. Controlla la connessione e riapri il regalo. Se il problema persiste, avvisa chi ha inviato il biglietto."
+    "audioLoadError": "Impossibile caricare l’audio. Controlla la connessione e riapri il regalo. Se il problema persiste, avvisa chi ha inviato il biglietto.",
+    "openCheckout": "Apri pagamento",
+    "customerApprovalTitle": "Scegli e approva il testo",
+    "customerApprovalBody": "L’ordine segue il flusso della piattaforma: conferma del pagamento, scelta o modifica del testo, approvazione e produzione audio. Creare un test non approva automaticamente il testo.",
+    "reviewLyrics": "Scegli e approva il testo",
+    "unifiedOrderHelp": "Pagamento, ricevuta e produzione sono gestiti nell’ordine della piattaforma. Il regalo viene pubblicato dopo l’approvazione del testo e il completamento dell’audio.",
+    "manageOrder": "Apri richiesta nel pannello admin",
+    "musicStage": "Fase del brano",
+    "approvalDone": "Testo selezionato per approvazione / produzione",
+    "approvalPending": "In attesa dell’approvazione del testo da parte del cliente",
+    "shortLyricGuidance": "Brano fino a {{seconds}}s: massimo {{words}} parole e {{lines}} righe cantate, senza ripetere il ritornello. L’audio finale sarà verificato e non potrà mai superare 40 secondi."
   }
 }

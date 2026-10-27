@@ -1,55 +1,53 @@
-# Fluxo de presentes musicais
+# Presentes musicais no fluxo da plataforma
 
-Implementação incremental sobre o site existente em React/Vite, Supabase e publicação Lovable. Os pedidos e pagamentos antigos continuam no fluxo original. A manutenção continua ativa; administradores autenticados podem testar. Links individuais já liberados em `/presente/:token` permanecem acessíveis ao destinatário durante a manutenção.
+Cartão digital e músicas curtas usam o mesmo pedido, checkout, comprovante PIX, confirmação de pagamento, escolha/edição de letras e aprovação usados nas músicas normais. A experiência de cartão continua em `musical_gifts`; a compra aponta para `checkout_order_id` e a música nova usa esse mesmo pedido em `production_order_id`. Uma música existente não cria outra produção.
 
-## Caminho para testar sem cobrança
+## Fluxo do cliente
 
-1. Entre em `/auth` com uma conta administradora e abra `/cartao-digital`.
-2. Clique para criar o presente, escolha uma música pronta da sua conta ou uma música nova e preencha as etapas. A música existente precisa ter uma faixa READY e não pode ser uma prévia.
-3. Confira a prévia. Salve o rascunho ou use a opção explícita de teste do ADM, sem cobrança. Essa opção só funciona para presentes da própria conta administradora.
-4. Abra `/admin/presentes`, selecione o presente e confira seus dados. Para música nova, inicie a produção; um pedido será criado no processo musical existente. O botão de letras utiliza a função real `generate-lyrics`; produção e upload do áudio continuam necessários.
-5. Quando a faixa estiver pronta, ouça e revise os dados. Nas músicas curtas, confira também a duração real. Libere o presente.
-6. Em `/presentes`, abra o acompanhamento, copie o link e teste em uma janela sem login. Abra o presente, ouça o áudio, confira dedicatória, letra e QR Code. Presentes de teste exibem uma identificação visível.
-7. Para cartão físico, abra a prova de impressão no ADM. Leia o QR Code na prova e confirme a revisão antes de marcar como pronto para impressão. Expedição e entrega são atualizações manuais.
+1. Escolher cartão digital ou música curta e preencher a personalização. Gênero usa os cards e opções do briefing original. Para uma música existente, selecionar uma faixa pronta da própria conta.
+2. Conferir a prévia e o total configurado em `pricing_config`. Sem preço válido, a compra continua bloqueada. Confirmar leva ao checkout da plataforma.
+3. Pagar por cartão pelo Stripe existente ou enviar o comprovante PIX no checkout original. Somente a confirmação administrativa ou a verificação real da sessão Stripe confirma o pagamento. O preço total fica fixado no servidor, incluindo adicionais.
+4. Para música nova, abrir “Escolher e aprovar letra” no acompanhamento. Duas opções são geradas pelo serviço real; o cliente pode revisar/editar e aprovar antes de produzir o áudio. A geração de letra não aprova automaticamente pedidos de presente.
+5. A produção recebe o pedido e a letra aprovada. A faixa deve ser produzida e enviada pelo processo atual. A infraestrutura existente não gera áudio automaticamente ao salvar o cartão.
+6. ADM confere música, dedicatória, eventual data de disponibilidade e libera o presente. O link individual reproduz a faixa correta com a letra aprovada.
 
-Teste não confirma pagamento e não concede créditos. Pedidos de produção de teste são marcados como prévia e continuam com pagamento PENDING. Um teste não deve ser usado como pedido comercial.
+Um cartão com música já pronta passa pelo pagamento e conferência do cartão, sem repetir a geração ou aprovação da canção existente. Os créditos, cupons e benefícios VIP das músicas normais não são aplicados automaticamente aos novos produtos; dependem de condições comerciais próprias.
 
-## Configuração comercial e compra real
+## Letras e áudio das músicas curtas
 
-Em `/admin/presentes`, a aba de configuração comercial permite preencher e ativar os sete preços: cartão digital com música existente/nova, música curta de até 15/30 segundos, adicional de cartão, cartão físico com música existente/nova. Todos começam inativos, sem preço comercial definido. Não alteram os planos nem os créditos antigos.
+As modalidades continuam sendo até 15s e até 30s, com teto absoluto de 40s. A duração contratada continua valendo quando for menor que 40s.
 
-O novo fluxo aceita PIX com a configuração real já existente. O servidor calcula e fixa o total ao confirmar o resumo. O comprador envia um comprovante privado; o ADM precisa conferir o recebimento e confirmar o pagamento antes de produzir/liberar. Enviar comprovante não equivale a pagar. Há rejeição com motivo e novo envio. Pagamento por cartão de crédito dos novos produtos depende de integração específica no checkout/Stripe e permanece indisponível; o Stripe dos produtos antigos foi preservado.
+- Até 15s: máximo de 20 palavras e 4 linhas cantadas.
+- Até 30s: máximo de 40 palavras e 6 linhas cantadas.
+- Uma estrofe curta, sem repetir refrão, sem monólogo, introdução longa, solo ou final prolongado.
+- O gerador recebe uma instrução específica e tenta reduzir uma resposta longa uma vez. Resposta ainda fora do limite não é salva como letra válida.
+- O formulário de aprovação, a função de aprovação e o banco conferem o tamanho da letra. Edições também precisam respeitar o limite.
+- O upload no ADM mede o arquivo real; o banco exige duração informada válida para faixas curtas. Na liberação, o player permite conferir novamente a faixa selecionada.
 
-O cartão físico exige habilitar uma operação real e informar formato disponível, retirada e/ou envio, taxa fixa quando houver envio e condições de produção. O endereço é coletado para envio. Não há cotação de transportadora, rastreamento automático ou impressão automatizada. As opções de formato e acabamento dependem da operação configurada.
+Contagem de palavras orienta a produção, mas não garante duração sozinha. A validação final depende do áudio real. Nenhuma música curta pode ser liberada acima do limite escolhido ou de 40s.
 
-## Entrega e experiência
+## Gestão no ADM
 
-- Link aleatório de 256 bits, sem prazo comercial predefinido; acesso depende da disponibilidade do serviço e dos termos existentes.
-- Liberação exige pagamento confirmado ou teste explícito, faixa correta disponível e revisão do ADM. Revogar invalida o token anterior.
-- A data/hora controla a disponibilidade do link no servidor. **Não é disparo automático.** WhatsApp e e-mail abrem o compartilhamento manual do comprador. Envios automáticos, fila e tentativas precisam de provedor e tarefas de backend.
-- Reprodução após interação, dedicatória, foto opcional otimizada, capa, letra aprovada e repetição. Temas em dez ocasiões e textos nos quatro idiomas já suportados.
-- LRC opcional no ADM para letra sincronizada; sem tempos, mostra a letra completa. A duração das músicas curtas é verificada no player e confirmada pelo ADM; não há corte automático nem geração fictícia.
-- QR Code gerado a partir do link verdadeiro; prova imprimível antes da impressão. Validar leitura também no papel e no celular.
+`/admin` oferece filtros “Músicas normais”, “Cartões digitais” e “Músicas curtas”, com contagens por produto. Cada solicitação exibe identificação do produto, duração quando aplicável, número do pedido e marcação de teste. A busca aceita número, cliente, destinatário, título, gênero e história. Os estados originais mostram pagamento pendente, letras geradas, letras aprovadas e produção.
 
-## Dados e proteção
+`/admin/presentes` continua sendo a gestão da personalização, link, QR Code e liberação. “Abrir solicitação no ADM” leva ao mesmo pedido de pagamento/produção. A etapa musical e a pendência de aprovação são mostradas no detalhe. A aprovação é feita pelo comprador em sua conta; o ADM não precisa aprovar a letra em seu lugar.
 
-Migração `20261027000255_musical_gift_flow.sql`: tabelas `musical_gifts`, `musical_gift_events` e `gift_operations`, preços inativos e funções RPC. DDL idempotente e sem substituição dos pedidos existentes. RLS isola contas; alterações sensíveis passam por funções no banco. Dados privados não aparecem na resposta pública. Comprovantes usam o bucket privado `pix-receipts`, com URL temporária no ADM.
+## Testes sem cobrança
 
-Foto é reduzida no navegador e armazenada como imagem limitada a 240 KiB; o arquivo original não é enviado. Remover a foto antes da compra também é possível. Não há gerador de imagens ou armazenamento público adicional.
+A opção “Criar teste do ADM, sem cobrança” continua restrita a presentes da própria conta administradora. Música nova cria um pedido de teste, sem marcar pagamento como recebido e sem conceder créditos. O ADM, como comprador desse teste, segue a escolha e aprovação de letras normalmente. Teste não gera nem aprova áudio automaticamente.
 
-As rotas de presente desativam analytics de marketing e usam noindex/referrer no HTML inicial e no componente. O site é uma SPA: esses cuidados não substituem cabeçalhos HTTP do servidor, SEO social no servidor nem políticas do provedor. Trate o link como informação privada: quem o receber pode abrir e repassar. O áudio usa a infraestrutura de mídia existente.
+## Entrega e configuração
 
-## Validação realizada
+- Cartão físico permanece desabilitado. O controle em “Preços e operação” governa vitrine, links de criação e bloqueio no banco. Pedidos históricos são preservados.
+- WhatsApp e e-mail são compartilhamento manual. A data programada controla quando o link abre; não dispara mensagens automaticamente.
+- Link aleatório de 256 bits, sem expiração comercial fixa, sujeito à disponibilidade do serviço e aos termos. É informação privada que pode ser repassada por quem a recebe.
+- QR Code é gerado a partir do link real. Letra sincronizada depende de marcações LRC reais. Fotografias são otimizadas e limitadas.
+- Manutenção permanece ativa conforme configuração. Administradores autenticados podem testar; links individuais liberados continuam acessíveis.
 
-- Instalação reproduzível com npm ci, TypeScript, lint dos novos módulos e build Vite/PWA.
-- Testes unitários de preços, LRC, URLs, imagens e controle de manutenção.
-- Migração aplicada duas vezes em transação e testes SQL com rollback: isolamento entre contas, restrições de anônimo, valores indisponíveis, pagamento PIX, teste ADM, produção idempotente, publicação, data futura, revogação, tempos da letra e etapas físicas.
-- Renderização de 80 combinações de idioma/tema/cartão e decodificação independente do QR Code.
+## Dados e segurança
 
-Ainda requer validação humana autenticada no site publicado: pagamento real com conferência bancária, produção/upload reais, reprodução móvel, envio manual, leitura de prova impressa e conferência visual em dispositivos. Nenhum pagamento, mensagem externa ou despacho foi realizado pelos testes.
+Migração `20261027135827_unify_gift_order_and_lyric_flow.sql` adiciona vínculo com checkout, duração do áudio, limites de letras, sincronização do pagamento e trava de geração para evitar duas chamadas simultâneas do pagamento e da página de letras. RLS e autorização dos presentes são preservadas. Pagamento pelo cliente não pode ser marcado como recebido; alterações de valor ou plano divergentes da cotação são bloqueadas.
 
-## Atualização: foco em cartões digitais
+Arquivos de backend alterados: `create-payment`, `verify-payment`, `generate-lyrics`, `generate-style-prompt` e `_shared/shortLyrics.ts`. Essas funções precisam ser publicadas no backend, além da publicação do frontend no Lovable.
 
-Cartões físicos ficam desabilitados por padrão. O controle existente em ADM → Presentes musicais → Preços e operação governa também a vitrine, as opções de criação, os links diretos e a criação/teste no banco. Falha ao carregar a configuração mantém o produto oculto. Pedidos anteriores são preservados; pedidos físicos já pagos podem concluir o atendimento mesmo após desligar novas vendas.
-
-A prévia de música nova avisa explicitamente que não gera áudio. O acompanhamento distingue produção ainda não iniciada de produção sem faixa pronta e oferece acesso direto ao presente no ADM. A opção de música existente já pronta permite ouvir a faixa na prévia. Publicação continua bloqueada sem uma faixa READY real; não há geração de música simulada.
+Testes SQL usam transações com rollback. Não cobram, não disparam mensagens e não alteram os pedidos reais do usuário. Pagamento real, geração com IA e reprodução móvel continuam exigindo validação autenticada com uma solicitação real.

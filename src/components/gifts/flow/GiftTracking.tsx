@@ -253,6 +253,27 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </Button>
         </section>
       )}
+      {g.checkout_order_id &&
+        ["AWAITING_PAYMENT", "RECEIPT_SENT"].includes(g.status) && (
+          <Button asChild className="mb-6">
+            <Link to={`/checkout/${g.checkout_order_id}`}>
+              {t("giftFlow.openCheckout")}
+            </Link>
+          </Button>
+        )}
+      {g.production_order_id && (g.is_test || g.payment_confirmed_at) && (
+        <section className="mb-7 space-y-4 rounded-xl border border-primary/30 p-5">
+          <h2 className="font-semibold">
+            {t("giftFlow.customerApprovalTitle")}
+          </h2>
+          <p className="text-sm">{t("giftFlow.customerApprovalBody")}</p>
+          <Button asChild>
+            <Link to={`/criar-musica?orderId=${g.production_order_id}`}>
+              {t("giftFlow.reviewLyrics")}
+            </Link>
+          </Button>
+        </section>
+      )}
       {g.status === "AWAITING_PAYMENT" && (
         <Button
           className="mb-6"
@@ -279,64 +300,65 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </Button>
         </div>
       )}
-      {["AWAITING_PAYMENT", "RECEIPT_SENT"].includes(g.status) && (
-        <section className="mb-8 rounded-2xl border border-border bg-card p-5">
-          <h2 className="mb-4 text-xl font-semibold">
-            {t("giftFlow.payment")}
-          </h2>
-          <p className="mb-5 text-sm text-muted-foreground">
-            {t("giftFlow.pixHelp")}
-          </p>
-          {pix.isPending ? (
-            <p>{t("giftFlow.loading")}</p>
-          ) : pix.isError ? (
-            <p role="alert">{t("giftFlow.pixUnavailable")}</p>
-          ) : (
-            <>
-              <p className="font-medium">{pix.data.pix_name}</p>
-              <code className="my-4 block break-all rounded-lg bg-muted p-4 text-sm">
-                {pix.data.pix_key}
-              </code>
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(pix.data.pix_key);
-                    toast({ title: t("giftFlow.copied") });
-                  } catch {
-                    setError(t("giftFlow.copyError"));
-                  }
-                }}
-              >
-                {t("giftFlow.copyPix")}
-              </Button>
-              {pix.data.qr_code_url && (
-                <img
-                  src={pix.data.qr_code_url}
-                  alt={t("giftFlow.pixQr")}
-                  className="mt-5 h-48 w-48 object-contain"
-                />
-              )}
-              <p className="mt-5 text-sm">{t("giftFlow.receiptHelp")}</p>
-              <Input
-                type="file"
-                accept="image/jpeg,image/png,image/webp,application/pdf"
-                className="mt-3"
-                disabled={busy}
-                onChange={(e) => {
-                  void upload(e.target.files?.[0]);
-                  e.target.value = "";
-                }}
-              />
-            </>
-          )}
-          {g.status === "RECEIPT_SENT" && (
-            <p className="mt-5 text-sm font-medium">
-              {t("giftFlow.waitingApproval")}
+      {!g.checkout_order_id &&
+        ["AWAITING_PAYMENT", "RECEIPT_SENT"].includes(g.status) && (
+          <section className="mb-8 rounded-2xl border border-border bg-card p-5">
+            <h2 className="mb-4 text-xl font-semibold">
+              {t("giftFlow.payment")}
+            </h2>
+            <p className="mb-5 text-sm text-muted-foreground">
+              {t("giftFlow.pixHelp")}
             </p>
-          )}
-        </section>
-      )}
+            {pix.isPending ? (
+              <p>{t("giftFlow.loading")}</p>
+            ) : pix.isError ? (
+              <p role="alert">{t("giftFlow.pixUnavailable")}</p>
+            ) : (
+              <>
+                <p className="font-medium">{pix.data.pix_name}</p>
+                <code className="my-4 block break-all rounded-lg bg-muted p-4 text-sm">
+                  {pix.data.pix_key}
+                </code>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(pix.data.pix_key);
+                      toast({ title: t("giftFlow.copied") });
+                    } catch {
+                      setError(t("giftFlow.copyError"));
+                    }
+                  }}
+                >
+                  {t("giftFlow.copyPix")}
+                </Button>
+                {pix.data.qr_code_url && (
+                  <img
+                    src={pix.data.qr_code_url}
+                    alt={t("giftFlow.pixQr")}
+                    className="mt-5 h-48 w-48 object-contain"
+                  />
+                )}
+                <p className="mt-5 text-sm">{t("giftFlow.receiptHelp")}</p>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,application/pdf"
+                  className="mt-3"
+                  disabled={busy}
+                  onChange={(e) => {
+                    void upload(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                />
+              </>
+            )}
+            {g.status === "RECEIPT_SENT" && (
+              <p className="mt-5 text-sm font-medium">
+                {t("giftFlow.waitingApproval")}
+              </p>
+            )}
+          </section>
+        )}
       {error && (
         <p
           role="alert"

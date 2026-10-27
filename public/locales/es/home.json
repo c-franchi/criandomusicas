@@ -566,10 +566,10 @@
     "address": "Dirección completa (calle, número, piso, ciudad, provincia y código postal)",
     "summary": "Resumen del regalo",
     "pricePending": "Precio o entrega pendiente de configuración",
-    "pixHelp": "PIX utiliza la configuración actual de Criando Músicas. Envía el comprobante para revisión del administrador. La tarjeta para estos nuevos productos aún no está disponible.",
+    "pixHelp": "Usa el mismo checkout de la plataforma, con PIX o tarjeta. El administrador comprobará el recibo PIX antes de habilitar la elección y aprobación de la letra.",
     "productionHelp": "Las canciones nuevas siguen el proceso actual. El regalo se libera cuando la canción esté lista y se haya revisado.",
     "shippingIncluded": "Para envíos, el total incluye el coste fijo configurado. No hay seguimiento automático.",
-    "proceedPix": "Confirmar y continuar a PIX",
+    "proceedPix": "Confirmar e ir al pago",
     "canSaveDraft": "Ya puedes guardar el borrador. La compra se habilita al configurar precio y condiciones.",
     "adminTest": "Crear prueba del administrador, sin cobro",
     "previous": "Atrás",
@@ -716,7 +716,12 @@
       "gift_invalid_photo": "Elige una foto JPG, PNG o WebP válida de hasta 8 MB.",
       "gift_physical_schedule_unavailable": "Para tarjetas físicas, deja vacía la fecha de habilitación.",
       "gift_invalid_music_type": "Revisa los datos de la canción y vuelve a guardar.",
-      "gift_physical_disabled": "Las tarjetas físicas están deshabilitadas. Elige una tarjeta digital."
+      "gift_physical_disabled": "Las tarjetas físicas están deshabilitadas. Elige una tarjeta digital.",
+      "gift_lyric_too_long": "La letra es demasiado larga. Reduce palabras y líneas, sin repetir el estribillo.",
+      "gift_lyrics_approval_required": "El cliente debe aprobar la letra antes de producir y liberar el regalo.",
+      "gift_audio_duration_invalid": "El audio supera la duración elegida o no se comprobó su duración.",
+      "gift_order_mismatch": "Los datos de pago no coinciden con el pedido. Actualiza la página.",
+      "gift_payment_forbidden": "El pago debe confirmarse mediante el proceso autorizado."
     },
     "messageOptional": "Mensaje opcional",
     "durationExceeded": "El audio supera la duración elegida. Sube la versión correcta antes de habilitar.",
@@ -730,6 +735,16 @@
     "musicProductionNotStarted": "La producción de la canción aún no se ha iniciado. Esta tarjeta es una vista previa sin audio. Tras confirmar el pedido o aprobar la prueba, el administrador debe iniciar la producción y preparar la pista antes de liberar el regalo.",
     "musicProductionPending": "El pedido de producción ya existe, pero aún no hay una pista lista. La letra y el audio deben prepararse mediante el proceso actual. El enlace estará disponible tras completar y revisar el regalo.",
     "manageProduction": "Abrir producción en administración",
-    "audioLoadError": "No se pudo cargar el audio. Comprueba tu conexión y vuelve a abrir el regalo. Si continúa, avisa a quien envió la tarjeta."
+    "audioLoadError": "No se pudo cargar el audio. Comprueba tu conexión y vuelve a abrir el regalo. Si continúa, avisa a quien envió la tarjeta.",
+    "openCheckout": "Abrir pago",
+    "customerApprovalTitle": "Elige y aprueba la letra",
+    "customerApprovalBody": "El pedido sigue el flujo de la plataforma: pago confirmado, elección o edición de la letra, tu aprobación y producción del audio. Crear una prueba no aprueba la letra automáticamente.",
+    "reviewLyrics": "Elegir y aprobar letra",
+    "unifiedOrderHelp": "El pago, comprobante y producción se gestionan en el pedido de la plataforma. El regalo se libera tras aprobar la letra y preparar el audio.",
+    "manageOrder": "Abrir solicitud en administración",
+    "musicStage": "Etapa de la canción",
+    "approvalDone": "Letra seleccionada para aprobación / producción",
+    "approvalPending": "Pendiente de aprobación de letra por el cliente",
+    "shortLyricGuidance": "Canción de hasta {{seconds}}s: máximo {{words}} palabras y {{lines}} líneas cantadas, sin repetir el estribillo. Se comprobará el audio final y nunca podrá superar 40 segundos."
   }
 }

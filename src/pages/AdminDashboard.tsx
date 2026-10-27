@@ -1,5 +1,7 @@
+import { readAudioDuration } from "@/lib/audio-duration";
+import type { MusicalGift } from "@/lib/gifts";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +62,7 @@ import {
 import { AdminStatsCards } from "@/components/admin";
 
 interface AdminOrder {
+  gift?: Pick<MusicalGift,"id"|"product"|"duration_seconds"|"music_source"|"is_test"|"recipient_name">;
   id: string;
   status: string;
   created_at: string;
@@ -100,9 +103,11 @@ const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
   const { toast } = useToast();
+  const [params] = useSearchParams();
+  const [productFilter, setProductFilter] = useState(params.get('produto') || 'all');
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(params.get("pedido") || "");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   // Music upload - now supports two versions per order
@@ -172,6 +177,8 @@ const AdminDashboard = () => {
 
       if (ordersError) throw ordersError;
 
+      const {data:gifts,error:giftError}=await supabase.from('musical_gifts').select('id,product,duration_seconds,music_source,is_test,recipient_name,checkout_order_id,production_order_id');
+      if(giftError) throw giftError;
       // Fetch lyrics titles, tracks, and profiles for each order
       const ordersWithDetails = await Promise.all(
         (ordersData || []).map(async (order) => {
@@ -240,7 +247,7 @@ const AdminDashboard = () => {
             }
           }
 
-          return { ...order, lyric_title, track_url, user_whatsapp, user_name, uploadedVersions, audio_input_url };
+          return { ...order, gift: gifts?.find(g=>g.checkout_order_id===order.id || g.production_order_id===order.id), lyric_title, track_url, user_whatsapp, user_name, uploadedVersions, audio_input_url };
         })
       );
 
@@ -346,6 +353,7 @@ const AdminDashboard = () => {
 
       if (fetchError) throw fetchError;
 
+      const existingSongCard = orders.find(o=>o.id===orderId)?.gift?.music_source === 'existing';
       const isInstrumental = orderData.is_instrumental === true;
       const hasCustomLyric = orderData.has_custom_lyric === true;
 
@@ -400,7 +408,7 @@ const AdminDashboard = () => {
       // 4. Update payment status to PAID
       // For instrumental OR custom lyric: skip to LYRICS_APPROVED (no AI lyrics needed)
       // For vocal: go to LYRICS_PENDING (start lyrics generation)
-      const newStatus = (isInstrumental || hasCustomLyric) ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
+      const newStatus = existingSongCard ? 'COMPLETED' : (isInstrumental || hasCustomLyric) ? 'LYRICS_APPROVED' : 'LYRICS_PENDING';
       
       const { error } = await supabase
         .from('orders')
@@ -434,7 +442,9 @@ const AdminDashboard = () => {
 
       // 4. Trigger automatic generation based on type
       try {
-        if (isInstrumental) {
+        if (existingSongCard) {
+          // The existing song was already produced and approved. Only the card is new.
+        } else if (isInstrumental) {
           // For instrumental, skip lyrics and generate style prompt directly
           await supabase.functions.invoke('generate-style-prompt', {
             body: {
@@ -675,6 +685,13 @@ const AdminDashboard = () => {
     if (!file) return;
     setUploadingMusic(`${order.id}-v${version}`);
     try {
+      let shortDuration: number | null=null;
+      if(order.gift?.product==='short'){
+        shortDuration=await readAudioDuration(file);
+        const limit=Math.min(order.gift.duration_seconds||30,40);
+        if(shortDuration>limit+0.05) throw new Error(`O áudio tem ${shortDuration.toFixed(1)} segundos. Este pedido permite até ${limit}s; envie uma versão mais curta.`);
+        if(!order.approved_lyric_id) throw new Error('Aguarde a aprovação da letra pelo cliente.');
+      }
       const fileExt = file.name.split('.').pop();
       const fileName = `${order.id}-v${version}-${Date.now()}.${fileExt}`;
       const filePath = `${order.user_id}/${fileName}`;
@@ -706,6 +723,7 @@ const AdminDashboard = () => {
         .upsert({
           order_id: order.id,
           audio_url: audioUrl,
+          ...(shortDuration !== null ? {duration_seconds: shortDuration} : {}),
           status: 'READY',
           version: version
         }, {
@@ -990,13 +1008,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const scopeOrders=orders.filter(o=>productFilter==='all' || (productFilter==='normal' ? !o.gift : o.gift?.product===productFilter));
   // Separar pedidos ativos e concluídos
-  const activeOrders = orders.filter(o => !['COMPLETED', 'CANCELLED'].includes(o.status));
-  const completedOrders = orders.filter(o => ['COMPLETED', 'CANCELLED'].includes(o.status));
+  const activeOrders = scopeOrders.filter(o => !['COMPLETED', 'CANCELLED'].includes(o.status));
+  const completedOrders = scopeOrders.filter(o => ['COMPLETED', 'CANCELLED'].includes(o.status));
 
   // Filtrar pedidos
   const filterOrders = (ordersList: AdminOrder[]) => ordersList.filter(order => {
-    const matchesSearch = 
+    const matchesSearch =
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.user_email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.gift?.recipient_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.lyric_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.music_type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.music_style?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -1017,11 +1040,11 @@ const AdminDashboard = () => {
 
   // Contagens por status
   const statusCounts = {
-    ready: orders.filter(o => o.status === 'LYRICS_APPROVED').length,
-    generating: orders.filter(o => o.status === 'MUSIC_GENERATING').length,
+    ready: scopeOrders.filter(o => o.status === 'LYRICS_APPROVED').length,
+    generating: scopeOrders.filter(o => o.status === 'MUSIC_GENERATING').length,
     completed: completedOrders.length,
     total: orders.length,
-    awaitingPix: orders.filter(o => o.payment_status === 'AWAITING_PIX').length
+    awaitingPix: scopeOrders.filter(o => o.payment_status === 'AWAITING_PIX').length
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -1320,6 +1343,7 @@ const AdminDashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
+        <div className="mb-6 flex flex-wrap gap-2" aria-label="Tipo de solicitação">{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label} ({orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length})</Button>)}</div>
         {/* Stats Cards */}
         <AdminStatsCards statusCounts={statusCounts} />
 
@@ -1328,7 +1352,7 @@ const AdminDashboard = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por título, estilo, história..."
+              placeholder="Buscar por número do pedido, cliente, destinatário, título..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 bg-card/50 border-border/50 focus:border-primary/50"
@@ -1413,6 +1437,8 @@ const AdminDashboard = () => {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
+                          {order.gift && <><Badge className="bg-primary/15 text-primary">{order.gift.product==='short'?`Música curta · até ${order.gift.duration_seconds}s`:order.gift.product==='digital'?'Cartão digital':'Cartão físico'}{order.gift.is_test?' · TESTE':''}</Badge><Button size="sm" variant="outline" asChild><Link to={`/admin/presentes?presente=${order.gift.id}`}>Abrir cartão / entrega</Link></Button></>}
+                          <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0,8)}</span>
                           {/* Type Badge - Áudio vs Vocal vs Instrumental vs Letra Própria */}
                           <Badge 
                             variant="outline" 

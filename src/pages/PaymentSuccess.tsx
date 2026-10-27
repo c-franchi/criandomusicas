@@ -21,6 +21,7 @@ const PaymentSuccess = () => {
   const [countdown, setCountdown] = useState(3);
   const [orderType, setOrderType] = useState<string>("vocal");
 
+  const [giftId, setGiftId] = useState<string | null>(null);
   const orderId = searchParams.get('order_id');
   const sessionId = searchParams.get('session_id');
 
@@ -51,6 +52,8 @@ const PaymentSuccess = () => {
         if (fnError) throw fnError;
 
         if (data?.success && (data.status === 'paid' || data.paid === true)) {
+          const { data: gift } = await supabase.from('musical_gifts').select('id').eq('checkout_order_id', orderId).maybeSingle();
+          setGiftId(gift?.id || null);
           setVerified(true);
           setOrderType(data.orderType || "vocal");
           // Only fire purchase after backend-confirmed payment; dedupe is handled in analytics helper
@@ -89,7 +92,7 @@ const PaymentSuccess = () => {
         if (prev <= 1) {
           clearInterval(timer);
           // Redirect based on order type
-          if (orderType === "instrumental") {
+          if (giftId) { navigate(`/presentes/${giftId}`); } else if (orderType === "instrumental") {
             navigate('/dashboard');
           } else {
             // vocal and custom_lyric both go to CreateSong for approval
@@ -102,7 +105,7 @@ const PaymentSuccess = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [verified, navigate, orderType, orderId]);
+  }, [verified, navigate, orderType, orderId, giftId]);
 
   if (authLoading) {
     return (

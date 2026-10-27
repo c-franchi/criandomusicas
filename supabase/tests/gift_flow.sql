@@ -53,10 +53,12 @@ begin
  if (public.musical_gift_action(g2,'start_production')->>'production_order_id')::uuid<>prod then raise exception 'Duplicate production';end if;
  execute 'reset role';
  if not exists(select 1 from public.orders where id=prod and user_id=uid and is_preview=true and payment_status='PENDING' and music_type='parodia') then raise exception 'Test falsely marked paid or lost purpose';end if;
- insert into public.tracks(order_id,status,version,audio_url) values(prod,'READY',1,'https://example.com/short-test-audio.mp3');
+ insert into public.lyrics(order_id,version,title,body,is_approved) values(prod,'A','Fixture','A tiny song for you',true);
+ update public.orders set approved_lyric_id=(select id from public.lyrics where order_id=prod limit 1) where id=prod;
+ insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(prod,'READY',1,'https://example.com/short-test-audio.mp3',14.5);
  execute 'set local role authenticated';
  begin perform public.musical_gift_action(g2,'publish','{"reviewed":true}');raise exception 'Expected duration guard';exception when others then if sqlerrm<>'gift_duration_review_required' then raise;end if;end;
- perform public.musical_gift_action(g2,'publish','{"reviewed":true,"duration_checked":true}');
+ perform public.musical_gift_action(g2,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":14.5}');
  -- Real purchase flow uses a quoted price, private receipt, and admin confirmation.
  execute 'reset role';
  update public.pricing_config set price_cents=1234,price_promo_cents=null,is_active=true where id='gift_digital_existing';

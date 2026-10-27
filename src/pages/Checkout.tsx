@@ -1,3 +1,4 @@
+import type { MusicalGift } from "@/lib/gifts";
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -61,6 +62,8 @@ interface VoucherValidation {
 
 export default function Checkout() {
   const { t, i18n } = useTranslation(['checkout', 'common']);
+  const { t: th } = useTranslation('home');
+  const [giftOrder, setGiftOrder] = useState<MusicalGift | null>(null);
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -161,6 +164,10 @@ export default function Checkout() {
           return;
         }
 
+        const { data: gift, error: giftError } = await supabase.from('musical_gifts').select('*').eq('checkout_order_id', orderId).maybeSingle();
+        if (giftError) throw giftError;
+        setGiftOrder(gift);
+        if (gift && data.payment_status === 'PAID') { navigate(`/presentes/${gift.id}`); return; }
         // If already paid, redirect based on order type
         if (data.payment_status === 'PAID') {
           if (data.is_instrumental) {
@@ -184,6 +191,12 @@ export default function Checkout() {
           }
         }
 
+        if (gift) {
+          if (!gift.amount_cents || !gift.plan_id || data.amount !== gift.amount_cents) throw Error('gift_order_mismatch');
+          setCurrentPlanInfo({id: gift.plan_id, name: th(`gifts.products.${gift.product}.name`), credits: 0});
+          setOrder(data);
+          return;
+        }
         // Determine correct pricing based on planId from URL
         const urlPlanId = getPlanIdFromUrl();
         let pricingId = urlPlanId;
@@ -269,7 +282,7 @@ export default function Checkout() {
   // Auto-process VIP access
   useEffect(() => {
     const processVIPAccess = async () => {
-      if (!vipLoading && isVIP && order && user && !processingVIP && order.payment_status !== 'AWAITING_PIX') {
+      if (!giftOrder && !vipLoading && isVIP && order && user && !processingVIP && order.payment_status !== 'AWAITING_PIX') {
         setProcessingVIP(true);
         toast.info(t('toast.vipDetected'));
         
@@ -363,7 +376,7 @@ export default function Checkout() {
     };
 
     processVIPAccess();
-  }, [isVIP, vipLoading, order, user, navigate, processingVIP]);
+  }, [isVIP, vipLoading, order, user, navigate, processingVIP, giftOrder]);
 
   // Calculate effective planId based on order type for universal credits
   const getEffectivePlanId = (): string => {
@@ -550,7 +563,7 @@ export default function Checkout() {
       }
 
       const { data, error } = await supabase.functions.invoke('create-payment', {
-        body: { orderId: order.id, planId },
+        body: { orderId: order.id, planId: giftOrder?.plan_id || planId },
       });
 
       if (error) throw error;
@@ -861,7 +874,7 @@ export default function Checkout() {
 
   // Universal credits - always compatible
   const isCreditsCompatible = (): boolean => {
-    return hasCredits;
+    return !giftOrder && hasCredits;
   };
 
   if (authLoading || vipLoading || loading || processingVIP) {
@@ -1080,7 +1093,7 @@ export default function Checkout() {
           </Card>
         )}
 
-        {!showPixSection && hasCredits && !creditsLoading && (
+        {!giftOrder && !showPixSection && hasCredits && !creditsLoading && (
           <Card className="border-2 border-green-500/50 bg-gradient-to-br from-green-500/10 via-emerald-500/5 to-transparent">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -1135,7 +1148,7 @@ export default function Checkout() {
 
 
         {/* Voucher Section - Only show if not in PIX mode */}
-        {!showPixSection && (
+        {!giftOrder && !showPixSection && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">

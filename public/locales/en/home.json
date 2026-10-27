@@ -566,10 +566,10 @@
     "address": "Full address (street, number, unit, city, region and postal code)",
     "summary": "Gift summary",
     "pricePending": "Price or delivery awaiting configuration",
-    "pixHelp": "PIX uses the current Criando Músicas settings. Submit the receipt for administrator review. Credit card payment for these new products is not yet available.",
+    "pixHelp": "Use the same platform checkout with PIX or card. The administrator checks PIX receipts before lyric selection and approval are released.",
     "productionHelp": "New songs follow the current production process. Gifts are released only when the song is ready and the gift is reviewed.",
     "shippingIncluded": "For shipping, the total includes the configured fixed delivery cost. There is no automatic tracking.",
-    "proceedPix": "Confirm and continue to PIX",
+    "proceedPix": "Confirm and continue to payment",
     "canSaveDraft": "You can save the draft now. Purchase becomes available when pricing and conditions are configured.",
     "adminTest": "Create an admin test, no charge",
     "previous": "Back",
@@ -716,7 +716,12 @@
       "gift_invalid_photo": "Choose a valid JPG, PNG or WebP photo up to 8 MB.",
       "gift_physical_schedule_unavailable": "For printed cards, leave the release date empty at this stage.",
       "gift_invalid_music_type": "Check the song details and save the draft again.",
-      "gift_physical_disabled": "Physical cards are disabled. Please choose a digital card."
+      "gift_physical_disabled": "Physical cards are disabled. Please choose a digital card.",
+      "gift_lyric_too_long": "The lyrics are too long for a short song. Use fewer words and lines without repeating the chorus.",
+      "gift_lyrics_approval_required": "The customer must approve the lyrics before production and release.",
+      "gift_audio_duration_invalid": "The audio exceeds the selected duration or its duration was not checked.",
+      "gift_order_mismatch": "Payment details do not match the order. Reload the page.",
+      "gift_payment_forbidden": "Payment must be confirmed through the authorized process."
     },
     "messageOptional": "Optional message",
     "durationExceeded": "The audio exceeds the selected duration. Upload the correct version before release.",
@@ -730,6 +735,16 @@
     "musicProductionNotStarted": "Song production has not started. This card is a preview without audio. After order confirmation or test approval, an administrator must start production and prepare the track before releasing the gift.",
     "musicProductionPending": "The production order exists, but no track is ready yet. Lyrics and audio must be prepared through the existing process. The gift link will only become available after completion and review.",
     "manageProduction": "Open production in admin",
-    "audioLoadError": "The audio could not be loaded. Check your connection and reopen the gift. If it continues, contact the sender."
+    "audioLoadError": "The audio could not be loaded. Check your connection and reopen the gift. If it continues, contact the sender.",
+    "openCheckout": "Open payment",
+    "customerApprovalTitle": "Choose and approve your lyrics",
+    "customerApprovalBody": "This order follows the platform flow: payment confirmation, lyric selection or editing, your approval, then audio production. Creating a test does not automatically approve lyrics.",
+    "reviewLyrics": "Choose and approve lyrics",
+    "unifiedOrderHelp": "Payment, receipt and production are managed in the platform order. The gift is released after lyric approval and a ready audio track.",
+    "manageOrder": "Open request in admin",
+    "musicStage": "Music stage",
+    "approvalDone": "Lyrics selected for approval / production",
+    "approvalPending": "Waiting for customer lyric approval",
+    "shortLyricGuidance": "Short song up to {{seconds}}s: keep at most {{words}} words and {{lines}} sung lines, without repeating the chorus. Final audio is checked and must never exceed 40 seconds."
   }
 }
