@@ -1,3 +1,4 @@
+import type { MusicalGift, GiftOperations } from '../../lib/gifts'
 export type Json =
   | string
   | number
@@ -14,6 +15,10 @@ export type Database = {
   }
   public: {
     Tables: {
+      musical_gifts: { Row: MusicalGift; Insert: never; Update: never; Relationships: [] }
+      gift_operations: { Row: GiftOperations; Insert: never; Update: Partial<Omit<GiftOperations,'id'|'updated_at'>>; Relationships: [] }
+      musical_gift_events: { Row: {id:string;gift_id:string;event:string;actor_id:string|null;created_at:string}; Insert:never;Update:never;Relationships:[] }
+
       site_maintenance: {
         Row: { id: boolean; enabled: boolean; title: string; message: string; updated_at: string }
         Insert: { id?: boolean; enabled?: boolean; title?: string; message?: string; updated_at?: string }
@@ -1280,6 +1285,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      save_musical_gift: { Args:{p_id:string;p_data:Json;p_expected_version?:number};Returns:string }
+      musical_gift_action: { Args:{p_id:string;p_action:string;p_data?:Json};Returns:Json }
+      get_musical_gift: { Args:{p_token:string};Returns:Json }
+
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

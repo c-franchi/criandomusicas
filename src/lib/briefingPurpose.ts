@@ -128,3 +128,9 @@ export const mapQuickPurpose = (purpose: QuickPurpose | null, input: QuickMappin
     rhythm: 'moderado',
   };
 };
+
+/** Musical gifts use this mapping before entering the existing production pipeline. */
+export const mapGiftProduction = (tone:string,style:string) => {
+ const base=mapQuickPurpose('gift',{style,isInstrumental:false});
+ return {...base,musicType:tone==='funny'?'parodia':tone==='romantic'?'romantica':base.musicType};
+};
