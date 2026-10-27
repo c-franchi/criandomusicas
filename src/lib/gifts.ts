@@ -39,6 +39,10 @@ export type MusicalGift = {
   music_source: "existing" | "new";
   source_order_id: string | null;
   production_order_id: string | null;
+  checkout_order_id: string | null;
+  audio_duration_seconds: number | null;
+  lyrics_generation_started_at: string | null;
+  stripe_session_id: string | null;
   track_version: number;
   recipient_name: string;
   sender_name: string;

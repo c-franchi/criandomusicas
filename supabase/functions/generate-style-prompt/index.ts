@@ -1,3 +1,4 @@
+import { inspectShortLyric } from "../_shared/shortLyrics.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -329,13 +330,22 @@ serve(async (req) => {
     const supabaseKeyCheck = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseCheck = createClient(supabaseUrlCheck, supabaseKeyCheck);
 
+    const {data: giftContext,error: giftError}=await supabaseCheck.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at').eq('production_order_id',orderId).maybeSingle();
+    if(giftError) throw giftError;
+    if(giftContext){
+      if(!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
+      if(isInstrumental) throw Error('gift_lyrics_approval_required');
+      const internal=req.headers.get('Authorization')===`Bearer ${supabaseKeyCheck}`;
+      if(!internal){const {data:{user},error}=await supabaseCheck.auth.getUser((req.headers.get('Authorization')||'').replace('Bearer ',''));if(error||!user||user.id!==giftContext.owner_id) throw Error('gift_forbidden');}
+      if(giftContext.product==='short' && !inspectShortLyric(approvedLyrics||'',giftContext.duration_seconds||30).valid) throw Error('gift_lyric_too_long');
+    }
     const { data: existingOrder, error: orderError } = await supabaseCheck
       .from('orders')
       .select('style_prompt, song_title, has_custom_lyric')
       .eq('id', orderId)
       .single();
 
-    if (!orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
+    if (giftContext?.product !== 'short' && !orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
       // Já tem style_prompt customizado, apenas atualizar status e final_prompt se necessário
       console.log("Order already has custom style_prompt, skipping generation");
       
@@ -842,6 +852,11 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
     ${cleanedLyrics}`;
     }
 
+    if(giftContext?.product==='short'){
+      const duration=`SHORT SONG: maximum ${Math.min(giftContext.duration_seconds||30,40)} seconds total. Sing the stanza once. No intro, outro, repeated chorus or solo. End promptly.`;
+      stylePrompt=duration+' '+String(stylePrompt||'').slice(0,780);
+      finalPrompt=duration+'\n'+finalPrompt;
+    }
     console.log("Style prompt generated successfully");
 
     // Save to Supabase
@@ -951,7 +966,8 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
 
     if (updateError) {
       console.error("Error updating order:", updateError);
-      // Don't throw here - the main operation succeeded
+      if(giftContext) throw updateError;
+      // Don't throw for legacy orders.
     }
 
     // Mark lyric as approved and update body/phonetic body (only for vocal with valid UUID)

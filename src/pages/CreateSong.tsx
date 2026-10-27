@@ -108,6 +108,9 @@ const useAutoRedirect = (step: Step, navigate: ReturnType<typeof useNavigate>) =
 
 const CreateSong = () => {
   const { t } = useTranslation('dashboard');
+  const { t: th } = useTranslation('home');
+  const [generationError,setGenerationError]=useState<string | null>(null);
+  const [giftLimit, setGiftLimit] = useState<number | null>(null);
   const { t: tc } = useTranslation('common');
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -202,6 +205,11 @@ const CreateSong = () => {
         return;
       }
 
+      const { data: gift, error: giftError } = await supabase.from('musical_gifts').select('id,music_source,is_test,payment_confirmed_at,product,duration_seconds').or(`production_order_id.eq.${existingOrderId},checkout_order_id.eq.${existingOrderId}`).maybeSingle();
+      if (giftError) throw giftError;
+      if(gift?.music_source==='existing'){navigate(`/presentes/${gift.id}`);return;}
+      if (gift && !gift.is_test && !gift.payment_confirmed_at) { navigate(`/checkout/${existingOrderId}`); return; }
+      if (gift?.product === 'short') setGiftLimit(gift.duration_seconds);
       setOrderId(existingOrderId);
 
       // 2. Se tem letra customizada, ir direto para geração de style prompt
@@ -306,9 +314,15 @@ const CreateSong = () => {
             language: MusicCreationService.getActiveLanguage(),
             briefing: reconstructedBriefing,
           },
-        }).then(({ error }) => {
-          if (error) console.error('[CreateSong] generate-lyrics error:', error);
-        }).catch((e) => console.error('[CreateSong] generate-lyrics exception:', e));
+        }).then(async ({data,error}) => {
+          if(gift && (error || data?.ok===false)){
+            clearInterval(pollInterval);
+            let message=data?.error || '';
+            try{if(error?.context instanceof Response){const detail=await error.context.json();message=detail?.error||message;}}catch{}
+            setGenerationError(th('giftFlow.errors.'+message,{defaultValue:th('giftFlow.genericError')}));
+            setStep('select');
+          } else if(error) console.error('[CreateSong] generate-lyrics error:',error);
+        }).catch((e) => console.error('[CreateSong] generate-lyrics exception:',e));
         
         // Poll a cada 3 segundos por até 3 minutos
         let attempts = 0;
@@ -764,6 +778,7 @@ const CreateSong = () => {
   }
 
   // Step 1: Select lyrics
+  if(generationError) return <main className="mx-auto max-w-xl space-y-5 px-5 py-16"><h1 className="text-2xl font-semibold">{th('giftFlow.lyrics')}</h1><p role="alert">{generationError}</p><Button onClick={()=>{setGenerationError(null);const id=searchParams.get('orderId');if(id)void loadExistingOrder(id);}}>{th('giftFlow.retry')}</Button><Button variant="outline" onClick={()=>navigate('/presentes')}>{th('giftFlow.myGifts')}</Button></main>;
   if (step === "select") {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -780,6 +795,7 @@ const CreateSong = () => {
           <div className="text-center mb-8">
             <Badge className="mb-4">{t('createSong.step1of2')}</Badge>
             <h1 className="text-3xl font-bold mb-2">{t('createSong.chooseYourLyrics')}</h1>
+            {giftLimit && <p role="status" className="my-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">{th('giftFlow.shortLyricGuidance',{seconds:giftLimit,words:giftLimit<=15?20:40,lines:giftLimit<=15?4:6})}</p>}
             <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.generatedVersions') }} />
           </div>
 
@@ -845,6 +861,7 @@ const CreateSong = () => {
           <div className="text-center mb-8">
             <Badge className="mb-4">{t('createSong.step1of2Review')}</Badge>
             <h1 className="text-3xl font-bold mb-2">{t('createSong.reviewYourLyrics')}</h1>
+            {giftLimit && <p role="status" className="my-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">{th('giftFlow.shortLyricGuidance',{seconds:giftLimit,words:giftLimit<=15?20:40,lines:giftLimit<=15?4:6})}</p>}
             <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.approveOrModify') }} />
           </div>
 
@@ -1077,6 +1094,7 @@ const CreateSong = () => {
               {t('createSong.modificationUsed')}
             </Badge>
             <h1 className="text-3xl font-bold mb-2">{t('createSong.chooseFinalVersion')}</h1>
+            {giftLimit && <p role="status" className="my-4 rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm">{th('giftFlow.shortLyricGuidance',{seconds:giftLimit,words:giftLimit<=15?20:40,lines:giftLimit<=15?4:6})}</p>}
             <p className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: t('createSong.compareVersions') }} />
           </div>
 

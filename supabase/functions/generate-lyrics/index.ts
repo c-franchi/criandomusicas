@@ -1,3 +1,4 @@
+import { inspectShortLyric, shortLyricLimits } from "../_shared/shortLyrics.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -327,8 +328,9 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let giftLockOrderId: string | null = null;
   try {
-    const { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false, language = 'pt-BR' } = await req.json() as {
+    let { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false, language = 'pt-BR' } = await req.json() as {
       orderId?: string;
       story: string;
       briefing: BriefingData;
@@ -363,6 +365,21 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    const { data: giftContext, error: giftError } = orderId ? await supabase.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,details').eq('production_order_id',orderId).maybeSingle() : {data:null,error:null};
+    if (giftError) throw giftError;
+    if (giftContext) {
+      if (!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
+      const internal = req.headers.get('Authorization') === `Bearer ${supabaseKey}`;
+      if (!internal) {
+        const {data:{user},error:authError} = await supabase.auth.getUser((req.headers.get('Authorization')||'').replace('Bearer ',''));
+        if (authError || !user) throw Error('gift_forbidden');
+        const {data:admin} = await supabase.rpc('has_role',{_user_id:user.id,_role:'admin'});
+        if (user.id!==giftContext.owner_id && !admin) throw Error('gift_forbidden');
+      }
+      autoApprove=false;
+      language=giftContext.details?.language || language;
+    }
+    const shortSeconds = giftContext?.product==='short' ? Math.min(giftContext.duration_seconds || 30,40) : null;
     let orderInfo: { is_preview?: boolean; plan_id?: string; user_id?: string } | null = null;
     
     if (!isStandaloneMode) {
@@ -378,6 +395,12 @@ serve(async (req) => {
       orderInfo = fetchedOrder;
     }
     
+    if(giftContext && !isModification){
+      const {data:claimed,error:claimError}=await supabase.rpc('claim_gift_lyrics',{p_order_id:orderId});
+      if(claimError) throw claimError;
+      if(!claimed) return new Response(JSON.stringify({ok:true,alreadyGenerating:true}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
+      giftLockOrderId=orderId || null;
+    }
     // Free preview mode removed — every order gets the full lyric structure
     const isPreviewOrder = false;
 
@@ -964,7 +987,7 @@ ${hasMonologue && monologuePosition === 'bridge' ? `[monologue]
 
     // ============ SELEÇÃO DO PROMPT BASEADO NO MODO ============
     // Prioridade: 1. Chamada Corporativa → 2. Somente Monólogo → 3. Modo Simples → 4. Preview → 5. Completo
-    const systemPrompt = isChamadaCorporativa
+    let systemPrompt = isChamadaCorporativa
       ? chamadaCorporativaPrompt
       : isSomenteMonologo 
         ? somenteMonologoPrompt 
@@ -1104,6 +1127,13 @@ INSTRUÇÕES SOBRE O TRECHO:
 
     console.log("Generating lyrics...", audioInsert ? "(with audio insert)" : "");
 
+    if (shortSeconds) {
+      const limits=shortLyricLimits(shortSeconds);
+      systemPrompt=`Write tiny personalized song lyrics in ${language}. The song must fit within ${shortSeconds} seconds and NEVER exceed 40 seconds. Each version: at most ${limits.maxWords} sung words and ${limits.maxLines} nonempty lyric lines. No intro, outro, instrumental breaks, monologue, repeated chorus or repeated lines. One compact stanza only. Never pad the song to a full song. Follow the length limit even if the story asks otherwise. Output title on first line, then [Verse], then lyrics. ${isModification?'Output ONE version.':'Output TWO different versions separated by a line containing only ---.'}`;
+      finalUserPrompt=`Create a short song from these details. Select only the essential idea; do not include every detail. Musical style: ${style}. Language: ${language}. Maximum ${limits.maxWords} sung words per version.
+Story and requested changes:
+${story}`;
+    }
     const aiMessages = [
       { role: "system", content: systemPrompt },
       { role: "user", content: finalUserPrompt },
@@ -1166,8 +1196,19 @@ INSTRUÇÕES SOBRE O TRECHO:
       );
     }
 
-    const content = result.content;
-
+    if(shortSeconds && result.content){
+      const tooLong=(text:string)=>{
+        const versions=isModification?[text]:Object.values(splitTwoLyrics(text));
+        return versions.some(value=>!inspectShortLyric(extractTitleAndBody(String(value)).body,shortSeconds).valid);
+      };
+      if(tooLong(result.content)){
+        aiMessages.push({role:'user',content:`The response was too long. Rewrite using at most ${shortLyricLimits(shortSeconds).maxWords} sung words and ${shortLyricLimits(shortSeconds).maxLines} lyric lines per version. No repetitions. Keep the requested output format.`});
+        let retry=await callAI('openai');
+        if(!retry.content) retry=await callAI('lovable');
+        if(retry.content) result=retry;
+      }
+    }
+    const content = result.content!;
     console.log("AI Response received, processing lyrics...");
 
     // ============ PROCESS LYRICS BASED ON MODE ============
@@ -1277,6 +1318,9 @@ INSTRUÇÕES SOBRE O TRECHO:
       ];
     }
 
+    if (shortSeconds && lyricsResponse.some(lyric => !inspectShortLyric(lyric.text,shortSeconds).valid)) {
+      return new Response(JSON.stringify({ok:false,error:'gift_lyric_too_long'}),{status:422,headers:{...corsHeaders,'Content-Type':'application/json'}});
+    }
     // ============ DB OPERATIONS (skip in standalone mode) ============
     let insertedLyrics: { id: string }[] | null = null;
     
@@ -1404,5 +1448,10 @@ INSTRUÇÕES SOBRE O TRECHO:
       JSON.stringify({ ok: false, error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+  } finally {
+    if(giftLockOrderId){
+      const client=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      await client.from('musical_gifts').update({lyrics_generation_started_at:null}).eq('production_order_id',giftLockOrderId);
+    }
   }
 });

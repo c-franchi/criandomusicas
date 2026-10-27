@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useParams, Navigate, Link } from "react-router-dom";
+import { useParams, Navigate, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -84,6 +84,7 @@ const OrderDetails = () => {
   const { t, i18n } = useTranslation('dashboard');
   const { t: tc } = useTranslation('common');
   const { orderId } = useParams();
+  const navigate=useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: adminLoading } = useAdminRole(user?.id);
   const { toast } = useToast();
@@ -165,6 +166,8 @@ const OrderDetails = () => {
         const { data: orderData, error: orderError } = await query.single();
 
         if (orderError) throw orderError;
+        const {data:gift}=await supabase.from('musical_gifts').select('id,music_source').eq('checkout_order_id',orderId).maybeSingle();
+        if(gift?.music_source==='existing'){navigate(`/presentes/${gift.id}`);return;}
         setOrder(orderData);
 
         // Fetch lyrics

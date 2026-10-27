@@ -138,15 +138,23 @@ function Editor({
         version: 0,
       },
   );
-  const genreOptions = styleOptions.map(option => ({
+  const genreOptions = styleOptions.map((option) => ({
     ...option,
     imageSrc: genreImages[option.id] || genreImages.pop,
   }));
-  genreOptions.push({ id: "infantil", label: t("briefing:steps.musicType.infantil"), imageSrc: typeImages.infantil });
+  genreOptions.push({
+    id: "infantil",
+    label: t("briefing:steps.musicType.infantil"),
+    imageSrc: typeImages.infantil,
+  });
   // Preserve an existing draft's custom style without asking the customer to retype it.
   const savedStyle = form.details?.style;
-  if (savedStyle && !genreOptions.some(option => option.id === savedStyle)) {
-    genreOptions.unshift({ id: savedStyle, label: savedStyle, imageSrc: genreImages.pop });
+  if (savedStyle && !genreOptions.some((option) => option.id === savedStyle)) {
+    genreOptions.unshift({
+      id: savedStyle,
+      label: savedStyle,
+      imageSrc: genreImages.pop,
+    });
   }
   const previewAudio = useGiftAudio(form as MusicalGift);
   const [step, setStep] = useState(0);
@@ -225,9 +233,13 @@ function Editor({
     setError("");
     try {
       const id = await persist();
-      if (action) await commands.action(id, action);
+      const result = action ? await commands.action(id, action) : null;
       toast({ title: t("giftFlow.saved") });
-      nav(`/presentes/${id}`);
+      nav(
+        action === "submit" && result?.checkout_order_id
+          ? `/checkout/${result.checkout_order_id}`
+          : `/presentes/${id}`,
+      );
     } catch (e) {
       fail(e);
     } finally {
@@ -444,7 +456,7 @@ function Editor({
                   <ImageCardGrid
                     options={genreOptions}
                     selectedId={form.details?.style}
-                    onSelect={style => details({ style })}
+                    onSelect={(style) => details({ style })}
                     title={t("giftFlow.style")}
                     variant="square"
                     showOther={false}

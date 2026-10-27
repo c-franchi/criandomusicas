@@ -1,3 +1,4 @@
+import { inspectShortLyric } from "../../supabase/functions/_shared/shortLyrics";
 import { supabase } from "@/integrations/supabase/client";
 import { OrderStatusService } from "./OrderStatusService";
 import i18n from "@/lib/i18n";
@@ -95,6 +96,10 @@ export class MusicCreationService {
     approvalInFlight = true;
 
     try {
+      const {data:gift,error:giftError}=await supabase.from('musical_gifts').select('product,duration_seconds,is_test,payment_confirmed_at').eq('production_order_id',params.orderId).maybeSingle();
+      if(giftError) return {success:false,error:giftError.message};
+      if(gift && !gift.is_test && !gift.payment_confirmed_at) return {success:false,error:i18n.t('home:giftFlow.errors.gift_invalid_payment')};
+      if(gift?.product==='short' && !inspectShortLyric(params.approvedLyrics||'',gift.duration_seconds||30).valid) return {success:false,error:i18n.t('home:giftFlow.errors.gift_lyric_too_long')};
       const validation = await OrderStatusService.canApproveLyrics(params.orderId);
 
       if (validation?.alreadyApproved) {

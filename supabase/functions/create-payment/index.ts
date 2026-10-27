@@ -112,6 +112,11 @@ serve(async (req) => {
       });
     }
 
+    const giftClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+    const { data: gift, error: giftError } = await giftClient.from('musical_gifts').select('id,owner_id,product,music_source,status,is_test,amount_cents,plan_id').eq('checkout_order_id', orderId).maybeSingle();
+    if (giftError) throw giftError;
+    if (gift && (gift.owner_id !== userId || gift.is_test || gift.status !== 'AWAITING_PAYMENT' || !gift.amount_cents || !gift.plan_id)) throw Error('gift_invalid_payment');
+    if (!gift && String(planId).startsWith('gift_')) throw Error('gift_order_mismatch');
     // Check order type (instrumental, custom lyric, or vocal) to use correct pricing
     const { data: orderInfo, error: orderError } = await supabaseClient
       .from('orders')
@@ -127,10 +132,10 @@ serve(async (req) => {
     const hasCustomLyric = orderInfo?.has_custom_lyric === true;
     
     // Determine the effective plan ID based on order type
-    let effectivePlanId = planId;
-    if (hasCustomLyric) {
+    let effectivePlanId = gift?.plan_id || planId;
+    if (!gift && hasCustomLyric) {
       effectivePlanId = 'single_custom_lyric';
-    } else if (isInstrumental) {
+    } else if (!gift && isInstrumental) {
       effectivePlanId = `${planId}_instrumental`;
     }
     
@@ -181,6 +186,8 @@ serve(async (req) => {
       }
     }
 
+    // A gift is sold at its immutable server quote, including add-ons and shipping.
+    if (gift) { priceInCents = gift.amount_cents; productName = pricingConfig?.name || 'Presente musical'; pricingConfig = null; }
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",

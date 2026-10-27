@@ -53,7 +53,12 @@ serve(async (req) => {
 
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
+    if (!userId || session.metadata?.user_id !== userId || session.metadata?.order_id !== orderId) throw Error('Payment session does not match this order');
+    const { data: gift, error: giftError } = await supabaseClient.from('musical_gifts').select('owner_id,music_source,amount_cents,is_test').eq('checkout_order_id',orderId).maybeSingle();
+    if (giftError) throw giftError;
+    if (gift && (gift.owner_id !== userId || gift.is_test || session.amount_total !== gift.amount_cents || session.currency !== 'brl')) throw Error('gift_order_mismatch');
     if (session.payment_status === "paid") {
+      if(gift){const {error:giftPaymentError}=await supabaseClient.rpc('confirm_gift_stripe',{p_order_id:orderId,p_session:sessionId,p_amount:session.amount_total});if(giftPaymentError)throw giftPaymentError;}
 
 
       // Fetch full order data to determine type
@@ -124,7 +129,9 @@ serve(async (req) => {
 
       // Route generation based on order type
       try {
-        if (isInstrumental) {
+        if (gift?.music_source === 'existing') {
+          logStep('Existing song card: no new lyrics or music production required');
+        } else if (isInstrumental) {
           // INSTRUMENTAL: generate style prompt directly, skip lyrics
           logStep("Triggering instrumental style prompt generation");
           await supabaseClient.functions.invoke("generate-style-prompt", {

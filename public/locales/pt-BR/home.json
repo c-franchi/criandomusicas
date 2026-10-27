@@ -584,10 +584,10 @@
     "address": "Endereço completo (rua, número, complemento, cidade, estado e CEP)",
     "summary": "Resumo do presente",
     "pricePending": "Preço ou entrega aguardando configuração",
-    "pixHelp": "O PIX usa a configuração atual da Criando Músicas. Envie o comprovante; o pagamento será conferido pelo ADM. Cartão de crédito para estes novos produtos ainda não está disponível.",
+    "pixHelp": "Use o mesmo checkout da plataforma, com PIX ou cartão. O comprovante PIX será conferido pelo ADM antes de liberar a escolha e aprovação da letra.",
     "productionHelp": "Uma música nova seguirá o processo de produção atual. O cartão só será liberado quando a música estiver pronta e o presente for conferido.",
     "shippingIncluded": "O total inclui o frete fixo configurado quando a opção for envio. Não há rastreamento automático.",
-    "proceedPix": "Confirmar e seguir para PIX",
+    "proceedPix": "Confirmar e ir ao pagamento",
     "canSaveDraft": "Você já pode salvar o rascunho. A compra será liberada quando preço e condições estiverem configurados.",
     "adminTest": "Criar teste do ADM, sem cobrança",
     "previous": "Voltar",
@@ -734,7 +734,12 @@
       "gift_invalid_photo": "Escolha uma foto JPG, PNG ou WebP válida, com até 8 MB.",
       "gift_physical_schedule_unavailable": "Para cartões físicos, deixe a data de liberação vazia nesta etapa.",
       "gift_invalid_music_type": "Confira os dados da música e salve o rascunho novamente.",
-      "gift_physical_disabled": "Os cartões físicos estão desabilitados. Escolha um cartão digital."
+      "gift_physical_disabled": "Os cartões físicos estão desabilitados. Escolha um cartão digital.",
+      "gift_lyric_too_long": "A letra está longa para uma música curta. Reduza as palavras e as linhas, sem repetir o refrão.",
+      "gift_lyrics_approval_required": "A letra precisa ser aprovada pelo cliente antes da produção e liberação.",
+      "gift_audio_duration_invalid": "O áudio ultrapassa a duração contratada ou não teve sua duração conferida.",
+      "gift_order_mismatch": "Os dados do pagamento não correspondem ao pedido. Atualize a página.",
+      "gift_payment_forbidden": "O pagamento precisa ser confirmado pelo processo autorizado."
     },
     "messageOptional": "Mensagem opcional",
     "durationExceeded": "O áudio ultrapassa a duração escolhida. Envie a versão correta antes de liberar.",
@@ -748,6 +753,16 @@
     "musicProductionNotStarted": "A produção da música ainda não foi iniciada. Este cartão é uma prévia e não possui áudio. Após a confirmação do pedido ou aprovação do teste, o ADM precisa iniciar a produção e preparar a faixa antes de liberar o presente.",
     "musicProductionPending": "O pedido de produção já foi criado, mas ainda não há uma faixa pronta. A letra e o áudio precisam ser preparados pelo processo atual. O link do presente ficará disponível somente após a conclusão e a conferência.",
     "manageProduction": "Abrir produção no ADM",
-    "audioLoadError": "Não foi possível carregar o áudio. Confira sua conexão e tente abrir o presente novamente. Se continuar, avise quem enviou o cartão."
+    "audioLoadError": "Não foi possível carregar o áudio. Confira sua conexão e tente abrir o presente novamente. Se continuar, avise quem enviou o cartão.",
+    "openCheckout": "Abrir pagamento",
+    "customerApprovalTitle": "Escolha e aprove a letra",
+    "customerApprovalBody": "O pedido segue o fluxo da plataforma: pagamento confirmado, escolha ou edição da letra, sua aprovação e produção do áudio. Criar um teste não aprova a letra automaticamente.",
+    "reviewLyrics": "Escolher e aprovar letra",
+    "unifiedOrderHelp": "Pagamento, comprovante e produção são gerenciados no pedido da plataforma. O cartão será liberado depois da aprovação da letra e da faixa pronta.",
+    "manageOrder": "Abrir solicitação no ADM",
+    "musicStage": "Etapa da música",
+    "approvalDone": "Letra selecionada para aprovação / produção",
+    "approvalPending": "Aguardando aprovação da letra pelo cliente",
+    "shortLyricGuidance": "Música curta de até {{seconds}}s: mantenha no máximo {{words}} palavras e {{lines}} linhas cantadas, sem repetir o refrão. O áudio final será conferido e nunca poderá ultrapassar 40 segundos."
   }
 }

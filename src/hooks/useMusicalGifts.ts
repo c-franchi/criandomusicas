@@ -12,7 +12,7 @@ export function useGiftList(admin = false) {
       let q = supabase
         .from("musical_gifts")
         .select(
-          "id,product,music_source,recipient_name,sender_name,status,is_test,created_at,amount_cents,production_order_id,available_from",
+          "id,product,music_source,recipient_name,sender_name,status,is_test,created_at,amount_cents,production_order_id,checkout_order_id,available_from",
         )
         .order("created_at", { ascending: false });
       if (!admin) q = q.eq("owner_id", user!.id);
@@ -123,6 +123,7 @@ export function useGiftCommands() {
       return r.data as {
         id: string;
         production_order_id: string | null;
+        checkout_order_id: string | null;
         status: string;
       };
     },
@@ -138,7 +139,7 @@ export function useGiftAudio(g?: MusicalGift) {
     queryFn: async () => {
       const { data: order, error } = await supabase
         .from("orders")
-        .select("song_title,cover_url,approved_lyric_id")
+        .select("song_title,cover_url,approved_lyric_id,status,payment_status")
         .eq("id", id!)
         .single();
       if (error) throw error;
@@ -161,6 +162,9 @@ export function useGiftAudio(g?: MusicalGift) {
         lyrics = data.body;
       }
       return {
+        status: order.status,
+        payment_status: order.payment_status,
+        approved_lyric_id: order.approved_lyric_id,
         title: order.song_title,
         cover_url: order.cover_url,
         audio_url: track?.audio_url,

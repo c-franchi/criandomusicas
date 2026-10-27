@@ -105,6 +105,7 @@ export default function AdminGifts() {
   );
 }
 function GiftAdminDetail({ id }: { id: string }) {
+  const { user } = useAuth();
   const query = useGift(id);
   const { physicalEnabled } = useGiftAvailability();
   const g = query.data;
@@ -234,6 +235,41 @@ function GiftAdminDetail({ id }: { id: string }) {
             </dl>
           </details>
         )}
+        {g.checkout_order_id && (
+          <div className="space-y-3 rounded-xl border border-primary/30 p-4">
+            <p className="text-sm">{t("giftFlow.unifiedOrderHelp")}</p>
+            <p className="font-mono text-xs">{g.checkout_order_id}</p>
+            <Button asChild variant="outline">
+              <Link
+                to={`/admin?produto=${g.product}&pedido=${g.checkout_order_id}`}
+              >
+                {t("giftFlow.manageOrder")}
+              </Link>
+            </Button>
+          </div>
+        )}
+        {g.production_order_id && (
+          <div className="space-y-2 rounded-xl bg-muted p-4">
+            <p className="text-sm">
+              {t("giftFlow.musicStage")}:{" "}
+              {audio.data?.status || t("giftFlow.loading")}
+            </p>
+            <p className="text-sm">
+              {t(
+                audio.data?.approved_lyric_id
+                  ? "giftFlow.approvalDone"
+                  : "giftFlow.approvalPending",
+              )}
+            </p>
+            {g.owner_id === user?.id && (
+              <Button asChild variant="outline">
+                <Link to={`/criar-musica?orderId=${g.production_order_id}`}>
+                  {t("giftFlow.reviewLyrics")}
+                </Link>
+              </Button>
+            )}
+          </div>
+        )}
         {g.receipt_path && (
           <Button
             variant="outline"
@@ -252,7 +288,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             {t("giftFlow.viewReceipt")}
           </Button>
         )}
-        {g.status === "RECEIPT_SENT" && (
+        {!g.checkout_order_id && g.status === "RECEIPT_SENT" && (
           <div className="space-y-4 border-t border-border pt-5">
             <label className="flex items-start gap-3 text-sm">
               <Checkbox
@@ -283,7 +319,8 @@ function GiftAdminDetail({ id }: { id: string }) {
             </Button>
           </div>
         )}
-        {!physicalTestBlocked && g.music_source === "new" &&
+        {!physicalTestBlocked &&
+          g.music_source === "new" &&
           ["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
             <div className="flex flex-wrap gap-3">
               {!g.production_order_id ? (
@@ -298,41 +335,9 @@ function GiftAdminDetail({ id }: { id: string }) {
                   <Button asChild variant="outline">
                     <Link to="/admin">{t("giftFlow.productionPanel")}</Link>
                   </Button>
-                  <Button
-                    disabled={busy}
-                    variant="outline"
-                    onClick={async () => {
-                      setBusy(true);
-                      try {
-                        const { data: o, error } = await supabase
-                          .from("orders")
-                          .select("story,music_type,music_style,emotion")
-                          .eq("id", g.production_order_id!)
-                          .single();
-                        if (error) throw error;
-                        const { data, error: ge } =
-                          await supabase.functions.invoke("generate-lyrics", {
-                            body: {
-                              orderId: g.production_order_id,
-                              story: o.story,
-                              briefing: {
-                                musicType: o.music_type,
-                                style: o.music_style,
-                                emotion: o.emotion,
-                              },
-                            },
-                          });
-                        if (ge || data?.error) throw ge || Error(data.error);
-                        toast({ title: t("giftFlow.lyricsRequested") });
-                      } catch (e) {
-                        fail(e);
-                      } finally {
-                        setBusy(false);
-                      }
-                    }}
-                  >
-                    {t("giftFlow.generateLyrics")}
-                  </Button>
+                  <p className="text-sm text-muted-foreground">
+                    {t("giftFlow.customerApprovalBody")}
+                  </p>
                 </>
               )}
             </div>
@@ -378,6 +383,8 @@ function GiftAdminDetail({ id }: { id: string }) {
                   busy ||
                   !reviewed ||
                   !audio.data?.audio_url ||
+                  (g.music_source === "new" &&
+                    !audio.data?.approved_lyric_id) ||
                   (g.product === "short" &&
                     (!durationChecked ||
                       audioDuration === null ||
@@ -388,6 +395,7 @@ function GiftAdminDetail({ id }: { id: string }) {
                   void action("publish", {
                     reviewed: true,
                     duration_checked: durationChecked,
+                    audio_duration_seconds: audioDuration,
                   })
                 }
               >
