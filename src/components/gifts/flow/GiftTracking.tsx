@@ -100,7 +100,7 @@ export default function GiftTracking() {
         <p role="alert">{t("giftFlow.loadError")}</p>
       </GiftShell>
     );
-  return <TrackingContent gift={query.data} />;
+  return <TrackingContent gift={query.data as unknown as MusicalGift} />;
 }
 function TrackingContent({ gift: g }: { gift: MusicalGift }) {
   const { t, i18n } = useTranslation("home");
