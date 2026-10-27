@@ -774,6 +774,25 @@
       "flowers": "Fiori",
       "celebration": "Festa",
       "classic": "Classico"
-    }
+    },
+    "socialTitle": "Condividi il mio regalo",
+    "socialHelp": "Invia il link del biglietto rilasciato per aprire il regalo e ascoltare la canzone.",
+    "socialNative": "Condividi su social e app",
+    "instagramHelp": "Instagram: usa la condivisione del telefono se accetta link, oppure copia il link in un messaggio, nella bio o nello sticker link delle Stories. Le app disponibili dipendono dal dispositivo.",
+    "shareFallback": "Impossibile aprire la condivisione. Usa i pulsanti dei social o copia il link.",
+    "printLayout": "Formato di stampa",
+    "bookletLayout": "Biglietto pieghevole — fronte e retro",
+    "singleLayout": "Biglietto semplice — un lato",
+    "paperSize": "Formato carta",
+    "letterPaper": "Lettera (Letter)",
+    "bookletOutside": "Esterno: retro a sinistra · copertina a destra",
+    "bookletInside": "Interno: messaggio a sinistra · musica a destra",
+    "bookletKeepsake": "Un regalo da conservare. Una canzone da sentire.",
+    "bookletOpen": "Apri per scoprire il tuo regalo",
+    "bookletInstruction1": "Stampa entrambe le pagine sullo stesso foglio, fronte e retro, in orizzontale. Per il duplex automatico scegli il lato corto.",
+    "bookletInstruction2": "Piega il foglio a metà lungo la linea tratteggiata. La copertina è a destra del lato esterno.",
+    "bookletInstruction3": "Senza duplex automatico: stampa pagina 1, reinserisci il foglio secondo la stampante e stampa pagina 2. Prova prima su carta comune.",
+    "printScaleHelp": "Imposta lo stesso formato nel browser e nella stampante, scala 100%, senza intestazioni e piè di pagina e con sfondi attivi. Controlla orientamento e QR prima della consegna.",
+    "printOrPdf": "Stampa o salva in PDF"
   }
 }

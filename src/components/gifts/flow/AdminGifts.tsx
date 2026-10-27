@@ -1,3 +1,4 @@
+import GiftShare from "./GiftShare";
 import GiftBackgroundAdmin from "./GiftBackgroundAdmin";
 import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useEffect, useState } from "react";
@@ -423,6 +424,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             >
               {t("giftFlow.revoke")}
             </Button>
+            <GiftShare url={url}/>
             <GiftQr url={url} />
             {g.product === "physical" && (
               <>

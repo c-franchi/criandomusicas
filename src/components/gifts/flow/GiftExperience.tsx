@@ -1,3 +1,4 @@
+import GiftShare from "./GiftShare";
 import GiftBackground from "./GiftBackground";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -66,21 +67,6 @@ export default function GiftExperience({
     setRevealed(true);
     if (audio.current)
       void audio.current.play().catch(() => setNotice(t("giftFlow.tapPlay")));
-  };
-  const share = async () => {
-    try {
-      if (navigator.share)
-        await navigator.share({
-          title: data.title || "Criando Músicas",
-          url: window.location.href,
-        });
-      else {
-        await navigator.clipboard.writeText(window.location.href);
-        setNotice(t("giftFlow.copied"));
-      }
-    } catch {
-      setNotice(t("giftFlow.shareCancelled"));
-    }
   };
   return (
     <section
@@ -206,17 +192,9 @@ export default function GiftExperience({
               <RotateCcw className="h-4 w-4" />
               {t("giftFlow.replay")}
             </Button>
-            {!preview && (
-              <Button
-                variant="secondary"
-                onClick={() => void share()}
-                className="min-h-11"
-              >
-                <Share2 className="h-4 w-4" />
-                {t("giftFlow.share")}
-              </Button>
-            )}
+
           </div>
+          {!preview && <div className="mt-6"><GiftShare url={window.location.origin+window.location.pathname} title={data.title}/></div>}
         </>
       )}
       {notice && (

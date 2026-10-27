@@ -63,3 +63,9 @@ A foto original otimizada do comprador tem prioridade sobre qualquer capa gerada
 A geração de fundos por prompt não foi integrada. Depende da escolha do provedor, credencial e custo. As artes prontas e a galeria enviada pelo ADM funcionam sem essa dependência.
 
 Migração: `20261027164133_printable_gift_flow.sql`. Backend atualizado: `generate-lyrics` e `generate-style-prompt`, para aplicar o mesmo limite às músicas curtas com cartão digital ou impresso.
+
+## Compartilhamento social e cartão dobrável
+
+Após liberar o presente, comprador e ADM veem um bloco destacado com compartilhamento nativo do aparelho, WhatsApp, Facebook, Telegram, X, e-mail e cópia do link individual. O destinatário também pode compartilhar depois de abrir o cartão. A ação abre o aplicativo ou o diálogo da rede; não publica automaticamente. Instagram usa os aplicativos disponíveis no aparelho ou o link copiado para mensagem/bio/Stories. URLs administrativas, de checkout ou de acompanhamento não são compartilhadas como presente.
+
+A impressão permite cartão simples ou dobrável, em A4 e Carta. O dobrável gera duas páginas em paisagem: exterior [contracapa | capa], interior [dedicatória | foto e QR]. Imprima frente e verso virando pela borda curta, com escala 100%, sem cabeçalhos/rodapés, e dobre ao centro. Impressão manual exige recolocar a folha conforme o modelo da impressora. Teste uma folha e a leitura do QR antes da entrega; o site não controla o duplex do driver. A barra de manutenção, notificações e controles não entram na impressão.

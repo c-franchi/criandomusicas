@@ -792,6 +792,25 @@
       "flowers": "Flores",
       "celebration": "Celebração",
       "classic": "Clássico"
-    }
+    },
+    "socialTitle": "Compartilhar meu presente",
+    "socialHelp": "Envie o link do cartão liberado. Quem receber poderá abrir o presente e ouvir a música.",
+    "socialNative": "Enviar para redes sociais e aplicativos",
+    "instagramHelp": "Instagram: use o compartilhamento do celular quando o aplicativo aceitar links, ou copie o link e cole em uma mensagem, na bio ou na figurinha de link dos Stories. Os aplicativos disponíveis dependem do aparelho.",
+    "shareFallback": "Não foi possível abrir o compartilhamento. Use os botões das redes ou copie o link abaixo.",
+    "printLayout": "Formato de impressão",
+    "bookletLayout": "Cartão dobrável — frente e verso",
+    "singleLayout": "Cartão simples — uma face",
+    "paperSize": "Tamanho do papel",
+    "letterPaper": "Carta (Letter)",
+    "bookletOutside": "Face externa: contracapa à esquerda · capa à direita",
+    "bookletInside": "Face interna: mensagem à esquerda · música à direita",
+    "bookletKeepsake": "Um presente para guardar. Uma música para sentir.",
+    "bookletOpen": "Abra para descobrir seu presente",
+    "bookletInstruction1": "Imprima as duas páginas na mesma folha, frente e verso, em paisagem. Na impressão automática, escolha virar pela borda curta.",
+    "bookletInstruction2": "Dobre a folha ao meio na linha pontilhada. A capa fica do lado direito da face externa.",
+    "bookletInstruction3": "Sem impressão automática frente e verso? Imprima a página 1, recoloque a folha conforme sua impressora e imprima a página 2. Faça primeiro um teste em papel comum.",
+    "printScaleHelp": "Escolha o mesmo papel no navegador e na impressora. Use escala de 100%, desative cabeçalhos e rodapés e ative os gráficos de fundo. Confira a orientação e teste o QR Code antes de entregar.",
+    "printOrPdf": "Imprimir ou salvar em PDF"
   }
 }
