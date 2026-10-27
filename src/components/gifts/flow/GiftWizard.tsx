@@ -1,3 +1,6 @@
+import { useBriefingTranslations } from "@/hooks/useBriefingTranslations";
+import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
+import { genreImages, typeImages } from "@/assets/briefing";
 import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useEffect, useState } from "react";
 import {
@@ -104,6 +107,7 @@ function Editor({
   const nav = useNavigate();
   const { toast } = useToast();
   const commands = useGiftCommands();
+  const { styleOptions } = useBriefingTranslations();
   const music = useOwnedGiftMusic();
   const catalog = useGiftCatalog();
   const [form, setForm] = useState<Partial<MusicalGift>>(
@@ -134,6 +138,16 @@ function Editor({
         version: 0,
       },
   );
+  const genreOptions = styleOptions.map(option => ({
+    ...option,
+    imageSrc: genreImages[option.id] || genreImages.pop,
+  }));
+  genreOptions.push({ id: "infantil", label: t("briefing:steps.musicType.infantil"), imageSrc: typeImages.infantil });
+  // Preserve an existing draft's custom style without asking the customer to retype it.
+  const savedStyle = form.details?.style;
+  if (savedStyle && !genreOptions.some(option => option.id === savedStyle)) {
+    genreOptions.unshift({ id: savedStyle, label: savedStyle, imageSrc: genreImages.pop });
+  }
   const previewAudio = useGiftAudio(form as MusicalGift);
   const [step, setStep] = useState(0);
   const [authorized, setAuthorized] = useState(!!initial?.source_order_id);
@@ -425,7 +439,18 @@ function Editor({
                     </div>
                   ),
                 )}
-                <div className="grid gap-5 sm:grid-cols-3">
+                <section className="space-y-3" aria-label={t("giftFlow.style")}>
+                  <h3 className="text-sm font-medium">{t("giftFlow.style")}</h3>
+                  <ImageCardGrid
+                    options={genreOptions}
+                    selectedId={form.details?.style}
+                    onSelect={style => details({ style })}
+                    title={t("giftFlow.style")}
+                    variant="square"
+                    showOther={false}
+                  />
+                </section>
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="tone">{t("giftFlow.tone")}</Label>
                     <select
@@ -447,7 +472,7 @@ function Editor({
                       ))}
                     </select>
                   </div>
-                  {(["style", "language"] as const).map((key) => (
+                  {(["language"] as const).map((key) => (
                     <div key={key} className="space-y-2">
                       <Label htmlFor={key}>{t("giftFlow." + key)}</Label>
                       <Input
