@@ -12,7 +12,8 @@ export default function PublicGift() {
   const { token: routeToken } = useParams();
   const location = useLocation();
   const recipientLink = new URLSearchParams(location.search).get('para');
-  const token = routeToken || (recipientLink ? `para-${recipientLink}` : location.hash.slice(1));
+  const legacyToken = new URLSearchParams(location.search).get('token');
+  const token = routeToken || (recipientLink ? `para-${recipientLink}` : legacyToken || location.hash.slice(1));
   const { t } = useTranslation("home");
   const query = useQuery({
     queryKey: ["public-musical-gift", token],

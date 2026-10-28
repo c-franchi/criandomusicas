@@ -1,4 +1,6 @@
 # Marketing / UX reorganization
+- [x] Add existing music reviews and reaction uploads to released gift tracking; keep original music order association.
+- [x] Share legacy gifts through the static gift preview, retaining their private key.
 - [x] Focus HOME on gifts, samples and one-time packs; preserve creation modes.
 - [x] Remove all creator content from HOME (PlanComparison teaser removed).
 - [x] Dedicated public /criadores with dynamic subscription plans and rights information.

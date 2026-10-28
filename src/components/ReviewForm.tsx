@@ -18,6 +18,7 @@ interface ReviewFormProps {
     rating: number;
     comment: string | null;
     is_public: boolean;
+    allow_music_sample?: boolean | null;
   };
   onReviewSubmitted?: () => void;
 }
@@ -30,7 +31,7 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
   const [hoveredRating, setHoveredRating] = useState(0);
   const [comment, setComment] = useState(existingReview?.comment || "");
   const [isPublic, setIsPublic] = useState(existingReview?.is_public || false);
-  const [allowMusicSample, setAllowMusicSample] = useState(false);
+  const [allowMusicSample, setAllowMusicSample] = useState(!!existingReview?.allow_music_sample);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(!!existingReview);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
