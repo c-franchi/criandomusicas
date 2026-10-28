@@ -377,6 +377,53 @@ export type Database = {
         }
         Relationships: []
       }
+      gift_responses: {
+        Row: {
+          created_at: string
+          email_error: string | null
+          email_status: string
+          emoji: string
+          gift_id: string
+          id: string
+          message: string
+          owner_id: string
+          rating: number | null
+          request_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_error?: string | null
+          email_status?: string
+          emoji: string
+          gift_id: string
+          id?: string
+          message?: string
+          owner_id: string
+          rating?: number | null
+          request_id: string
+        }
+        Update: {
+          created_at?: string
+          email_error?: string | null
+          email_status?: string
+          emoji?: string
+          gift_id?: string
+          id?: string
+          message?: string
+          owner_id?: string
+          rating?: number | null
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_responses_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "musical_gifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lyrics: {
         Row: {
           approved_at: string | null
@@ -1599,6 +1646,16 @@ export type Database = {
       save_musical_gift: {
         Args: { p_data: Json; p_expected_version?: number; p_id: string }
         Returns: string
+      }
+      submit_gift_response: {
+        Args: {
+          p_emoji: string
+          p_message: string
+          p_rating?: number
+          p_request_id: string
+          p_token: string
+        }
+        Returns: Json
       }
     }
     Enums: {
