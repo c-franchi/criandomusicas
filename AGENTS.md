@@ -1,4 +1,5 @@
 # Architecture rules
+- Gift recipient responses are separate from owner reviews: capability-validated submission, one response per gift, owner-only reads and acknowledgment; sender email identity is resolved server-side and admin-test gifts never send response emails.
 - Gift feedback reuses ReviewForm and ReactionVideoUpload on the owner's released-gift tracking page, associated with the source/production music order, never the card-only checkout order.
 - Normalize gift social sharing to the static gift entry page; preserve private keys and continue accepting legacy URLs.
 - Recipient gift creation links to the existing digital gift wizard without copying private gift data; native share and copy-message use the same complete payload as WhatsApp to retain text and link across apps.

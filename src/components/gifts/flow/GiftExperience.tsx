@@ -2,6 +2,7 @@ import { giftLyricText } from "@/lib/gift-link";
 import { giftUrl } from "@/lib/gifts";
 import GiftShare from "./GiftShare";
 import GiftBackground from "./GiftBackground";
+import GiftResponseForm from "./GiftResponseForm";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -38,10 +39,12 @@ export default function GiftExperience({
   data,
   preview = false,
   onDuration,
+  responseToken,
 }: {
   data: GiftPresentation;
   preview?: boolean;
   onDuration?: (seconds: number) => void;
+  responseToken?: string;
 }) {
   const { t } = useTranslation("home");
   const [revealed, setRevealed] = useState(data.has_card === false);
@@ -152,6 +155,7 @@ export default function GiftExperience({
       )}
       {revealed && (
         <>
+          {!preview && responseToken && <GiftResponseForm token={responseToken} />}
           {cues.length > 0 ? (
             <div className="mt-8 space-y-2 border-t border-white/20 pt-6 text-left">
               <h3 className="mb-4 font-semibold">{t("giftFlow.lyrics")}</h3>

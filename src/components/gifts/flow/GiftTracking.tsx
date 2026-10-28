@@ -23,6 +23,7 @@ import GiftShell from "./GiftShell";
 import GiftExperience from "./GiftExperience";
 import GiftQr from "./GiftQr";
 import GiftFeedback from "./GiftFeedback";
+import GiftResponses from "./GiftResponses";
 import { giftFeedbackOrder } from "@/lib/gift-feedback";
 import PageLoader from "@/components/PageLoader";
 export function GiftList() {
@@ -225,7 +226,8 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
         )}
       </div>
       {g.status === "ACTIVE" && <div className="mb-7"><GiftShare url={url} recipient={g.recipient_name}/></div>}
-      {g.status === "ACTIVE" && user?.id === g.owner_id && feedbackOrderId && audio.data?.audio_url && ["MUSIC_READY", "COMPLETED"].includes(audio.data.status) && <GiftFeedback orderId={feedbackOrderId} userId={user.id} />}
+      {g.status === "ACTIVE" && user?.id === g.owner_id && <GiftResponses giftId={g.id} />}
+      {g.status === "ACTIVE" && user?.id === g.owner_id && feedbackOrderId && <GiftFeedback orderId={feedbackOrderId} userId={user.id} />}
       {g.status !== "ACTIVE" && audio.data?.audio_url && <section role="status" className="mb-7 space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-5"><h2 className="font-semibold">{t("giftFlow.awaitingRelease")}</h2><p className="text-sm">{t("giftFlow.releaseNextStep")}</p>{isAdmin && <Button asChild><Link to={`/admin/presentes?presente=${g.id}`}>{t("giftFlow.reviewAndRelease")}</Link></Button>}</section>}
       {g.music_source === "new" && !audio.data?.audio_url && (
         <section
