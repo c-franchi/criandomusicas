@@ -11,7 +11,7 @@ Cartão digital e músicas curtas usam o mesmo pedido, checkout, comprovante PIX
 5. A produção recebe o pedido e a letra aprovada. A faixa deve ser produzida e enviada pelo processo atual. A infraestrutura existente não gera áudio automaticamente ao salvar o cartão.
 6. ADM confere música, dedicatória, eventual data de disponibilidade e libera o presente. O link individual reproduz a faixa correta com a letra aprovada.
 
-Um cartão com música já pronta passa pelo pagamento e conferência do cartão, sem repetir a geração ou aprovação da canção existente. Os créditos, cupons e benefícios VIP das músicas normais não são aplicados automaticamente aos novos produtos; dependem de condições comerciais próprias.
+Um cartão com música já pronta passa pelo pagamento e conferência do cartão, sem repetir a geração ou aprovação da canção existente. Os créditos e benefícios VIP das músicas normais não são aplicados automaticamente aos novos produtos. Vouchers percentuais ou de valor fixo podem ser aplicados conforme as restrições configuradas pelo ADM.
 
 ## Letras e áudio das músicas curtas
 
@@ -69,3 +69,17 @@ Migração: `20261027164133_printable_gift_flow.sql`. Backend atualizado: `gener
 Após liberar o presente, comprador e ADM veem um bloco destacado com compartilhamento nativo do aparelho, WhatsApp, Facebook, Telegram, X, e-mail e cópia do link individual. O destinatário também pode compartilhar depois de abrir o cartão. A ação abre o aplicativo ou o diálogo da rede; não publica automaticamente. Instagram usa os aplicativos disponíveis no aparelho ou o link copiado para mensagem/bio/Stories. URLs administrativas, de checkout ou de acompanhamento não são compartilhadas como presente.
 
 A impressão permite cartão simples ou dobrável, em A4 e Carta. O dobrável gera duas páginas em paisagem: exterior [contracapa | capa], interior [dedicatória | foto e QR]. Imprima frente e verso virando pela borda curta, com escala 100%, sem cabeçalhos/rodapés, e dobre ao centro. Impressão manual exige recolocar a folha conforme o modelo da impressora. Teste uma folha e a leitura do QR antes da entrega; o site não controla o duplex do driver. A barra de manutenção, notificações e controles não entram na impressão.
+
+## Vouchers nos presentes
+
+O checkout aceita os vouchers existentes para cartões digitais, cartões para imprimir e músicas curtas. O ADM pode restringir por produto e duração em Configurações → Vouchers. Sem restrição de planos, o voucher vale também nos presentes. Vouchers restritos a single/package/subscription continuam restritos aos planos tradicionais.
+
+A prévia e a aplicação usam a cotação original do pedido, nunca um valor enviado pelo navegador. O desconto inclui adicionais do produto, mas exclui eventual frete. Um voucher por pedido, sem acumular. A aplicação registra o uso, como no fluxo tradicional; não existe liberação automática desse uso ao abandonar uma compra.
+
+A aplicação ao presente ocorre em uma transação: reserva do voucher, limites globais e por cliente, resgate, preço líquido do pedido e do presente. Repetir o mesmo pedido/código não consome outro uso. Erros desfazem a operação. Preços continuam exigindo configuração válida na contratação, inclusive para campanhas gratuitas.
+
+Quando o total zera, o pedido recebe confirmação por voucher. Música nova permanece em escolha/aprovação de letra, depois produção; música existente aguarda conferência/liberação do cartão. Não há liberação pública automática nem concessão de créditos. Desconto parcial mantém o restante a pagar por PIX ou Stripe.
+
+O Stripe usa o total líquido registrado. Uma trava curta protege a criação da sessão; uma sessão aberta é expirada antes de aplicar desconto ou criar outra. Sessões concluídas não são descartadas: devem ser confirmadas pelo fluxo de pagamento. Depois de enviado comprovante PIX, o valor não pode ser alterado por voucher.
+
+Migração `20261028003207_vouchers_for_musical_gifts.sql`; funções de backend a publicar: `apply-voucher`, `validate-voucher`, `create-payment`, `verify-payment`, com os helpers compartilhados. Teste `supabase/tests/gift_vouchers.sql` usa BEGIN/ROLLBACK, sem cobranças ou mensagens reais.

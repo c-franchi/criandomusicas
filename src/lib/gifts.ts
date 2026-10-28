@@ -60,6 +60,9 @@ export type MusicalGift = {
   status: GiftStatus;
   plan_id: string | null;
   amount_cents: number | null;
+  original_amount_cents?: number | null;
+  voucher_discount_cents?: number;
+  voucher_code?: string | null;
   shipping_cents: number;
   receipt_path: string | null;
   payment_confirmed_at: string | null;
@@ -203,3 +206,16 @@ export async function prepareGiftPhoto(file: File): Promise<string> {
     bitmap.close();
   }
 }
+
+export const giftVoucherPlans = [
+ {id:'gift_digital_existing',label:'Cartão digital — música existente'},
+ {id:'gift_digital_new',label:'Cartão digital — música nova completa'},
+ {id:'gift_digital_new_15',label:'Cartão digital — música nova até 15s'},
+ {id:'gift_digital_new_30',label:'Cartão digital — música nova até 30s'},
+ {id:'gift_short_15',label:'Música curta até 15s (com ou sem cartão)'},
+ {id:'gift_short_30',label:'Música curta até 30s (com ou sem cartão)'},
+ {id:'gift_physical_existing',label:'Cartão para imprimir — música existente'},
+ {id:'gift_physical_new',label:'Cartão para imprimir — música nova completa'},
+ {id:'gift_physical_new_15',label:'Cartão para imprimir — música nova até 15s'},
+ {id:'gift_physical_new_30',label:'Cartão para imprimir — música nova até 30s'},
+] as const;

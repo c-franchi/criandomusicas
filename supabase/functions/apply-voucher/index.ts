@@ -1,3 +1,5 @@
+import {giftVoucherError} from "../_shared/giftVoucher.ts";
+import {closeGiftCheckout} from "../_shared/giftCheckout.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -79,6 +81,17 @@ serve(async (req) => {
     if (order.payment_status === 'PAID') {
       return userError("Este pedido já foi pago");
     }
+
+    const {data:gift,error:giftError}=await supabaseClient.from('musical_gifts').select('id,stripe_session_id,checkout_lease').eq('checkout_order_id',orderId).maybeSingle();
+    if(giftError) throw giftError;
+    if(gift){
+      try{await closeGiftCheckout(supabaseClient,gift,orderId,userId,true);}catch(e){return userError((e as Error).message==='gift_order_mismatch'?giftVoucherError('gift_order_mismatch'):(e as Error).message);}
+      const ownedClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:authHeader!}}});
+      const {data,error}=await ownedClient.rpc('apply_gift_voucher',{p_order_id:orderId,p_code:code});
+      if(error)return userError(giftVoucherError(error.message));
+      return new Response(JSON.stringify({...data,message:data.is_free?'Voucher aplicado. Acompanhe a preparação do seu presente.':'Voucher aplicado ao pedido.'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
+    }
+    if(String(planId).startsWith('gift_'))return userError(giftVoucherError('gift_order_mismatch'));
 
     // Voucher
     const { data: voucher, error: voucherError } = await supabaseClient

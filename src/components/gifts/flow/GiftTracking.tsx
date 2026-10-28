@@ -208,11 +208,12 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
         {g.admin_message && (
           <p className="mt-3 whitespace-pre-line text-sm">{g.admin_message}</p>
         )}
-        {g.amount_cents && (
+        {g.amount_cents !== null && (
           <p className="mt-4 font-semibold">
             {getLocalizedPrice(g.amount_cents, i18n.language, "BRL").formatted}
           </p>
         )}
+        {g.voucher_code && <p className="mt-3 text-sm text-muted-foreground">{t("giftFlow.voucherAppliedLine",{code:g.voucher_code,discount:getLocalizedPrice(g.voucher_discount_cents || 0,i18n.language,"BRL").formatted})}</p>}
         {g.available_from && (
           <p className="mt-3 text-sm">
             {t("giftFlow.releaseDate")}:{" "}

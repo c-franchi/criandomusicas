@@ -1,3 +1,4 @@
+import {giftVoucherError} from "../_shared/giftVoucher.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -33,7 +34,7 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { code, planId = "single" } = await req.json();
+    const { code, planId = "single", orderId } = await req.json();
     if (!code) {
       throw new Error("Voucher code is required");
     }
@@ -52,8 +53,22 @@ serve(async (req) => {
     }
     logStep("User auth", { userId: userId ? "authenticated" : "anonymous" });
 
+    if(orderId || String(planId).startsWith('gift_')){
+      if(!userId || !orderId)return new Response(JSON.stringify({valid:false,error:giftVoucherError('gift_auth_required')}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
+      const ownedClient=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_ANON_KEY')!,{global:{headers:{Authorization:authHeader!}}});
+      const {data:gift,error:giftError}=await ownedClient.from('musical_gifts').select('id').eq('checkout_order_id',orderId).maybeSingle();
+      if(giftError)throw giftError;
+      if(gift){
+        const {data,error}=await ownedClient.rpc('quote_gift_voucher',{p_order_id:orderId,p_code:code});
+        return new Response(JSON.stringify(error?{valid:false,error:giftVoucherError(error.message)}:data),{headers:{...corsHeaders,'Content-Type':'application/json'}});
+      }
+      if(String(planId).startsWith('gift_'))return new Response(JSON.stringify({valid:false,error:giftVoucherError('gift_forbidden')}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
+    }
+
+    const lookupClient=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
     // Fetch voucher by code
-    const { data: voucher, error: voucherError } = await supabaseClient
+    const { data: voucher, error: voucherError } = await lookupClient
       .from('vouchers')
       .select('*')
       .eq('code', code.toUpperCase().trim())
@@ -132,7 +147,7 @@ serve(async (req) => {
 
     // Check if user already used this voucher too many times (if authenticated)
     if (userId) {
-      const { data: userRedemptions, error: redemptionError } = await supabaseClient
+      const { data: userRedemptions, error: redemptionError } = await lookupClient
         .from('voucher_redemptions')
         .select('id')
         .eq('voucher_id', voucher.id)

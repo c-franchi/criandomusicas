@@ -694,7 +694,8 @@
       "cues": "Tempi del testo aggiornati",
       "print_ready": "Prova di stampa verificata",
       "shipped": "Spedizione registrata",
-      "delivered": "Consegna registrata"
+      "delivered": "Consegna registrata",
+      "voucher_applied": "Voucher applicato all’ordine"
     },
     "errors": {
       "gift_auth_required": "Accedi per continuare.",
@@ -793,6 +794,8 @@
     "bookletInstruction2": "Piega il foglio a metà lungo la linea tratteggiata. La copertina è a destra del lato esterno.",
     "bookletInstruction3": "Senza duplex automatico: stampa pagina 1, reinserisci il foglio secondo la stampante e stampa pagina 2. Prova prima su carta comune.",
     "printScaleHelp": "Imposta lo stesso formato nel browser e nella stampante, scala 100%, senza intestazioni e piè di pagina e con sfondi attivi. Controlla orientamento e QR prima della consegna.",
-    "printOrPdf": "Stampa o salva in PDF"
+    "printOrPdf": "Stampa o salva in PDF",
+    "voucherHelp": "Usa un voucher valido per questo prodotto e durata. Include gli extra del prodotto ed esclude la spedizione. Un voucher per ordine, prima del pagamento o dell’invio della ricevuta.",
+    "voucherAppliedLine": "Voucher {{code}} applicato: sconto di {{discount}}."
   }
 }

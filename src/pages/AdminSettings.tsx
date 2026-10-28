@@ -1,3 +1,4 @@
+import {giftVoucherPlans} from "@/lib/gifts";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -705,6 +706,7 @@ const AdminSettings = () => {
                             { id: 'creator_start', label: 'Creator Start' },
                             { id: 'creator_pro', label: 'Creator Pro' },
                             { id: 'creator_studio', label: 'Creator Studio' },
+                            ...giftVoucherPlans,
                           ].map((plan) => {
                             const currentPlanIds = (editingVoucher || newVoucher).plan_ids || [];
                             const isChecked = currentPlanIds.includes(plan.id);
@@ -733,7 +735,7 @@ const AdminSettings = () => {
                           })}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Deixe todos desmarcados para permitir em todos os planos
+                          Deixe todos desmarcados para permitir em todos os planos e presentes musicais. Nos presentes, o desconto inclui os adicionais do produto e não inclui eventual frete.
                         </p>
                       </div>
                       <div className="flex items-center gap-2">

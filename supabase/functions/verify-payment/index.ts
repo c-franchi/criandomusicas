@@ -99,12 +99,13 @@ serve(async (req) => {
       }
 
       // Update order status to PAID (valid enum value)
-      await supabaseClient
+      const {error:paymentUpdateError}=await supabaseClient
         .from("orders")
         .update({ status: "PAID", payment_status: "PAID" })
         .eq("id", orderId)
         .eq("user_id", userId);
 
+      if(paymentUpdateError)throw paymentUpdateError;
       logStep("Order updated to PAID");
 
       // Build briefing from order data for generation

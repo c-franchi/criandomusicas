@@ -694,7 +694,8 @@
       "cues": "Lyric timestamps updated",
       "print_ready": "Print proof checked",
       "shipped": "Dispatch recorded",
-      "delivered": "Delivery recorded"
+      "delivered": "Delivery recorded",
+      "voucher_applied": "Voucher applied to order"
     },
     "errors": {
       "gift_auth_required": "Sign in to continue.",
@@ -793,6 +794,8 @@
     "bookletInstruction2": "Fold the sheet in half along the dotted line. The front cover is on the right of the outside face.",
     "bookletInstruction3": "No automatic duplex? Print page 1, reload according to your printer and print page 2. Test on plain paper first.",
     "printScaleHelp": "Match the paper size in the browser and printer. Use 100% scale, disable headers/footers and enable background graphics. Check orientation and test the QR code before gifting.",
-    "printOrPdf": "Print or save as PDF"
+    "printOrPdf": "Print or save as PDF",
+    "voucherHelp": "Use a voucher valid for this product and duration. Product add-ons are included in the discount; shipping is excluded. One voucher per order, before payment or receipt submission.",
+    "voucherAppliedLine": "Voucher {{code}} applied: {{discount}} discount."
   }
 }

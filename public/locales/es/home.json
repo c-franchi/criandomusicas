@@ -694,7 +694,8 @@
       "cues": "Tiempos de letra actualizados",
       "print_ready": "Prueba de impresión revisada",
       "shipped": "Envío registrado",
-      "delivered": "Entrega registrada"
+      "delivered": "Entrega registrada",
+      "voucher_applied": "Voucher aplicado al pedido"
     },
     "errors": {
       "gift_auth_required": "Inicia sesión para continuar.",
@@ -793,6 +794,8 @@
     "bookletInstruction2": "Dobla la hoja por la línea de puntos. La portada queda a la derecha del exterior.",
     "bookletInstruction3": "Sin dúplex automático: imprime la página 1, vuelve a colocar la hoja según tu impresora e imprime la página 2. Prueba primero en papel común.",
     "printScaleHelp": "Usa el mismo papel en navegador e impresora, escala 100%, sin encabezados ni pies y con fondos activados. Comprueba la orientación y el QR antes de entregar.",
-    "printOrPdf": "Imprimir o guardar como PDF"
+    "printOrPdf": "Imprimir o guardar como PDF",
+    "voucherHelp": "Usa un voucher válido para este producto y duración. Incluye los adicionales del producto y excluye portes. Un voucher por pedido, antes del pago o envío del comprobante.",
+    "voucherAppliedLine": "Voucher {{code}} aplicado: descuento de {{discount}}."
   }
 }
