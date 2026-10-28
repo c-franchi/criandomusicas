@@ -388,6 +388,7 @@ export type Database = {
           message: string
           owner_id: string
           rating: number | null
+          read_at: string | null
           request_id: string
         }
         Insert: {
@@ -400,6 +401,7 @@ export type Database = {
           message?: string
           owner_id: string
           rating?: number | null
+          read_at?: string | null
           request_id: string
         }
         Update: {
@@ -412,13 +414,14 @@ export type Database = {
           message?: string
           owner_id?: string
           rating?: number | null
+          read_at?: string | null
           request_id?: string
         }
         Relationships: [
           {
             foreignKeyName: "gift_responses_gift_id_fkey"
             columns: ["gift_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "musical_gifts"
             referencedColumns: ["id"]
           },

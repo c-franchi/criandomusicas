@@ -8,6 +8,13 @@
       "when": 1793159179112,
       "tag": "0000_gift_recipient_responses",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793159202033,
+      "tag": "0001_gift_response_once_and_read_state",
+      "breakpoints": true
     }
   ]
 }
