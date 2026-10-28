@@ -62,7 +62,7 @@ const queryClient = new QueryClient();
 
 const PageHelpers = () => {
   const {pathname} = useLocation();
-  if (pathname.startsWith('/presente/')) return null;
+  if (pathname.startsWith('/presente/') || pathname === '/presente.html') return null;
   return <><ProfileOnboardingWrapper /><TourWrapper /><RouteTracker /><ContinueFlowBar /></>;
 };
 
@@ -118,6 +118,7 @@ const App = () => (
               <Route path="/presentes/:id/imprimir" element={<GiftPrint />} />
               <Route path="/presentes/:id" element={<GiftTracking />} />
               <Route path="/presente/:token" element={<PublicGift />} />
+              <Route path="/presente.html" element={<PublicGift />} />
               <Route path="/admin/presentes" element={<AdminGifts />} />
               <Route path="/briefing" element={<Briefing />} />
               <Route path="/cartao-digital" element={<MusicalGiftProduct product="digital" />} />

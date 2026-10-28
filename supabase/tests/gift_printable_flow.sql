@@ -1,6 +1,6 @@
 -- Execute inside BEGIN/ROLLBACK. No external generation or payment.
 do $$
-declare adm uuid; uid uuid; gid uuid; oid uuid; lid uuid; bg uuid; token text; product text; d jsonb; result jsonb; v integer;
+declare adm uuid; uid uuid; gid uuid; oid uuid; lid uuid; bg uuid; token text; alias text; product text; d jsonb; result jsonb; v integer;
  photo text:='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aNwAAAABJRU5ErkJggg==';
 begin
  select user_id into adm from public.user_roles where role='admin' limit 1;
@@ -21,6 +21,9 @@ begin
   gid:=gen_random_uuid();
   d:=jsonb_build_object('product',product,'music_source','new','duration_seconds',15,'recipient_name','Fixture','sender_name','Fixture','dedication','A gift for you','photo_data',photo,'details',jsonb_build_object('story','A personal story sufficiently long for this fixture.','style','pop','language','Português','music_type','homenagem','fulfillment','self_print','card_design','flowers','background_id',bg));
   perform public.save_musical_gift(gid,d,0);
+  select public_alias into alias from public.musical_gifts where id=gid;
+  if alias !~ '^para-fixture-[A-Za-z0-9_-]{22}$' then raise exception 'Invalid friendly gift link';end if;
+  if public.get_musical_gift(alias) is not null then raise exception 'Draft alias exposed gift';end if;
   result:=public.musical_gift_action(gid,'submit');oid:=(result->>'checkout_order_id')::uuid;
   if (select duration_seconds from public.musical_gifts where id=gid)<>15 then raise exception 'Card lost duration';end if;
   if (select amount_cents from public.musical_gifts where id=gid)<>1700 then raise exception 'Incorrect quote / unwanted addon';end if;
@@ -53,6 +56,8 @@ begin
   if result->>'photo_data' is distinct from photo or result->>'background_data' is distinct from photo then raise exception 'Wrong gift artwork';end if;
   if result->'details' ? 'story' or result->'details' ? 'address' then raise exception 'Private story exposed';end if;
   if result->>'audio_url'<>'https://example.com/card.mp3' then raise exception 'Wrong audio';end if;
+  if public.get_musical_gift(alias)->>'audio_url' is distinct from result->>'audio_url' then raise exception 'Friendly link does not resolve';end if;
+  if result->>'public_alias' is distinct from alias then raise exception 'Canonical alias missing';end if;
   begin perform 1 from public.musical_gifts where id=gid;raise exception 'Anonymous can read private gift';exception when insufficient_privilege then null;end;
   execute 'reset role';
   -- Owner can read the released card for printing; another customer cannot.
@@ -63,6 +68,9 @@ begin
   perform set_config('request.jwt.claims',json_build_object('sub',adm,'role','authenticated')::text,true);
   execute 'set local role authenticated';
   update public.gift_backgrounds set is_active=true where id=bg;
+  perform public.musical_gift_action(gid,'revoke');
+  if (select public_alias from public.musical_gifts where id=gid)=alias then raise exception 'Revocation did not rotate alias';end if;
+  if public.get_musical_gift(alias) is not null or public.get_musical_gift(token) is not null then raise exception 'Revoked gift still resolves';end if;
   execute 'reset role';
  end loop;
 end $$;

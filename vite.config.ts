@@ -1,3 +1,4 @@
+import { writeGiftEntry } from "./scripts/gift-entry.mjs";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -11,6 +12,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [
+    {name: "gift-share-entry", apply: "build", writeBundle(options) {writeGiftEntry(options.dir || "dist");}},
     react(),
     mode === 'development' && componentTagger(),
     VitePWA({

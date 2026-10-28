@@ -810,6 +810,9 @@
     "awaitingRelease": "Pendiente de revisión y liberación",
     "durationMargin": "Opción de {{seconds}}s: margen de producción hasta {{max}}s.",
     "measuredDuration": "Duración medida: {{seconds}}s.",
-    "uploadHere": "Adjunta o reemplaza la música aquí antes de liberar la tarjeta. Una pista es suficiente; la segunda es opcional. Se aceptan MP3 y WAV."
+    "uploadHere": "Adjunta o reemplaza la música aquí antes de liberar la tarjeta. Una pista es suficiente; la segunda es opcional. Se aceptan MP3 y WAV.",
+    "shareGiftMessage": "🎁 {{name}}¡prepara el corazón! Tengo una sorpresa musical hecha especialmente para ti. 💜\n\n🎧 Ponte los auriculares, abre tu regalo y dale al play. Cada palabra y cada nota llevan el cariño que quería entregarte. ✨\n\n¡Toca el enlace y descúbrelo! 👇",
+    "shareReceivedMessage": "🎁 ¡Recibí un regalo convertido en música que me llegó al corazón! 💜\n🎧 Abre el enlace y comparte este recuerdo conmigo. ✨",
+    "copyMessage": "Copiar mensaje y enlace"
   }
 }

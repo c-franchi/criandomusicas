@@ -23,7 +23,7 @@ export default function GiftPrintCard({ gift: g }: { gift: MusicalGift }) {
         {g.dedication}
       </p>
       <p className="my-6 font-serif text-xl">{g.sender_name}</p>
-      <GiftQr url={giftUrl(g.public_token)} />
+      <GiftQr url={giftUrl(g.public_alias || g.public_token)} />
       <p className="mt-4 text-sm">{t("giftFlow.scan")}</p>
     </article>
   );

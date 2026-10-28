@@ -1,4 +1,5 @@
 import type { GiftProduct } from "@/components/gifts/products";
+import { isGiftToken } from './gift-link.ts';
 export type GiftStatus =
   | "DRAFT"
   | "AWAITING_PAYMENT"
@@ -69,6 +70,7 @@ export type MusicalGift = {
   approved_by: string | null;
   is_test: boolean;
   public_token: string;
+  public_alias?: string;
   lyric_cues: LyricCue[];
   shipping_status: "PENDING" | "PRINT_READY" | "SHIPPED" | "DELIVERED";
   tracking_code: string | null;
@@ -92,6 +94,7 @@ export interface LyricCue {
   text: string;
 }
 export interface GiftPresentation {
+  public_alias?: string;
   recipient_name: string;
   sender_name: string;
   dedication: string;
@@ -172,8 +175,8 @@ export function parseLrc(input: string): LyricCue[] {
   return cues.sort((a, b) => a.time - b.time);
 }
 export function giftUrl(token: string, origin = window.location.origin) {
-  if (!/^[a-f0-9]{64}$/.test(token)) throw Error("gift_invalid_token");
-  return `${origin}/presente/${token}`;
+  if (!isGiftToken(token)) throw Error("gift_invalid_token");
+  return token.startsWith('para-') ? `${origin}/presente.html?para=${token.slice(5)}` : `${origin}/presente/${token}`;
 }
 export function safeImage(url: string | null | undefined) {
   return url?.startsWith("https://") || url?.startsWith("data:image/")
