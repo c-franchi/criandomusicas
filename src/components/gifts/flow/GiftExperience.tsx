@@ -62,7 +62,7 @@ export default function GiftExperience({
         wedding: Sparkles,
       } as Record<string, typeof Gift>
     )[data.theme] || Gift;
-  const cues = (data.lyric_cues || []).map(c=>({...c,text:giftLyricText(c.text)})).filter(c=>!!c.text);
+  const cues = (Array.isArray(data.lyric_cues) ? data.lyric_cues : []).filter(c => c && typeof c.text === "string" && typeof c.time === "number").map(c=>({...c,text:giftLyricText(c.text)})).filter(c=>!!c.text);
   let active = -1;
   for (let i = 0; i < cues.length; i++) if (cues[i].time <= time) active = i;
   const open = () => {

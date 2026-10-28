@@ -13,6 +13,8 @@ const Hero = () => {
   const { t } = useTranslation('home');
   const { user } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
+  const translatedOccasions = t('marketing.occasions', { returnObjects: true });
+  const occasions = Array.isArray(translatedOccasions) ? translatedOccasions.filter((item): item is string => typeof item === 'string') : [];
   return (
     <section className="marketing-hero relative flex items-center justify-center overflow-hidden">
       <picture className="absolute inset-0">
@@ -37,7 +39,7 @@ const Hero = () => {
           {isAdmin && <Button asChild variant="ghost" size="sm"><Link to="/admin"><LayoutDashboard className="w-4 h-4 mr-2" />{t('marketing.admin')}</Link></Button>}
         </div>
         <ul className="flex flex-wrap justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground mt-7" aria-label={t('marketing.occasionsLabel')}>
-          {(t('marketing.occasions', { returnObjects: true }) as string[]).map(occasion => <li key={occasion} className="inline-flex items-center gap-1.5"><Gift className="w-3 h-3 text-accent" />{occasion}</li>)}
+          {occasions.map(occasion => <li key={occasion} className="inline-flex items-center gap-1.5"><Gift className="w-3 h-3 text-accent" />{occasion}</li>)}
         </ul>
       </div>
     </section>
