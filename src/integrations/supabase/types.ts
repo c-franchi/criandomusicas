@@ -512,6 +512,7 @@ export type Database = {
           plan_id: string | null
           product: string
           production_order_id: string | null
+          public_alias: string | null
           public_token: string
           receipt_path: string | null
           recipient_name: string
@@ -557,6 +558,7 @@ export type Database = {
           plan_id?: string | null
           product: string
           production_order_id?: string | null
+          public_alias?: string | null
           public_token?: string
           receipt_path?: string | null
           recipient_name?: string
@@ -602,6 +604,7 @@ export type Database = {
           plan_id?: string | null
           product?: string
           production_order_id?: string | null
+          public_alias?: string | null
           public_token?: string
           receipt_path?: string | null
           recipient_name?: string
