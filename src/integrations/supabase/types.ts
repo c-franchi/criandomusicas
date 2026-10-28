@@ -490,6 +490,8 @@ export type Database = {
           approved_by: string | null
           audio_duration_seconds: number | null
           available_from: string | null
+          checkout_lease: string | null
+          checkout_locked_until: string | null
           checkout_order_id: string | null
           created_at: string
           dedication: string
@@ -503,6 +505,7 @@ export type Database = {
           lyrics_generation_started_at: string | null
           music_source: string
           occasion: string
+          original_amount_cents: number | null
           owner_id: string
           payment_confirmed_at: string | null
           photo_data: string | null
@@ -523,6 +526,8 @@ export type Database = {
           tracking_code: string | null
           updated_at: string
           version: number
+          voucher_code: string | null
+          voucher_discount_cents: number
         }
         Insert: {
           admin_message?: string | null
@@ -530,6 +535,8 @@ export type Database = {
           approved_by?: string | null
           audio_duration_seconds?: number | null
           available_from?: string | null
+          checkout_lease?: string | null
+          checkout_locked_until?: string | null
           checkout_order_id?: string | null
           created_at?: string
           dedication?: string
@@ -543,6 +550,7 @@ export type Database = {
           lyrics_generation_started_at?: string | null
           music_source: string
           occasion?: string
+          original_amount_cents?: number | null
           owner_id: string
           payment_confirmed_at?: string | null
           photo_data?: string | null
@@ -563,6 +571,8 @@ export type Database = {
           tracking_code?: string | null
           updated_at?: string
           version?: number
+          voucher_code?: string | null
+          voucher_discount_cents?: number
         }
         Update: {
           admin_message?: string | null
@@ -570,6 +580,8 @@ export type Database = {
           approved_by?: string | null
           audio_duration_seconds?: number | null
           available_from?: string | null
+          checkout_lease?: string | null
+          checkout_locked_until?: string | null
           checkout_order_id?: string | null
           created_at?: string
           dedication?: string
@@ -583,6 +595,7 @@ export type Database = {
           lyrics_generation_started_at?: string | null
           music_source?: string
           occasion?: string
+          original_amount_cents?: number | null
           owner_id?: string
           payment_confirmed_at?: string | null
           photo_data?: string | null
@@ -603,6 +616,8 @@ export type Database = {
           tracking_code?: string | null
           updated_at?: string
           version?: number
+          voucher_code?: string | null
+          voucher_discount_cents?: number
         }
         Relationships: [
           {
@@ -1542,12 +1557,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_gift_voucher: {
+        Args: { p_code: string; p_order_id: string }
+        Returns: Json
+      }
       claim_gift_lyrics: { Args: { p_order_id: string }; Returns: boolean }
       confirm_gift_stripe: {
         Args: { p_amount: number; p_order_id: string; p_session: string }
         Returns: boolean
       }
       get_musical_gift: { Args: { p_token: string }; Returns: Json }
+      gift_checkout_action: {
+        Args: {
+          p_action: string
+          p_expires?: string
+          p_lease?: string
+          p_order_id: string
+          p_owner: string
+          p_session?: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1557,6 +1587,10 @@ export type Database = {
       }
       musical_gift_action: {
         Args: { p_action: string; p_data?: Json; p_id: string }
+        Returns: Json
+      }
+      quote_gift_voucher: {
+        Args: { p_code: string; p_order_id: string }
         Returns: Json
       }
       save_musical_gift: {
