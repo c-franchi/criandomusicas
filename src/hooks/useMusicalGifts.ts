@@ -96,6 +96,7 @@ export function useGiftCommands() {
     void qc.invalidateQueries({ queryKey: ["musical-gift"] });
     void qc.invalidateQueries({ queryKey: ["musical-gifts"] });
     void qc.invalidateQueries({ queryKey: ["gift-history"] });
+    void qc.invalidateQueries({ queryKey: ["gift-audio"] });
   };
   return {
     save: async (id: string, data: Partial<MusicalGift>, version: number) => {
@@ -120,6 +121,21 @@ export function useGiftCommands() {
       });
       if (r.error) throw r.error;
       refresh();
+      if (action === 'publish') {
+        const { data: gift, error } = await supabase.from('musical_gifts').select('owner_id,checkout_order_id,production_order_id,is_test,status').eq('id', id).single();
+        if(error) throw new Error('gift_released_notification_failed');
+        if (!error && gift?.status === 'ACTIVE' && !gift.is_test) {
+          const orderId = gift.checkout_order_id || gift.production_order_id;
+          const results = await Promise.allSettled([
+            supabase.functions.invoke('send-music-ready-email', {body:{userId:gift.owner_id,orderId}}),
+            supabase.functions.invoke('send-push-notification', {body:{user_id:gift.owner_id,order_id:orderId,notification_type:'gift_ready',title:'🎁 Seu presente musical foi liberado!',body:'Seu cartão foi conferido e liberado. Acesse para compartilhar.',url:`/presentes/${id}`}}),
+          ]);
+          if (results.some(r => r.status === 'rejected' || r.value.error)) {
+            // The gift is released even if an external notification channel fails.
+            throw new Error('gift_released_notification_failed');
+          }
+        }
+      }
       return r.data as {
         id: string;
         production_order_id: string | null;
@@ -143,31 +159,34 @@ export function useGiftAudio(g?: MusicalGift) {
         .eq("id", id!)
         .single();
       if (error) throw error;
-      const { data: track, error: te } = await supabase
+      const { data: tracks, error: te } = await supabase
         .from("tracks")
-        .select("audio_url")
+        .select("audio_url,version,duration_seconds")
         .eq("order_id", id!)
-        .eq("version", g!.track_version)
-        .eq("status", "READY")
-        .maybeSingle();
+        .eq("status", "READY");
       if (te) throw te;
+      const track = tracks?.find(t => t.version === g!.track_version);
       let lyrics: string | null = null;
+      let approvedLyricId: string | null = null;
       if (order.approved_lyric_id) {
         const { data, error: le } = await supabase
           .from("lyrics")
-          .select("body")
+          .select("body,is_approved")
           .eq("id", order.approved_lyric_id)
           .single();
         if (le) throw le;
         lyrics = data.body;
+        if(data.is_approved) approvedLyricId = order.approved_lyric_id;
       }
       return {
         status: order.status,
         payment_status: order.payment_status,
-        approved_lyric_id: order.approved_lyric_id,
+        approved_lyric_id: approvedLyricId,
         title: order.song_title,
         cover_url: order.cover_url,
         audio_url: track?.audio_url,
+        duration_seconds: track?.duration_seconds,
+        uploadedVersions: tracks?.filter(t=>!!t.audio_url).map(t=>t.version!) || [],
         lyrics,
       };
     },

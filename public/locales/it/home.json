@@ -344,8 +344,8 @@
     "exploreDuration": "Esplora i formati",
     "demoLabel": "Un assaggio dell’esperienza",
     "durationLabel": "Scegli una durata da esplorare",
-    "upTo": "Fino a {{seconds}} secondi",
-    "durationNote": "Il limite scelto guiderà la produzione. La durata non sarà necessariamente esatta.",
+    "upTo": "Circa {{seconds}} secondi",
+    "durationNote": "La durata è approssimativa: fino a 20s per l’opzione da 15s e fino a 40s per quella da 30s.",
     "themeLabel": "Esplora le occasioni",
     "howItWorks": "Come funzionerà",
     "included": "Cosa include la proposta",
@@ -695,7 +695,8 @@
       "print_ready": "Prova di stampa verificata",
       "shipped": "Spedizione registrata",
       "delivered": "Consegna registrata",
-      "voucher_applied": "Voucher applicato all’ordine"
+      "voucher_applied": "Voucher applicato all’ordine",
+      "ready_email_sent": "Avviso di rilascio inviato"
     },
     "errors": {
       "gift_auth_required": "Accedi per continuare.",
@@ -723,7 +724,8 @@
       "gift_lyrics_approval_required": "Il cliente deve approvare il testo prima della produzione e pubblicazione.",
       "gift_audio_duration_invalid": "L’audio supera la durata selezionata o la durata non è stata verificata.",
       "gift_order_mismatch": "I dati del pagamento non corrispondono all’ordine. Ricarica la pagina.",
-      "gift_payment_forbidden": "Il pagamento deve essere confermato tramite il processo autorizzato."
+      "gift_payment_forbidden": "Il pagamento deve essere confermato tramite il processo autorizzato.",
+      "gift_released_notification_failed": "Il biglietto è stato rilasciato, ma non è stato possibile inviare una notifica. Il link è disponibile."
     },
     "messageOptional": "Messaggio facoltativo",
     "durationExceeded": "L’audio supera la durata scelta. Carica la versione corretta prima dell’attivazione.",
@@ -796,6 +798,18 @@
     "printScaleHelp": "Imposta lo stesso formato nel browser e nella stampante, scala 100%, senza intestazioni e piè di pagina e con sfondi attivi. Controlla orientamento e QR prima della consegna.",
     "printOrPdf": "Stampa o salva in PDF",
     "voucherHelp": "Usa un voucher valido per questo prodotto e durata. Include gli extra del prodotto ed esclude la spedizione. Un voucher per ordine, prima del pagamento o dell’invio della ricevuta.",
-    "voucherAppliedLine": "Voucher {{code}} applicato: sconto di {{discount}}."
+    "voucherAppliedLine": "Voucher {{code}} applicato: sconto di {{discount}}.",
+    "workflowTitle": "Produzione e rilascio del biglietto",
+    "paymentStep": "Pagamento confermato",
+    "lyricStep": "Testo approvato dal cliente",
+    "audioStep": "Musica allegata",
+    "releaseStep": "Biglietto rilasciato dall’amministratore",
+    "audioQueryError": "Impossibile consultare la musica o il testo. Riprova.",
+    "retryAudio": "Riprova",
+    "uploadSaved": "Musica allegata. Controlla il biglietto e rilascia il regalo. Nessuna notifica di disponibilità è stata inviata.",
+    "awaitingRelease": "In attesa di verifica e rilascio",
+    "durationMargin": "Opzione da {{seconds}}s: margine di produzione fino a {{max}}s.",
+    "measuredDuration": "Durata misurata: {{seconds}}s.",
+    "uploadHere": "Allega o sostituisci la musica qui prima del rilascio. Una traccia è sufficiente; la seconda è facoltativa. MP3 e WAV sono accettati."
   }
 }

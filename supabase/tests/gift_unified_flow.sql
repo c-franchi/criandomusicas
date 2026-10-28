@@ -58,7 +58,12 @@ begin
  execute 'reset role';
  begin insert into public.lyrics(order_id,version,title,body,is_approved) values(oid,'A','Fixture',repeat('Long word ',30),false);raise exception 'Expected lyric size guard';exception when others then if sqlerrm<>'gift_lyric_too_long' then raise;end if;end;
  insert into public.lyrics(order_id,version,title,body,is_approved) values(oid,'A','Fixture',E'Uma canção para lembrar\nUm carinho para guardar',false) returning id into lid;
- begin insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/short.mp3',29.5);
+ begin insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/short.mp3',35.5);
+raise exception 'Expected approval before audio';exception when others then if sqlerrm<>'gift_lyrics_approval_required' then raise;end if;end;
+ begin update public.orders set status='MUSIC_GENERATING' where id=oid;raise exception 'Expected approval before production';exception when others then if sqlerrm<>'gift_lyrics_approval_required' then raise;end if;end;
+ update public.orders set approved_lyric_id=lid,status='LYRICS_APPROVED' where id=oid;
+ update public.lyrics set is_approved=true,approved_at=now() where id=lid;
+ insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/short.mp3',35.5);
  -- One recording is sufficient to complete production without activating the gift.
  update public.orders set status='COMPLETED',music_ready_at=now() where id=oid;
  if (select count(*) from public.tracks where order_id=oid and status='READY')<>1 then raise exception 'One-track completion requires a second recording';end if;
@@ -67,14 +72,9 @@ begin
  insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',2,'https://example.com/optional.mp3',29.5)
  on conflict(order_id,version) do update set audio_url=excluded.audio_url;
  if (select audio_url from public.tracks where order_id=oid and version=1)<>'https://example.com/short.mp3' then raise exception 'Optional recording replaced primary';end if;
-raise exception 'Expected approval before audio';exception when others then if sqlerrm<>'gift_lyrics_approval_required' then raise;end if;end;
- begin update public.orders set status='MUSIC_GENERATING' where id=oid;raise exception 'Expected approval before production';exception when others then if sqlerrm<>'gift_lyrics_approval_required' then raise;end if;end;
- update public.orders set approved_lyric_id=lid,status='LYRICS_APPROVED' where id=oid;
- update public.lyrics set is_approved=true,approved_at=now() where id=lid;
- insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/short.mp3',29.5);
  execute 'set local role authenticated';
  begin perform public.musical_gift_action(gift_id,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":41}');raise exception 'Expected final duration guard';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
- perform public.musical_gift_action(gift_id,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":29.5}');
+ perform public.musical_gift_action(gift_id,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":35.5}');
  select public_token into token from public.musical_gifts where id=gift_id;
  if public.get_musical_gift(token)->>'lyrics' is distinct from E'Uma canção para lembrar\nUm carinho para guardar' then raise exception 'Wrong approved lyrics on gift';end if;
  execute 'reset role';

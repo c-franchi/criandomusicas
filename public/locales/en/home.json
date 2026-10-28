@@ -344,8 +344,8 @@
     "exploreDuration": "Explore the formats",
     "demoLabel": "A glimpse of the experience",
     "durationLabel": "Choose a duration to explore",
-    "upTo": "Up to {{seconds}} seconds",
-    "durationNote": "The selected limit will guide production. The duration is not necessarily exact.",
+    "upTo": "Approximately {{seconds}} seconds",
+    "durationNote": "Duration is approximate: production may reach 20s for the 15s option and 40s for the 30s option.",
     "themeLabel": "Explore the occasions",
     "howItWorks": "How it will work",
     "included": "What the concept includes",
@@ -695,7 +695,8 @@
       "print_ready": "Print proof checked",
       "shipped": "Dispatch recorded",
       "delivered": "Delivery recorded",
-      "voucher_applied": "Voucher applied to order"
+      "voucher_applied": "Voucher applied to order",
+      "ready_email_sent": "Release notification sent"
     },
     "errors": {
       "gift_auth_required": "Sign in to continue.",
@@ -723,7 +724,8 @@
       "gift_lyrics_approval_required": "The customer must approve the lyrics before production and release.",
       "gift_audio_duration_invalid": "The audio exceeds the selected duration or its duration was not checked.",
       "gift_order_mismatch": "Payment details do not match the order. Reload the page.",
-      "gift_payment_forbidden": "Payment must be confirmed through the authorized process."
+      "gift_payment_forbidden": "Payment must be confirmed through the authorized process.",
+      "gift_released_notification_failed": "The card was released, but a notification could not be sent. The link is available."
     },
     "messageOptional": "Optional message",
     "durationExceeded": "The audio exceeds the selected duration. Upload the correct version before release.",
@@ -796,6 +798,18 @@
     "printScaleHelp": "Match the paper size in the browser and printer. Use 100% scale, disable headers/footers and enable background graphics. Check orientation and test the QR code before gifting.",
     "printOrPdf": "Print or save as PDF",
     "voucherHelp": "Use a voucher valid for this product and duration. Product add-ons are included in the discount; shipping is excluded. One voucher per order, before payment or receipt submission.",
-    "voucherAppliedLine": "Voucher {{code}} applied: {{discount}} discount."
+    "voucherAppliedLine": "Voucher {{code}} applied: {{discount}} discount.",
+    "workflowTitle": "Card production and release",
+    "paymentStep": "Payment confirmed",
+    "lyricStep": "Lyrics approved by the customer",
+    "audioStep": "Music attached",
+    "releaseStep": "Card released by admin",
+    "audioQueryError": "Could not load the music or lyrics. Please retry.",
+    "retryAudio": "Retry",
+    "uploadSaved": "Music attached. Review the card below and release the gift. No ready notification was sent.",
+    "awaitingRelease": "Awaiting admin review and release",
+    "durationMargin": "{{seconds}}s option: production margin up to {{max}}s.",
+    "measuredDuration": "Measured duration: {{seconds}}s.",
+    "uploadHere": "Attach or replace music here before releasing the card. One track is sufficient; a second is optional. MP3 and WAV are accepted."
   }
 }

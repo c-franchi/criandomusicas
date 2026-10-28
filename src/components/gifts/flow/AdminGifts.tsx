@@ -1,3 +1,5 @@
+import GiftProductionPanel from "./GiftProductionPanel";
+import { giftAudioLimit } from "@/lib/gift-duration";
 import GiftShare from "./GiftShare";
 import GiftBackgroundAdmin from "./GiftBackgroundAdmin";
 import { useGiftAvailability } from "@/hooks/useGiftAvailability";
@@ -117,9 +119,9 @@ function GiftAdminDetail({ id }: { id: string }) {
   const { t, i18n } = useTranslation("home");
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
+  const [uploadingAudio, setUploadingAudio] = useState(false);
   const [error, setError] = useState("");
   const [reviewed, setReviewed] = useState(false);
-  const [durationChecked, setDurationChecked] = useState(false);
   const [qrChecked, setQrChecked] = useState(false);
   const [note, setNote] = useState("");
   const [lrc, setLrc] = useState("");
@@ -141,9 +143,9 @@ function GiftAdminDetail({ id }: { id: string }) {
   }, [g, lrcLoaded]);
   useEffect(() => {
     setReviewed(false);
-    setDurationChecked(false);
     setQrChecked(false);
-  }, [g?.version]);
+  }, [audio.data?.audio_url,g?.dedication,g?.recipient_name,g?.sender_name,g?.photo_data,g?.track_version]);
+  useEffect(()=>{ setAudioDuration(audio.data?.duration_seconds || null); },[audio.data?.audio_url,audio.data?.duration_seconds]);
   const fail = (e: unknown) => {
     const code =
       e && typeof e === "object" && "message" in e
@@ -239,42 +241,8 @@ function GiftAdminDetail({ id }: { id: string }) {
             </dl>
           </details>
         )}
-        {audio.data?.audio_url && g.status !== "ACTIVE" && <div role="status" className="rounded-xl border border-primary/40 bg-primary/5 p-4"><h3 className="font-semibold">{t("giftFlow.readyForRelease")}</h3><p className="mt-2 text-sm">{t("giftFlow.releaseNextStep")}</p><a href="#gift-release" className="mt-3 inline-block text-primary underline">{t("giftFlow.reviewAndRelease")}</a></div>}
-        {g.checkout_order_id && (
-          <div className="space-y-3 rounded-xl border border-primary/30 p-4">
-            <p className="text-sm">{t("giftFlow.unifiedOrderHelp")}</p>
-            <p className="font-mono text-xs">{g.checkout_order_id}</p>
-            <Button asChild variant="outline">
-              <Link
-                to={`/admin?produto=${g.product}&pedido=${g.checkout_order_id}`}
-              >
-                {t("giftFlow.manageOrder")}
-              </Link>
-            </Button>
-          </div>
-        )}
-        {g.production_order_id && (
-          <div className="space-y-2 rounded-xl bg-muted p-4">
-            <p className="text-sm">
-              {t("giftFlow.musicStage")}:{" "}
-              {audio.data?.status || t("giftFlow.loading")}
-            </p>
-            <p className="text-sm">
-              {t(
-                audio.data?.approved_lyric_id
-                  ? "giftFlow.approvalDone"
-                  : "giftFlow.approvalPending",
-              )}
-            </p>
-            {g.owner_id === user?.id && !audio.data?.approved_lyric_id && (
-              <Button asChild variant="outline">
-                <Link to={`/criar-musica?orderId=${g.production_order_id}`}>
-                  {t("giftFlow.reviewLyrics")}
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+        <GiftProductionPanel gift={g} onBusyChange={setUploadingAudio}/>
+        {g.checkout_order_id && <details className="rounded-xl bg-muted p-4"><summary className="cursor-pointer text-sm">{t('giftFlow.manageOrder')}</summary><Button asChild variant="outline" className="mt-3"><Link to={`/admin?produto=${g.product}&pedido=${g.checkout_order_id}`}>{t('giftFlow.manageOrder')}</Link></Button></details>}
         {g.receipt_path && (
           <Button
             variant="outline"
@@ -324,34 +292,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             </Button>
           </div>
         )}
-        {!physicalTestBlocked &&
-          g.music_source === "new" &&
-          ["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
-            <div className="flex flex-wrap gap-3">
-              {!g.production_order_id ? (
-                <Button
-                  disabled={busy}
-                  onClick={() => void action("start_production")}
-                >
-                  {t("giftFlow.startProduction")}
-                </Button>
-              ) : (
-                <>
-                  <Button asChild variant="outline">
-                    <Link to="/admin">{t("giftFlow.productionPanel")}</Link>
-                  </Button>
-                  <p className="text-sm text-muted-foreground">
-                    {t("giftFlow.customerApprovalBody")}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        {g.production_order_id && (
-          <p className="text-xs text-muted-foreground">
-            {t("giftFlow.productionId")}: {g.production_order_id}
-          </p>
-        )}
+        {!physicalTestBlocked && g.music_source==='new' && !g.production_order_id && ['PAID','APPROVED_TEST','PRODUCTION'].includes(g.status) && <Button disabled={busy} onClick={()=>void action('start_production')}>{t('giftFlow.startProduction')}</Button>}
         {!physicalTestBlocked &&
           ["PAID", "APPROVED_TEST", "PRODUCTION"].includes(g.status) && (
             <div id="gift-release" className="space-y-4 border-t border-border pt-5">
@@ -365,20 +306,10 @@ function GiftAdminDetail({ id }: { id: string }) {
                 />
                 {t("giftFlow.reviewGift")}
               </label>
-              {!!g.duration_seconds && (
-                <label className="flex items-start gap-3 text-sm">
-                  <Checkbox
-                    checked={durationChecked}
-                    onCheckedChange={(v) => setDurationChecked(v === true)}
-                  />
-                  {t("giftFlow.reviewDuration", {
-                    seconds: g.duration_seconds,
-                  })}
-                </label>
-              )}
+              {!!g.duration_seconds && <p className="text-sm text-muted-foreground">{t('giftFlow.durationMargin',{seconds:g.duration_seconds,max:giftAudioLimit(g.duration_seconds)})} {audioDuration!==null && t('giftFlow.measuredDuration',{seconds:audioDuration.toFixed(1)})}</p>}
               {!!g.duration_seconds &&
                 audioDuration !== null &&
-                audioDuration > (g.duration_seconds || 0) + 0.05 && (
+                audioDuration > giftAudioLimit(g.duration_seconds || 30) + 0.05 && (
                   <p role="alert" className="text-sm text-destructive">
                     {t("giftFlow.durationExceeded")}
                   </p>
@@ -386,20 +317,21 @@ function GiftAdminDetail({ id }: { id: string }) {
               <Button
                 disabled={
                   busy ||
+                  uploadingAudio || audio.isError || audio.isPending ||
                   !reviewed ||
                   !audio.data?.audio_url ||
                   (g.music_source === "new" &&
                     !audio.data?.approved_lyric_id) ||
                   (!!g.duration_seconds &&
-                    (!durationChecked ||
+                    (!reviewed ||
                       audioDuration === null ||
                       !Number.isFinite(audioDuration) ||
-                      audioDuration > (g.duration_seconds || 0) + 0.05))
+                      audioDuration > giftAudioLimit(g.duration_seconds || 30) + 0.05))
                 }
                 onClick={() =>
                   void action("publish", {
                     reviewed: true,
-                    duration_checked: durationChecked,
+                    duration_checked: reviewed,
                     audio_duration_seconds: audioDuration,
                   })
                 }

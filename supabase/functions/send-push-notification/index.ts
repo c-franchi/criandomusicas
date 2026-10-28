@@ -50,7 +50,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { user_id, order_id, title, body, url } = await req.json();
+    const { user_id, order_id, title, body, url, notification_type } = await req.json();
+    if (order_id && (notification_type === 'gift_ready' || (!/letr|lyric/i.test(title || '') && /pront|ready|liberad/i.test(title || '')))) {
+      const {data:gift,error}=await supabase.from('musical_gifts').select('owner_id,status,is_test').eq('checkout_order_id',order_id).maybeSingle();
+      if(error) throw error;
+      if(gift && (gift.status!=='ACTIVE' || gift.is_test || gift.owner_id!==user_id)) {
+        return Response.json({sent:0,skipped:'gift_not_released'},{headers:corsHeaders});
+      }
+    }
     logStep('Request payload', { user_id, order_id, title, bodyPreview: body?.substring(0, 50) });
 
     if (!title || !body) {

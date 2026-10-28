@@ -37,13 +37,14 @@ begin
   insert into public.lyrics(order_id,version,title,body,is_approved) values(oid,'A','Fixture',E'Uma canção para você\nUm carinho para guardar',true) returning id into lid;
   update public.orders set approved_lyric_id=lid,status='LYRICS_APPROVED',cover_url='https://example.com/generated-cover.jpg' where id=oid;
   if (select cover_url from public.orders where id=oid) is distinct from photo then raise exception 'User photo overwritten';end if;
-  begin insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/card.mp3',16);raise exception 'Short card accepted long audio';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
-  insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/card.mp3',14);
+  begin insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/card.mp3',21);raise exception 'Short card accepted long audio';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
+  insert into public.tracks(order_id,status,version,audio_url,duration_seconds) values(oid,'READY',1,'https://example.com/card.mp3',19.5);
   update public.orders set status='COMPLETED' where id=oid;
   perform set_config('request.jwt.claims',json_build_object('sub',adm,'role','authenticated')::text,true);
   execute 'set local role authenticated';
-  begin perform public.musical_gift_action(gid,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":16}');raise exception 'Release ignored duration';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
-  perform public.musical_gift_action(gid,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":14}');
+  if not exists(select 1 from public.lyrics where id=lid and is_approved) then raise exception 'ADM cannot review customer approved lyric';end if;
+  begin perform public.musical_gift_action(gid,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":21}');raise exception 'Release ignored duration';exception when others then if sqlerrm<>'gift_audio_duration_invalid' then raise;end if;end;
+  perform public.musical_gift_action(gid,'publish','{"reviewed":true,"duration_checked":true,"audio_duration_seconds":19.5}');
   select public_token into token from public.musical_gifts where id=gid;
   update public.gift_backgrounds set is_active=false where id=bg;
   execute 'reset role';
