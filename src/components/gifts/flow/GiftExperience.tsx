@@ -4,12 +4,12 @@ import GiftShare from "./GiftShare";
 import GiftBackground from "./GiftBackground";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import {
   Gift,
   Heart,
   Music2,
   RotateCcw,
-  Share2,
   Baby,
   Cake,
   Users,
@@ -196,7 +196,17 @@ export default function GiftExperience({
             </Button>
 
           </div>
-          {!preview && <div className="mt-6"><GiftShare url={data.public_alias ? giftUrl(data.public_alias) : window.location.href} title={data.title} received/></div>}
+          {!preview && (
+            <>
+              <div className="mt-6"><GiftShare url={data.public_alias ? giftUrl(data.public_alias) : window.location.href} title={data.title} received/></div>
+              <Button asChild variant="hero" className="mt-6 h-auto min-h-12 w-full whitespace-normal py-3">
+                <Link to="/presentes/novo?produto=digital">
+                  <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />
+                  {t("giftFlow.createForSomeoneElse")}
+                </Link>
+              </Button>
+            </>
+          )}
         </>
       )}
       {notice && (

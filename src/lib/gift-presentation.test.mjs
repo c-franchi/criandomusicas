@@ -28,7 +28,7 @@ test('friendly sharing preserves the private gift key and legacy links still wor
  assert(!isGiftToken('para-bruno'));
  assert(!isGiftToken('para-bruno-'+ 'a'.repeat(6)));
  assert.throws(()=>giftShareLinks('https://criandomusicas.com.br/presente.html#qualquer','Gift'));
- assert(giftUrl('a'.repeat(64),'https://criandomusicas.com.br').endsWith('/presente/'+'a'.repeat(64)));
+ assert.equal(giftUrl('a'.repeat(64),'https://criandomusicas.com.br'),'https://criandomusicas.com.br/presente.html?token='+'a'.repeat(64));
 });
 test('the gift entry has real static preview metadata with no personal content',()=>{
  const html=giftEntryHtml(readFileSync(new URL('../../index.html',import.meta.url),'utf8'));

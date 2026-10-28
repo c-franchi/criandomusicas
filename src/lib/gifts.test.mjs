@@ -106,7 +106,7 @@ test("token URLs require 256-bit hexadecimal tokens", () => {
   const token = "a".repeat(64);
   assert.equal(
     giftUrl(token, "https://criandomusicas.com.br"),
-    "https://criandomusicas.com.br/presente/" + token,
+    "https://criandomusicas.com.br/presente.html?token=" + token,
   );
   assert.throws(() => giftUrl("123", "https://example.com"));
 });

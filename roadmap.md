@@ -1,4 +1,5 @@
 # Marketing / UX reorganization
+- [x] Add recipient action to gift another person using the existing gift flow; correct social sharing without overwriting Git updates (18 tests passed; existing released admin-test card verified through sharing and creation sign-in entry; no publishing).
 - [x] Add existing music reviews and reaction uploads to released gift tracking; keep original music order association.
 - [x] Share legacy gifts through the static gift preview, retaining their private key.
 - [x] Focus HOME on gifts, samples and one-time packs; preserve creation modes.
