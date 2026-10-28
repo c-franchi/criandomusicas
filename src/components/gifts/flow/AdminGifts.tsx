@@ -181,11 +181,12 @@ function GiftAdminDetail({ id }: { id: string }) {
           {g.is_test ? " · " + t("giftFlow.testBadge") : ""}
         </p>
         <p className="text-xs text-muted-foreground">{g.id}</p>
-        {g.amount_cents && (
+        {g.amount_cents !== null && (
           <p className="font-semibold">
             {getLocalizedPrice(g.amount_cents, i18n.language, "BRL").formatted}
           </p>
         )}
+        {g.voucher_code && <p className="mt-3 text-sm text-muted-foreground">{t("giftFlow.voucherAppliedLine",{code:g.voucher_code,discount:getLocalizedPrice(g.voucher_discount_cents || 0,i18n.language,"BRL").formatted})}</p>}
         <p className="whitespace-pre-line text-sm">{g.dedication}</p>
         {g.available_from && (
           <p className="text-sm">

@@ -192,7 +192,7 @@ export default function Checkout() {
         }
 
         if (gift) {
-          if (!gift.amount_cents || !gift.plan_id || data.amount !== gift.amount_cents) throw Error('gift_order_mismatch');
+          if (gift.amount_cents === null || !gift.plan_id || data.amount !== gift.amount_cents) throw Error('gift_order_mismatch');
           setCurrentPlanInfo({id: gift.plan_id, name: th(`gifts.products.${gift.product}.name`), credits: 0});
           setOrder(data);
           return;
@@ -380,6 +380,7 @@ export default function Checkout() {
 
   // Calculate effective planId based on order type for universal credits
   const getEffectivePlanId = (): string => {
+    if(giftOrder?.plan_id) return giftOrder.plan_id;
     if (!order) return currentPlanInfo?.id || 'single';
     
     if (order.has_custom_lyric) return 'single_custom_lyric';
@@ -400,7 +401,7 @@ export default function Checkout() {
     try {
       const effectivePlanId = getEffectivePlanId();
       const { data, error } = await supabase.functions.invoke('validate-voucher', {
-        body: { code: voucherCode, planId: effectivePlanId },
+        body: { code: voucherCode, planId: effectivePlanId, ...(giftOrder ? {orderId:order?.id} : {}) },
       });
 
       if (error) throw error;
@@ -436,6 +437,15 @@ export default function Checkout() {
       if (data.success) {
         toast.success(data.message);
 
+        if(giftOrder){
+          const {data:updatedGift,error:giftError}=await supabase.from('musical_gifts').select('*').eq('id',giftOrder.id).single();
+          if(giftError)throw giftError;
+          setGiftOrder(updatedGift as unknown as MusicalGift);
+          setOrder(prev=>prev?{...prev,amount:data.final_price,voucher_code:data.voucher?.code || voucherCode,discount_applied:data.discount_amount}:null);
+          setVoucherResult(null);setVoucherCode('');
+          if(data.is_free)navigate(`/presentes/${giftOrder.id}`);
+          return;
+        }
         if (data.is_free) {
           // For 100% discount, trigger generation automatically based on order type
           const isInstrumental = order.is_instrumental === true;
@@ -910,7 +920,7 @@ export default function Checkout() {
     );
   }
 
-  const currentPrice = order.amount || 1990;
+  const currentPrice = order.amount ?? 1990;
   const hasDiscount = order.discount_applied > 0;
   const originalPrice = hasDiscount ? (currentPrice + order.discount_applied) : 1990;
 
@@ -1148,7 +1158,7 @@ export default function Checkout() {
 
 
         {/* Voucher Section - Only show if not in PIX mode */}
-        {!giftOrder && !showPixSection && (
+        {!showPixSection && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -1156,7 +1166,7 @@ export default function Checkout() {
                 {t('voucher.title')}
               </CardTitle>
               <CardDescription>
-                {t('voucher.description')}
+                {giftOrder ? th('giftFlow.voucherHelp') : t('voucher.description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

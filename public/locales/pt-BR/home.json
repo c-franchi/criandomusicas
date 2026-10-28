@@ -712,7 +712,8 @@
       "cues": "Marcações da letra atualizadas",
       "print_ready": "Prova de impressão conferida",
       "shipped": "Envio registrado",
-      "delivered": "Entrega registrada"
+      "delivered": "Entrega registrada",
+      "voucher_applied": "Voucher aplicado ao pedido"
     },
     "errors": {
       "gift_auth_required": "Entre na sua conta para continuar.",
@@ -811,6 +812,8 @@
     "bookletInstruction2": "Dobre a folha ao meio na linha pontilhada. A capa fica do lado direito da face externa.",
     "bookletInstruction3": "Sem impressão automática frente e verso? Imprima a página 1, recoloque a folha conforme sua impressora e imprima a página 2. Faça primeiro um teste em papel comum.",
     "printScaleHelp": "Escolha o mesmo papel no navegador e na impressora. Use escala de 100%, desative cabeçalhos e rodapés e ative os gráficos de fundo. Confira a orientação e teste o QR Code antes de entregar.",
-    "printOrPdf": "Imprimir ou salvar em PDF"
+    "printOrPdf": "Imprimir ou salvar em PDF",
+    "voucherHelp": "Use um voucher válido para este produto e duração. O desconto inclui os adicionais do produto; eventual frete permanece separado. Um voucher por pedido, antes do pagamento ou envio do comprovante.",
+    "voucherAppliedLine": "Voucher {{code}} aplicado: desconto de {{discount}}."
   }
 }

@@ -4,6 +4,8 @@ declare uid uuid; oid uuid; g uuid:=gen_random_uuid(); g2 uuid:=gen_random_uuid(
 begin
  select user_id into uid from public.user_roles where role='admin' limit 1;
  if uid is null then raise exception 'Missing admin fixture'; end if;
+ -- Independent of the real catalog: this transaction restores the live configuration.
+ update public.pricing_config set is_active=false where id='gift_digital_existing';
  insert into public.orders(user_id,status,payment_status,song_title,is_preview) values(uid,'COMPLETED','PAID','Gift test fixture',false) returning id into oid;
  insert into public.tracks(order_id,status,version,audio_url) values(oid,'READY',1,'https://example.com/gift-test-audio.mp3');
  data:=jsonb_build_object('product','digital','music_source','existing','source_order_id',oid,'track_version',1,'recipient_name','Fixture recipient','sender_name','Fixture sender','dedication','Fixture dedication','occasion','birthday','theme','birthday','has_card',true,'details',jsonb_build_object('address','PRIVATE ADDRESS SHOULD NOT BE PUBLIC'));

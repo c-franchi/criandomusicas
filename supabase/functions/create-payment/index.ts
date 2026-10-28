@@ -1,3 +1,4 @@
+import {closeGiftCheckout} from "../_shared/giftCheckout.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -21,9 +22,11 @@ serve(async (req) => {
   // Create Supabase client
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    {global:{headers:{Authorization:req.headers.get("Authorization") || ""}}}
   );
 
+  let giftLease: {orderId:string;ownerId:string;lease:string}|null=null;
   try {
     logStep("Function started");
 
@@ -113,10 +116,17 @@ serve(async (req) => {
     }
 
     const giftClient = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
-    const { data: gift, error: giftError } = await giftClient.from('musical_gifts').select('id,owner_id,product,music_source,status,is_test,amount_cents,plan_id').eq('checkout_order_id', orderId).maybeSingle();
+    const { data: gift, error: giftError } = await giftClient.from('musical_gifts').select('id,owner_id,product,music_source,status,is_test,amount_cents,plan_id,stripe_session_id,checkout_lease').eq('checkout_order_id', orderId).maybeSingle();
     if (giftError) throw giftError;
     if (gift && (gift.owner_id !== userId || gift.is_test || gift.status !== 'AWAITING_PAYMENT' || !gift.amount_cents || !gift.plan_id)) throw Error('gift_invalid_payment');
     if (!gift && String(planId).startsWith('gift_')) throw Error('gift_order_mismatch');
+    if(gift){
+      await closeGiftCheckout(giftClient,gift,orderId,userId);
+      const {data:claim,error:claimError}=await giftClient.rpc('gift_checkout_action',{p_order_id:orderId,p_owner:userId,p_action:'claim'});
+      if(claimError)throw claimError;
+      giftLease={orderId,ownerId:userId,lease:claim.lease};gift.amount_cents=claim.amount;
+    }
+
     // Check order type (instrumental, custom lyric, or vocal) to use correct pricing
     const { data: orderInfo, error: orderError } = await supabaseClient
       .from('orders')
@@ -279,12 +289,18 @@ serve(async (req) => {
     }
 
 
+    if(giftLease){
+      const {error:attachError}=await giftClient.rpc('gift_checkout_action',{p_order_id:orderId,p_owner:userId,p_action:'attach',p_lease:giftLease.lease,p_session:session.id,p_expires:new Date(session.expires_at*1000).toISOString()});
+      if(attachError){await stripe.checkout.sessions.expire(session.id);throw attachError;}
+    }
+
     // Update order amount in database
-    await supabaseClient
+    const {error:orderUpdateError}=await supabaseClient
       .from('orders')
       .update({ amount: priceInCents })
       .eq('id', orderId);
 
+    if(orderUpdateError)throw orderUpdateError;
     logStep("Checkout session created", { sessionId: session.id, url: session.url });
 
     return new Response(JSON.stringify({ url: session.url }), {
@@ -292,6 +308,10 @@ serve(async (req) => {
       status: 200,
     });
   } catch (error) {
+    if(giftLease){
+      const cleanup=createClient(Deno.env.get('SUPABASE_URL')!,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
+      await cleanup.rpc('gift_checkout_action',{p_order_id:giftLease.orderId,p_owner:giftLease.ownerId,p_action:'release',p_lease:giftLease.lease,p_session:null});
+    }
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR", { message: errorMessage });
     return new Response(JSON.stringify({ error: errorMessage }), {
