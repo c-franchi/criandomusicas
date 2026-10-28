@@ -83,3 +83,11 @@ Quando o total zera, o pedido recebe confirmação por voucher. Música nova per
 O Stripe usa o total líquido registrado. Uma trava curta protege a criação da sessão; uma sessão aberta é expirada antes de aplicar desconto ou criar outra. Sessões concluídas não são descartadas: devem ser confirmadas pelo fluxo de pagamento. Depois de enviado comprovante PIX, o valor não pode ser alterado por voucher.
 
 Migração `20261028003207_vouchers_for_musical_gifts.sql`; funções de backend a publicar: `apply-voucher`, `validate-voucher`, `create-payment`, `verify-payment`, com os helpers compartilhados. Teste `supabase/tests/gift_vouchers.sql` usa BEGIN/ROLLBACK, sem cobranças ou mensagens reais.
+
+### Voz da mensagem e entrega com uma música
+
+`generate-lyrics` aplica a orientação de voz depois de selecionar qualquer modo de prompt, inclusive 15s/30s e revisões. Recados pessoais usam a primeira pessoa do remetente, dirigindo-se ao destinatário: “Claudinei quer dizer que ama Maria” deve virar “eu te amo”, e não uma apresentação de Claudinei por um narrador. Remetentes coletivos usam “nós” quando apropriado. Escolhas explícitas de outra perspectiva e trechos solicitados literalmente são preservados. Os nomes do presente vêm do registro do cartão. Não há substituição automática em letras já aprovadas nem edição de arquivos de áudio existentes; estes precisam de revisão e nova produção quando necessário. A IA ainda requer conferência do cliente.
+
+O ADM pode concluir a produção com uma gravação válida, sem exigir a segunda. A gravação adicional permanece opcional na aba Concluídos. O cartão continua usando a versão selecionada, nunca um áudio adicional por engano, e exige aprovação da letra, pagamento/teste e liberação própria pelo ADM. Acrescentar uma segunda versão não deve repetir a notificação de música pronta. Os links de WhatsApp dos pedidos tradicionais incluem somente versões existentes.
+
+O upload bloqueia envios simultâneos nesta tela e permite selecionar novamente o mesmo arquivo após falha. Falhas de storage, gravação da faixa ou atualização do pedido são informadas; um áudio já salvo não é apresentado como pedido concluído se a atualização falhar. Os limites medidos de 15s/30s continuam obrigatórios. Nenhuma migração é necessária; publicar `generate-lyrics` e a interface.

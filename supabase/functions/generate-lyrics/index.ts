@@ -1,4 +1,5 @@
 import { inspectShortLyric, shortLyricLimits } from "../_shared/shortLyrics.ts";
+import { lyricVoiceRules } from "../_shared/lyricVoice.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -365,7 +366,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    const { data: giftContext, error: giftError } = orderId ? await supabase.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,details').eq('production_order_id',orderId).maybeSingle() : {data:null,error:null};
+    const { data: giftContext, error: giftError } = orderId ? await supabase.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,details,sender_name,recipient_name').eq('production_order_id',orderId).maybeSingle() : {data:null,error:null};
     if (giftError) throw giftError;
     if (giftContext) {
       if (!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
@@ -1134,6 +1135,12 @@ INSTRUÇÕES SOBRE O TRECHO:
 Story and requested changes:
 ${story}`;
     }
+    // Append after short-song mode, which replaces the base prompt entirely.
+    systemPrompt += `\n\n${lyricVoiceRules({
+      senderName: giftContext?.sender_name,
+      recipientName: giftContext?.recipient_name,
+      perspective: motivationalPerspective,
+    })}`;
     const aiMessages = [
       { role: "system", content: systemPrompt },
       { role: "user", content: finalUserPrompt },
