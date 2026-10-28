@@ -362,8 +362,8 @@
     "exploreDuration": "Explorar os formatos",
     "demoLabel": "Uma ideia da experiência",
     "durationLabel": "Escolha a duração para conhecer a proposta",
-    "upTo": "Até {{seconds}} segundos",
-    "durationNote": "O limite escolhido orientará a produção. A duração não será necessariamente exata.",
+    "upTo": "Aproximadamente {{seconds}} segundos",
+    "durationNote": "A duração é aproximada. A produção pode chegar a 20s na opção de 15s e a 40s na opção de 30s.",
     "themeLabel": "Explore as ocasiões",
     "howItWorks": "Como vai funcionar",
     "included": "O que a proposta inclui",
@@ -643,7 +643,7 @@
     "generateLyrics": "Solicitar letras pelo processo atual",
     "lyricsRequested": "Solicitação de letras enviada. Confira o pedido de produção.",
     "productionId": "Pedido de produção",
-    "reviewGift": "Conferi a faixa correta, os nomes e a dedicatória.",
+    "reviewGift": "Ouvi a música e conferi a faixa, a duração, os nomes e a dedicatória.",
     "reviewDuration": "Ouvi e confirmei que o áudio tem até {{seconds}} segundos.",
     "publish": "Liberar presente",
     "revokeConfirm": "Desativar o link atual? O próximo link e QR Code serão diferentes.",
@@ -713,7 +713,8 @@
       "print_ready": "Prova de impressão conferida",
       "shipped": "Envio registrado",
       "delivered": "Entrega registrada",
-      "voucher_applied": "Voucher aplicado ao pedido"
+      "voucher_applied": "Voucher aplicado ao pedido",
+      "ready_email_sent": "Aviso de liberação enviado"
     },
     "errors": {
       "gift_auth_required": "Entre na sua conta para continuar.",
@@ -741,10 +742,11 @@
       "gift_lyrics_approval_required": "A letra precisa ser aprovada pelo cliente antes da produção e liberação.",
       "gift_audio_duration_invalid": "O áudio ultrapassa a duração contratada ou não teve sua duração conferida.",
       "gift_order_mismatch": "Os dados do pagamento não correspondem ao pedido. Atualize a página.",
-      "gift_payment_forbidden": "O pagamento precisa ser confirmado pelo processo autorizado."
+      "gift_payment_forbidden": "O pagamento precisa ser confirmado pelo processo autorizado.",
+      "gift_released_notification_failed": "O cartão foi liberado, mas um aviso não pôde ser enviado. O link já está disponível."
     },
     "messageOptional": "Mensagem opcional",
-    "durationExceeded": "O áudio ultrapassa a duração escolhida. Envie a versão correta antes de liberar.",
+    "durationExceeded": "O áudio ultrapassa a margem de produção permitida. Envie uma versão mais curta.",
     "cancelOrder": "Cancelar pedido não pago",
     "physicalDisabledTitle": "Cartões físicos desabilitados",
     "physicalDisabledBody": "No momento, oferecemos cartões musicais digitais. A criação de cartões físicos está desabilitada.",
@@ -777,7 +779,7 @@
     "returningToGift": "Voltando para o acompanhamento do seu cartão…",
     "followGift": "Acompanhar meu presente",
     "readyForRelease": "Música pronta — falta liberar o cartão",
-    "releaseNextStep": "A música já está anexada. O ADM deve conferir a prévia e marcar “Conferi o presente” para liberar o link e a impressão.",
+    "releaseNextStep": "O cartão ainda não foi liberado. Após a conferência do ADM, o link ficará disponível para compartilhar.",
     "reviewAndRelease": "Conferir e liberar cartão",
     "total": "Total do pedido",
     "cardDesign": "Escolha o fundo do cartão",
@@ -814,6 +816,18 @@
     "printScaleHelp": "Escolha o mesmo papel no navegador e na impressora. Use escala de 100%, desative cabeçalhos e rodapés e ative os gráficos de fundo. Confira a orientação e teste o QR Code antes de entregar.",
     "printOrPdf": "Imprimir ou salvar em PDF",
     "voucherHelp": "Use um voucher válido para este produto e duração. O desconto inclui os adicionais do produto; eventual frete permanece separado. Um voucher por pedido, antes do pagamento ou envio do comprovante.",
-    "voucherAppliedLine": "Voucher {{code}} aplicado: desconto de {{discount}}."
+    "voucherAppliedLine": "Voucher {{code}} aplicado: desconto de {{discount}}.",
+    "workflowTitle": "Produção e liberação do cartão",
+    "paymentStep": "Pagamento confirmado",
+    "lyricStep": "Letra aprovada pelo cliente",
+    "audioStep": "Música anexada",
+    "releaseStep": "Cartão liberado pelo ADM",
+    "audioQueryError": "Não foi possível consultar a música ou a letra. Tente novamente.",
+    "retryAudio": "Consultar novamente",
+    "uploadSaved": "Música anexada. Confira o cartão abaixo e libere o presente. Nenhum aviso de pronto foi enviado.",
+    "awaitingRelease": "Aguardando conferência e liberação do ADM",
+    "durationMargin": "Opção de {{seconds}}s: margem de produção permitida até {{max}}s.",
+    "measuredDuration": "Duração medida: {{seconds}}s.",
+    "uploadHere": "Anexe ou substitua a música aqui antes de liberar o cartão. Uma faixa é suficiente; a segunda é opcional. MP3 e WAV são aceitos."
   }
 }

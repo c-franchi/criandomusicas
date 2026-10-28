@@ -63,8 +63,8 @@ test('gift completion uses only the selected track and leaves release to ADM', a
 test('short gifts require approval and a valid measured duration before storage upload', async () => {
   const f = fixture();
   const g = { ...order, gift: { music_source: 'new', duration_seconds: 15, track_version: 1 } };
-  for (const duration of [null, NaN, -1, 0, 16, 41]) {
-    await assert.rejects(() => saveMusicUpload(f.client, file, g, 1, duration), /até 15s/);
+  for (const duration of [null, NaN, -1, 0, 21, 41]) {
+    await assert.rejects(() => saveMusicUpload(f.client, file, g, 1, duration), /até 20s/);
   }
   await assert.rejects(() => saveMusicUpload(f.client, file, { ...g, approved_lyric_id: null }, 1, 14), /aprovação/);
   assert.equal(f.calls.length, 0);
@@ -93,4 +93,14 @@ test('MP3 and WAV uploads retain their extension even when the operating system 
     assert(result.audioUrl.endsWith(`.${extension.toLowerCase()}`));
     assert.equal(f.calls.at(-1)[1].status, 'COMPLETED');
   }
+});
+
+test('15s and 30s options accept a production margin without changing the ordered option', async () => {
+ for(const [seconds,actual] of [[15,19.5],[30,39.5]]) {
+  const f=fixture();
+  const g={...order,gift:{music_source:'new',duration_seconds:seconds,track_version:1}};
+  await saveMusicUpload(f.client,file,g,1,actual);
+  assert.equal(f.tracks[0].duration_seconds,actual);
+  assert.equal(g.gift.duration_seconds,seconds);
+ }
 });

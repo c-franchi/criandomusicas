@@ -169,6 +169,25 @@ serve(async (req) => {
     logStep("Function started");
 
     const data: MusicReadyEmailRequest = await req.json();
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const admin = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey);
+    const {data:gift,error:giftError} = await admin.from('musical_gifts')
+      .select('id,owner_id,status,is_test,available_from').eq('checkout_order_id',data.orderId).maybeSingle();
+    if (giftError) throw giftError;
+    if (gift) {
+      // Cached/older admin screens may still call this endpoint during upload.
+      if (gift.status !== 'ACTIVE' || gift.is_test) return Response.json({success:true,skipped:'gift_not_released'},{headers:corsHeaders});
+      const token=(req.headers.get('Authorization')||'').replace('Bearer ','');
+      if (token !== serviceKey) {
+        const {data:{user},error}=await admin.auth.getUser(token);
+        const {data:allowed}=user?await admin.rpc('has_role',{_user_id:user.id,_role:'admin'}):{data:false};
+        if(error||!allowed) return Response.json({error:'Forbidden'},{status:403,headers:corsHeaders});
+      }
+      data.userId=gift.owner_id;data.email=undefined;
+      const {data:sent,error}=await admin.from('musical_gift_events').select('id').eq('gift_id',gift.id).eq('event','ready_email_sent').limit(1).maybeSingle();
+      if(error) throw error;
+      if(sent) return Response.json({success:true,skipped:'already_sent'},{headers:corsHeaders});
+    }
     
     // Validate required fields
     if (!data.orderId) {
@@ -232,7 +251,8 @@ serve(async (req) => {
     });
 
     const songTitle = data.songTitle || 'Sua música personalizada';
-    const html = generateMusicReadyEmailHtml(
+    const escape = (s:string) => s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
+    const html = gift ? `<!doctype html><html lang="pt-BR"><body style="font-family:Arial,sans-serif;padding:24px;color:#222"><h1>Seu presente musical foi liberado!</h1><p>Olá, ${escape(userName)}. O ADM conferiu e liberou seu cartão.</p><p>${gift.available_from?'O acesso do destinatário respeitará a data e o horário escolhidos.':''}</p><p><a href="https://criandomusicas.com.br/presentes/${gift.id}">Abrir meu cartão e compartilhar</a></p><p>Criando Músicas</p></body></html>` : generateMusicReadyEmailHtml(
       userName, 
       data.orderId, 
       songTitle, 
@@ -240,13 +260,17 @@ serve(async (req) => {
       data.isInstrumental || false
     );
 
-    const emailResponse = await resend.emails.send({
+    const payload = {
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
       replyTo: "contato@criandomusicas.com.br",
       to: [email],
-      subject: `🎉 "${songTitle}" está pronta para ouvir!`,
+      subject: gift ? '🎁 Seu presente musical foi liberado!' : `🎉 "${songTitle}" está pronta para ouvir!`,
       html,
-    });
+    };
+    // REST idempotency works independently of the older SDK pinned for legacy emails.
+    const emailResponse = gift ? await fetch('https://api.resend.com/emails',{
+      method:'POST',headers:{Authorization:`Bearer ${Deno.env.get('RESEND_API_KEY')}`,'Content-Type':'application/json','Idempotency-Key':`gift-ready/${gift.id}`},body:JSON.stringify(payload),
+    }).then(async response=>{const json=await response.json();return response.ok?{data:json,error:null}:{data:null,error:json};}) : await resend.emails.send(payload);
 
     if (emailResponse.error) {
       logStep("Resend error", { error: emailResponse.error });
@@ -254,6 +278,10 @@ serve(async (req) => {
     }
 
     logStep("Email sent successfully", { emailId: emailResponse.data?.id });
+    if(gift) {
+      const {error}=await admin.from('musical_gift_events').insert({gift_id:gift.id,event:'ready_email_sent'});
+      if(error) throw error;
+    }
 
     return new Response(
       JSON.stringify({ success: true, emailId: emailResponse.data?.id }),

@@ -3,10 +3,11 @@ import { CheckCircle, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { MusicUploadOrder } from '@/lib/music-upload';
 
-export function MusicUploadControls({ order, uploading, onUpload }: {
+export function MusicUploadControls({ order, uploading, onUpload, helpText }: {
   order: MusicUploadOrder & { uploadedVersions?: number[] };
   uploading: string | null;
   onUpload: (file: File, version: number) => void;
+  helpText?: string;
 }) {
   const inputs = useRef<Record<number, HTMLInputElement | null>>({});
   if (!['MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'].includes(order.status)
@@ -15,7 +16,7 @@ export function MusicUploadControls({ order, uploading, onUpload }: {
   if (!versions.length) return null;
   const primary = order.gift?.track_version || 1;
   return <div className="flex w-full flex-wrap gap-2">
-    <p className="w-full text-xs text-muted-foreground">Envie uma música para concluir a produção. A segunda versão é opcional e pode ser adicionada depois, na aba Concluídos.</p>
+    <p className="w-full text-xs text-muted-foreground">{helpText || 'Envie uma música para concluir a produção. A segunda versão é opcional e pode ser adicionada depois, na aba Concluídos.'}</p>
     {versions.map(version => {
       const ready = order.uploadedVersions?.includes(version);
       const busy = uploading === `${order.id}-v${version}`;

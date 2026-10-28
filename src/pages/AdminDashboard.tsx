@@ -698,7 +698,7 @@ const AdminDashboard = () => {
         ...o, status: 'COMPLETED', track_url: result.audioUrl, uploadedVersions: result.uploadedVersions,
       } : o));
       // Do not notify the customer a second time when an optional version is added.
-      if (result.newlyCompleted) {
+      if (result.newlyCompleted && !order.gift) {
         try {
           const { error } = await supabase.functions.invoke('send-push-notification', {
             body: {

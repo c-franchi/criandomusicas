@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../integrations/supabase/types';
+import { giftAudioLimit } from './gift-duration.ts';
 
 export interface MusicUploadOrder {
   id: string;
@@ -17,7 +18,7 @@ export async function saveMusicUpload(
   if (![1, 2].includes(version)) throw new Error('Versão de áudio inválida.');
   if (order.gift && !order.approved_lyric_id) throw new Error('Aguarde a aprovação da letra pelo cliente.');
   if (order.gift?.duration_seconds) {
-    const limit = Math.min(order.gift.duration_seconds, 40);
+    const limit = giftAudioLimit(order.gift.duration_seconds);
     if (!durationSeconds || durationSeconds <= 0 || !Number.isFinite(durationSeconds) || durationSeconds > limit + 0.05) {
       throw new Error(`Este pedido permite um áudio de até ${limit}s. Envie um arquivo válido dentro desse limite.`);
     }

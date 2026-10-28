@@ -344,8 +344,8 @@
     "exploreDuration": "Explorar los formatos",
     "demoLabel": "Una muestra de la experiencia",
     "durationLabel": "Elige una duración para explorar",
-    "upTo": "Hasta {{seconds}} segundos",
-    "durationNote": "El límite elegido orientará la producción. La duración no será necesariamente exacta.",
+    "upTo": "Aproximadamente {{seconds}} segundos",
+    "durationNote": "La duración es aproximada: hasta 20s para la opción de 15s y hasta 40s para la de 30s.",
     "themeLabel": "Explora las ocasiones",
     "howItWorks": "Cómo funcionará",
     "included": "Qué incluye la propuesta",
@@ -695,7 +695,8 @@
       "print_ready": "Prueba de impresión revisada",
       "shipped": "Envío registrado",
       "delivered": "Entrega registrada",
-      "voucher_applied": "Voucher aplicado al pedido"
+      "voucher_applied": "Voucher aplicado al pedido",
+      "ready_email_sent": "Aviso de liberación enviado"
     },
     "errors": {
       "gift_auth_required": "Inicia sesión para continuar.",
@@ -723,7 +724,8 @@
       "gift_lyrics_approval_required": "El cliente debe aprobar la letra antes de producir y liberar el regalo.",
       "gift_audio_duration_invalid": "El audio supera la duración elegida o no se comprobó su duración.",
       "gift_order_mismatch": "Los datos de pago no coinciden con el pedido. Actualiza la página.",
-      "gift_payment_forbidden": "El pago debe confirmarse mediante el proceso autorizado."
+      "gift_payment_forbidden": "El pago debe confirmarse mediante el proceso autorizado.",
+      "gift_released_notification_failed": "La tarjeta fue liberada, pero no se pudo enviar una notificación. El enlace está disponible."
     },
     "messageOptional": "Mensaje opcional",
     "durationExceeded": "El audio supera la duración elegida. Sube la versión correcta antes de habilitar.",
@@ -796,6 +798,18 @@
     "printScaleHelp": "Usa el mismo papel en navegador e impresora, escala 100%, sin encabezados ni pies y con fondos activados. Comprueba la orientación y el QR antes de entregar.",
     "printOrPdf": "Imprimir o guardar como PDF",
     "voucherHelp": "Usa un voucher válido para este producto y duración. Incluye los adicionales del producto y excluye portes. Un voucher por pedido, antes del pago o envío del comprobante.",
-    "voucherAppliedLine": "Voucher {{code}} aplicado: descuento de {{discount}}."
+    "voucherAppliedLine": "Voucher {{code}} aplicado: descuento de {{discount}}.",
+    "workflowTitle": "Producción y liberación de la tarjeta",
+    "paymentStep": "Pago confirmado",
+    "lyricStep": "Letra aprobada por el cliente",
+    "audioStep": "Música adjunta",
+    "releaseStep": "Tarjeta liberada por el administrador",
+    "audioQueryError": "No se pudo consultar la música o la letra. Inténtalo de nuevo.",
+    "retryAudio": "Consultar de nuevo",
+    "uploadSaved": "Música adjunta. Revisa la tarjeta y libera el regalo. No se envió ningún aviso de listo.",
+    "awaitingRelease": "Pendiente de revisión y liberación",
+    "durationMargin": "Opción de {{seconds}}s: margen de producción hasta {{max}}s.",
+    "measuredDuration": "Duración medida: {{seconds}}s.",
+    "uploadHere": "Adjunta o reemplaza la música aquí antes de liberar la tarjeta. Una pista es suficiente; la segunda es opcional. Se aceptan MP3 y WAV."
   }
 }
