@@ -1,3 +1,4 @@
+import { emailFetch } from '../_shared/emailRetry.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.1.2";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -268,8 +269,8 @@ serve(async (req) => {
       html,
     };
     // REST idempotency works independently of the older SDK pinned for legacy emails.
-    const emailResponse = gift ? await fetch('https://api.resend.com/emails',{
-      method:'POST',headers:{Authorization:`Bearer ${Deno.env.get('RESEND_API_KEY')}`,'Content-Type':'application/json','Idempotency-Key':`gift-ready/${gift.id}`},body:JSON.stringify(payload),
+    const emailResponse = gift ? await emailFetch('https://api.resend.com/emails',{
+      method:'POST',headers:{Authorization:`Bearer ${Deno.env.get('RESEND_API_KEY')}`,'Content-Type':'application/json','Idempotency-Key':`gift-ready/${gift.id}`},body:JSON.stringify({...payload,replyTo:undefined,reply_to:payload.replyTo}),
     }).then(async response=>{const json=await response.json();return response.ok?{data:json,error:null}:{data:null,error:json};}) : await resend.emails.send(payload);
 
     if (emailResponse.error) {

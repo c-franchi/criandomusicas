@@ -22,7 +22,6 @@ export const subscribeFlowBusy = (listener: (busy: boolean) => void) => {
 
 /** Routes where an app reload would make the user lose filled-in data. */
 const PROTECTED_ROUTE_PATTERNS = [
-  /^\/presente(?:\/|\.html$)/,
   /^\/briefing/,
   /^\/criar-musica/,
   /^\/create-song/,

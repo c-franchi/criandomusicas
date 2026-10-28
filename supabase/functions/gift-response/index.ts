@@ -1,14 +1,16 @@
+import { emailFetch } from '../_shared/emailRetry.ts';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { z } from 'npm:zod@3';
 import { giftResponseEmojis, giftResponseEmail, giftResponseMessageLimit } from '../_shared/giftResponse.ts';
 
-const schema = z.object({
+const createSchema = z.object({
   token: z.string().regex(/^[a-f0-9]{64}$|^para-[a-z0-9-]{1,32}-[A-Za-z0-9_-]{22}$/),
   requestId: z.string().uuid(), emoji: z.enum(giftResponseEmojis),
   message: z.string().trim().max(giftResponseMessageLimit).default(''),
   rating: z.number().int().min(1).max(5).nullable().optional(),
 }).strict();
+const schema=z.union([createSchema,z.object({retryResponseId:z.string().uuid()}).strict()]);
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 Deno.serve(async req => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -21,15 +23,31 @@ Deno.serve(async req => {
     const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     if (!url || !key) return json({ error: 'service_unavailable' }, 503);
     const admin = createClient(url, key);
-    const { data: result, error } = await admin.rpc('submit_gift_response', {
-      p_token: input.token, p_request_id: input.requestId, p_emoji: input.emoji,
-      p_message: input.message, p_rating: input.rating ?? null,
-    });
-    if (error) return json({ error: error.code === '23505' ? 'already_replied' : 'gift_unavailable' }, error.code === '23505' ? 409 : 400);
-    if (!result?.created) return json({ success: true, emailStatus: 'unchanged' });
-    const { data: response, error: readError } = await admin.from('gift_responses').select('*').eq('id', result.id).single();
-    if (readError || !response) return json({ success: true, emailStatus: 'failed' });
-    const { data: gift } = await admin.from('musical_gifts').select('id,recipient_name,is_test').eq('id', response.gift_id).single();
+    let response;
+    if ('retryResponseId' in input) {
+      const authorization=req.headers.get('Authorization');
+      if(!authorization?.startsWith('Bearer ')) return json({error:'unauthorized'},401);
+      const {data:identity,error:authError}=await admin.auth.getUser(authorization.slice(7));
+      if(authError||!identity.user) return json({error:'unauthorized'},401);
+      const stored=await admin.from('gift_responses').select('*').eq('id',input.retryResponseId).single();
+      if(stored.error||!stored.data||stored.data.owner_id!==identity.user.id) return json({error:'not_found'},404);
+      response=stored.data;
+      if(['sent','test_skipped'].includes(response.email_status)) return json({success:true,emailStatus:response.email_status});
+      // Provider deduplication lasts 24 hours. Do not replay an ambiguous old send.
+      if(Date.now()-new Date(response.created_at).getTime()>23*60*60*1000) return json({error:'retry_window_expired'},409);
+    } else {
+      const { data: result, error } = await admin.rpc('submit_gift_response', {
+        p_token: input.token, p_request_id: input.requestId, p_emoji: input.emoji,
+        p_message: input.message, p_rating: input.rating ?? null,
+      });
+      if (error) return json({ error: error.code === '23505' ? 'already_replied' : 'gift_unavailable' }, error.code === '23505' ? 409 : 400);
+      if (!result?.created) return json({ success: true, emailStatus: 'unchanged' });
+      const stored=await admin.from('gift_responses').select('*').eq('id',result.id).single();
+      if(stored.error||!stored.data) return json({success:true,emailStatus:'failed'});
+      response=stored.data;
+    }
+    const { data: gift } = await admin.from('musical_gifts').select('id,recipient_name,is_test,status').eq('id', response.gift_id).single();
+    if('retryResponseId' in input && gift?.status!=='ACTIVE') return json({error:'gift_unavailable'},400);
     let emailStatus = 'failed';
     let emailError: string | null = null;
     if (gift?.is_test) emailStatus = 'test_skipped';
@@ -40,7 +58,7 @@ Deno.serve(async req => {
         const resendKey = Deno.env.get('RESEND_API_KEY');
         if (accountError || !email || !resendKey || !gift) throw new Error('email_unavailable');
         const content = giftResponseEmail(gift.recipient_name, response.emoji, response.message, response.rating, gift.id);
-        const sent = await fetch('https://api.resend.com/emails', {
+        const sent = await emailFetch('https://api.resend.com/emails', {
           method: 'POST', headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': `gift-response/${response.id}` },
           body: JSON.stringify({ from: 'Criando Músicas <noreply@criandomusicas.com.br>', reply_to: 'contato@criandomusicas.com.br', to: [email], ...content }),
         });

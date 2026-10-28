@@ -1,11 +1,12 @@
 import { isGiftToken } from './gift-link.ts';
+import { isPublicGiftPath } from './gift-entry-paths.mjs';
 export function giftShareLinks(input: string, title: string, message = title) {
   const url = new URL(input);
-  const hashKey = url.pathname === '/presente.html' && isGiftToken(url.hash.slice(1)) ? url.hash.slice(1) : '';
+  const hashKey = isPublicGiftPath(url.pathname) && url.pathname.endsWith('.html') && isGiftToken(url.hash.slice(1)) ? url.hash.slice(1) : '';
   const para = url.searchParams.get('para') || (hashKey.startsWith('para-') ? hashKey.slice(5) : null);
   const token = url.searchParams.get('token') || (hashKey && !hashKey.startsWith('para-') ? hashKey : null);
-  const legacyEntry = url.pathname === '/presente.html' && !!token && /^[a-f0-9]{64}$/.test(token);
-  const friendlyGift = url.pathname === '/presente.html' && !!para && isGiftToken('para-'+para);
+  const legacyEntry = isPublicGiftPath(url.pathname) && url.pathname.endsWith('.html') && !!token && /^[a-f0-9]{64}$/.test(token);
+  const friendlyGift = isPublicGiftPath(url.pathname) && url.pathname.endsWith('.html') && !!para && isGiftToken('para-'+para);
   if (
     !["https:", "http:"].includes(url.protocol) ||
     (!friendlyGift && !legacyEntry && !(url.pathname.startsWith('/presente/') && isGiftToken(url.pathname.slice('/presente/'.length)))) || url.username || url.password

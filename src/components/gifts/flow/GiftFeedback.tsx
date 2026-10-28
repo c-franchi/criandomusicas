@@ -21,7 +21,7 @@ export default function GiftFeedback({ orderId, userId }: { orderId: string; use
   });
   if (feedback.isPending) return <p role="status">{t("giftFlow.loading")}</p>;
   if (feedback.isError) return <div role="alert" className="space-y-3"><p>{t("giftFlow.loadError")}</p><Button variant="outline" onClick={() => void feedback.refetch()}>{t("giftFlow.retry")}</Button></div>;
-  return <div className="my-7 space-y-6">
+  return <div id="avaliacao" className="my-7 space-y-6">
     <ReviewForm key={feedback.data.review?.id || orderId} orderId={orderId} userId={userId} existingReview={feedback.data.review ? {...feedback.data.review, is_public: !!feedback.data.review.is_public} : undefined} onReviewSubmitted={() => void feedback.refetch()} />
     {!feedback.data.hasVideo && <ReactionVideoUpload orderId={orderId} userId={userId} onUploadComplete={() => void feedback.refetch()} />}
   </div>;

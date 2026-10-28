@@ -114,6 +114,9 @@ Deno.serve(async (req) => {
 
     for (const order of eligibleOrders) {
       try {
+        const {data:gift,error:giftError}=await supabase.from('musical_gifts').select('id,status,is_test').or(`checkout_order_id.eq.${order.id},production_order_id.eq.${order.id}`).maybeSingle();
+        if(giftError) throw giftError;
+        if(gift && (gift.status!=='ACTIVE'||gift.is_test)) continue;
         // Check if review already exists
         const { data: existingReview } = await supabase
           .from('reviews')
@@ -150,7 +153,7 @@ Deno.serve(async (req) => {
 
         const title = '⭐ O que achou da sua música?';
         const body = 'Sua opinião é muito importante para nós! Avalie sua música personalizada.';
-        const url = `/pedido/${order.id}`;
+        const url = gift ? `/presentes/${gift.id}#avaliacao` : `/pedido/${order.id}`;
 
         // Send to all active subscriptions
         for (const sub of subscriptions) {

@@ -1,3 +1,5 @@
+import GiftBackground from './flow/GiftBackground';
+import GiftOffer from './GiftOffer';
 import { useGiftAvailability } from '@/hooks/useGiftAvailability';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -15,13 +17,19 @@ function GiftProductContent({ product }: { product: GiftProduct }) {
   const { t } = useTranslation('home');
   const { physicalEnabled } = useGiftAvailability();
   const [theme, setTheme] = useState<typeof themes[number]>('love');
+  const [design,setDesign] = useState('hearts');
   const [revealed, setRevealed] = useState(false);
-  const [duration, setDuration] = useState<15 | 30>(30);
+  const [duration, setDuration] = useState<number | null>(product === 'short' ? 30 : null);
+  const [source, setSource] = useState<'new'|'existing'>('new');
+  const target = `/presentes/novo?produto=${product}&origem=${source}${duration && source==='new'?'&duracao='+duration:''}&tema=${theme}&modelo=${design}`;
   useEffect(() => { window.scrollTo(0, 0); }, []);
   const key = `gifts.products.${product}`;
-  const items = t(`${key}.included`, { returnObjects: true }) as string[];
-  const steps = t(`${key}.steps`, { returnObjects: true }) as string[];
-  const occasions = t(`${key}.occasions`, { returnObjects: true }) as string[];
+  const itemsValue = t(`${key}.included`, { returnObjects: true });
+  const items = Array.isArray(itemsValue) ? itemsValue.filter((item): item is string => typeof item === "string") : [];
+  const stepsValue = t(`${key}.steps`, { returnObjects: true });
+  const steps = Array.isArray(stepsValue) ? stepsValue.filter((item): item is string => typeof item === "string") : [];
+  const occasionsValue = t(`${key}.occasions`, { returnObjects: true });
+  const occasions = Array.isArray(occasionsValue) ? occasionsValue.filter((item): item is string => typeof item === "string") : [];
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -33,7 +41,8 @@ function GiftProductContent({ product }: { product: GiftProduct }) {
             <p className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-primary"><Gift className="h-4 w-4" />{t(`${key}.name`)}</p>
             <h1 className="text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">{t(`${key}.headline`)}</h1>
             <p className="mt-6 text-base leading-relaxed text-muted-foreground sm:text-lg">{t(`${key}.description`)}</p>
-            <Button asChild variant="hero" size="lg" className="mt-7 h-auto min-h-12 whitespace-normal py-4"><Link to={`/presentes/novo?produto=${product}${product === "short" ? "&duracao=" + duration : ""}`}>{t(`${key}.cta`)}<ArrowRight className="h-4 w-4" /></Link></Button>
+            <GiftOffer product={product} source={source} duration={duration} onSource={setSource} onDuration={setDuration} />
+            <Button asChild variant="hero" size="lg" className="mt-7 h-auto min-h-12 whitespace-normal py-4"><Link to={target}>{t(`${key}.cta`)}<ArrowRight className="h-4 w-4" /></Link></Button>
             <p className="mt-4 max-w-lg text-xs leading-relaxed text-muted-foreground">{t('gifts.previewNotice')}</p>
           </div>
           <div className="overflow-hidden rounded-[2rem] border border-border"><GiftArtwork product={product} /></div>
@@ -42,7 +51,7 @@ function GiftProductContent({ product }: { product: GiftProduct }) {
         {product === 'digital' && (
           <section aria-labelledby="gift-modalities-title" className="mx-auto max-w-6xl px-5 pb-16">
             <h2 id="gift-modalities-title" className="mb-6 text-2xl font-semibold">{t('gifts.modalities.title')}</h2>
-            <div className="grid gap-5 sm:grid-cols-2">{['existing', 'new'].map(mode => <article key={mode} className="rounded-2xl border border-border bg-card p-6"><Music2 className="mb-4 h-6 w-6 text-primary" /><h3 className="text-xl font-semibold">{t(`gifts.modalities.${mode}.title`)}</h3><p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(`gifts.modalities.${mode}.description`)}</p></article>)}</div>
+            <div className="grid gap-5 sm:grid-cols-2">{['existing', 'new'].map(mode => <article key={mode} className="rounded-2xl border border-border bg-card p-6"><Music2 className="mb-4 h-6 w-6 text-primary" /><h3 className="text-xl font-semibold">{t(`gifts.modalities.${mode}.title`)}</h3><p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(`gifts.modalities.${mode}.description`)}</p><Button asChild variant="outline" className="mt-5 min-h-12"><Link to={`/presentes/novo?produto=${product}&origem=${mode}`}>{t(`gifts.modalities.${mode}.title`)}</Link></Button></article>)}</div>
           </section>
         )}
 
@@ -58,7 +67,8 @@ function GiftProductContent({ product }: { product: GiftProduct }) {
                 <fieldset className="mt-6"><legend className="mb-3 text-sm font-medium">{t('gifts.themeLabel')}</legend><div className="flex flex-wrap gap-2">{themes.map(id => <Button key={id} variant={theme === id ? 'default' : 'outline'} aria-pressed={theme === id} onClick={() => { setTheme(id); setRevealed(false); }} className="h-auto min-h-11 whitespace-normal px-3 py-2 text-xs">{t(`gifts.themes.${id}`)}</Button>)}</div></fieldset>
               )}
             </div>
-            <div className="mx-auto w-full max-w-md rounded-3xl border border-primary/20 bg-card p-7 text-center shadow-xl sm:p-10" aria-live="polite">
+            <div className="relative isolate mx-auto w-full max-w-md overflow-hidden rounded-3xl border border-primary/20 bg-card p-7 text-center shadow-xl sm:p-10" aria-live="polite">
+              {product!=="short" && <GiftBackground details={{card_design:design}} />}
               <p className="mb-6 text-xs font-semibold uppercase tracking-wider text-primary">{product === 'short' ? t('gifts.upTo', { seconds: duration }) : t(`gifts.themes.${theme}`)}</p>
               {product === 'short' ? <Music2 className="mx-auto mb-5 h-12 w-12 text-primary" strokeWidth={1.25} /> : <Heart className="mx-auto mb-5 h-12 w-12 text-accent" strokeWidth={1.25} />}
               <h3 className="font-serif text-3xl leading-snug">{t(product === 'short' ? 'gifts.demo.shortTitle' : revealed ? 'gifts.demo.revealedTitle' : 'gifts.demo.title')}</h3>
@@ -68,9 +78,10 @@ function GiftProductContent({ product }: { product: GiftProduct }) {
           </div>
         </section>
 
+        {product!=='short' && <section className="mx-auto max-w-6xl px-5 pt-10"><h2 className="mb-5 text-2xl font-semibold">{t('giftFlow.cardDesign')}</h2><div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{['hearts','flowers','celebration','classic'].map(id=><Button key={id} variant={design===id?'default':'outline'} className={`gift-design-${id} h-24 whitespace-normal`} aria-pressed={design===id} onClick={()=>setDesign(id)}>{t('giftFlow.designs.'+id)}</Button>)}</div></section>}
         <section className="mx-auto grid max-w-6xl gap-12 px-5 py-16 md:grid-cols-2">
           <div><h2 className="mb-6 text-2xl font-bold">{t('gifts.howItWorks')}</h2><ol className="space-y-5">{steps.map((step, index) => <li key={step} className="flex gap-4"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">{index + 1}</span><p className="pt-1 text-sm leading-relaxed text-muted-foreground">{step}</p></li>)}</ol></div>
-          <div><h2 className="mb-6 text-2xl font-bold">{t('gifts.included')}</h2><ul className="space-y-4">{items.map(item => <li key={item} className="flex gap-3 text-sm leading-relaxed"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}</ul><div className="mt-7 rounded-2xl border border-border bg-card p-5"><p className="font-medium">{t('gifts.commercial.title')}</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`${key}.conditions`)}</p><p className="mt-3 text-xs leading-relaxed text-muted-foreground">{t('gifts.commercial.pending')}</p><Button asChild className="mt-4 min-h-12 w-full"><Link to={`/presentes/novo?produto=${product}${product === "short" ? "&duracao=" + duration : ""}`}>{t('giftFlow.create')}</Link></Button></div></div>
+          <div><h2 className="mb-6 text-2xl font-bold">{t('gifts.included')}</h2><ul className="space-y-4">{items.map(item => <li key={item} className="flex gap-3 text-sm leading-relaxed"><Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{item}</li>)}</ul><div className="mt-7 rounded-2xl border border-border bg-card p-5"><p className="font-medium">{t('gifts.commercial.title')}</p><p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(`${key}.conditions`)}</p><p className="mt-3 text-xs leading-relaxed text-muted-foreground">{t('gifts.commercial.pending')}</p><Button asChild className="mt-4 min-h-12 w-full"><Link to={target}>{t('giftFlow.create')}</Link></Button></div></div>
         </section>
 
         <section className="mx-auto max-w-6xl px-5 pb-16"><h2 className="mb-6 text-2xl font-bold">{t('gifts.occasions')}</h2><ul className="flex flex-wrap gap-3">{occasions.map(occasion => <li key={occasion} className="rounded-full border border-border bg-card px-4 py-3 text-sm">{occasion}</li>)}</ul></section>

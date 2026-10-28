@@ -1,3 +1,4 @@
+import GiftNextAction from './GiftNextAction';
 import GiftShare from "./GiftShare";
 import { useGiftAvailability } from "@/hooks/useGiftAvailability";
 import { useAdminRole } from "@/hooks/useAdminRole";
@@ -199,10 +200,11 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
       setBusy(false);
     }
   };
-  const url = g.status === "ACTIVE" ? giftUrl(g.public_alias || g.public_token) : "";
+  const url = g.status === "ACTIVE" ? giftUrl(g.public_alias || g.public_token, window.location.origin, g.product) : "";
   const feedbackOrderId = giftFeedbackOrder(g);
   return (
     <GiftShell title={t("giftFlow.tracking")}>
+      <GiftNextAction gift={g} audio={audio.data} loading={audio.isPending} error={audio.isError} onRetry={()=>void audio.refetch()} />
       <div className="mb-7 rounded-2xl border border-primary/30 bg-primary/5 p-5">
         <p className="text-xl font-semibold">{g.recipient_name}</p>
         <p className="mt-2 text-primary" role="status">
@@ -225,7 +227,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </p>
         )}
       </div>
-      {g.status === "ACTIVE" && <div className="mb-7"><GiftShare url={url} recipient={g.recipient_name}/></div>}
+      {g.status === "ACTIVE" && <div id="compartilhar-presente" className="mb-7 scroll-mt-6"><GiftShare url={url} recipient={g.recipient_name}/></div>}
       {g.status === "ACTIVE" && user?.id === g.owner_id && <GiftResponses giftId={g.id} />}
       {g.status === "ACTIVE" && user?.id === g.owner_id && feedbackOrderId && <GiftFeedback orderId={feedbackOrderId} userId={user.id} />}
       {g.status !== "ACTIVE" && audio.data?.audio_url && <section role="status" className="mb-7 space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-5"><h2 className="font-semibold">{t("giftFlow.awaitingRelease")}</h2><p className="text-sm">{t("giftFlow.releaseNextStep")}</p>{isAdmin && <Button asChild><Link to={`/admin/presentes?presente=${g.id}`}>{t("giftFlow.reviewAndRelease")}</Link></Button>}</section>}
@@ -312,7 +314,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
       )}
       {!g.checkout_order_id &&
         ["AWAITING_PAYMENT", "RECEIPT_SENT"].includes(g.status) && (
-          <section className="mb-8 rounded-2xl border border-border bg-card p-5">
+          <section id="pagamento-presente" className="mb-8 rounded-2xl border border-border bg-card p-5">
             <h2 className="mb-4 text-xl font-semibold">
               {t("giftFlow.payment")}
             </h2>

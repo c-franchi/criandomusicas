@@ -1,7 +1,8 @@
+import { giftEntries } from './gift-entry-paths.mjs';
 export const maintenanceQueryKey = ['site-maintenance'] as const;
 
 export const isMaintenanceExemptPath = (path: string) => /^\/presente\/(?:[a-f0-9]{64}|para-[a-z0-9-]{1,32}-[A-Za-z0-9_-]{22})\/?$/.test(path) || [
-  '/presente.html',
+  '/presente.html', ...Object.values(giftEntries),
   '/auth', '/auth/callback', '/~oauth/callback', '/pagamento-sucesso',
   '/privacidade', '/termos', '/regras', '/manutencao',
 ].includes(path.replace(/\/+$/, '') || '/');

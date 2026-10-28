@@ -72,7 +72,8 @@ i18n
       escapeValue: false 
     },
     backend: {
-      loadPath: '/locales/{{lng}}/{{ns}}.json',
+      loadPath: '/locales/{{lng}}/{{ns}}.json?v=' + encodeURIComponent(document.querySelector<HTMLScriptElement>('script[type="module"][src]')?.getAttribute('src') || 'dev'),
+      requestOptions: { cache: 'no-store' },
     },
     detection: {
       order: ['localStorage', 'customNavigator', 'navigator', 'htmlTag'],

@@ -338,7 +338,7 @@
     "label": "Musical gifts",
     "title": "A DIFFERENT GIFT. A FEELING THAT STAYS.",
     "description": "Surprise someone special with a song made to move them, a fun tune to share with family, or a gift card with a melody to remember.",
-    "previewNotice": "Personalize and save your gift. Pricing and conditions are confirmed before payment.",
+    "previewNotice": "Choose your music and personalize the gift. Review the total before paying.",
     "back": "Back to musical gifts",
     "exploreModels": "Explore the cards",
     "exploreDuration": "Explore the formats",
@@ -347,8 +347,8 @@
     "upTo": "Approximately {{seconds}} seconds",
     "durationNote": "Duration is approximate: production may reach 20s for the 15s option and 40s for the 30s option.",
     "themeLabel": "Explore the occasions",
-    "howItWorks": "How it will work",
-    "included": "What the concept includes",
+    "howItWorks": "How it works",
+    "included": "What you receive",
     "occasions": "A song for every occasion",
     "otherProducts": "Other musical gifts",
     "art": {
@@ -378,12 +378,12 @@
       "reset": "See the opening again",
       "shortTitle": "Your idea fits in a song.",
       "shortDescription": "Names, memories and inside jokes can inspire a little tribute. You choose the mood and musical style.",
-      "noAudio": "This demonstration has no audio. The ordered song will be connected in a later stage.",
+      "noAudio": "This preview shows the card design. Listen to real examples on the home page.",
       "disclaimer": "Visual example with illustrative content. This demonstration does not create or save an order."
     },
     "commercial": {
       "title": "Availability and conditions",
-      "pending": "Price, timing and delivery options will be shown before purchase, after commercial setup and order integration.",
+      "pending": "Check your selected option, configured price and production estimate above. Review the final summary before payment.",
       "unavailable": "Purchase not yet available"
     },
     "products": {
@@ -394,7 +394,7 @@
         "description": "Create a unique gift with a personalized song, a dedication and an interactive digital card. Share it through WhatsApp or email and turn feelings into a memorable surprise.",
         "cta": "CREATE MY MUSICAL GIFT",
         "experienceTitle": "The first touch is part of the surprise.",
-        "experienceDescription": "Explore an occasion and see an opening example. Themes, photos, names and messages will be customizable in the full flow.",
+        "experienceDescription": "Explore the themes and templates below. Customize the photo, names and message while creating your gift.",
         "included": [
           "An authorized existing song or a new creation, depending on the option.",
           "Card with names, a dedication and an optional photo.",
@@ -430,7 +430,7 @@
         "experienceTitle": "A few seconds. Your personal touch.",
         "experienceDescription": "A heartfelt tribute, a Secret Santa reveal or a joke only your family understands. Explore both formats.",
         "included": [
-          "Formats up to 15 or up to 30 seconds.",
+          "A song of approximately 15 or 30 seconds, depending on your choice.",
           "Lyrics inspired by the names and details you provide.",
           "Choice of mood, musical style and language.",
           "Optional digital card, subject to configured conditions."
@@ -451,7 +451,7 @@
           "Farewells and thank yous",
           "Other occasions"
         ],
-        "conditions": "Songs follow the real production process. There is no simulated generation on this page. Digital card add-on conditions will be shown before purchase."
+        "conditions": "Music follows the Criando Músicas production process, with lyric review before production. If you add a digital card, its cost appears in the summary before payment."
       },
       "physical": {
         "name": "Printable Musical Card",
@@ -502,6 +502,16 @@
       "tribute": "Tribute",
       "wedding": "Wedding",
       "any": "Just because"
+    },
+    "moreServices": "More ways to create with music",
+    "moreServicesHelp": "Explore instrumental music, songs with your own lyrics and personalized videos.",
+    "moreExamples": "More examples",
+    "fewerExamples": "Fewer examples",
+    "offer": {
+      "summary": "One-time payment. Customize and follow progress in your account. New songs go through lyric review, production and card release.",
+      "production": "Production estimate",
+      "productionPending": "Contact support before purchasing if you have a specific date.",
+      "title": "Choose your gift"
     }
   },
   "giftFlow": {
@@ -814,7 +824,28 @@
     "shareGiftMessage": "🎁 {{name}}get ready for a heartfelt surprise! I have a musical gift made just for you. 💜\n\n🎧 Grab your headphones, open your gift and press play. Every word and every note carries a little of my love. ✨\n\nTap the link to discover it! 👇",
     "shareReceivedMessage": "🎁 I received a musical gift that touched my heart! 💜\n🎧 Open the link and share this special memory with me. ✨",
     "copyMessage": "Copy message and link",
-    "createForSomeoneElse": "Create a gift for someone else"
+    "createForSomeoneElse": "Create a gift for someone else",
+    "moreOptions": "More options",
+    "fewerOptions": "Fewer options",
+    "nextAction": {
+      "pay": "Complete payment",
+      "receipt": "Wait for payment verification",
+      "lyrics": "Review and approve lyrics",
+      "audio": "Wait for music production",
+      "release": "Wait for the card review and release",
+      "share": "Share my gift",
+      "draft": "Continue customizing",
+      "cancel": "Order cancelled",
+      "load": "Checking the next step…",
+      "title": "Next step"
+    },
+    "filterProduct": "Gift type",
+    "filterStatus": "Order stage",
+    "searchOrders": "Search recipient, sender or order",
+    "allOrders": "All",
+    "retryReady": "Retry gift-ready notification",
+    "retryReadyDone": "Notification processed. Check the history for the result.",
+    "scheduledAccess": "The recipient can open the link starting {{date}}."
   },
   "giftResponse": {
     "title": "Reply to the card",
@@ -831,10 +862,21 @@
     "empty": "No reply to this card yet.",
     "notification": "Your gift received a reply!",
     "presets": [
-        "I loved the gift!",
-        "You moved me!",
-        "Thank you for your kindness!",
-        "This song is so us!"
-    ]
-}
+      "I loved the gift!",
+      "You moved me!",
+      "Thank you for your kindness!",
+      "This song is so us!"
+    ],
+    "open": "Reply to the person who gave me this gift",
+    "retryEmail": "Retry notification email",
+    "emailSent": "Email accepted for sending.",
+    "emailFailed": "Email has not been sent yet. Your reply is safely saved.",
+    "emailState": "Notification email",
+    "emailStatus": {
+      "pending": "Pending",
+      "sent": "Accepted by the email service",
+      "failed": "Sending failed",
+      "test_skipped": "Test: no email sent"
+    }
+  }
 }

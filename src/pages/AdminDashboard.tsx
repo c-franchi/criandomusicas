@@ -64,7 +64,7 @@ import {
 import { AdminStatsCards } from "@/components/admin";
 
 interface AdminOrder {
-  gift?: Pick<MusicalGift,"id"|"product"|"duration_seconds"|"music_source"|"is_test"|"recipient_name"|"track_version">;
+  gift?: Pick<MusicalGift,"id"|"product"|"duration_seconds"|"music_source"|"is_test"|"recipient_name"|"track_version"|"status">;
   id: string;
   status: string;
   created_at: string;
@@ -184,7 +184,7 @@ const AdminDashboard = () => {
 
       if (ordersError) throw ordersError;
 
-      const {data:gifts,error:giftError}=await supabase.from('musical_gifts').select('id,product,duration_seconds,music_source,is_test,recipient_name,track_version,checkout_order_id,production_order_id');
+      const {data:gifts,error:giftError}=await supabase.from('musical_gifts').select('id,product,duration_seconds,music_source,is_test,recipient_name,track_version,checkout_order_id,production_order_id,status');
       if(giftError) throw giftError;
       // Fetch lyrics titles, tracks, and profiles for each order
       const ordersWithDetails = await Promise.all(
@@ -893,8 +893,8 @@ const AdminDashboard = () => {
 
   const scopeOrders=orders.filter(o=>productFilter==='all' || (productFilter==='normal' ? !o.gift : o.gift?.product===productFilter));
   // Separar pedidos ativos e concluídos
-  const activeOrders = scopeOrders.filter(o => !['COMPLETED', 'CANCELLED'].includes(o.status));
-  const completedOrders = scopeOrders.filter(o => ['COMPLETED', 'CANCELLED'].includes(o.status));
+  const activeOrders = scopeOrders.filter(o => o.gift ? !['ACTIVE','CANCELLED'].includes(o.gift.status) && o.status!=='CANCELLED' : !['COMPLETED', 'CANCELLED'].includes(o.status));
+  const completedOrders = scopeOrders.filter(o => o.gift ? ['ACTIVE','CANCELLED'].includes(o.gift.status) || o.status==='CANCELLED' : ['COMPLETED', 'CANCELLED'].includes(o.status));
 
   // Filtrar pedidos
   const filterOrders = (ordersList: AdminOrder[]) => ordersList.filter(order => {
@@ -1320,7 +1320,7 @@ const AdminDashboard = () => {
                     <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          {order.gift && <><Badge className="bg-primary/15 text-primary">{order.gift.product==='short'?`Música curta · até ${order.gift.duration_seconds}s`:order.gift.product==='digital'?'Cartão digital':'Cartão físico'}{order.gift.is_test?' · TESTE':''}</Badge><Button size="sm" variant="outline" asChild><Link to={`/admin/presentes?presente=${order.gift.id}`}>Abrir cartão / entrega</Link></Button></>}
+                          {order.gift && <><Badge className="bg-primary/15 text-primary">{order.gift.product==='short'?`Música curta · aprox. ${order.gift.duration_seconds}s`:order.gift.product==='digital'?'Cartão digital':'Cartão para imprimir'}{order.gift.is_test?' · TESTE':''}</Badge><Button size="sm" variant="outline" asChild><Link to={`/admin/presentes?presente=${order.gift.id}`}>Abrir cartão / entrega</Link></Button></>}
                           <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0,8)}</span>
                           {/* Type Badge - Áudio vs Vocal vs Instrumental vs Letra Própria */}
                           <Badge 

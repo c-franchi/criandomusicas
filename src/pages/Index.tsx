@@ -1,3 +1,5 @@
+import AudioSamples from '@/components/AudioSamples';
+import PricingPlans from '@/components/PricingPlans';
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +17,7 @@ import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import SEO from "@/components/SEO";
 import ScrollToTop from "@/components/ScrollToTop";
-import PinnedScrollSections from "@/components/PinnedScrollSections";
+
 import CelebrationSuggestion from "@/components/CelebrationSuggestion";
 import { useUpcomingCelebrations } from "@/hooks/useUpcomingCelebrations";
 
@@ -101,6 +103,7 @@ const Index = () => {
         keywords="música personalizada, criar música com IA, presente criativo, música para aniversário, música para casamento, homenagem musical, música exclusiva"
       />
       <Hero />
+      <div id="tour-examples"><AudioSamples compact /></div>
       <MusicalGiftsSection />
       
       {/* Celebration Popup - shows as modal for event dates */}
@@ -117,20 +120,18 @@ const Index = () => {
         <ProcessSteps />
       </div>
       
-      {/* Pinned Scroll Sections: AudioSamples, PricingPlans */}
-      <div id="tour-examples">
-        <div id="tour-plans">
-          <PinnedScrollSections />
-        </div>
-      </div>
-      
-      <InstrumentalShowcase />
-      <WhyChooseUs />
-      <CustomLyricHighlight />
-      <VideoServiceSection />
+      <div id="tour-plans"><PricingPlans /></div>
       <Testimonials />
       <ReactionVideosShowcase />
       <FAQ />
+      <details className="mx-auto my-12 max-w-6xl rounded-2xl border border-border px-5 py-6">
+        <summary className="cursor-pointer py-3 text-xl font-semibold">{t('gifts.moreServices')}</summary>
+        <p className="mt-3 text-muted-foreground">{t('gifts.moreServicesHelp')}</p>
+        <InstrumentalShowcase />
+        <CustomLyricHighlight />
+        <VideoServiceSection />
+        <WhyChooseUs />
+      </details>
       <Footer />
       <CookieConsent />
       <ScrollToTop />

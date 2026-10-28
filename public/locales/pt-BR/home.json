@@ -356,7 +356,7 @@
     "label": "Presentes musicais",
     "title": "UM PRESENTE DIFERENTE. UMA EMOÇÃO QUE FICA.",
     "description": "Surpreenda alguém especial com uma música feita para emocionar, uma canção divertida para compartilhar com a família ou um cartão-presente com uma melodia que será lembrada para sempre.",
-    "previewNotice": "Personalize e salve seu presente. Preço e condições serão confirmados antes do pagamento.",
+    "previewNotice": "Escolha sua música e personalize o presente. Você confere o total antes de pagar.",
     "back": "Voltar aos presentes musicais",
     "exploreModels": "Conhecer os modelos",
     "exploreDuration": "Explorar os formatos",
@@ -365,8 +365,8 @@
     "upTo": "Aproximadamente {{seconds}} segundos",
     "durationNote": "A duração é aproximada. A produção pode chegar a 20s na opção de 15s e a 40s na opção de 30s.",
     "themeLabel": "Explore as ocasiões",
-    "howItWorks": "Como vai funcionar",
-    "included": "O que a proposta inclui",
+    "howItWorks": "Como funciona",
+    "included": "O que você recebe",
     "occasions": "Uma música para cada ocasião",
     "otherProducts": "Outros presentes musicais",
     "art": {
@@ -396,12 +396,12 @@
       "reset": "Ver a abertura novamente",
       "shortTitle": "Sua ideia cabe em uma canção.",
       "shortDescription": "Nomes, histórias e piadas internas podem inspirar uma pequena homenagem. Você escolhe o tom e o estilo musical.",
-      "noAudio": "Esta demonstração não contém áudio. A música do pedido será associada em uma próxima etapa.",
+      "noAudio": "Esta prévia mostra o visual do cartão. Ouça exemplos reais na página inicial.",
       "disclaimer": "Exemplo visual com conteúdo ilustrativo. Nenhum pedido é criado ou salvo nesta demonstração."
     },
     "commercial": {
       "title": "Disponibilidade e condições",
-      "pending": "Preço, prazo e opções de entrega serão apresentados antes da compra, após a configuração comercial e a integração dos pedidos.",
+      "pending": "Confira a modalidade, o valor e o prazo configurado acima. O resumo final será apresentado antes do pagamento.",
       "unavailable": "Compra ainda não disponível"
     },
     "products": {
@@ -412,7 +412,7 @@
         "description": "Crie um presente único com uma música personalizada, uma dedicatória e um cartão digital interativo. Envie pelo WhatsApp ou e-mail e transforme palavras e sentimentos em uma surpresa inesquecível.",
         "cta": "CRIAR MEU PRESENTE MUSICAL",
         "experienceTitle": "O primeiro toque já faz parte da surpresa.",
-        "experienceDescription": "Explore uma ocasião e veja um exemplo de abertura. Os temas, a foto, os nomes e a mensagem serão personalizáveis no fluxo completo.",
+        "experienceDescription": "Explore os temas e modelos abaixo. Você personaliza foto, nomes e mensagem durante a criação do presente.",
         "included": [
           "Música existente autorizada ou uma nova criação, conforme a modalidade.",
           "Cartão com nomes, dedicatória e foto opcional.",
@@ -448,7 +448,7 @@
         "experienceTitle": "Poucos segundos. Um toque só seu.",
         "experienceDescription": "Uma homenagem carinhosa, uma revelação de amigo secreto ou aquela piada que só a família entende. Conheça os dois formatos.",
         "included": [
-          "Formatos de até 15 ou até 30 segundos.",
+          "Música com aproximadamente 15 ou 30 segundos, conforme a opção escolhida.",
           "Letra inspirada nos nomes e detalhes que você informar.",
           "Escolha de tom, estilo musical e idioma.",
           "Opção de adicionar cartão digital, conforme as condições configuradas."
@@ -469,7 +469,7 @@
           "Despedidas e agradecimentos",
           "Outras ocasiões"
         ],
-        "conditions": "As músicas seguirão o processo real de produção. Não há geração simulada nesta página. O adicional de cartão digital terá suas condições informadas antes da compra."
+        "conditions": "A música é produzida pelo processo da Criando Músicas, com revisão da letra antes da produção. Se adicionar um cartão digital, o custo aparece no resumo antes do pagamento."
       },
       "physical": {
         "name": "Cartão Musical para Imprimir",
@@ -520,6 +520,16 @@
       "tribute": "Homenagem",
       "wedding": "Casamento",
       "any": "Sem ocasião especial"
+    },
+    "moreServices": "Outras formas de criar com música",
+    "moreServicesHelp": "Explore instrumentais, músicas com sua própria letra e vídeos personalizados.",
+    "moreExamples": "Ver mais exemplos",
+    "fewerExamples": "Mostrar menos exemplos",
+    "offer": {
+      "summary": "Pagamento único. Personalização e acompanhamento pela sua conta. Música nova passa por revisão da letra, produção e liberação do cartão.",
+      "production": "Prazo de produção",
+      "productionPending": "Consulte o atendimento antes de comprar se tiver uma data específica.",
+      "title": "Escolha seu presente"
     }
   },
   "giftFlow": {
@@ -832,7 +842,28 @@
     "shareGiftMessage": "🎁 {{name}}prepare o coração! Tenho uma surpresa musical feita especialmente para você. 💜\n\n🎧 Pegue seus fones, abra seu presente e dê o play. Cada palavra e cada nota levam um carinho que eu queria te entregar. ✨\n\nToque no link e descubra! 👇",
     "shareReceivedMessage": "🎁 Recebi um presente que virou música e tocou meu coração! 💜\n🎧 Abra o link para ouvir essa lembrança especial comigo. ✨",
     "copyMessage": "Copiar mensagem com o link",
-    "createForSomeoneElse": "Criar um presente para outra pessoa"
+    "createForSomeoneElse": "Criar um presente para outra pessoa",
+    "moreOptions": "Mais opções",
+    "fewerOptions": "Menos opções",
+    "nextAction": {
+      "pay": "Concluir pagamento",
+      "receipt": "Aguardar conferência do pagamento",
+      "lyrics": "Revisar e aprovar a letra",
+      "audio": "Aguardar a produção da música",
+      "release": "Aguardar a conferência e liberação do cartão",
+      "share": "Compartilhar meu presente",
+      "draft": "Continuar personalização",
+      "cancel": "Pedido cancelado",
+      "load": "Conferindo a próxima etapa…",
+      "title": "Próximo passo"
+    },
+    "filterProduct": "Tipo de presente",
+    "filterStatus": "Etapa do pedido",
+    "searchOrders": "Buscar por destinatário, remetente ou pedido",
+    "allOrders": "Todos",
+    "retryReady": "Reenviar aviso de presente liberado",
+    "retryReadyDone": "Aviso processado. Verifique o resultado no histórico.",
+    "scheduledAccess": "O link poderá ser aberto pelo destinatário a partir de {{date}}."
   },
   "giftResponse": {
     "title": "Responder ao cartão",
@@ -849,10 +880,21 @@
     "empty": "Ainda não há resposta para este cartão.",
     "notification": "Seu presente recebeu uma resposta!",
     "presets": [
-        "Amei o presente!",
-        "Você me emocionou!",
-        "Muito obrigado pelo carinho!",
-        "Essa música é a nossa cara!"
-    ]
-}
+      "Amei o presente!",
+      "Você me emocionou!",
+      "Muito obrigado pelo carinho!",
+      "Essa música é a nossa cara!"
+    ],
+    "open": "Responder a quem me presenteou",
+    "retryEmail": "Tentar enviar o e-mail novamente",
+    "emailSent": "E-mail aceito para envio.",
+    "emailFailed": "O e-mail ainda não foi enviado. A resposta continua salva.",
+    "emailState": "E-mail de aviso",
+    "emailStatus": {
+      "pending": "Aguardando envio",
+      "sent": "Aceito pelo serviço de e-mail",
+      "failed": "Falha no envio",
+      "test_skipped": "Teste: e-mail não enviado"
+    }
+  }
 }

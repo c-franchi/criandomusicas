@@ -1,3 +1,4 @@
+import { useFlowBusy } from '@/hooks/useFlowBusy';
 import { giftLyricText } from "@/lib/gift-link";
 import { giftUrl } from "@/lib/gifts";
 import GiftShare from "./GiftShare";
@@ -47,6 +48,9 @@ export default function GiftExperience({
   responseToken?: string;
 }) {
   const { t } = useTranslation("home");
+  const [playing, setPlaying] = useState(false);
+  const [responding, setResponding] = useState(false);
+  useFlowBusy(playing);
   const [revealed, setRevealed] = useState(data.has_card === false);
   const [time, setTime] = useState(0);
   const [notice, setNotice] = useState("");
@@ -138,6 +142,9 @@ export default function GiftExperience({
           controls
           preload="metadata"
           onLoadedMetadata={() => onDuration?.(audio.current?.duration || 0)}
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
           onTimeUpdate={() => setTime(audio.current?.currentTime || 0)}
           onError={() => setNotice(t("giftFlow.audioLoadError"))}
           className={`mx-auto mt-6 w-full max-w-md ${revealed ? "block" : "hidden"}`}
@@ -155,7 +162,7 @@ export default function GiftExperience({
       )}
       {revealed && (
         <>
-          {!preview && responseToken && <GiftResponseForm token={responseToken} />}
+
           {cues.length > 0 ? (
             <div className="mt-8 space-y-2 border-t border-white/20 pt-6 text-left">
               <h3 className="mb-4 font-semibold">{t("giftFlow.lyrics")}</h3>
@@ -200,9 +207,10 @@ export default function GiftExperience({
             </Button>
 
           </div>
+          {!preview && responseToken && <div className="mt-7"><Button variant="outline" className="min-h-12 w-full h-auto whitespace-normal py-3 bg-white/10 text-white border-white/30" aria-expanded={responding} onClick={() => setResponding(!responding)}>{t("giftResponse.open")}</Button>{responding && <GiftResponseForm token={responseToken} />}</div>}
           {!preview && (
             <>
-              <div className="mt-6"><GiftShare url={data.public_alias ? giftUrl(data.public_alias) : window.location.href} title={data.title} received/></div>
+              <div className="mt-6"><GiftShare url={data.public_alias ? giftUrl(data.public_alias, window.location.origin, data.product) : window.location.href} title={data.title} received/></div>
               <Button asChild variant="hero" className="mt-6 h-auto min-h-12 w-full whitespace-normal py-3">
                 <Link to="/presentes/novo?produto=digital">
                   <Gift className="h-5 w-5 shrink-0" aria-hidden="true" />

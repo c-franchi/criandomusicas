@@ -1,3 +1,5 @@
+import { useFlowBusy } from '@/hooks/useFlowBusy';
+import { analytics } from '@/lib/analytics';
 import { useBriefingTranslations } from "@/hooks/useBriefingTranslations";
 import { ImageCardGrid } from "@/components/briefing/ImageCardGrid";
 import { genreImages, typeImages } from "@/assets/briefing";
@@ -94,6 +96,8 @@ export default function GiftWizard() {
       product={params.get("produto") || "digital"}
       duration={params.get("duracao")}
       source={params.get("origem")}
+      selectedTheme={params.get("tema")}
+      selectedDesign={params.get("modelo")}
     />
   );
 }
@@ -102,16 +106,21 @@ function Editor({
   product,
   duration,
   source,
+  selectedTheme,
+  selectedDesign,
 }: {
   initial?: MusicalGift;
   product: string;
   duration: string | null;
   source: string | null;
+  selectedTheme: string | null;
+  selectedDesign: string | null;
 }) {
   const { t, i18n } = useTranslation("home");
   const { user } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const nav = useNavigate();
+  useFlowBusy(true);
   const { toast } = useToast();
   const commands = useGiftCommands();
   const { styleOptions } = useBriefingTranslations();
@@ -132,7 +141,7 @@ function Editor({
         sender_name: "",
         dedication: "",
         occasion: "",
-        theme: "love",
+        theme: (["christmas","love","birthday","family","birth","friendship","gratitude","tribute","wedding","any"].includes(selectedTheme || "") ? selectedTheme : "love") as MusicalGift["theme"],
         photo_data: null,
         has_card: product !== "short",
         duration_seconds: ["15", "30"].includes(duration || "")
@@ -147,7 +156,7 @@ function Editor({
           language: "Português",
           style: "pop",
           fulfillment: product === "physical" ? "self_print" : "pickup",
-          card_design: "hearts",
+          card_design: ["hearts","flowers","celebration","classic"].includes(selectedDesign || "") ? selectedDesign! : "hearts",
         },
         version: 0,
       },
@@ -172,6 +181,7 @@ function Editor({
   }
   const previewAudio = useGiftAudio(form as MusicalGift);
   const [step, setStep] = useState(0);
+  useEffect(() => { analytics.giftStep(product, step + 1); }, [product, step]);
   const [authorized, setAuthorized] = useState(!!initial?.source_order_id);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -250,7 +260,7 @@ function Editor({
       const result = action ? await commands.action(id, action) : null;
       toast({ title: t("giftFlow.saved") });
       nav(
-        action === "submit" && result?.checkout_order_id
+        (action === "submit" && result?.checkout_order_id && (analytics.giftSubmit(product), true))
           ? `/checkout/${result.checkout_order_id}`
           : `/presentes/${id}`,
       );
@@ -293,8 +303,10 @@ function Editor({
       <p className="mb-5 text-sm text-muted-foreground">
         {t("giftFlow.step", { current: step + 1, total: 5 })}
       </p>
+      <p className="mb-5 font-medium sm:hidden">{t("giftFlow." + ["choose", "people", "personalize", "delivery", "review"][step])}</p>
+      <progress aria-label={t("giftFlow.progress")} value={step + 1} max={5} className="mb-5 h-2 w-full accent-purple-500 sm:hidden" />
       <ol
-        className="mb-7 grid grid-cols-5 gap-2"
+        className="mb-7 hidden grid-cols-5 gap-2 sm:grid"
         aria-label={t("giftFlow.progress")}
       >
         {["choose", "people", "personalize", "delivery", "review"].map(
