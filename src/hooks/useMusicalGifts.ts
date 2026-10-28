@@ -20,7 +20,7 @@ export function useGiftList(admin = false) {
       if (error) throw error;
       return data;
     },
-    refetchInterval: 15000,
+    refetchInterval: admin ? 60000 : 15000,
   });
 }
 export function useGift(id?: string) {

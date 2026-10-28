@@ -32,3 +32,15 @@ test('fully delivered or existing-music gift orders do not offer new audio uploa
   assert.equal(render({ ...base, status: 'COMPLETED', uploadedVersions: [1, 2] }), '');
   assert.equal(render({ ...base, gift: { duration_seconds: null, track_version: 1, music_source: 'existing' } }), '');
 });
+test('the Windows file picker explicitly accepts MP3 and WAV regardless of MIME registration', () => {
+  const html = render(base);
+  const accepts = [...html.matchAll(/accept="([^"]+)"/g)].map(m => m[1].split(','));
+  assert.equal(accepts.length, 2);
+  for (const accept of accepts) {
+    assert(accept.includes('.mp3'));
+    assert(accept.includes('.wav'));
+    assert(accept.includes('audio/mpeg'));
+    assert(accept.includes('audio/wav'));
+    assert(accept.includes('audio/*'));
+  }
+});

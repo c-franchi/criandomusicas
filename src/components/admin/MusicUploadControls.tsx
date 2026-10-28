@@ -21,7 +21,7 @@ export function MusicUploadControls({ order, uploading, onUpload }: {
       const busy = uploading === `${order.id}-v${version}`;
       const needsPrimary = !!order.gift && version !== primary && !order.uploadedVersions?.includes(primary);
       return <div key={version} className="flex-1 sm:flex-none">
-        <input type="file" accept="audio/*" className="hidden" aria-label={`Áudio da versão ${version}`}
+        <input type="file" accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav,audio/*" className="hidden" aria-label={`Áudio da versão ${version}`}
           ref={el => { inputs.current[version] = el; }}
           onChange={e => {
             const file = e.currentTarget.files?.[0];

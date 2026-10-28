@@ -109,6 +109,8 @@ const AdminDashboard = () => {
   const [productFilter, setProductFilter] = useState(params.get('produto') || 'all');
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [refreshingOrders, setRefreshingOrders] = useState(false);
+  const fetchingOrders = useRef(false);
   const [searchTerm, setSearchTerm] = useState(params.get("pedido") || "");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -141,7 +143,11 @@ const AdminDashboard = () => {
   const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<AdminOrder | null>(null);
 
   const fetchOrders = useCallback(async () => {
-    setLoadingOrders(true);
+    // Keep mounted cards, file pickers and open prompts during every refresh.
+    // loadingOrders is used only for the initial load.
+    if (fetchingOrders.current) return;
+    fetchingOrders.current = true;
+    setRefreshingOrders(true);
     try {
       // Fetch orders with approved lyrics and payment info
       const { data: ordersData, error: ordersError } = await supabase
@@ -261,6 +267,8 @@ const AdminDashboard = () => {
         variant: 'destructive',
       });
     } finally {
+      fetchingOrders.current = false;
+      setRefreshingOrders(false);
       setLoadingOrders(false);
     }
   }, [toast]);
@@ -272,19 +280,17 @@ const AdminDashboard = () => {
     }
   }, [isAdmin, fetchOrders]);
 
-  // Track whether details accordion is open to pause auto-refresh
-  const [detailsOpen, setDetailsOpen] = useState(false);
-
-  // Auto-refresh orders every 30 seconds (pause when accordion is open)
+  // Fetch new orders once a minute without replacing the current screen.
+  // Pause during mutations so a polling response cannot interrupt an upload.
   useEffect(() => {
-    if (!isAdmin || detailsOpen) return;
+    if (!isAdmin || uploadingMusic || confirmingPix || rejectingPix || generatingCover || showRejectDialog || receiptModalOpen || deleteOrderId) return;
     
     const intervalId = setInterval(() => {
-      fetchOrders();
-    }, 30000); // 30 seconds
+      void fetchOrders();
+    }, 60000);
 
     return () => clearInterval(intervalId);
-  }, [isAdmin, fetchOrders, detailsOpen]);
+  }, [isAdmin, fetchOrders, uploadingMusic, confirmingPix, rejectingPix, generatingCover, showRejectDialog, receiptModalOpen, deleteOrderId]);
 
   const confirmDeleteOrder = async () => {
     if (!deleteOrderId) return;
@@ -1172,8 +1178,8 @@ const AdminDashboard = () => {
                 </Link>
               </Button>
               
-              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders} className="flex-1 sm:flex-none text-xs sm:text-sm">
-                <RefreshCw className={`w-4 h-4 sm:mr-2 ${loadingOrders ? 'animate-spin' : ''}`} />
+              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders || refreshingOrders || !!uploadingMusic} title="Buscar novos pedidos (automático a cada 1 minuto)" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                <RefreshCw className={`w-4 h-4 sm:mr-2 ${refreshingOrders ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Atualizar</span>
               </Button>
 
@@ -1481,7 +1487,6 @@ const AdminDashboard = () => {
                     {order.style_prompt && (
                       <details 
                         className="text-xs sm:text-sm"
-                        onToggle={(e) => setDetailsOpen((e.target as HTMLDetailsElement).open)}
                       >
                         <summary className="cursor-pointer text-primary hover:underline font-medium">
                           📝 Ver Prompt Final (para geração)

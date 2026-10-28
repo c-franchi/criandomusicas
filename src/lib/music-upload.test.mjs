@@ -85,3 +85,12 @@ test('failure after saving audio is reported and keeps the recording for recover
     assert(!f.calls.some(c => c[0] === 'remove'));
   }
 });
+test('MP3 and WAV uploads retain their extension even when the operating system omits the MIME type', async () => {
+  for (const extension of ['MP3', 'WAV']) {
+    const f = fixture();
+    const audio = new File(['audio fixture'], `song.${extension}`, { type: '' });
+    const result = await saveMusicUpload(f.client, audio, order, 1, null);
+    assert(result.audioUrl.endsWith(`.${extension.toLowerCase()}`));
+    assert.equal(f.calls.at(-1)[1].status, 'COMPLETED');
+  }
+});
