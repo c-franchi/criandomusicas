@@ -2,6 +2,7 @@ import { isGiftToken } from './gift-link.ts';
 import { isPublicGiftPath } from './gift-entry-paths.mjs';
 export function giftShareLinks(input: string, title: string, message = title) {
   const url = new URL(input);
+  const currentPreview = url.searchParams.get('v') === '2';
   const hashKey = isPublicGiftPath(url.pathname) && url.pathname.endsWith('.html') && isGiftToken(url.hash.slice(1)) ? url.hash.slice(1) : '';
   const para = url.searchParams.get('para') || (hashKey.startsWith('para-') ? hashKey.slice(5) : null);
   const token = url.searchParams.get('token') || (hashKey && !hashKey.startsWith('para-') ? hashKey : null);
@@ -19,6 +20,7 @@ export function giftShareLinks(input: string, title: string, message = title) {
   } else {
     url.search = friendlyGift && para ? new URLSearchParams({para}).toString() : legacyEntry && token ? new URLSearchParams({token}).toString() : '';
   }
+  if(currentPreview) url.searchParams.set('v','2');
   url.hash = '';
   const link = url.toString(),
     encoded = encodeURIComponent(link),
