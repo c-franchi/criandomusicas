@@ -815,5 +815,26 @@
     "shareReceivedMessage": "🎁 I received a musical gift that touched my heart! 💜\n🎧 Open the link and share this special memory with me. ✨",
     "copyMessage": "Copy message and link",
     "createForSomeoneElse": "Create a gift for someone else"
-  }
+  },
+  "giftResponse": {
+    "title": "Reply to the card",
+    "emoji": "Choose an emoji",
+    "message": "Your message",
+    "rate": "Rate the song (optional)",
+    "send": "Send reply and rating",
+    "sending": "Sending…",
+    "success": "Reply sent to your gift sender!",
+    "emailPending": "Reply saved in notifications. The email could not be sent.",
+    "error": "Could not send. Please try again.",
+    "already": "This card already has a reply.",
+    "inbox": "Recipient reply",
+    "empty": "No reply to this card yet.",
+    "notification": "Your gift received a reply!",
+    "presets": [
+        "I loved the gift!",
+        "You moved me!",
+        "Thank you for your kindness!",
+        "This song is so us!"
+    ]
+}
 }

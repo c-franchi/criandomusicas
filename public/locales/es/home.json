@@ -815,5 +815,26 @@
     "shareReceivedMessage": "🎁 ¡Recibí un regalo convertido en música que me llegó al corazón! 💜\n🎧 Abre el enlace y comparte este recuerdo conmigo. ✨",
     "copyMessage": "Copiar mensaje y enlace",
     "createForSomeoneElse": "Crear un regalo para otra persona"
-  }
+  },
+  "giftResponse": {
+    "title": "Responder a la tarjeta",
+    "emoji": "Elige un emoji",
+    "message": "Tu mensaje",
+    "rate": "Valorar la canción (opcional)",
+    "send": "Enviar respuesta y valoración",
+    "sending": "Enviando…",
+    "success": "¡Respuesta enviada a quien te regaló la tarjeta!",
+    "emailPending": "Respuesta guardada en notificaciones. No se pudo enviar el correo.",
+    "error": "No se pudo enviar. Inténtalo de nuevo.",
+    "already": "Esta tarjeta ya tiene una respuesta.",
+    "inbox": "Respuesta del destinatario",
+    "empty": "Esta tarjeta aún no tiene respuesta.",
+    "notification": "¡Tu regalo recibió una respuesta!",
+    "presets": [
+        "¡Me encantó el regalo!",
+        "¡Me emocionaste!",
+        "¡Gracias por tu cariño!",
+        "¡Esta canción es muy nuestra!"
+    ]
+}
 }
