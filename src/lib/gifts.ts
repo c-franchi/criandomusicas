@@ -176,7 +176,10 @@ export function parseLrc(input: string): LyricCue[] {
 }
 export function giftUrl(token: string, origin = window.location.origin) {
   if (!isGiftToken(token)) throw Error("gift_invalid_token");
-  return token.startsWith('para-') ? `${origin}/presente.html?para=${token.slice(5)}` : `${origin}/presente/${token}`;
+  const query = token.startsWith('para-')
+    ? new URLSearchParams({ para: token.slice(5) })
+    : new URLSearchParams({ token });
+  return `${origin}/presente.html?${query}`;
 }
 export function safeImage(url: string | null | undefined) {
   return url?.startsWith("https://") || url?.startsWith("data:image/")

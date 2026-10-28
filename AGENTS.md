@@ -1,6 +1,7 @@
 # Architecture rules
 - Gift feedback reuses ReviewForm and ReactionVideoUpload on the owner's released-gift tracking page, associated with the source/production music order, never the card-only checkout order.
 - Normalize gift social sharing to the static gift entry page; preserve private keys and continue accepting legacy URLs.
+- Recipient gift creation links to the existing digital gift wizard without copying private gift data; native share and copy-message use the same complete payload as WhatsApp to retain text and link across apps.
 - Keep gift marketing on the homepage and recurring-plan marketing on the lazy-loaded /criadores page; reuse existing checkout flows to avoid billing changes.
 - Read commercial plan values from pricing_config and show an unavailable state on fetch failure; never fabricate purchasable fallback prices or credits.
 - Keep marketing translations in the home/pricing namespaces for all four supported languages and use the existing currency formatter.

@@ -1,8 +1,9 @@
 import { isGiftToken } from './gift-link.ts';
 export function giftShareLinks(input: string, title: string, message = title) {
   const url = new URL(input);
-  const para = url.searchParams.get('para');
-  const token = url.searchParams.get('token');
+  const hashKey = url.pathname === '/presente.html' && isGiftToken(url.hash.slice(1)) ? url.hash.slice(1) : '';
+  const para = url.searchParams.get('para') || (hashKey.startsWith('para-') ? hashKey.slice(5) : null);
+  const token = url.searchParams.get('token') || (hashKey && !hashKey.startsWith('para-') ? hashKey : null);
   const legacyEntry = url.pathname === '/presente.html' && !!token && /^[a-f0-9]{64}$/.test(token);
   const friendlyGift = url.pathname === '/presente.html' && !!para && isGiftToken('para-'+para);
   if (
@@ -21,12 +22,14 @@ export function giftShareLinks(input: string, title: string, message = title) {
   const link = url.toString(),
     encoded = encodeURIComponent(link),
     text = encodeURIComponent(message);
+  const shareText = message + "\n\n" + link;
   return {
     url: link,
-    whatsapp: `https://wa.me/?text=${encodeURIComponent(message + "\n\n" + link)}`,
+    shareText,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText)}`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encoded}`,
     telegram: `https://t.me/share/url?url=${encoded}&text=${text}`,
     x: `https://twitter.com/intent/tweet?url=${encoded}&text=${text}`,
-    email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message+'\n\n'+link)}`,
+    email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(shareText)}`,
   };
 }

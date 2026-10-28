@@ -19,9 +19,9 @@ export default function GiftShare({
   const [busy, setBusy] = useState(false);
   const message = t(received?'giftFlow.shareReceivedMessage':'giftFlow.shareGiftMessage',{name:recipient?`${recipient}, `:''});
   const links = giftShareLinks(url, title || t("giftFlow.received"),message);
-  const copy = async () => {
+  const copy = async (text = links.url) => {
     try {
-      await navigator.clipboard.writeText(links.url);
+      await navigator.clipboard.writeText(text);
       setNotice(t("giftFlow.copied"));
     } catch {
       setNotice(t("giftFlow.copyError"));
@@ -33,11 +33,10 @@ export default function GiftShare({
     try {
       if (navigator.share)
         await navigator.share({
-          title: title || t("giftFlow.received"),
-          text: message,
-          url: links.url,
+          title: t("giftFlow.received"),
+          text: links.shareText,
         });
-      else await copy();
+      else await copy(links.shareText);
     } catch (e) {
       if (!(e instanceof DOMException && e.name === "AbortError"))
         setNotice(t("giftFlow.shareFallback"));
@@ -99,10 +98,7 @@ export default function GiftShare({
           {t("giftFlow.copyLink")}
         </Button>
       </div>
-      <Button variant="outline" className="min-h-11" onClick={async()=>{
-        try {await navigator.clipboard.writeText(message+'\n\n'+links.url);setNotice(t('giftFlow.copied'));}
-        catch{setNotice(t('giftFlow.copyError'));}
-      }}>{t('giftFlow.copyMessage')}</Button>
+      <Button variant="outline" className="min-h-11" onClick={() => void copy(links.shareText)}>{t('giftFlow.copyMessage')}</Button>
       <p className="text-xs leading-relaxed text-muted-foreground">
         {t("giftFlow.instagramHelp")}
       </p>

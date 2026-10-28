@@ -813,6 +813,7 @@
     "uploadHere": "Attach or replace music here before releasing the card. One track is sufficient; a second is optional. MP3 and WAV are accepted.",
     "shareGiftMessage": "🎁 {{name}}get ready for a heartfelt surprise! I have a musical gift made just for you. 💜\n\n🎧 Grab your headphones, open your gift and press play. Every word and every note carries a little of my love. ✨\n\nTap the link to discover it! 👇",
     "shareReceivedMessage": "🎁 I received a musical gift that touched my heart! 💜\n🎧 Open the link and share this special memory with me. ✨",
-    "copyMessage": "Copy message and link"
+    "copyMessage": "Copy message and link",
+    "createForSomeoneElse": "Create a gift for someone else"
   }
 }
