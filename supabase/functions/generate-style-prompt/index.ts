@@ -915,7 +915,7 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
     // Persisted lyricId we'll set on the order
     let persistedLyricId: string | null = null;
 
-    if (!isInstrumental && isValidUuid(lyricId)) {
+    if (!isInstrumental && typeof lyricId === 'string' && isValidUuid(lyricId)) {
       persistedLyricId = lyricId;
       updateData.approved_lyric_id = lyricId;
       updateData.voice_type = voiceType;
