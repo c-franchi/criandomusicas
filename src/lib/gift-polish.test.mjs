@@ -19,7 +19,8 @@ for(const [product,path] of Object.entries(giftEntries)) {
   assert(!html.includes('property="og:url"'));assert(!html.includes('rel="canonical"'));
   assert(html.includes('noindex, nofollow'));assert(!html.includes(token));
   const url=giftUrl(token,'https://criandomusicas.com.br',product);
-  assert.equal(new URL(url).pathname,path);
+  assert.equal(new URL(url).pathname,product==='digital'?'/presente.html':path);
+  assert.equal(new URL(url).searchParams.get('v'),'2');
   assert.equal(giftShareLinks(url,'Surpresa','🎁 Abra seu presente!').url,url);
   assert(isPublicGiftPath(path));assert(isMaintenanceExemptPath(path));
   assert(!shouldBlockUpdate(path));setFlowBusy(true);assert(shouldBlockUpdate(path));setFlowBusy(false);
@@ -35,4 +36,11 @@ test('tracking prioritizes payment and release separately from audio production'
  assert.equal(giftNextStep('PAID',true,false,true),'release');
  assert.equal(giftNextStep('DRAFT',false,false,false),'draft');
  assert.equal(giftNextStep('CANCELLED',false,false,false),'cancel');
+});
+
+test('digital sharing keeps the installed-client route and uses a fresh preview key',()=>{
+ const url=giftUrl(token,'https://criandomusicas.com.br','digital');
+ assert.equal(new URL(url).pathname,'/presente.html');
+ assert.equal(new URL(giftShareLinks(url,'Gift').url).searchParams.get('v'),'2');
+ assert.equal(new URL(giftShareLinks(url+'&internal=private','Gift').url).searchParams.has('internal'),false);
 });

@@ -6,7 +6,7 @@ The existing login, lyric approval, payment/voucher and admin-release flows are 
 
 Released gifts now share one of three real static HTML entry files:
 
-- `presente-digital.html`: digital card.
+- `presente.html?v=2`: digital card, preserving compatibility with installed clients. `presente-digital.html` is also accepted.
 - `presente-curto.html`: short song.
 - `presente-imprimir.html`: printable card.
 

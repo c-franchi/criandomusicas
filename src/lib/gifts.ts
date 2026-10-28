@@ -181,7 +181,9 @@ export function giftUrl(token: string, origin = window.location.origin, product?
   const query = token.startsWith('para-')
     ? new URLSearchParams({ para: token.slice(5) })
     : new URLSearchParams({ token });
-  return `${origin}${product ? giftEntries[product] : "/presente.html"}?${query}`;
+  if (product) query.set("v", "2");
+  // Keep digital gifts on the route understood by already-installed clients.
+  return `${origin}${product && product !== "digital" ? giftEntries[product] : "/presente.html"}?${query}`;
 }
 export function safeImage(url: string | null | undefined) {
   return url?.startsWith("https://") || url?.startsWith("data:image/")
