@@ -1,5 +1,5 @@
 # Marketing / UX reorganization
-- [ ] Make gift evaluation visible and add recipient replies with selectable emoji, editable preset phrases, sender notifications and email; preserve Git updates.
+- [x] Make gift evaluation visible and add recipient replies with selectable emoji, editable preset phrases, sender notifications and email; preserve Git updates. Verified stored reply, rating and sender notification on an existing admin-test gift; email provider mocked (no real email sent); frontend not published.
 - [x] Add recipient action to gift another person using the existing gift flow; correct social sharing without overwriting Git updates (18 tests passed; existing released admin-test card verified through sharing and creation sign-in entry; no publishing).
 - [x] Add existing music reviews and reaction uploads to released gift tracking; keep original music order association.
 - [x] Share legacy gifts through the static gift preview, retaining their private key.
