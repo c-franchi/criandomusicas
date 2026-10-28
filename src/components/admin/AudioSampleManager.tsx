@@ -723,7 +723,7 @@ const AudioSampleManager = ({
                 <input
                   ref={audioInputRef}
                   type="file"
-                  accept="audio/*"
+                  accept=".mp3,.wav,audio/mpeg,audio/wav,audio/x-wav,audio/*"
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleAudioUpload(e.target.files[0])}
                 />
