@@ -116,13 +116,13 @@ const NotificationCenter = () => {
             id: `transfer_${transfer.id}`,
             type: 'credit_transfer',
             title: t('notifications.creditReceived', 'Crédito recebido!'),
-            message: profile?.name 
+            message: profile?.name
               ? t('notifications.creditFromUser', '{{name}} enviou {{amount}} crédito(s) para você', { name: profile.name, amount: transfer.credits_amount })
               : t('notifications.creditFromSomeone', 'Você recebeu {{amount}} crédito(s)', { amount: transfer.credits_amount }),
             createdAt: transfer.created_at,
             read: false,
-            metadata: { 
-              transferId: transfer.id, 
+            metadata: {
+              transferId: transfer.id,
               senderName: profile?.name,
               personalMessage: transfer.message,
               amount: transfer.credits_amount
@@ -144,18 +144,22 @@ const NotificationCenter = () => {
         .gte('music_ready_at', sevenDaysAgo.toISOString())
         .order('music_ready_at', { ascending: false });
 
-      if (readyOrders) {
+      const {data:giftOrders}=await supabase.from('musical_gifts').select('id,checkout_order_id,production_order_id,status,is_test,updated_at').eq('owner_id',user.id);
+      // Readiness of the audio is distinct from admin release of a gift.
+      if (readyOrders && giftOrders) {
         readyOrders.forEach((order: OrderNotification) => {
+          const gift=giftOrders.find(g=>g.checkout_order_id===order.id||g.production_order_id===order.id);
+          if(gift && (gift.status!=='ACTIVE'||gift.is_test)) return;
           allNotifications.push({
             id: `music_${order.id}`,
             type: 'music_ready',
-            title: t('notifications.musicReady', 'Música pronta!'),
-            message: order.song_title 
+            title: gift ? t('home:giftFlow.status.ACTIVE') : t('notifications.musicReady', 'Música pronta!'),
+            message: gift ? t('home:giftFlow.nextAction.share') : order.song_title
               ? t('notifications.musicReadyTitle', 'Sua música "{{title}}" está pronta!', { title: order.song_title })
               : t('notifications.musicReadyGeneric', 'Sua música está pronta para ouvir!'),
             createdAt: order.music_ready_at || order.updated_at,
             read: false,
-            actionUrl: `/pedido/${order.id}`,
+            actionUrl: gift ? `/presentes/${gift.id}` : `/pedido/${order.id}`,
             metadata: { orderId: order.id },
           });
         });
@@ -178,11 +182,11 @@ const NotificationCenter = () => {
         paidOrders.forEach((order: OrderNotification) => {
           // Diferenciar: créditos vs pagamento real
           const isCredit = order.payment_method === 'credits' || order.payment_method === 'subscription';
-          
+
           allNotifications.push({
             id: isCredit ? `order_${order.id}` : `payment_${order.id}`,
             type: isCredit ? 'order_received' : 'payment_approved',
-            title: isCredit 
+            title: isCredit
               ? t('notifications.orderReceived', 'Pedido recebido!')
               : t('notifications.paymentApproved', 'Pagamento aprovado!'),
             message: isCredit
@@ -345,15 +349,15 @@ const dismissNotification = (notificationId: string, _notificationType: Notifica
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button 
+        <Button
           aria-label={t('notifications.title', 'Notificações')}
-          variant="outline" 
-          size="icon" 
+          variant="outline"
+          size="icon"
           className="relative hover:scale-105 transition-transform rounded-xl"
         >
           <Bell className="w-4 h-4" />
           {unreadCount > 0 && (
-            <Badge 
+            <Badge
               className="absolute -top-1.5 -right-1.5 h-5 min-w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white border-0 animate-pulse"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
@@ -410,7 +414,7 @@ const dismissNotification = (notificationId: string, _notificationType: Notifica
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
                         {notification.message}
                       </p>
-                      
+
                       {/* Show personal message for credit transfers */}
                       {notification.type === 'credit_transfer' && notification.metadata?.personalMessage && (
                         <p className="text-xs italic text-primary/80 mt-1">
@@ -422,7 +426,7 @@ const dismissNotification = (notificationId: string, _notificationType: Notifica
                         <span className="text-[10px] text-muted-foreground">
                           {formatDate(notification.createdAt)}
                         </span>
-                        
+
                         {notification.type === 'credit_transfer' && notification.metadata?.transferId && (
                           <Button
                             size="sm"

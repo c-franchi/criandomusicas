@@ -17,6 +17,7 @@ export default function GiftShare({
   const { t } = useTranslation("home");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
+  const [more, setMore] = useState(false);
   const message = t(received?'giftFlow.shareReceivedMessage':'giftFlow.shareGiftMessage',{name:recipient?`${recipient}, `:''});
   const links = giftShareLinks(url, title || t("giftFlow.received"),message);
   const copy = async (text = links.url) => {
@@ -63,7 +64,7 @@ export default function GiftShare({
         {t("giftFlow.socialNative")}
       </Button>
       <div className="flex flex-wrap gap-2">
-        {(["whatsapp", "facebook", "telegram", "x", "email"] as const).map(
+        {(more ? ["whatsapp", "facebook", "telegram", "x", "email"] as const : ["whatsapp"] as const).map(
           (network) => (
             <Button
               key={network}
@@ -98,10 +99,9 @@ export default function GiftShare({
           {t("giftFlow.copyLink")}
         </Button>
       </div>
+      <Button variant="ghost" className="min-h-11" aria-expanded={more} onClick={() => setMore(!more)}>{t(more ? "giftFlow.fewerOptions" : "giftFlow.moreOptions")}</Button>
       <Button variant="outline" className="min-h-11" onClick={() => void copy(links.shareText)}>{t('giftFlow.copyMessage')}</Button>
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        {t("giftFlow.instagramHelp")}
-      </p>
+      {more && <p className="text-xs leading-relaxed text-muted-foreground">{t("giftFlow.instagramHelp")}</p>}
       <input
         readOnly
         value={links.url}

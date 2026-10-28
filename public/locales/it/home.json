@@ -338,7 +338,7 @@
     "label": "Regali musicali",
     "title": "UN REGALO DIVERSO. UN’EMOZIONE CHE RESTA.",
     "description": "Sorprendi una persona speciale con una canzone emozionante, una melodia divertente da condividere in famiglia o un biglietto con una musica da ricordare.",
-    "previewNotice": "Personalizza e salva il regalo. Prezzi e condizioni vengono confermati prima del pagamento.",
+    "previewNotice": "Scegli la musica e personalizza il regalo. Controlla il totale prima di pagare.",
     "back": "Torna ai regali musicali",
     "exploreModels": "Scopri i modelli",
     "exploreDuration": "Esplora i formati",
@@ -347,8 +347,8 @@
     "upTo": "Circa {{seconds}} secondi",
     "durationNote": "La durata è approssimativa: fino a 20s per l’opzione da 15s e fino a 40s per quella da 30s.",
     "themeLabel": "Esplora le occasioni",
-    "howItWorks": "Come funzionerà",
-    "included": "Cosa include la proposta",
+    "howItWorks": "Come funziona",
+    "included": "Cosa ricevi",
     "occasions": "Una canzone per ogni occasione",
     "otherProducts": "Altri regali musicali",
     "art": {
@@ -378,12 +378,12 @@
       "reset": "Rivedi l’apertura",
       "shortTitle": "La tua idea in una canzone.",
       "shortDescription": "Nomi, ricordi e battute tra amici possono ispirare un piccolo omaggio. Tu scegli il tono e lo stile musicale.",
-      "noAudio": "Questa dimostrazione non contiene audio. La canzone dell’ordine sarà associata in una fase successiva.",
+      "noAudio": "Questa anteprima mostra il design. Ascolta esempi reali nella pagina iniziale.",
       "disclaimer": "Esempio visivo con contenuti illustrativi. Questa dimostrazione non crea né salva ordini."
     },
     "commercial": {
       "title": "Disponibilità e condizioni",
-      "pending": "Prezzo, tempi e opzioni di consegna saranno mostrati prima dell’acquisto, dopo la configurazione commerciale e l’integrazione degli ordini.",
+      "pending": "Controlla modalità, prezzo e tempi configurati sopra. Verifica il riepilogo finale prima del pagamento.",
       "unavailable": "Acquisto non ancora disponibile"
     },
     "products": {
@@ -394,7 +394,7 @@
         "description": "Crea un regalo unico con una canzone personalizzata, una dedica e un biglietto digitale interattivo. Condividilo via WhatsApp o email e trasforma i sentimenti in una sorpresa indimenticabile.",
         "cta": "CREA IL MIO REGALO MUSICALE",
         "experienceTitle": "Il primo tocco fa già parte della sorpresa.",
-        "experienceDescription": "Esplora un’occasione e guarda un esempio di apertura. Temi, foto, nomi e messaggi saranno personalizzabili nel percorso completo.",
+        "experienceDescription": "Esplora temi e modelli. Personalizza foto, nomi e messaggio durante la creazione del regalo.",
         "included": [
           "Un brano esistente autorizzato o una nuova creazione, secondo la modalità.",
           "Biglietto con nomi, dedica e foto facoltativa.",
@@ -430,7 +430,7 @@
         "experienceTitle": "Pochi secondi. Un tocco tutto tuo.",
         "experienceDescription": "Un omaggio affettuoso, una sorpresa di Babbo Natale segreto o una battuta che solo la famiglia capisce. Scopri i due formati.",
         "included": [
-          "Formati fino a 15 o fino a 30 secondi.",
+          "Brano di circa 15 o 30 secondi, secondo la tua scelta.",
           "Testo ispirato ai nomi e ai dettagli che fornisci.",
           "Scelta di tono, stile musicale e lingua.",
           "Possibilità di aggiungere un biglietto digitale secondo le condizioni configurate."
@@ -451,7 +451,7 @@
           "Saluti e ringraziamenti",
           "Altre occasioni"
         ],
-        "conditions": "Le canzoni seguono il processo reale di produzione. Questa pagina non simula la generazione. Le condizioni del biglietto aggiuntivo saranno mostrate prima dell’acquisto."
+        "conditions": "La musica segue il processo di Criando Músicas, con revisione del testo prima della produzione. Se aggiungi un biglietto digitale, il costo compare nel riepilogo prima del pagamento."
       },
       "physical": {
         "name": "Biglietto Musicale da Stampare",
@@ -502,6 +502,16 @@
       "tribute": "Omaggio",
       "wedding": "Matrimonio",
       "any": "Senza occasione speciale"
+    },
+    "moreServices": "Altri modi per creare con la musica",
+    "moreServicesHelp": "Scopri brani strumentali, canzoni con il tuo testo e video personalizzati.",
+    "moreExamples": "Altri esempi",
+    "fewerExamples": "Meno esempi",
+    "offer": {
+      "summary": "Pagamento unico. Personalizzazione e stato nella tua area personale. I nuovi brani passano per revisione del testo, produzione e rilascio del regalo.",
+      "production": "Tempi di produzione",
+      "productionPending": "Contatta l'assistenza prima di acquistare se hai una data specifica.",
+      "title": "Scegli il tuo regalo"
     }
   },
   "giftFlow": {
@@ -814,7 +824,28 @@
     "shareGiftMessage": "🎁 {{name}}prepara il cuore! Ho una sorpresa musicale creata apposta per te. 💜\n\n🎧 Prendi le cuffie, apri il regalo e premi play. Ogni parola e ogni nota portano un po’ del mio affetto. ✨\n\nTocca il link e scoprila! 👇",
     "shareReceivedMessage": "🎁 Ho ricevuto un regalo musicale che mi ha toccato il cuore! 💜\n🎧 Apri il link e condividi con me questo ricordo speciale. ✨",
     "copyMessage": "Copia messaggio e link",
-    "createForSomeoneElse": "Crea un regalo per un’altra persona"
+    "createForSomeoneElse": "Crea un regalo per un’altra persona",
+    "moreOptions": "Altre opzioni",
+    "fewerOptions": "Meno opzioni",
+    "nextAction": {
+      "pay": "Completa il pagamento",
+      "receipt": "Attendi la verifica del pagamento",
+      "lyrics": "Rivedi e approva il testo",
+      "audio": "Attendi la produzione musicale",
+      "release": "Attendi la verifica e il rilascio del regalo",
+      "share": "Condividi il mio regalo",
+      "draft": "Continua la personalizzazione",
+      "cancel": "Ordine annullato",
+      "load": "Controllo del prossimo passo…",
+      "title": "Prossimo passo"
+    },
+    "filterProduct": "Tipo di regalo",
+    "filterStatus": "Fase dell'ordine",
+    "searchOrders": "Cerca destinatario, mittente o ordine",
+    "allOrders": "Tutti",
+    "retryReady": "Riprova avviso regalo pronto",
+    "retryReadyDone": "Avviso elaborato. Controlla l'esito nella cronologia.",
+    "scheduledAccess": "Il destinatario potrà aprire il link dal {{date}}."
   },
   "giftResponse": {
     "title": "Rispondi al biglietto",
@@ -831,10 +862,21 @@
     "empty": "Nessuna risposta a questo biglietto.",
     "notification": "Il tuo regalo ha ricevuto una risposta!",
     "presets": [
-        "Ho adorato il regalo!",
-        "Mi hai emozionato!",
-        "Grazie per il tuo affetto!",
-        "Questa canzone parla proprio di noi!"
-    ]
-}
+      "Ho adorato il regalo!",
+      "Mi hai emozionato!",
+      "Grazie per il tuo affetto!",
+      "Questa canzone parla proprio di noi!"
+    ],
+    "open": "Rispondi a chi mi ha fatto questo regalo",
+    "retryEmail": "Riprova l'invio dell'email",
+    "emailSent": "Email accettata per l'invio.",
+    "emailFailed": "L'email non è ancora stata inviata. La risposta è salvata.",
+    "emailState": "Email di notifica",
+    "emailStatus": {
+      "pending": "In attesa",
+      "sent": "Accettata dal servizio email",
+      "failed": "Invio non riuscito",
+      "test_skipped": "Test: email non inviata"
+    }
+  }
 }

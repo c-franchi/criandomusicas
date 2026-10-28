@@ -1,3 +1,4 @@
+import { isPublicGiftPath } from './gift-entry-paths.mjs';
 // Meta Pixel loader with LGPD consent gating.
 // Only initializes fbq after the user grants marketing consent.
 
@@ -18,7 +19,7 @@ const hasMarketingConsent = (): boolean => {
 };
 
 const injectPixelScript = () => {
-  if (typeof window === "undefined" || window.location.pathname.startsWith("/presente/")) return;
+  if (typeof window === "undefined" || isPublicGiftPath(window.location.pathname)) return;
   if ((window as any).fbq) return;
   /* eslint-disable */
   // Facebook Pixel base code
@@ -43,7 +44,7 @@ const injectPixelScript = () => {
 };
 
 export const initMetaPixel = () => {
-  if (typeof window === "undefined" || window.location.pathname.startsWith("/presente/")) return;
+  if (typeof window === "undefined" || isPublicGiftPath(window.location.pathname)) return;
   if (!META_PIXEL_ID) return;
   if (initialized) return;
   if (!hasMarketingConsent()) return;

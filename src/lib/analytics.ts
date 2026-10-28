@@ -1,3 +1,4 @@
+import { isPublicGiftPath } from './gift-entry-paths.mjs';
 // GA4 + Meta Pixel analytics helpers.
 // GA4 ID is set at build time via VITE_GA4_ID (fallback baked in).
 // Meta Pixel only activates when VITE_META_PIXEL_ID is set.
@@ -17,7 +18,7 @@ declare global {
 }
 
 export const trackPageView = (path: string, title?: string) => {
-  if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/')) return;
+  if (typeof window === 'undefined' || isPublicGiftPath(window.location.pathname)) return;
   if (window.gtag && GA4_ID) {
     window.gtag('config', GA4_ID, {
       page_path: path,
@@ -38,7 +39,7 @@ export const trackEvent = (
   name: string,
   params: Record<string, unknown> = {},
 ) => {
-  if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/')) return;
+  if (typeof window === 'undefined' || isPublicGiftPath(window.location.pathname)) return;
   try {
     window.gtag?.('event', name, params);
   } catch (e) {
@@ -51,7 +52,7 @@ export const trackPixel = (
   name: string,
   params: Record<string, unknown> = {},
 ) => {
-  if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/') || !window.fbq) return;
+  if (typeof window === 'undefined' || isPublicGiftPath(window.location.pathname) || !window.fbq) return;
   try {
     window.fbq('track', name, params);
   } catch (e) {
@@ -61,6 +62,8 @@ export const trackPixel = (
 
 // Convenience wrappers for our key funnel events
 export const analytics = {
+  giftStep: (product: string, step: number) => trackEvent('gift_personalization_step', {product, step}),
+  giftSubmit: (product: string) => trackEvent('gift_checkout_requested', {product}),
   signUp: (method = 'email') => {
     trackEvent('sign_up', { method });
     trackPixel('CompleteRegistration');
@@ -86,7 +89,7 @@ export const analytics = {
     trackEvent('apply_voucher', { code, success }),
   purchase: (params: { value: number; currency?: string; transaction_id?: string; event_id?: string }) => {
     const { value, currency = 'BRL', transaction_id, event_id } = params;
-    if (typeof window === 'undefined' || window.location.pathname.startsWith('/presente/')) return;
+    if (typeof window === 'undefined' || isPublicGiftPath(window.location.pathname)) return;
     // Dedupe: never fire the same purchase twice (page refresh, re-verify, etc.)
     const dedupeKey = `analytics_purchase_${transaction_id || event_id || value}`;
     try {

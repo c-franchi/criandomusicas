@@ -1,3 +1,4 @@
+import { useFlowBusy } from '@/hooks/useFlowBusy';
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(!!existingReview);
   const [showProfilePrompt, setShowProfilePrompt] = useState(false);
+  useFlowBusy(isSubmitting || (!hasSubmitted && (rating > 0 || !!comment.trim())));
 
   const handleSubmit = async () => {
     if (rating === 0) {

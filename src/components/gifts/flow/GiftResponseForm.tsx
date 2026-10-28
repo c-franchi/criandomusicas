@@ -1,3 +1,4 @@
+import { useFlowBusy } from '@/hooks/useFlowBusy';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FunctionsHttpError } from '@supabase/supabase-js';
@@ -16,6 +17,7 @@ export default function GiftResponseForm({ token }: { token: string }) {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [notice, setNotice] = useState('');
+  useFlowBusy(busy || (!sent && (!!emoji || !!message || !!rating)));
   const [requestId] = useState(() => crypto.randomUUID());
   const presets = t('giftResponse.presets', { returnObjects: true });
   const send = async () => {

@@ -136,8 +136,9 @@ const AudioSampleCard = ({
   );
 };
 
-const AudioSamples = ({ audioType = "vocal" }: { audioType?: "vocal" | "instrumental" }) => {
+const AudioSamples = ({ audioType = "vocal", compact = false }: { audioType?: "vocal" | "instrumental"; compact?: boolean }) => {
   const { t } = useTranslation('home');
+  const [expanded, setExpanded] = useState(false);
   const [samples, setSamples] = useState<AudioSample[]>([]);
   const [currentPlaying, setCurrentPlaying] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
@@ -270,7 +271,7 @@ const AudioSamples = ({ audioType = "vocal" }: { audioType?: "vocal" | "instrume
         
         {/* Stable, swipeable players remain clickable on mobile and keyboard-accessible. */}
         <div className="flex gap-5 overflow-x-auto px-5 pb-6 snap-x snap-proximity">
-          {samples.map((sample) => {
+          {(compact && !expanded ? samples.slice(0,3) : samples).map((sample) => {
             const isPlaying = currentPlaying === sample.id;
             const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
             
@@ -289,6 +290,7 @@ const AudioSamples = ({ audioType = "vocal" }: { audioType?: "vocal" | "instrume
           })}
         </div>
       </div>
+      {compact && samples.length > 3 && <div className="mt-6 text-center"><Button variant="outline" className="min-h-12" aria-expanded={expanded} onClick={()=>setExpanded(!expanded)}>{t(expanded?"gifts.fewerExamples":"gifts.moreExamples")}</Button></div>}
     </section>
   );
 };

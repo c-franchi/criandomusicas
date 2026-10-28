@@ -1,3 +1,4 @@
+import { useFlowBusy } from '@/hooks/useFlowBusy';
 import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
   const [isPublic, setIsPublic] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
+  useFlowBusy(uploading || (!!selectedFile && !uploaded));
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

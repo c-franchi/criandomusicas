@@ -1,3 +1,5 @@
+import { emailFetch } from '../../supabase/functions/_shared/emailRetry.ts';
+globalThis.__emailFetch=emailFetch;
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -21,9 +23,11 @@ globalThis.fetch=async(url,options)=>{assert.equal(url,'https://api.resend.com/e
 const emailSource=readFileSync(new URL('../../supabase/functions/send-music-ready-email/index.ts',import.meta.url),'utf8')
  .replace(/^import .*http\/server.ts.*$/m,'const serve=handler=>{globalThis.__emailHandler=handler;};')
  .replace(/^import .*resend@.*$/m,'const Resend=globalThis.__FakeResend;')
+ .replace(/^import .*emailFetch.*$/m,'const emailFetch=globalThis.__emailFetch;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__readyDb;');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(emailSource,{loader:'ts',format:'esm'}).code));
 const pushSource=readFileSync(new URL('../../supabase/functions/send-push-notification/index.ts',import.meta.url),'utf8')
+ .replace(/^import .*emailFetch.*$/m,'const emailFetch=globalThis.__emailFetch;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__readyDb;')
  .replace(/import \{[\s\S]*?\} from "https:\/\/esm.sh\/@block65[^;]+;/,'const buildPushPayload=()=>{throw Error("No real push in tests");};');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(pushSource,{loader:'ts',format:'esm'}).code));

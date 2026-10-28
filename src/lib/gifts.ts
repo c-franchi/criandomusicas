@@ -1,5 +1,6 @@
 import type { GiftProduct } from "@/components/gifts/products";
 import { isGiftToken } from './gift-link.ts';
+import { giftEntries } from './gift-entry-paths.mjs';
 export type GiftStatus =
   | "DRAFT"
   | "AWAITING_PAYMENT"
@@ -94,6 +95,7 @@ export interface LyricCue {
   text: string;
 }
 export interface GiftPresentation {
+  product?: GiftProduct;
   public_alias?: string;
   recipient_name: string;
   sender_name: string;
@@ -174,12 +176,12 @@ export function parseLrc(input: string): LyricCue[] {
   if (cues.length > 300) throw Error("gift_invalid_cues");
   return cues.sort((a, b) => a.time - b.time);
 }
-export function giftUrl(token: string, origin = window.location.origin) {
+export function giftUrl(token: string, origin = window.location.origin, product?: GiftProduct) {
   if (!isGiftToken(token)) throw Error("gift_invalid_token");
   const query = token.startsWith('para-')
     ? new URLSearchParams({ para: token.slice(5) })
     : new URLSearchParams({ token });
-  return `${origin}/presente.html?${query}`;
+  return `${origin}${product ? giftEntries[product] : "/presente.html"}?${query}`;
 }
 export function safeImage(url: string | null | undefined) {
   return url?.startsWith("https://") || url?.startsWith("data:image/")

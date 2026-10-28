@@ -1,112 +1,50 @@
 import { useEffect, useState, useCallback } from 'react';
 import { shouldBlockUpdate, subscribeFlowBusy } from '@/lib/flowGuard';
-
-// Safe wrapper to avoid "Should have a queue" React error
-const useSafeRegisterSW = () => {
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
-  const [needRefresh, setNeedRefresh] = useState(false);
-
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      // Register service worker manually to avoid vite-plugin-pwa hook issues
-      navigator.serviceWorker.ready.then((reg) => {
-        setRegistration(reg);
-        console.log('SW ready:', reg.scope);
-      });
-
-      // Check for updates periodically
-      const checkForUpdates = () => {
-        navigator.serviceWorker.getRegistration().then((reg) => {
-          if (reg) {
-            reg.update().catch(console.error);
-          }
-        });
-      };
-
-      const interval = setInterval(checkForUpdates, 30000);
-
-      // Listen for new service worker
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        console.log('SW controller changed - new version available');
-        setNeedRefresh(true);
-      });
-
-      return () => clearInterval(interval);
-    }
-  }, []);
-
-  const updateServiceWorker = useCallback(() => {
-    if (registration?.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-    }
-    // Navigate to home first to avoid black screen, then reload
-    window.location.href = '/';
-  }, [registration]);
-
-  return { needRefresh, updateServiceWorker };
-};
-
 export const usePWAUpdate = () => {
-  const [updateAvailable, setUpdateAvailable] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [blocked, setBlocked] = useState(() => shouldBlockUpdate(window.location.pathname));
-
-  const { needRefresh, updateServiceWorker } = useSafeRegisterSW();
-
-  // Keep track of whether the user is in the middle of a flow
-  // (briefing, checkout, lyrics...) — never interrupt them there.
-  useEffect(() => {
-    const check = () => setBlocked(shouldBlockUpdate(window.location.pathname));
-    check();
-    const interval = setInterval(check, 1000);
-    const unsubscribe = subscribeFlowBusy(check);
-    window.addEventListener('popstate', check);
-    return () => {
-      clearInterval(interval);
-      unsubscribe();
-      window.removeEventListener('popstate', check);
-    };
-  }, []);
-
-  // Listen for service worker messages about updates
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return;
-
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'SW_UPDATED') {
-        setUpdateAvailable(true);
-      }
-    };
-
-    navigator.serviceWorker.addEventListener('message', handleMessage);
-    return () => {
-      navigator.serviceWorker.removeEventListener('message', handleMessage);
-    };
-  }, []);
-
-  // Show banner when SW needs refresh
-  useEffect(() => {
-    if (needRefresh) {
-      setUpdateAvailable(true);
-    }
-  }, [needRefresh]);
-
-  const forceUpdate = useCallback(() => {
-    setIsUpdating(true);
-    updateServiceWorker();
-  }, [updateServiceWorker]);
-
-  const dismissBanner = useCallback(() => {
-    setDismissed(true);
-  }, []);
-
-  return {
-    // Only surface the update prompt when the user is not mid-flow.
-    showUpdateBanner: updateAvailable && !dismissed && !blocked,
-    updateAvailable,
-    isUpdating,
-    forceUpdate,
-    dismissBanner,
+ const [updateAvailable,setUpdateAvailable]=useState(false);
+ const [dismissed,setDismissed]=useState(false);
+ const [isUpdating,setIsUpdating]=useState(false);
+ const [blocked,setBlocked]=useState(()=>shouldBlockUpdate(window.location.pathname));
+ useEffect(()=>{
+  let stopped=false, checking=false;
+  const entry=document.querySelector<HTMLScriptElement>('script[type="module"][src]')?.getAttribute('src');
+  const check=async()=>{
+   if(checking || document.visibilityState==='hidden') return;
+   checking=true;
+   try {
+    const response=await fetch('/app-version.json',{cache:'no-store'});
+    if(response.ok){const version=await response.json();if(!stopped && entry && version.entry && new URL(version.entry,location.origin).pathname!==new URL(entry,location.origin).pathname) setUpdateAvailable(true);}
+    if('serviceWorker' in navigator) {const reg=await navigator.serviceWorker.getRegistration(); await reg?.update();}
+   } catch { /* Offline clients retain their current page. */ }
+   finally {checking=false;}
   };
+  const onController=()=>{if(!stopped)setUpdateAvailable(true);};
+  const onMessage=(e:MessageEvent)=>{if(e.data?.type==='SW_UPDATED') onController();};
+  void check();const interval=setInterval(()=>void check(),60000);
+  window.addEventListener('focus',check);
+  navigator.serviceWorker?.addEventListener('controllerchange',onController);
+  navigator.serviceWorker?.addEventListener('message',onMessage);
+  return ()=>{stopped=true;clearInterval(interval);window.removeEventListener('focus',check);navigator.serviceWorker?.removeEventListener('controllerchange',onController);navigator.serviceWorker?.removeEventListener('message',onMessage);};
+ },[]);
+ useEffect(()=>{
+  const check=()=>setBlocked(shouldBlockUpdate(window.location.pathname));check();
+  const interval=setInterval(check,1000),unsubscribe=subscribeFlowBusy(check);
+  window.addEventListener('popstate',check);
+  return ()=>{clearInterval(interval);unsubscribe();window.removeEventListener('popstate',check);};
+ },[]);
+ const forceUpdate=useCallback(async()=>{
+  if(shouldBlockUpdate(window.location.pathname)) return;
+  setIsUpdating(true);
+  try {
+   if('serviceWorker' in navigator){
+    const reg=await navigator.serviceWorker.getRegistration();
+    if(reg?.waiting) await new Promise<void>(resolve=>{
+     const finish=()=>{navigator.serviceWorker.removeEventListener('controllerchange',finish);clearTimeout(timeout);resolve();};
+     const timeout=setTimeout(finish,3000);
+     navigator.serviceWorker.addEventListener('controllerchange',finish);reg.waiting!.postMessage({type:'SKIP_WAITING'});
+    });
+   }
+  } finally {window.location.reload();}
+ },[]);
+ return {showUpdateBanner:updateAvailable&&!dismissed&&!blocked,updateAvailable,isUpdating,forceUpdate,dismissBanner:useCallback(()=>setDismissed(true),[])};
 };

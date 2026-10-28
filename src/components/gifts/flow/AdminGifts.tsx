@@ -1,3 +1,4 @@
+import { useFlowBusy } from '@/hooks/useFlowBusy';
 import GiftProductionPanel from "./GiftProductionPanel";
 import { giftAudioLimit } from "@/lib/gift-duration";
 import GiftShare from "./GiftShare";
@@ -42,6 +43,10 @@ export default function AdminGifts() {
   const { isAdmin, loading: roleLoading } = useAdminRole(user?.id);
   const { t } = useTranslation("home");
   const list = useGiftList(true);
+  const [productFilter,setProductFilter]=useState("all");
+  const [statusFilter,setStatusFilter]=useState("all");
+  const [search,setSearch]=useState("");
+  const visible=(list.data||[]).filter(g=>(productFilter==="all"||g.product===productFilter)&&(statusFilter==="all"||g.status===statusFilter)&&[g.id,g.recipient_name,g.sender_name,g.production_order_id,g.checkout_order_id].some(v=>v?.toLowerCase().includes(search.toLowerCase().trim())));
   const [params] = useSearchParams();
   const [selected, setSelected] = useState<string | undefined>(
     params.get("presente") || undefined,
@@ -61,6 +66,11 @@ export default function AdminGifts() {
           <TabsTrigger value="commerce">{t("giftFlow.commerce")}</TabsTrigger>
         </TabsList>
         <TabsContent value="orders">
+          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+            <Input aria-label={t('giftFlow.searchOrders')} placeholder={t('giftFlow.searchOrders')} value={search} onChange={e=>setSearch(e.target.value)} />
+            <select aria-label={t('giftFlow.filterProduct')} className="min-h-12 rounded-lg border border-border bg-background px-3" value={productFilter} onChange={e=>setProductFilter(e.target.value)}><option value="all">{t('giftFlow.allOrders')}</option>{['digital','short','physical'].map(p=><option key={p} value={p}>{t(`gifts.products.${p}.name`)}</option>)}</select>
+            <select aria-label={t('giftFlow.filterStatus')} className="min-h-12 rounded-lg border border-border bg-background px-3" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">{t('giftFlow.allOrders')}</option>{['DRAFT','AWAITING_PAYMENT','RECEIPT_SENT','PAID','APPROVED_TEST','PRODUCTION','ACTIVE','CANCELLED'].map(status=><option key={status} value={status}>{t('giftFlow.status.'+status)}</option>)}</select>
+          </div>
           <div className="mt-6 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
             <div className="space-y-3">
               {list.isPending ? (
@@ -68,7 +78,7 @@ export default function AdminGifts() {
               ) : list.isError ? (
                 <p role="alert">{t("giftFlow.loadError")}</p>
               ) : (
-                list.data?.map((g) => (
+                visible.map((g) => (
                   <button
                     key={g.id}
                     onClick={() => setSelected(g.id)}
@@ -89,7 +99,7 @@ export default function AdminGifts() {
                   </button>
                 ))
               )}
-              {list.data?.length === 0 && <p>{t("giftFlow.noGifts")}</p>}
+              {visible.length === 0 && <p>{t("giftFlow.noGifts")}</p>}
             </div>
             <div className="min-w-0">
               {selected ? (
@@ -120,6 +130,7 @@ function GiftAdminDetail({ id }: { id: string }) {
   const { toast } = useToast();
   const [busy, setBusy] = useState(false);
   const [uploadingAudio, setUploadingAudio] = useState(false);
+  useFlowBusy(busy || uploadingAudio);
   const [error, setError] = useState("");
   const [reviewed, setReviewed] = useState(false);
   const [qrChecked, setQrChecked] = useState(false);
@@ -171,7 +182,15 @@ function GiftAdminDetail({ id }: { id: string }) {
   };
   if (query.isPending) return <PageLoader />;
   if (query.isError || !g) return <p role="alert">{t("giftFlow.loadError")}</p>;
-  const url = g.status === "ACTIVE" ? giftUrl(g.public_alias || g.public_token) : "";
+  const retryReady = async () => {
+    setBusy(true);setError('');
+    try {
+      const {data,error}=await supabase.functions.invoke('send-music-ready-email',{body:{orderId:g.checkout_order_id||g.production_order_id,userId:g.owner_id}});
+      if(error||!data?.success) throw Error(t('giftFlow.genericError'));
+      toast({description:t('giftFlow.retryReadyDone')});
+    }catch(e){setError(e instanceof Error?e.message:t('giftFlow.genericError'));}finally{setBusy(false);}
+  };
+  const url = g.status === "ACTIVE" ? giftUrl(g.public_alias || g.public_token, window.location.origin, g.product) : "";
   const physicalTestBlocked =
     g.product === "physical" && g.is_test && !physicalEnabled;
   return (
@@ -357,7 +376,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             >
               {t("giftFlow.revoke")}
             </Button>
-            <GiftShare url={url} recipient={g.recipient_name}/>
+            <><Button variant="outline" disabled={busy||g.is_test} onClick={()=>void retryReady()} className="mb-4 min-h-12">{t('giftFlow.retryReady')}</Button><GiftShare url={url} recipient={g.recipient_name}/></>
             <GiftQr url={url} />
             {g.product === "physical" && (
               <>
