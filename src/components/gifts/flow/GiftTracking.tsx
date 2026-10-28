@@ -196,7 +196,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
       setBusy(false);
     }
   };
-  const url = g.status === "ACTIVE" ? giftUrl(g.public_token) : "";
+  const url = g.status === "ACTIVE" ? giftUrl(g.public_alias || g.public_token) : "";
   return (
     <GiftShell title={t("giftFlow.tracking")}>
       <div className="mb-7 rounded-2xl border border-primary/30 bg-primary/5 p-5">
@@ -221,7 +221,7 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </p>
         )}
       </div>
-      {g.status === "ACTIVE" && <div className="mb-7"><GiftShare url={url}/></div>}
+      {g.status === "ACTIVE" && <div className="mb-7"><GiftShare url={url} recipient={g.recipient_name}/></div>}
       {g.status !== "ACTIVE" && audio.data?.audio_url && <section role="status" className="mb-7 space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-5"><h2 className="font-semibold">{t("giftFlow.awaitingRelease")}</h2><p className="text-sm">{t("giftFlow.releaseNextStep")}</p>{isAdmin && <Button asChild><Link to={`/admin/presentes?presente=${g.id}`}>{t("giftFlow.reviewAndRelease")}</Link></Button>}</section>}
       {g.music_source === "new" && !audio.data?.audio_url && (
         <section

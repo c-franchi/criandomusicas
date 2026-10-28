@@ -1,3 +1,5 @@
+import { giftLyricText } from "@/lib/gift-link";
+import { giftUrl } from "@/lib/gifts";
 import GiftShare from "./GiftShare";
 import GiftBackground from "./GiftBackground";
 import { useRef, useState } from "react";
@@ -60,7 +62,7 @@ export default function GiftExperience({
         wedding: Sparkles,
       } as Record<string, typeof Gift>
     )[data.theme] || Gift;
-  const cues = data.lyric_cues || [];
+  const cues = (data.lyric_cues || []).map(c=>({...c,text:giftLyricText(c.text)})).filter(c=>!!c.text);
   let active = -1;
   for (let i = 0; i < cues.length; i++) if (cues[i].time <= time) active = i;
   const open = () => {
@@ -171,7 +173,7 @@ export default function GiftExperience({
               <div className="mt-8 border-t border-white/20 pt-6 text-left">
                 <h3 className="mb-4 font-semibold">{t("giftFlow.lyrics")}</h3>
                 <p className="whitespace-pre-line break-words text-sm leading-relaxed text-white/80">
-                  {data.lyrics}
+                  {giftLyricText(data.lyrics)}
                 </p>
               </div>
             )
@@ -194,7 +196,7 @@ export default function GiftExperience({
             </Button>
 
           </div>
-          {!preview && <div className="mt-6"><GiftShare url={window.location.origin+window.location.pathname} title={data.title}/></div>}
+          {!preview && <div className="mt-6"><GiftShare url={data.public_alias ? giftUrl(data.public_alias) : window.location.href} title={data.title} received/></div>}
         </>
       )}
       {notice && (

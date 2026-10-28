@@ -810,6 +810,9 @@
     "awaitingRelease": "In attesa di verifica e rilascio",
     "durationMargin": "Opzione da {{seconds}}s: margine di produzione fino a {{max}}s.",
     "measuredDuration": "Durata misurata: {{seconds}}s.",
-    "uploadHere": "Allega o sostituisci la musica qui prima del rilascio. Una traccia è sufficiente; la seconda è facoltativa. MP3 e WAV sono accettati."
+    "uploadHere": "Allega o sostituisci la musica qui prima del rilascio. Una traccia è sufficiente; la seconda è facoltativa. MP3 e WAV sono accettati.",
+    "shareGiftMessage": "🎁 {{name}}prepara il cuore! Ho una sorpresa musicale creata apposta per te. 💜\n\n🎧 Prendi le cuffie, apri il regalo e premi play. Ogni parola e ogni nota portano un po’ del mio affetto. ✨\n\nTocca il link e scoprila! 👇",
+    "shareReceivedMessage": "🎁 Ho ricevuto un regalo musicale che mi ha toccato il cuore! 💜\n🎧 Apri il link e condividi con me questo ricordo speciale. ✨",
+    "copyMessage": "Copia messaggio e link"
   }
 }

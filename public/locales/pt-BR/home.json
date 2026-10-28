@@ -828,6 +828,9 @@
     "awaitingRelease": "Aguardando conferência e liberação do ADM",
     "durationMargin": "Opção de {{seconds}}s: margem de produção permitida até {{max}}s.",
     "measuredDuration": "Duração medida: {{seconds}}s.",
-    "uploadHere": "Anexe ou substitua a música aqui antes de liberar o cartão. Uma faixa é suficiente; a segunda é opcional. MP3 e WAV são aceitos."
+    "uploadHere": "Anexe ou substitua a música aqui antes de liberar o cartão. Uma faixa é suficiente; a segunda é opcional. MP3 e WAV são aceitos.",
+    "shareGiftMessage": "🎁 {{name}}prepare o coração! Tenho uma surpresa musical feita especialmente para você. 💜\n\n🎧 Pegue seus fones, abra seu presente e dê o play. Cada palavra e cada nota levam um carinho que eu queria te entregar. ✨\n\nToque no link e descubra! 👇",
+    "shareReceivedMessage": "🎁 Recebi um presente que virou música e tocou meu coração! 💜\n🎧 Abra o link para ouvir essa lembrança especial comigo. ✨",
+    "copyMessage": "Copiar mensagem com o link"
   }
 }

@@ -81,7 +81,7 @@ export default function GiftBooklet({
               />
             )}
             <div className="gift-booklet-qr">
-              <GiftQr url={giftUrl(g.public_token)} />
+              <GiftQr url={giftUrl(g.public_alias || g.public_token)} />
               <p className="gift-booklet-small">{t("giftFlow.scan")}</p>
             </div>
           </>,

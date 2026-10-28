@@ -6,14 +6,19 @@ import { giftShareLinks } from "@/lib/gift-sharing";
 export default function GiftShare({
   url,
   title,
+  recipient,
+  received = false,
 }: {
   url: string;
   title?: string;
+  recipient?: string;
+  received?: boolean;
 }) {
   const { t } = useTranslation("home");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  const links = giftShareLinks(url, title || t("giftFlow.received"));
+  const message = t(received?'giftFlow.shareReceivedMessage':'giftFlow.shareGiftMessage',{name:recipient?`${recipient}, `:''});
+  const links = giftShareLinks(url, title || t("giftFlow.received"),message);
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(links.url);
@@ -29,6 +34,7 @@ export default function GiftShare({
       if (navigator.share)
         await navigator.share({
           title: title || t("giftFlow.received"),
+          text: message,
           url: links.url,
         });
       else await copy();
@@ -48,6 +54,7 @@ export default function GiftShare({
       <p className="text-sm text-muted-foreground">
         {t("giftFlow.socialHelp")}
       </p>
+      <p className="whitespace-pre-line rounded-xl bg-muted p-4 text-sm">{message}</p>
       <Button
         className="min-h-12 w-full h-auto whitespace-normal py-3"
         disabled={busy}
@@ -92,6 +99,10 @@ export default function GiftShare({
           {t("giftFlow.copyLink")}
         </Button>
       </div>
+      <Button variant="outline" className="min-h-11" onClick={async()=>{
+        try {await navigator.clipboard.writeText(message+'\n\n'+links.url);setNotice(t('giftFlow.copied'));}
+        catch{setNotice(t('giftFlow.copyError'));}
+      }}>{t('giftFlow.copyMessage')}</Button>
       <p className="text-xs leading-relaxed text-muted-foreground">
         {t("giftFlow.instagramHelp")}
       </p>

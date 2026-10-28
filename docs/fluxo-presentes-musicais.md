@@ -104,3 +104,16 @@ As opções comerciais de 15s e 30s passam a ser aproximadas: margem de áudio a
 Upload de presente não dispara mais aviso de música pronta. A ação publicar confirma ACTIVE no banco e então solicita o aviso ao comprador. send-music-ready-email também bloqueia chamadas antigas/cached antes de ACTIVE e não envia testes; o destinatário vem do cadastro do comprador, com verificação de ADM/serviço. O email usa /presentes/:id, respeita a explicação da data de acesso e utiliza chave idempotente no Resend + evento ready_email_sent para evitar repetição. Push de pronto também é bloqueado antes da liberação; avisos de letras para aprovação continuam funcionando. Não há envio automático ao presenteado nesta mudança. Falhas de aviso são informadas sem desfazer a liberação do cartão.
 
 Migração 20261028014508_gift_release_and_duration_tolerance.sql. Publicar send-music-ready-email e send-push-notification e o frontend. Testes de notificações usam somente banco/provedores simulados, e testes SQL utilizam BEGIN/ROLLBACK.
+
+
+### Letra limpa, link com nome e compartilhamento
+
+A apresentação remove marcadores de produção entre colchetes, inclusive Verse/Chorus/End, do texto normal e dos trechos sincronizados. O conteúdo aprovado no banco e usado na produção permanece intacto.
+
+public_alias é uma coluna gerada: prefixo para- com o nome normalizado (até 32 caracteres) e uma chave base64url de 22 caracteres derivada de 128 bits aleatórios do token. Não é um endereço adivinhável somente pelo nome. Ao revogar/rotacionar o token, o alias também muda. O RPC aceita tanto o token antigo quanto o alias novo, sempre mantendo pagamento/teste, ACTIVE, horário e faixa aprovada. Os links antigos continuam válidos até revogação.
+
+O novo compartilhamento usa /presente.html?para=nome-chave. Vite emite um HTML real para essa entrada, com título, descrição e imagem de marca próprios de presente musical, sem nomes, fotos, dedicatória ou letra nos metadados. Não se trata de SEO dinâmico por cartão. O endereço fornecido na consulta é mantido no compartilhamento entre aplicativos; demais parâmetros e fragmentos são removidos. O cartão é carregado pelo mesmo RPC protegido após a pessoa abrir o link. Essa entrada é isenta de manutenção, não indexável, e não exibe a faixa de atualização do aplicativo durante a experiência.
+
+As mensagens distinguem envio ao presenteado e compartilhamento de quem recebeu. WhatsApp, Telegram, X, email e compartilhamento nativo incluem a mensagem; há também Copiar mensagem com o link. A prévia é genérica para preservar a surpresa. Plataformas podem manter cache de mensagens antigas: os novos metadados valem no novo endereço compartilhado.
+
+Aplicar 20261028022018_friendly_gift_links.sql e publicar frontend. Nenhuma geração ou envio externo é disparado pela migração.

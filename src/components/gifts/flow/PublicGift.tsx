@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useLocation, Link } from "react-router-dom";
+import { isGiftToken } from '@/lib/gift-link';
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,12 +9,15 @@ import PageLoader from "@/components/PageLoader";
 import { Button } from "@/components/ui/button";
 import GiftExperience from "./GiftExperience";
 export default function PublicGift() {
-  const { token } = useParams();
+  const { token: routeToken } = useParams();
+  const location = useLocation();
+  const recipientLink = new URLSearchParams(location.search).get('para');
+  const token = routeToken || (recipientLink ? `para-${recipientLink}` : location.hash.slice(1));
   const { t } = useTranslation("home");
   const query = useQuery({
     queryKey: ["public-musical-gift", token],
     queryFn: async () => {
-      if (!/^[a-f0-9]{64}$/.test(token || "")) return null;
+      if (!isGiftToken(token || "")) return null;
       const { data, error } = await supabase.rpc("get_musical_gift", {
         p_token: token!,
       });

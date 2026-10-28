@@ -171,7 +171,7 @@ function GiftAdminDetail({ id }: { id: string }) {
   };
   if (query.isPending) return <PageLoader />;
   if (query.isError || !g) return <p role="alert">{t("giftFlow.loadError")}</p>;
-  const url = g.status === "ACTIVE" ? giftUrl(g.public_token) : "";
+  const url = g.status === "ACTIVE" ? giftUrl(g.public_alias || g.public_token) : "";
   const physicalTestBlocked =
     g.product === "physical" && g.is_test && !physicalEnabled;
   return (
@@ -357,7 +357,7 @@ function GiftAdminDetail({ id }: { id: string }) {
             >
               {t("giftFlow.revoke")}
             </Button>
-            <GiftShare url={url}/>
+            <GiftShare url={url} recipient={g.recipient_name}/>
             <GiftQr url={url} />
             {g.product === "physical" && (
               <>
