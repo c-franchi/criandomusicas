@@ -18,9 +18,9 @@ export default function PublicGift() {
   const query = useQuery({
     queryKey: ["public-musical-gift", token],
     queryFn: async () => {
-      if (!isGiftToken(token || "")) return null;
+      if (!token || !isGiftToken(token)) return null;
       const { data, error } = await supabase.rpc("get_musical_gift", {
-        p_token: token!,
+        p_token: token,
       });
       if (error) throw error;
       return data as unknown as GiftPresentation | null;
@@ -37,7 +37,7 @@ export default function PublicGift() {
       <div className="w-full max-w-xl">
         <h1 className="sr-only">{t("giftFlow.received")}</h1>
         {query.data ? (
-          <GiftExperience key={token} data={query.data} />
+          <GiftExperience key={token} data={query.data} responseToken={token} />
         ) : (
           <div className="rounded-3xl border border-border bg-card p-8 text-center">
             <h1 className="text-2xl font-semibold">

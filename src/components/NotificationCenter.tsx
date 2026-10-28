@@ -17,7 +17,7 @@ import { getNextStep } from "@/lib/nextStep";
 
 interface Notification {
   id: string;
-  type: 'credit_transfer' | 'music_ready' | 'payment_approved' | 'order_received' | 'general';
+  type: 'credit_transfer' | 'music_ready' | 'payment_approved' | 'order_received' | 'gift_response' | 'general';
   title: string;
   message: string;
   createdAt: string;
@@ -83,6 +83,9 @@ const NotificationCenter = () => {
       fetchAllNotifications();
     }
   }, [user]);
+  useEffect(() => {
+    if (open && user) void fetchAllNotifications();
+  }, [open]);
 
   const fetchAllNotifications = async () => {
     if (!user) return;
@@ -218,6 +221,15 @@ const NotificationCenter = () => {
         });
       }
 
+      const { data: responses } = await supabase.from('gift_responses')
+        .select('id,gift_id,emoji,message,created_at').eq('owner_id', user.id).is('read_at', null)
+        .order('created_at', { ascending: false }).limit(50);
+      for (const response of responses || []) {
+        allNotifications.push({ id: `gift_response_${response.id}`, type: 'gift_response',
+          title: t('home:giftResponse.notification'), message: `${response.emoji} ${response.message}`,
+          createdAt: response.created_at, read: false, actionUrl: `/presentes/${response.gift_id}#respostas`,
+          metadata: { responseId: response.id } });
+      }
       // Sort all notifications by date
       allNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -262,6 +274,9 @@ const NotificationCenter = () => {
   };
 
   const handleNotificationClick = (notification: Notification) => {
+    if (notification.type === 'gift_response' && typeof notification.metadata?.responseId === 'string') {
+      void supabase.from('gift_responses').update({ read_at: new Date().toISOString() }).eq('id', notification.metadata.responseId);
+    }
     if (notification.actionUrl) {
       navigate(notification.actionUrl);
       setOpen(false);
@@ -269,6 +284,9 @@ const NotificationCenter = () => {
   };
 
 const dismissNotification = (notificationId: string, _notificationType: Notification['type']) => {
+    if (_notificationType === 'gift_response') {
+      void supabase.from('gift_responses').update({ read_at: new Date().toISOString() }).eq('id', notificationId.slice('gift_response_'.length));
+    }
     // Persist ALL dismissals to localStorage so they don't reappear
     saveDismissedId(notificationId);
     setDismissedIds(prev => [...prev, notificationId]);
@@ -328,6 +346,7 @@ const dismissNotification = (notificationId: string, _notificationType: Notifica
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button 
+          aria-label={t('notifications.title', 'Notificações')}
           variant="outline" 
           size="icon" 
           className="relative hover:scale-105 transition-transform rounded-xl"

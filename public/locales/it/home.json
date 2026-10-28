@@ -815,5 +815,26 @@
     "shareReceivedMessage": "🎁 Ho ricevuto un regalo musicale che mi ha toccato il cuore! 💜\n🎧 Apri il link e condividi con me questo ricordo speciale. ✨",
     "copyMessage": "Copia messaggio e link",
     "createForSomeoneElse": "Crea un regalo per un’altra persona"
-  }
+  },
+  "giftResponse": {
+    "title": "Rispondi al biglietto",
+    "emoji": "Scegli un emoji",
+    "message": "Il tuo messaggio",
+    "rate": "Valuta la canzone (facoltativo)",
+    "send": "Invia risposta e valutazione",
+    "sending": "Invio…",
+    "success": "Risposta inviata a chi ti ha fatto il regalo!",
+    "emailPending": "Risposta salvata nelle notifiche. Impossibile inviare l’email.",
+    "error": "Impossibile inviare. Riprova.",
+    "already": "Questo biglietto ha già una risposta.",
+    "inbox": "Risposta del destinatario",
+    "empty": "Nessuna risposta a questo biglietto.",
+    "notification": "Il tuo regalo ha ricevuto una risposta!",
+    "presets": [
+        "Ho adorato il regalo!",
+        "Mi hai emozionato!",
+        "Grazie per il tuo affetto!",
+        "Questa canzone parla proprio di noi!"
+    ]
+}
 }

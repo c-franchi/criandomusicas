@@ -833,5 +833,26 @@
     "shareReceivedMessage": "🎁 Recebi um presente que virou música e tocou meu coração! 💜\n🎧 Abra o link para ouvir essa lembrança especial comigo. ✨",
     "copyMessage": "Copiar mensagem com o link",
     "createForSomeoneElse": "Criar um presente para outra pessoa"
-  }
+  },
+  "giftResponse": {
+    "title": "Responder ao cartão",
+    "emoji": "Escolha um emoji",
+    "message": "Sua mensagem",
+    "rate": "Avaliar a música (opcional)",
+    "send": "Enviar resposta e avaliação",
+    "sending": "Enviando…",
+    "success": "Resposta enviada para quem te presenteou!",
+    "emailPending": "Resposta salva e disponível nas notificações. O e-mail não pôde ser enviado.",
+    "error": "Não foi possível enviar. Tente novamente.",
+    "already": "Este cartão já recebeu uma resposta.",
+    "inbox": "Resposta de quem recebeu",
+    "empty": "Ainda não há resposta para este cartão.",
+    "notification": "Seu presente recebeu uma resposta!",
+    "presets": [
+        "Amei o presente!",
+        "Você me emocionou!",
+        "Muito obrigado pelo carinho!",
+        "Essa música é a nossa cara!"
+    ]
+}
 }
