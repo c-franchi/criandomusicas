@@ -13,3 +13,7 @@ Validation: `node --experimental-strip-types --test src/lib/pwa-install.test.mjs
 References: https://developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent/prompt ; https://developer.mozilla.org/en-US/docs/Web/API/Window/appinstalled_event ; https://developer.mozilla.org/en-US/docs/Web/API/Notification/requestPermission_static
 
 If a device still shows the previous menu walkthrough, it is running older cached application code. Production serves the new /install page; use the existing app-update action or reload once to load it. No forced reload was added, preserving in-progress work.
+
+Installation assets: the original two PNGs were both 1024x1024 despite their 192/512 manifest declarations. They are now correctly resized from the same artwork. Prebuild and postbuild verify the PNG dimensions to prevent regression.
+
+Update detection: the visible page checks app-version.json every 15 seconds, plus focus, pageshow, connection recovery and tab visibility. Requests time out after eight seconds and do not wait for service-worker network updates. Worker checks run once per minute, with an immediate extra worker refresh when a new entry is detected; the administrator order polling cadence is unchanged. Dismissing an update stays respected until a different deployed version is detected. No automatic page reload occurs. Existing protected forms and busy-flow guards still defer the update banner. Background tabs follow browser scheduling and check immediately on return.
