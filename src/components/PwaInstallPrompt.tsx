@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Bell, Download, X } from 'lucide-react';
+import { Bell, Download } from 'lucide-react';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { useAuth } from '@/hooks/useAuth';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -9,6 +9,7 @@ import { shouldBlockUpdate, subscribeFlowBusy } from '@/lib/flowGuard';
 import { isPublicGiftPath } from '@/lib/gift-entry-paths.mjs';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export function PostInstallNotifications() {
  const {t}=useTranslation('common'); const {user}=useAuth();const location=useLocation();const pwa=usePwaInstall();
@@ -28,25 +29,32 @@ export function PostInstallNotifications() {
  </div>;
 }
 
-/** A soft invitation; never opens a permission dialog without a click. */
+/** Visible installation invitation; native dialogs still require an explicit click. */
 export default function PwaInstallPrompt() {
  const {t}=useTranslation('common');const pwa=usePwaInstall();const {pathname}=useLocation();
  const [blocked,setBlocked]=useState(()=>shouldBlockUpdate(pathname));
  const [consentDone,setConsentDone]=useState(()=>{try{return !!localStorage.getItem('criandomusicas_consent');}catch{return false;}});
  useEffect(()=>{const check=()=>setBlocked(shouldBlockUpdate(pathname));check();const unsubscribe=subscribeFlowBusy(check);return ()=>{unsubscribe();};},[pathname]);
  useEffect(()=>{const done=()=>setConsentDone(true);window.addEventListener('criandomusicas:consent-updated',done);return()=>window.removeEventListener('criandomusicas:consent-updated',done);},[]);
- if(isPublicGiftPath(pathname)||pathname==='/install'||pathname.startsWith('/auth')||pathname.startsWith('/~oauth')||pathname.startsWith('/admin')||blocked) return null;
+ if(isPublicGiftPath(pathname)||pathname.startsWith('/auth')||pathname.startsWith('/~oauth')||pathname.startsWith('/admin')||blocked) return null;
  const after=pwa.notificationsPending;
  const offer=pwa.status==='ready'&&Date.now()>=pwa.dismissedUntil&&consentDone;
  if(!after&&!offer) return null;
- return <aside className="fixed bottom-4 left-4 right-4 z-40 sm:left-auto sm:max-w-sm" aria-label={t(after?'install.push.title':'install.title')}>
-  <Card className="relative space-y-3 border-primary/30 bg-card p-5 shadow-xl">
-   {after?<PostInstallNotifications />:<>
-    <h3 className="flex items-center gap-2 pr-5 font-semibold"><Download className="h-5 w-5" />{t('install.title')}</h3>
-    <p className="text-sm text-muted-foreground">{t('install.direct.description')}</p>
-    <Button className="min-h-12 w-full" onClick={()=>void pwa.install()}>{t('install.installNow')}</Button>
-    <Button variant="ghost" size="icon" className="absolute right-1 top-1" aria-label={t('install.push.later')} onClick={pwa.dismiss}><X className="h-4 w-4" /></Button>
-   </>}
-  </Card>
+ // The dedicated page already renders its own notification controls.
+ if(after&&pathname==='/install') return null;
+ if(after) return <aside className="fixed bottom-4 left-4 right-4 z-40 sm:left-auto sm:max-w-sm" aria-label={t('install.push.title')}>
+  <Card className="relative space-y-3 border-primary/30 bg-card p-5 shadow-xl"><PostInstallNotifications /></Card>
  </aside>;
+ return <Dialog open onOpenChange={open=>{if(!open)pwa.dismiss();}}>
+  <DialogContent className="max-w-sm border-primary/30 p-6 text-center sm:p-7">
+   <img src="/icons/icon-192x192.png" width="80" height="80" alt="" className="mx-auto rounded-2xl shadow-lg" />
+   <DialogHeader className="space-y-3 sm:text-center">
+    <DialogTitle className="text-2xl">{t('install.popup.title')}</DialogTitle>
+    <DialogDescription className="text-base leading-relaxed">{t('install.popup.description')}</DialogDescription>
+   </DialogHeader>
+   <Button className="min-h-12 w-full gap-2 text-base" onClick={()=>void pwa.install()}><Download className="h-5 w-5" />{t('install.installNow')}</Button>
+   <Button variant="ghost" className="min-h-11 w-full" onClick={pwa.dismiss}>{t('install.push.later')}</Button>
+   <p className="text-xs leading-relaxed text-muted-foreground">{t('install.popup.note')}</p>
+  </DialogContent>
+ </Dialog>;
 }

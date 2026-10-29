@@ -147,6 +147,11 @@
     "backHome": "Torna alla home"
   },
   "install": {
+    "popup": {
+      "title": "Porta la tua musica con te",
+      "description": "Installa Criando Músicas e segui ordini e regali direttamente dalla schermata iniziale.",
+      "note": "Tocca Installa ora e conferma nella finestra del browser. Dopo potrai attivare le notifiche."
+    },
     "title": "Installa l'App",
     "subtitle": "Accedi rapidamente a Criando Músicas dalla tua schermata home",
     "installButton": "Installa Ora",
