@@ -1,3 +1,4 @@
+import InstallAppButton from '@/components/InstallAppButton';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -209,6 +210,7 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
                 <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/')}><Music className="w-4 h-4" />{tHome('marketing.homeNav')}</Button>
                 <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/planos')}><Music className="w-4 h-4" />{tHome('marketing.packagesNav')}</Button>
                 <Button variant="ghost" className="w-full justify-start gap-3" onClick={() => handleNavigation('/criadores')}><Play className="w-4 h-4" />{tHome('marketing.creatorsNav')}</Button>
+                <InstallAppButton className="w-full justify-start gap-3" onClick={()=>setIsOpen(false)} />
                 {user ? (
                   <>
                     <button
@@ -217,13 +219,6 @@ const MobileMenu = ({ showAnchors = true }: MobileMenuProps) => {
                     >
                       <User className="w-4 h-4 text-muted-foreground" />
                       {tCommon('nav.profile', 'Meu Perfil')}
-                    </button>
-                    <button
-                      onClick={() => handleNavigation('/install')}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-muted/50 transition-colors"
-                    >
-                      <Download className="w-4 h-4 text-muted-foreground" />
-                      {tCommon('navigation.install', 'Instalar App')}
                     </button>
                     {isHomePage && (
                       <button

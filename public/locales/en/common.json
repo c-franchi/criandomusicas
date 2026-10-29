@@ -152,16 +152,10 @@
     "installButton": "Install Now",
     "addToHome": "Add to Home Screen",
     "addToHomeDesc": "Install the app for quick access",
-    "browserHint": "Open your browser menu and select \"Install\" or \"Add to Home Screen\"",
+    "browserHint": "This browser does not offer direct installation. Keep using the site or open this address in a compatible browser, such as Chrome or Edge on Android.",
     "installed": "App Installed!",
     "installedDesc": "The app is installed on your home screen",
     "installNow": "Install Now",
-    "ios": {
-      "title": "On iPhone/iPad:",
-      "step1": "Tap the share button (square with arrow)",
-      "step2": "Scroll down and tap \"Add to Home Screen\"",
-      "step3": "Tap \"Add\" in the top right corner"
-    },
     "notifications": {
       "title": "Notifications",
       "description": "Get alerts when your song is ready"
@@ -182,7 +176,30 @@
       "fullscreen": "Full screen experience"
     },
     "alreadyInstalled": "App already installed!",
-    "openApp": "Open App"
+    "openApp": "Open App",
+    "direct": {
+      "title": "Install with one tap",
+      "description": "Tap Install now to open your browser’s confirmation. After installation, you can enable notifications.",
+      "confirming": "Waiting for installation confirmation…",
+      "waiting": "Waiting for your browser to offer installation. The button will become available automatically. If already installed, open the app from your home screen.",
+      "unsupported": "This browser does not offer direct installation. Keep using the site or open this address in a compatible browser, such as Chrome or Edge on Android.",
+      "preparing": "Waiting for installer",
+      "confirmation": "Installation requires confirmation in your browser’s dialog. The website remains available.",
+      "dismissed": "Installation cancelled. You can keep using the site.",
+      "error": "Could not open the installer. Retry when the button becomes available."
+    },
+    "push": {
+      "title": "Now, enable notifications?",
+      "description": "Receive updates about order preparation and delivery. Permission is requested when you tap Enable.",
+      "signInDescription": "Your app is installed. Sign in to receive updates about your orders on this device.",
+      "signIn": "Sign in to enable notifications",
+      "activate": "Enable notifications",
+      "activating": "Enabling…",
+      "later": "Not now",
+      "active": "Notifications are enabled on this device.",
+      "unavailable": "Notifications are not available in this browser.",
+      "denied": "Notification permission is blocked on this device. You can continue using the app."
+    }
   },
   "share": {
     "title": "Share",

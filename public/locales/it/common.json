@@ -152,16 +152,10 @@
     "installButton": "Installa Ora",
     "addToHome": "Aggiungi alla Schermata Home",
     "addToHomeDesc": "Installa l'app per un accesso rapido",
-    "browserHint": "Apri il menu del browser e seleziona \"Installa\" o \"Aggiungi alla schermata home\"",
+    "browserHint": "Questo browser non offre installazione diretta. Continua sul sito oppure apri questo indirizzo in un browser compatibile, come Chrome o Edge su Android.",
     "installed": "App Installata!",
     "installedDesc": "L'app è installata sulla tua schermata home",
     "installNow": "Installa Ora",
-    "ios": {
-      "title": "Su iPhone/iPad:",
-      "step1": "Tocca il pulsante condividi (quadrato con freccia)",
-      "step2": "Scorri verso il basso e tocca \"Aggiungi alla schermata Home\"",
-      "step3": "Tocca \"Aggiungi\" nell'angolo in alto a destra"
-    },
     "notifications": {
       "title": "Notifiche",
       "description": "Ricevi avvisi quando la tua canzone è pronta"
@@ -182,7 +176,30 @@
       "fullscreen": "Esperienza a schermo intero"
     },
     "alreadyInstalled": "App già installata!",
-    "openApp": "Apri App"
+    "openApp": "Apri App",
+    "direct": {
+      "title": "Installa con un tocco",
+      "description": "Tocca Installa ora per aprire la conferma del browser. Dopo potrai attivare le notifiche.",
+      "confirming": "In attesa della conferma di installazione…",
+      "waiting": "In attesa che il browser abiliti l’installazione. Il pulsante si attiverà automaticamente. Se già installata, apri l’app dalla schermata iniziale.",
+      "unsupported": "Questo browser non offre installazione diretta. Continua sul sito oppure apri questo indirizzo in un browser compatibile, come Chrome o Edge su Android.",
+      "preparing": "In attesa del programma di installazione",
+      "confirmation": "Devi confermare l’installazione nella finestra del browser. Il sito resta disponibile.",
+      "dismissed": "Installazione annullata. Puoi continuare a usare il sito.",
+      "error": "Impossibile aprire il programma di installazione. Riprova quando il pulsante sarà disponibile."
+    },
+    "push": {
+      "title": "Vuoi attivare le notifiche adesso?",
+      "description": "Ricevi aggiornamenti sulla preparazione e consegna degli ordini. Il permesso sarà richiesto quando tocchi Attiva.",
+      "signInDescription": "L’app è installata. Accedi per ricevere aggiornamenti sui tuoi ordini su questo dispositivo.",
+      "signIn": "Accedi per attivare le notifiche",
+      "activate": "Attiva notifiche",
+      "activating": "Attivazione…",
+      "later": "Non ora",
+      "active": "Notifiche attive su questo dispositivo.",
+      "unavailable": "Le notifiche non sono disponibili in questo browser.",
+      "denied": "Il permesso è bloccato su questo dispositivo. Puoi continuare a usare l’app."
+    }
   },
   "share": {
     "title": "Condividi",

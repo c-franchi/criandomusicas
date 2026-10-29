@@ -152,16 +152,10 @@
     "installButton": "Instalar Agora",
     "addToHome": "Adicionar à Tela Inicial",
     "addToHomeDesc": "Instale o app para acesso rápido",
-    "browserHint": "Abra o menu do navegador e selecione \"Instalar\" ou \"Adicionar à tela inicial\"",
+    "browserHint": "Este navegador não disponibiliza instalação direta. Você pode continuar no site ou abrir este endereço em um navegador compatível, como Chrome ou Edge no Android.",
     "installed": "App Instalado!",
     "installedDesc": "O app está instalado na sua tela inicial",
     "installNow": "Instalar Agora",
-    "ios": {
-      "title": "No iPhone/iPad:",
-      "step1": "Toque no botão compartilhar (quadrado com seta)",
-      "step2": "Role para baixo e toque em \"Adicionar à Tela de Início\"",
-      "step3": "Toque em \"Adicionar\" no canto superior direito"
-    },
     "notifications": {
       "title": "Notificações",
       "description": "Receba avisos quando sua música ficar pronta"
@@ -182,7 +176,30 @@
       "fullscreen": "Experiência em tela cheia"
     },
     "alreadyInstalled": "App já instalado!",
-    "openApp": "Abrir App"
+    "openApp": "Abrir App",
+    "direct": {
+      "title": "Instale com um toque",
+      "description": "Toque em Instalar agora para abrir a confirmação do seu navegador. Depois da instalação, você poderá ativar as notificações.",
+      "confirming": "Aguardando a confirmação da instalação…",
+      "waiting": "Aguardando o navegador disponibilizar a instalação. O botão será liberado automaticamente. Se o app já estiver instalado, abra-o pelo ícone na tela inicial.",
+      "unsupported": "Este navegador não disponibiliza instalação direta. Você pode continuar no site ou abrir este endereço em um navegador compatível, como Chrome ou Edge no Android.",
+      "preparing": "Aguardando instalador",
+      "confirmation": "A instalação precisa da sua confirmação na janela do navegador. Seu acesso ao site continua disponível.",
+      "dismissed": "Instalação cancelada. Você pode continuar usando o site.",
+      "error": "Não foi possível abrir o instalador. Tente novamente quando o botão estiver disponível."
+    },
+    "push": {
+      "title": "Agora, quer ativar as notificações?",
+      "description": "Receba avisos sobre a preparação e a entrega dos seus pedidos. A permissão será solicitada ao tocar em Ativar.",
+      "signInDescription": "Seu app foi instalado. Entre na sua conta para receber avisos sobre os seus pedidos neste dispositivo.",
+      "signIn": "Entrar para ativar notificações",
+      "activate": "Ativar notificações",
+      "activating": "Ativando…",
+      "later": "Agora não",
+      "active": "Notificações ativadas neste dispositivo.",
+      "unavailable": "As notificações não estão disponíveis neste navegador.",
+      "denied": "A permissão de notificações está bloqueada neste dispositivo. Você pode continuar usando o app normalmente."
+    }
   },
   "share": {
     "title": "Compartilhar",
