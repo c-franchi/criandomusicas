@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { localeController } from '@/lib/locale-selection';
 import { supportedLanguages, type SupportedLanguage } from '@/lib/i18n';
 
 const LanguageSelector = () => {
@@ -17,7 +18,8 @@ const LanguageSelector = () => {
   ) || supportedLanguages[0];
 
   const handleLanguageChange = (languageCode: SupportedLanguage) => {
-    i18n.changeLanguage(languageCode);
+    localeController.selectLanguage(languageCode);
+    void i18n.changeLanguage(languageCode);
   };
 
   return (
