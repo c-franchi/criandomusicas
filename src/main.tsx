@@ -15,7 +15,9 @@ createRoot(rootElement).render(
   <React.StrictMode>
     <HelmetProvider>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="criandomusicas-theme">
-        <App />
+        <Suspense fallback={<div role="status" aria-label="Criando Músicas" className="flex min-h-screen items-center justify-center bg-background"><img src="/icons/icon-192x192.png" width="64" height="64" alt="Criando Músicas" className="animate-pulse rounded-2xl" /></div>}>
+          <App />
+        </Suspense>
       </ThemeProvider>
     </HelmetProvider>
   </React.StrictMode>

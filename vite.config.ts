@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => ({
       },
     workbox: {
       importScripts: ['/sw-push.js'],
-      navigateFallbackDenylist: [/^\/~oauth/, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
+      navigateFallbackDenylist: [/^\/cdn-cgi\//, /^\/~oauth/, /^\/sitemap\.xml$/, /^\/robots\.txt$/],
       globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,txt,xml}'],
         cleanupOutdatedCaches: true,
         skipWaiting: true,

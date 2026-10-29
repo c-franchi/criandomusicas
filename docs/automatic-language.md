@@ -1,0 +1,13 @@
+# Automatic language by access country
+
+Initial language selection now uses the site's existing `/cdn-cgi/trace` edge endpoint. Only its ISO country field is used; the trace/IP is never logged or stored by the application. The same-origin request omits credentials and referrer, bypasses cache and has a 1.5-second deadline. No external geolocation service, GPS permission, backend function or paid API was added.
+
+Priority: explicit manual preference, then supported country language, timezone mapping, first supported browser language, Portuguese fallback. Countries with no mapping to the four available languages fall back safely. The supported languages remain Portuguese, English, Spanish and Italian. A VPN/proxy can change the apparent access country. Detection runs once per page bootstrap rather than continuously changing language while a user fills a form.
+
+The async detector is registered before i18next initializes, with a neutral branded loading fallback. Both header/mobile/full region selectors share a single state and one lookup. The selector includes Automatic (access country) to restore automatic selection after a manual choice. New manual language/country changes carry an explicit preference marker. Legacy saved regions remain manual because the previous selector saved them only on user selection. Legacy language-only cache entries were also written automatically by i18next and therefore cannot reliably prove a manual choice; they no longer suppress detection. Shared music links with an explicit language parameter retain their existing temporary language behavior.
+
+Automatic detection does not write currency preferences or change checkout logic. Explicit region selection retains its existing currency preference behavior. Restoring automatic language does not delete a separately saved currency preference. Stored choices still work if browser storage is blocked for the current page. The HTML language attribute follows the applied translation language.
+
+Validation: 14 tests cover country mapping, country/browser disagreement, legacy preferences, blocked storage, offline and timeout fallback, late response versus a manual click, shared selector state, privacy request settings and actual i18next initialization. Application/configuration TypeScript and production build are checked. Real network requests verified that the production endpoint returns a usable text country field; tests simulate multiple countries without changing the network identity or creating external records.
+
+References: https://developers.cloudflare.com/fundamentals/reference/cdn-cgi-endpoint/ ; https://www.i18next.com/misc/creating-own-plugins
