@@ -1,3 +1,4 @@
+import "@/components/admin/admin-responsive.css";
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -12,7 +13,7 @@ export default function GiftShell({
 }) {
   const { t } = useTranslation("home");
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="gift-workspace min-h-screen bg-background text-foreground">
       <SEO title={title} noIndex />
       <AppHeader variant="sticky" showLogo showHomeButton />
       <main className="mx-auto max-w-5xl px-5 py-8">

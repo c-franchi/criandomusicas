@@ -1,3 +1,5 @@
+import { createMusicUploadClient } from "@/lib/music-upload-client";
+import { lyricApprovalEvidence } from "@/lib/gift-production-state";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -152,14 +154,15 @@ export function useGiftAudio(g?: MusicalGift) {
   return useQuery({
     queryKey: ["gift-audio", id, g?.track_version],
     enabled: !!id,
-    queryFn: async () => {
-      const { data: order, error } = await supabase
+    queryFn: async ({signal}) => {
+      const client=await createMusicUploadClient(supabase,signal);
+      const { data: order, error } = await client
         .from("orders")
-        .select("song_title,cover_url,approved_lyric_id,status,payment_status")
+        .select("id,song_title,cover_url,approved_lyric_id,status,payment_status,style_prompt,final_prompt")
         .eq("id", id!)
         .single();
       if (error) throw error;
-      const { data: tracks, error: te } = await supabase
+      const { data: tracks, error: te } = await client
         .from("tracks")
         .select("audio_url,version,duration_seconds")
         .eq("order_id", id!)
@@ -168,18 +171,24 @@ export function useGiftAudio(g?: MusicalGift) {
       const track = tracks?.find(t => t.version === g!.track_version);
       let lyrics: string | null = null;
       let approvedLyricId: string | null = null;
+      let approvalState: "approved"|"pending"|"inconsistent" = order.approved_lyric_id ? "inconsistent" : "pending";
       if (order.approved_lyric_id) {
-        const { data, error: le } = await supabase
+        const { data, error: le } = await client
           .from("lyrics")
-          .select("body,is_approved")
+          .select("id,order_id,body,is_approved")
           .eq("id", order.approved_lyric_id)
           .single();
         if (le) throw le;
         lyrics = data.body;
-        if(data.is_approved) approvedLyricId = order.approved_lyric_id;
+        approvalState=lyricApprovalEvidence(order,data);
+        if(approvalState === "approved") approvedLyricId = order.approved_lyric_id;
       }
       return {
         status: order.status,
+        approval_state: approvalState,
+        selected_lyric_id: order.approved_lyric_id,
+        style_prompt: order.style_prompt,
+        final_prompt: order.final_prompt,
         payment_status: order.payment_status,
         approved_lyric_id: approvedLyricId,
         title: order.song_title,
@@ -190,6 +199,8 @@ export function useGiftAudio(g?: MusicalGift) {
         lyrics,
       };
     },
+    staleTime: 0,
+    refetchOnMount: "always",
     refetchInterval: 15000,
   });
 }

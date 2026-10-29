@@ -889,6 +889,26 @@
       "readyActions": "Tudo para aproveitar seu presente",
       "musicFiles": "Ouvir e baixar música",
       "rate": "Avaliar minha música"
+    },
+    "adminSync": {
+      "manage": "Gerenciar música e cartão",
+      "backList": "Voltar à lista de solicitações",
+      "inconsistent": "A letra já foi selecionada no pedido, mas a aprovação precisa ser sincronizada. Não é necessário criar outra música ou pedir nova aprovação.",
+      "sync": "Sincronizar andamento",
+      "prompt": "Prompt e letra para produzir a música",
+      "copy": "Copiar",
+      "stages": {
+        "released": "Presente liberado",
+        "check": "Conferir andamento da solicitação",
+        "inconsistent": "Aprovação registrada: sincronização necessária",
+        "lyrics": "Aguardando escolha e aprovação da letra",
+        "release": "Música anexada: conferir e liberar presente",
+        "audio": "Letra aprovada: produzir e anexar música",
+        "draft": "Rascunho: continuar personalização",
+        "pay": "Aguardando pagamento",
+        "receipt": "Comprovante recebido: conferir pagamento",
+        "cancel": "Solicitação cancelada"
+      }
     }
   },
   "giftResponse": {

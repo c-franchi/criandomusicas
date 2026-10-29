@@ -1,0 +1,16 @@
+/* Fix intrinsic sizing at its source; do not conceal overflowing controls. */
+.admin-workspace, .gift-workspace { width: 100%; min-width: 0; overflow-wrap: anywhere; }
+.admin-workspace main, .gift-workspace main { width: 100%; min-width: 0; }
+.admin-workspace main *, .gift-workspace main *, .admin-toolbar > * { min-width: 0; }
+.admin-workspace pre, .gift-workspace pre { white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-word; max-width: 100%; }
+.admin-workspace audio, .gift-workspace audio { width: 100%; max-width: 100%; min-width: 0; }
+.admin-workspace input, .gift-workspace input, .admin-workspace select, .gift-workspace select,
+.admin-workspace textarea, .gift-workspace textarea { max-width: 100%; }
+.admin-workspace button, .gift-workspace button, .admin-workspace main a.inline-flex, .gift-workspace main a.inline-flex, .admin-toolbar a { max-width: 100%; white-space: normal; height: auto; min-height: 2.5rem; }
+.admin-toolbar > * { flex-shrink: 1; }
+@media (max-width: 639px) {
+ .gift-workspace main { padding: 1rem; }
+ .gift-workspace main h1 { font-size: 1.5rem; line-height: 1.25; }
+ .gift-workspace [role="tablist"] { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); width: 100%; height: auto; }
+ .admin-workspace [role="tablist"] > * { white-space: normal; }
+}
