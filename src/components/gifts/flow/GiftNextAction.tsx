@@ -11,6 +11,9 @@ export default function GiftNextAction({gift:g,audio,loading,error,onRetry}:{gif
  return <section className="mb-6 rounded-2xl border border-primary/40 bg-primary/5 p-5" aria-labelledby="gift-next-action">
   <p className="text-sm font-medium text-muted-foreground">{t('giftFlow.nextAction.title')}</p>
   <h2 id="gift-next-action" className="mt-2 text-xl font-semibold" role="status">{t('giftFlow.nextAction.'+step)}</h2>
+  {step==='lyrics' && <p className="mt-3 text-sm">{t('giftFlow.customerApprovalBody')}</p>}
+  {step==='audio' && <p className="mt-3 text-sm">{t('giftFlow.musicProductionPending')}</p>}
+  {step==='release' && <p className="mt-3 text-sm">{t('giftFlow.releaseNextStep')}</p>}
   {target && <Button asChild className="mt-4 min-h-12 h-auto whitespace-normal py-3">{target.startsWith('#')?<a href={target}>{t('giftFlow.nextAction.'+step)}</a>:<Link to={target}>{t('giftFlow.nextAction.'+step)}</Link>}</Button>}
   {error&&needsAudio&&<Button variant="outline" className="mt-4" onClick={onRetry}>{t('giftFlow.retry')}</Button>}
   {g.available_from&&<p className="mt-3 text-sm">{t('giftFlow.scheduledAccess',{date:new Date(g.available_from).toLocaleString()})}</p>}

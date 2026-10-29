@@ -227,61 +227,23 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
           </p>
         )}
       </div>
+      {g.status === "ACTIVE" && <nav aria-label={t('giftFlow.simplify.readyActions')} className="mb-6 flex flex-wrap gap-3">
+        <Button asChild><a href={url} target="_blank" rel="noopener noreferrer">{t('giftFlow.openGift')}</a></Button>
+        <Button asChild variant="outline"><a href="#compartilhar-presente">{t('giftFlow.share')}</a></Button>
+        {feedbackOrderId && <Button asChild variant="outline"><Link to={`/pedido/${feedbackOrderId}`}>{t('giftFlow.simplify.musicFiles')}</Link></Button>}
+        {feedbackOrderId && user?.id === g.owner_id && <Button asChild variant="outline"><a href="#avaliacao">{t('giftFlow.simplify.rate')}</a></Button>}
+        {g.product === 'physical' && <Button asChild variant="outline"><Link to={`/presentes/${g.id}/imprimir`}>{t('giftFlow.print')}</Link></Button>}
+      </nav>}
       {g.status === "ACTIVE" && <div id="compartilhar-presente" className="mb-7 scroll-mt-6"><GiftShare url={url} recipient={g.recipient_name}/></div>}
       {g.status === "ACTIVE" && user?.id === g.owner_id && <GiftResponses giftId={g.id} />}
       {g.status === "ACTIVE" && user?.id === g.owner_id && feedbackOrderId && <GiftFeedback orderId={feedbackOrderId} userId={user.id} />}
-      {g.status !== "ACTIVE" && audio.data?.audio_url && <section role="status" className="mb-7 space-y-3 rounded-xl border border-primary/40 bg-primary/5 p-5"><h2 className="font-semibold">{t("giftFlow.awaitingRelease")}</h2><p className="text-sm">{t("giftFlow.releaseNextStep")}</p>{isAdmin && <Button asChild><Link to={`/admin/presentes?presente=${g.id}`}>{t("giftFlow.reviewAndRelease")}</Link></Button>}</section>}
-      {g.music_source === "new" && !audio.data?.audio_url && (
-        <section
-          role="status"
-          className="mb-7 space-y-4 rounded-2xl border border-primary/30 bg-primary/5 p-5"
-        >
-          <h2 className="text-lg font-semibold">
-            {t("giftFlow.musicNotReadyTitle")}
-          </h2>
-          <p className="text-sm leading-relaxed">
-            {t(
-              g.production_order_id
-                ? "giftFlow.musicProductionPending"
-                : "giftFlow.musicProductionNotStarted",
-            )}
-          </p>
-          {isAdmin && (
-            <Button asChild variant="outline">
-              <Link to={`/admin/presentes?presente=${g.id}`}>
-                {t("giftFlow.manageProduction")}
-              </Link>
-            </Button>
-          )}
-        </section>
-      )}
+      {isAdmin && !['ACTIVE','DRAFT','CANCELLED'].includes(g.status) && <Button asChild variant="outline" className="mb-6"><Link to={`/admin/presentes?presente=${g.id}`}>{t('giftFlow.manageProduction')}</Link></Button>}
       {g.product === "physical" && !physicalEnabled && (
         <section className="mb-7 space-y-4 rounded-xl border border-border p-5">
           <p className="text-sm">{t("giftFlow.physicalDisabledBody")}</p>
           <Button asChild>
             <Link to="/presentes/novo?produto=digital">
               {t("giftFlow.chooseDigital")}
-            </Link>
-          </Button>
-        </section>
-      )}
-      {g.checkout_order_id &&
-        ["AWAITING_PAYMENT", "RECEIPT_SENT"].includes(g.status) && (
-          <Button asChild className="mb-6">
-            <Link to={`/checkout/${g.checkout_order_id}`}>
-              {t("giftFlow.openCheckout")}
-            </Link>
-          </Button>
-        )}
-      {g.production_order_id && !audio.data?.approved_lyric_id && (g.is_test || g.payment_confirmed_at) && (
-        <section className="mb-7 space-y-4 rounded-xl border border-primary/30 p-5">
-          <h2 className="font-semibold">
-            {t("giftFlow.customerApprovalTitle")}
-          </h2>
-          <p className="text-sm">{t("giftFlow.customerApprovalBody")}</p>
-          <Button asChild>
-            <Link to={`/criar-musica?orderId=${g.production_order_id}`}>
-              {t("giftFlow.reviewLyrics")}
             </Link>
           </Button>
         </section>
@@ -298,11 +260,6 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
       )}
       {g.status === "DRAFT" && (
         <div className="mb-7 flex flex-wrap gap-3">
-          <Button asChild>
-            <Link to={`/presentes/${g.id}/editar`}>
-              {t("giftFlow.continueDraft")}
-            </Link>
-          </Button>
           <Button
             variant="outline"
             disabled={busy}
@@ -395,11 +352,9 @@ function TrackingContent({ gift: g }: { gift: MusicalGift }) {
               <code className="block break-all rounded-xl bg-muted p-3 text-xs">
                 {url}
               </code>
-              <Button asChild><a href={url} target="_blank" rel="noopener noreferrer">{t("giftFlow.openGift")}</a></Button>
               <GiftQr url={url} />
               {g.product === "physical" && (
                 <>
-                  <Button asChild variant="outline"><Link to={`/presentes/${g.id}/imprimir`}>{t("giftFlow.print")}</Link></Button>
                   {g.details.fulfillment !== "self_print" && <p>{t("giftFlow.shippingStatus." + g.shipping_status)}</p>}
                   {g.tracking_code && (
                     <p className="break-all text-sm">

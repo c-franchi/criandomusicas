@@ -860,7 +860,18 @@
     "allOrders": "Tutti",
     "retryReady": "Riprova avviso regalo pronto",
     "retryReadyDone": "Avviso elaborato. Controlla l'esito nella cronologia.",
-    "scheduledAccess": "Il destinatario potrà aprire il link dal {{date}}."
+    "scheduledAccess": "Il destinatario potrà aprire il link dal {{date}}.",
+    "simplify": {
+      "checkStory": "Controlla i dettagli della tua canzone",
+      "contextHelp": "Queste informazioni vengono inviate alla produzione. Controlla nomi, storia e sentimenti prima di continuare.",
+      "choices": "Le tue scelte · tocca per modificare",
+      "storyHelp": "Racconta chi è questa persona per te, un ricordo e cosa vuoi esprimere. I dettagli aiutano la canzone a raccontare la tua storia.",
+      "editStory": "Modifica storia e dettagli",
+      "deliveryOptions": "Preferenze di condivisione (facoltative)",
+      "readyActions": "Goditi il tuo regalo",
+      "musicFiles": "Ascolta e scarica la canzone",
+      "rate": "Valuta la mia canzone"
+    }
   },
   "giftResponse": {
     "title": "Rispondi al biglietto",

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { readAudioDuration } from '@/lib/audio-duration';
 import { saveMusicUpload } from '@/lib/music-upload';
+import { createMusicUploadClient } from '@/lib/music-upload-client';
 import type { MusicalGift } from '@/lib/gifts';
 
 export default function GiftProductionPanel({gift:g,onBusyChange}: {gift:MusicalGift;onBusyChange?:(busy:boolean)=>void}) {
@@ -18,6 +19,9 @@ export default function GiftProductionPanel({gift:g,onBusyChange}: {gift:Musical
   const {user} = useAuth();
   const [uploading,setUploading] = useState<string|null>(null);
   const uploadBusy=useRef(false);
+  const abort=useRef<AbortController|null>(null);
+  const [stage,setStage]=useState('');
+  useEffect(()=>()=>abort.current?.abort(),[]);
   const [error,setError] = useState('');
   const [saved,setSaved] = useState(false);
   const paid = !!g.payment_confirmed_at || g.is_test;
@@ -34,16 +38,20 @@ export default function GiftProductionPanel({gift:g,onBusyChange}: {gift:Musical
         helpText={t('giftFlow.uploadHere')}
         order={{id:g.production_order_id,user_id:g.owner_id,status:['LYRICS_APPROVED','COMPLETED'].includes(audio.data?.status || '')?'MUSIC_GENERATING':audio.data?.status || 'MUSIC_GENERATING',approved_lyric_id:audio.data?.approved_lyric_id || null,gift:g,uploadedVersions:audio.data?.uploadedVersions}}
         uploading={uploading}
+        uploadStage={stage}
+        onCancel={()=>abort.current?.abort()}
         onUpload={async(file,version)=>{
           if(uploadBusy.current) return;
           uploadBusy.current=true;onBusyChange?.(true);
+          const controller=new AbortController();abort.current=controller;
           setUploading(`${g.production_order_id}-v${version}`);setError('');setSaved(false);
           try {
-            await saveMusicUpload(supabase,file,{id:g.production_order_id!,user_id:g.owner_id,status:audio.data!.status,approved_lyric_id:audio.data!.approved_lyric_id,gift:g},version,g.duration_seconds?await readAudioDuration(file):null);
-            await qc.invalidateQueries({queryKey:['gift-audio']});
+            const client=await createMusicUploadClient(supabase,controller.signal);
+            await saveMusicUpload(client,file,{id:g.production_order_id!,user_id:g.owner_id,status:audio.data!.status,approved_lyric_id:audio.data!.approved_lyric_id,gift:g},version,g.duration_seconds?await readAudioDuration(file,controller.signal):null,{signal:controller.signal,onStage:setStage});
+            void qc.invalidateQueries({queryKey:['gift-audio']});
             setSaved(true);
           } catch(e){setError(e instanceof Error?e.message:t('giftFlow.genericError'));}
-          finally{uploadBusy.current=false;setUploading(null);onBusyChange?.(false);}
+          finally{abort.current=null;setStage('');uploadBusy.current=false;setUploading(null);onBusyChange?.(false);}
         }} />}
       {saved && <p role="status">{t('giftFlow.uploadSaved')}</p>}
       {audio.data?.audio_url && <><p className="font-medium">{t(g.status==='ACTIVE'?'giftFlow.status.ACTIVE':'giftFlow.awaitingRelease')}</p><audio key={audio.data.audio_url} controls preload="metadata" src={audio.data.audio_url} className="w-full" /></>}

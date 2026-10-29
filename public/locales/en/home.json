@@ -860,7 +860,18 @@
     "allOrders": "All",
     "retryReady": "Retry gift-ready notification",
     "retryReadyDone": "Notification processed. Check the history for the result.",
-    "scheduledAccess": "The recipient can open the link starting {{date}}."
+    "scheduledAccess": "The recipient can open the link starting {{date}}.",
+    "simplify": {
+      "checkStory": "Check your song details",
+      "contextHelp": "These details are sent to production. Check names, story and feelings before continuing.",
+      "choices": "Your choices · tap to change",
+      "storyHelp": "Tell us who this person is to you, a memory and what you want to express. Details help the song tell your story.",
+      "editStory": "Edit story and details",
+      "deliveryOptions": "Sharing preferences (optional)",
+      "readyActions": "Enjoy your gift",
+      "musicFiles": "Listen and download song",
+      "rate": "Review my song"
+    }
   },
   "giftResponse": {
     "title": "Reply to the card",
