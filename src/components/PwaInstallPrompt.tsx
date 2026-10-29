@@ -15,7 +15,7 @@ export function PostInstallNotifications() {
  const push=usePushNotifications();
  useEffect(()=>{if(push.isSubscribed||push.permission==='denied') pwa.finishNotifications();},[push.isSubscribed,push.permission]);
  if(push.isSubscribed) return <p role="status">{t('install.push.active')}</p>;
- if(!push.isSupported) return <p role="status">{t('install.push.unavailable')}</p>;
+ if(!push.isSupported) return <div className="space-y-3"><p role="status">{t('install.push.unavailable')}</p><Button variant="ghost" onClick={pwa.finishNotifications}>{t('install.push.later')}</Button></div>;
  if(push.permission==='denied') return <p role="status">{t('install.push.denied')}</p>;
  const returnTo=location.pathname+location.search;
  return <div className="space-y-3">
