@@ -1,5 +1,6 @@
 import { MusicUploadControls } from "@/components/admin/MusicUploadControls";
 import { saveMusicUpload } from "@/lib/music-upload";
+import { createMusicUploadClient } from "@/lib/music-upload-client";
 import { readAudioDuration } from "@/lib/audio-duration";
 import type { MusicalGift } from "@/lib/gifts";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -117,6 +118,9 @@ const AdminDashboard = () => {
   // One required recording; an optional second version can be added later.
   const [uploadingMusic, setUploadingMusic] = useState<string | null>(null);
   const musicUploadBusy = useRef(false);
+  const musicUploadAbort = useRef<AbortController | null>(null);
+  const [uploadStage, setUploadStage] = useState('');
+  useEffect(() => () => musicUploadAbort.current?.abort(), []);
 
   // Confirmation dialogs
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
@@ -690,15 +694,24 @@ const AdminDashboard = () => {
   const handleMusicUpload = async (file: File, order: AdminOrder, version: number = 1) => {
     if (!file || musicUploadBusy.current) return;
     musicUploadBusy.current = true;
+    const controller = new AbortController();
+    musicUploadAbort.current = controller;
+    setUploadStage('Conferindo sessão…');
     setUploadingMusic(`${order.id}-v${version}`);
     try {
-      const duration = order.gift?.duration_seconds ? await readAudioDuration(file) : null;
-      const result = await saveMusicUpload(supabase, file, order, version, duration);
+      const uploadClient = await createMusicUploadClient(supabase, controller.signal);
+      setUploadStage('Conferindo áudio…');
+      const duration = order.gift?.duration_seconds ? await readAudioDuration(file, controller.signal) : null;
+      const result = await saveMusicUpload(uploadClient, file, order, version, duration, {
+        signal: controller.signal, onStage: setUploadStage,
+      });
       setOrders(prev => prev.map(o => o.id === order.id ? {
         ...o, status: 'COMPLETED', track_url: result.audioUrl, uploadedVersions: result.uploadedVersions,
       } : o));
       // Do not notify the customer a second time when an optional version is added.
       if (result.newlyCompleted && !order.gift) {
+        // Notification delivery must not hold the upload controls open.
+        void (async () => {
         try {
           const { error } = await supabase.functions.invoke('send-push-notification', {
             body: {
@@ -722,6 +735,7 @@ const AdminDashboard = () => {
           });
           if (error) console.error('Music ready email error:', error);
         } catch (error) { console.error('Music ready email error:', error); }
+        })();
       }
       toast({
         title: result.newlyCompleted ? '🎵 Música enviada e produção concluída!' : '🎵 Versão adicional enviada!',
@@ -731,8 +745,11 @@ const AdminDashboard = () => {
       });
     } catch (error) {
       toast({ title: 'Erro ao enviar música', description: error instanceof Error ? error.message : 'Não foi possível enviar o áudio.', variant: 'destructive' });
-      await fetchOrders();
+      // Refresh independently: a stalled list request must never lock uploads.
+      void fetchOrders();
     } finally {
+      musicUploadAbort.current = null;
+      setUploadStage('');
       musicUploadBusy.current = false;
       setUploadingMusic(null);
     }
@@ -1753,7 +1770,7 @@ const AdminDashboard = () => {
                           Iniciar Produção
                         </Button>
                       )}
-                      <MusicUploadControls order={order} uploading={uploadingMusic} onUpload={(file, version) => void handleMusicUpload(file, order, version)} />
+                      <MusicUploadControls order={order} uploading={uploadingMusic} uploadStage={uploadStage} onCancel={() => musicUploadAbort.current?.abort()} onUpload={(file, version) => void handleMusicUpload(file, order, version)} />
                       {(order.status === 'MUSIC_READY' || order.status === 'COMPLETED') && order.track_url && (
                         <>
                           {getWhatsAppLink(order) && (
@@ -1887,7 +1904,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   {order.status === 'COMPLETED' && <div className="mt-3 border-t border-border/30 pt-3">
-                    <MusicUploadControls order={order} uploading={uploadingMusic} onUpload={(file, version) => void handleMusicUpload(file, order, version)} />
+                    <MusicUploadControls order={order} uploading={uploadingMusic} uploadStage={uploadStage} onCancel={() => musicUploadAbort.current?.abort()} onUpload={(file, version) => void handleMusicUpload(file, order, version)} />
                     {order.gift && <Button asChild variant="outline" size="sm" className="mt-2"><Link to={`/admin/presentes?presente=${order.gift.id}`}>Conferir e liberar presente</Link></Button>}
                   </div>}
                 </Card>

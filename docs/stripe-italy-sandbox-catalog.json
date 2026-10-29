@@ -1,0 +1,59 @@
+{
+  "account_id": "acct_1UVMtHBI0iXvcrrH",
+  "account_name": "Sandbox di Modena",
+  "livemode": false,
+  "country": "IT",
+  "currency": "eur",
+  "status": "catalog_created_checkout_not_connected",
+  "verified_at": "2026-10-29",
+  "products": [
+    {
+      "plan_id": "gift_short_15",
+      "product_id": "cm_it_short_15",
+      "price_id": "price_1UW1IzBI0iXvcrrHjJUx7MD3",
+      "unit_amount": 299
+    },
+    {
+      "plan_id": "gift_short_30",
+      "product_id": "cm_it_short_30",
+      "price_id": "price_1UW1JeBI0iXvcrrH903xlFET",
+      "unit_amount": 499
+    },
+    {
+      "plan_id": "music_full",
+      "product_id": "cm_it_music_full",
+      "price_id": "price_1UW1KyBI0iXvcrrHj1uN8OyX",
+      "unit_amount": 999
+    },
+    {
+      "plan_id": "gift_short_card",
+      "product_id": "cm_it_card_addon",
+      "price_id": "price_1UW1L3BI0iXvcrrHW0dQLM69",
+      "unit_amount": 200
+    },
+    {
+      "plan_id": "gift_digital_existing",
+      "product_id": "cm_it_digital_existing",
+      "price_id": "price_1UW1L8BI0iXvcrrHBK2qpU9l",
+      "unit_amount": 299
+    },
+    {
+      "plan_id": "gift_digital_new_15",
+      "product_id": "cm_it_digital_15",
+      "price_id": "price_1UW1LFBI0iXvcrrHGMuvyiSW",
+      "unit_amount": 499
+    },
+    {
+      "plan_id": "gift_digital_new_30",
+      "product_id": "cm_it_digital_30",
+      "price_id": "price_1UW1LLBI0iXvcrrHQli2Ahyc",
+      "unit_amount": 699
+    },
+    {
+      "plan_id": "gift_digital_new",
+      "product_id": "cm_it_digital_full",
+      "price_id": "price_1UW1LQBI0iXvcrrHKsa8hUxt",
+      "unit_amount": 1199
+    }
+  ]
+}
