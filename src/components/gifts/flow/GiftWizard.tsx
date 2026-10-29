@@ -1,3 +1,5 @@
+import { giftWizardSteps, giftStepKeys } from "@/lib/gift-wizard-flow";
+import GiftBriefingSummary from "./GiftBriefingSummary";
 import { useFlowBusy } from '@/hooks/useFlowBusy';
 import { analytics } from '@/lib/analytics';
 import { useBriefingTranslations } from "@/hooks/useBriefingTranslations";
@@ -181,6 +183,8 @@ function Editor({
   }
   const previewAudio = useGiftAudio(form as MusicalGift);
   const [step, setStep] = useState(0);
+  const steps = giftWizardSteps(!!form.has_card);
+  const stepIndex = Math.max(0, steps.indexOf(step));
   useEffect(() => { analytics.giftStep(product, step + 1); }, [product, step]);
   const [authorized, setAuthorized] = useState(!!initial?.source_order_id);
   const [busy, setBusy] = useState(false);
@@ -299,24 +303,25 @@ function Editor({
     </div>
   );
   return (
-    <GiftShell title={t("giftFlow.create")}>
+    <GiftShell title={t(form.has_card ? "giftFlow.create" : "giftFlow.songOnly")}>
       <p className="mb-5 text-sm text-muted-foreground">
-        {t("giftFlow.step", { current: step + 1, total: 5 })}
+        {t("giftFlow.step", { current: stepIndex + 1, total: steps.length })}
       </p>
-      <p className="mb-5 font-medium sm:hidden">{t("giftFlow." + ["choose", "people", "personalize", "delivery", "review"][step])}</p>
-      <progress aria-label={t("giftFlow.progress")} value={step + 1} max={5} className="mb-5 h-2 w-full accent-purple-500 sm:hidden" />
+      <p className="mb-5 font-medium sm:hidden">{t("giftFlow." + giftStepKeys[step])}</p>
+      <progress aria-label={t("giftFlow.progress")} value={stepIndex + 1} max={steps.length} className="mb-5 h-2 w-full accent-purple-500 sm:hidden" />
       <ol
-        className="mb-7 hidden grid-cols-5 gap-2 sm:grid"
+        className="mb-7 hidden gap-2 sm:grid"
         aria-label={t("giftFlow.progress")}
+        style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
       >
-        {["choose", "people", "personalize", "delivery", "review"].map(
-          (key, i) => (
+        {steps.map(
+          (i) => (
             <li
-              key={key}
+              key={i}
               aria-current={i === step ? "step" : undefined}
               className={`rounded-xl border p-2 text-center text-[10px] sm:text-xs ${i === step ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground"}`}
             >
-              {t("giftFlow." + key)}
+              {t("giftFlow." + giftStepKeys[i])}
             </li>
           ),
         )}
@@ -341,7 +346,7 @@ function Editor({
         >
           {t(
             "giftFlow." +
-              ["choose", "people", "personalize", "delivery", "review"][step],
+              giftStepKeys[step],
           )}
         </h2>
         {step === 0 && (
@@ -349,6 +354,9 @@ function Editor({
             <p className="font-medium">
               {t(`gifts.products.${form.product}.name`)}
             </p>
+            <details open={!source || !duration || !!initial} className="rounded-xl border border-border p-4">
+              <summary className="cursor-pointer font-medium">{t('giftFlow.simplify.choices')} · {form.music_source === 'existing' ? t('gifts.modalities.existing.title') : form.duration_seconds ? t('gifts.upTo', {seconds: form.duration_seconds}) : t('giftFlow.fullSong')}</summary>
+              <div className="mt-4 space-y-5">
             {form.has_card && (
               <fieldset className="space-y-3">
                 <legend className="font-medium">
@@ -429,6 +437,8 @@ function Editor({
                 </p>
               </fieldset>
             )}
+              </div>
+            </details>
             {form.product === "short" && (
               <label className="flex items-center gap-3 text-sm">
                 <Checkbox
@@ -530,6 +540,7 @@ function Editor({
           <div className="space-y-5">
             {field("recipient_name", "recipient")}
             {field("sender_name", "sender")}
+            {form.music_source === "new" && <p className="text-sm text-muted-foreground">{t("giftFlow.simplify.storyHelp")}</p>}
             <div className="space-y-2">
               <Label htmlFor="gift-occasion">{t("giftFlow.occasion")}</Label>
               <select
@@ -554,6 +565,7 @@ function Editor({
                   ) && <option value={form.occasion}>{form.occasion}</option>}
               </select>
             </div>
+            {!form.has_card && field("dedication", "messageOptional", true)}
             {form.music_source === "new" && (
               <>
                 {(["relationship", "feelings", "story", "notes"] as const).map(
@@ -684,8 +696,9 @@ function Editor({
             )}
           </div>
         )}
-        {step === 3 && (
-          <div className="space-y-5">
+        {(step === 3 || (step === 4 && !form.has_card)) && (
+          <details open={form.has_card} className="space-y-5">
+            <summary className="cursor-pointer font-medium">{t("giftFlow.simplify.deliveryOptions")}</summary>
             <div className="space-y-2">
               <Label htmlFor="channel">{t("giftFlow.channel")}</Label>
               <select
@@ -777,18 +790,18 @@ function Editor({
                 )}
               </>
             )}
-          </div>
+          </details>
         )}
         {step === 4 && (
           <div className="grid gap-7 md:grid-cols-2">
-            <GiftExperience
+            {form.has_card ? <GiftExperience
               key={JSON.stringify([form.theme, form.photo_data])}
               data={{ ...form, ...previewAudio.data } as MusicalGift}
               preview
-            />
+            /> : <p className="rounded-xl bg-muted p-4 text-sm">{t("giftFlow.newMusicPreview")}</p>}
             <div className="space-y-4">
               <h3 className="font-semibold">{t("giftFlow.summary")}</h3>
-              {form.music_source === "new" && (
+              {form.music_source === "new" && form.has_card && (
                 <p
                   role="status"
                   className="rounded-xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed"
@@ -803,6 +816,8 @@ function Editor({
               {form.duration_seconds && (
                 <p>{t("gifts.upTo", { seconds: form.duration_seconds })}</p>
               )}
+              <GiftBriefingSummary gift={form} />
+              <Button variant="outline" onClick={() => setStep(1)}>{t("giftFlow.simplify.editStory")}</Button>
               <p className="text-2xl font-semibold">
                 {total === null
                   ? t("giftFlow.pricePending")
@@ -862,7 +877,7 @@ function Editor({
             <Button
               variant="outline"
               disabled={busy}
-              onClick={() => setStep(step - 1)}
+              onClick={() => { setError(""); setStep(steps[stepIndex - 1]); }}
             >
               {t("giftFlow.previous")}
             </Button>
@@ -875,7 +890,7 @@ function Editor({
                 if (e) setError(t("giftFlow.errors." + e));
                 else {
                   setError("");
-                  setStep(step + 1);
+                  setStep(steps[stepIndex + 1]);
                 }
               }}
             >

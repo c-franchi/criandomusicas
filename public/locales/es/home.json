@@ -860,7 +860,18 @@
     "allOrders": "Todos",
     "retryReady": "Reintentar aviso de regalo listo",
     "retryReadyDone": "Aviso procesado. Consulta el resultado en el historial.",
-    "scheduledAccess": "El destinatario podrá abrir el enlace a partir de {{date}}."
+    "scheduledAccess": "El destinatario podrá abrir el enlace a partir de {{date}}.",
+    "simplify": {
+      "checkStory": "Revisa los datos de tu canción",
+      "contextHelp": "Estos datos se envían a producción. Revisa nombres, historia y sentimientos antes de continuar.",
+      "choices": "Tus opciones · toca para cambiar",
+      "storyHelp": "Cuéntanos quién es esa persona para ti, un recuerdo y lo que deseas transmitir. Los detalles ayudan a contar tu historia.",
+      "editStory": "Editar historia y datos",
+      "deliveryOptions": "Preferencias para compartir (opcional)",
+      "readyActions": "Disfruta de tu regalo",
+      "musicFiles": "Escuchar y descargar canción",
+      "rate": "Valorar mi canción"
+    }
   },
   "giftResponse": {
     "title": "Responder a la tarjeta",
