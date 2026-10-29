@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { APP_VERSION } from "@/lib/version";
 import { useState, useEffect } from "react";
 import ContactFormModal from "./ContactFormModal";
+import { scrollPageToTop } from "./RouteScrollReset";
 
 const Footer = () => {
   const { t } = useTranslation('home');
@@ -26,10 +27,7 @@ const Footer = () => {
     if (window.location.pathname === '/') {
       document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
     } else {
-      navigate('/');
-      setTimeout(() => {
-        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
+      navigate(`/#${sectionId}`);
     }
   };
 
@@ -60,9 +58,9 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-6 text-foreground">{t('footer.product')}</h4>
             <ul className="space-y-4 text-muted-foreground">
-              <li><Link to="/cartao-digital" className="hover:text-primary transition-colors">{t('gifts.products.digital.name')}</Link></li>
-              <li><Link to="/musicas-curtas" className="hover:text-primary transition-colors">{t('gifts.products.short.name')}</Link></li>
-              <li><Link to="/cartao-fisico" className="hover:text-primary transition-colors">{t('gifts.products.physical.name')}</Link></li>
+              <li><Link onClick={scrollPageToTop} to="/cartao-digital" className="hover:text-primary transition-colors">{t('gifts.products.digital.name')}</Link></li>
+              <li><Link onClick={scrollPageToTop} to="/musicas-curtas" className="hover:text-primary transition-colors">{t('gifts.products.short.name')}</Link></li>
+              <li><Link onClick={scrollPageToTop} to="/cartao-fisico" className="hover:text-primary transition-colors">{t('gifts.products.physical.name')}</Link></li>
               <li>
                 <button 
                   onClick={() => scrollToSection('processo')} 
@@ -80,11 +78,11 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <Link to="/planos" className="hover:text-primary transition-colors">
+                <Link onClick={scrollPageToTop} to="/planos" className="hover:text-primary transition-colors">
                   {t('footer.pricing')}
                 </Link>
               </li>
-              <li><Link to="/criadores" className="hover:text-primary transition-colors text-sm">{t('marketing.creatorsNav')}</Link></li>
+              <li><Link onClick={scrollPageToTop} to="/criadores" className="hover:text-primary transition-colors text-sm">{t('marketing.creatorsNav')}</Link></li>
               {/* Discreet celebration link - only show on homepage with active celebration */}
               {hasCelebration && window.location.pathname === '/' && (
                 <li>
@@ -104,23 +102,23 @@ const Footer = () => {
             <h4 className="font-semibold mb-6 text-foreground">{t('footer.legal')}</h4>
             <ul className="space-y-4 text-muted-foreground">
               <li>
-                <Link to="/termos" className="hover:text-primary transition-colors">
+                <Link onClick={scrollPageToTop} to="/termos" className="hover:text-primary transition-colors">
                   {t('footer.terms')}
                 </Link>
               </li>
               <li>
-                <Link to="/privacidade" className="hover:text-primary transition-colors">
+                <Link onClick={scrollPageToTop} to="/privacidade" className="hover:text-primary transition-colors">
                   {t('footer.privacy')}
                 </Link>
               </li>
               <li>
-                <Link to="/regras" className="hover:text-primary transition-colors">
+                <Link onClick={scrollPageToTop} to="/regras" className="hover:text-primary transition-colors">
                   {t('footer.rules')}
                 </Link>
               </li>
               <li>
                 <button 
-                  onClick={() => setContactOpen(true)}
+                  onClick={() => { scrollPageToTop(); setContactOpen(true); }}
                   className="hover:text-primary transition-colors inline-flex items-center gap-2"
                 >
                   <Mail className="w-4 h-4" />

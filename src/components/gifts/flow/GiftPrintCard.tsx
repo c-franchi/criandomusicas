@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { giftUrl, safeImage, type MusicalGift } from "@/lib/gifts";
 import GiftBackground from "./GiftBackground";
+import GiftBrandMark from "./GiftBrandMark";
 import GiftQr from "./GiftQr";
 export default function GiftPrintCard({ gift: g }: { gift: MusicalGift }) {
   const { t } = useTranslation("home");
@@ -25,6 +26,7 @@ export default function GiftPrintCard({ gift: g }: { gift: MusicalGift }) {
       <p className="my-6 font-serif text-xl">{g.sender_name}</p>
       <GiftQr url={giftUrl(g.public_alias || g.public_token, window.location.origin, g.product)} />
       <p className="mt-4 text-sm">{t("giftFlow.scan")}</p>
+      <GiftBrandMark />
     </article>
   );
 }

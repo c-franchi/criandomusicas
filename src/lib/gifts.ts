@@ -190,7 +190,7 @@ export function safeImage(url: string | null | undefined) {
     ? url
     : undefined;
 }
-export async function prepareGiftPhoto(file: File): Promise<string> {
+export async function prepareGiftPhoto(file: File, preserveTransparency = false): Promise<string> {
   if (
     !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
     file.size > 8 * 1024 * 1024
@@ -208,7 +208,7 @@ export async function prepareGiftPhoto(file: File): Promise<string> {
     if (!context) throw Error("gift_invalid_photo");
     context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
     for (const quality of [0.82, 0.65, 0.45, 0.25]) {
-      const data = canvas.toDataURL("image/jpeg", quality);
+      const data = canvas.toDataURL(preserveTransparency ? "image/webp" : "image/jpeg", quality);
       if (data.length <= 230000) return data;
     }
     throw Error("gift_invalid_photo");

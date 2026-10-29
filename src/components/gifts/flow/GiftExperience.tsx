@@ -3,6 +3,7 @@ import { giftLyricText } from "@/lib/gift-link";
 import { giftUrl } from "@/lib/gifts";
 import GiftShare from "./GiftShare";
 import GiftBackground from "./GiftBackground";
+import GiftBrandMark from "./GiftBrandMark";
 import GiftResponseForm from "./GiftResponseForm";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -231,6 +232,7 @@ export default function GiftExperience({
           {t("giftFlow.previewOnly")}
         </p>
       )}
+      <GiftBrandMark light />
     </section>
   );
 }

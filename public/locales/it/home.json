@@ -515,6 +515,21 @@
     }
   },
   "giftFlow": {
+    "backgroundCreator": {
+      "title": "Crea uno sfondo decorativo",
+      "help": "Crea una grafica con il centro libero, senza persone o fotografie. Scegli modello e colori, crea l’anteprima e premi Salva per pubblicarla nella galleria. I modelli non usano IA.",
+      "palette": "Colori dello sfondo",
+      "create": "Crea anteprima dello sfondo",
+      "orUpload": "Oppure carica una grafica di sfondo pronta",
+      "preview": "Anteprima dello sfondo decorativo",
+      "safeArea": "Spazio libero per nomi e messaggio",
+      "palettes": {
+        "rose": "Rosa e lilla",
+        "blue": "Azzurro tenue",
+        "gold": "Oro e lavanda",
+        "christmas": "Verde e rosso tenui"
+      }
+    },
     "create": "Personalizza un regalo musicale",
     "myGifts": "I miei regali musicali",
     "home": "Home",
@@ -775,9 +790,9 @@
     "reviewAndRelease": "Controlla e rilascia il biglietto",
     "total": "Totale dell’ordine",
     "cardDesign": "Scegli lo sfondo del biglietto",
-    "backgroundHelp": "Lo sfondo decora il biglietto. La tua foto resta in primo piano con nomi e messaggio.",
-    "backgroundAdmin": "Sfondi del team",
-    "backgroundUploadHelp": "Carica un’immagine senza dati personali, nomi o QR. Sarà nella galleria pubblica dei modelli. Usa JPG, PNG o WEBP; il sistema ridimensiona l’immagine.",
+    "backgroundHelp": "Scegli uno sfondo decorativo. La foto personale viene aggiunta separatamente e non viene usata come sfondo.",
+    "backgroundAdmin": "Galleria di sfondi decorativi",
+    "backgroundUploadHelp": "Carica un’illustrazione, una trama o una cornice con il centro libero. Evita ritratti, testi, nomi e codici QR. La foto personale viene aggiunta separatamente. Usa JPG, PNG o WEBP.",
     "backgroundName": "Nome del modello",
     "backgroundImage": "Immagine di sfondo",
     "hideBackground": "Nascondi dalle nuove scelte",

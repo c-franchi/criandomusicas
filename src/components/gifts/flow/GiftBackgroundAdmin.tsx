@@ -1,4 +1,6 @@
 import { useState } from "react";
+import GiftBackgroundCreator from "./GiftBackgroundCreator";
+import { renderGiftBackground } from "@/lib/gift-background-art";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { useGiftBackgrounds } from "@/hooks/useMusicalGifts";
@@ -21,6 +23,15 @@ export default function GiftBackgroundAdmin() {
       <p className="text-sm text-muted-foreground">
         {t("giftFlow.backgroundUploadHelp")}
       </p>
+      <GiftBackgroundCreator busy={busy} onCreate={async (design, palette) => {
+        setBusy(true); setError(""); setImage(null);
+        try {
+          setImage(await renderGiftBackground(design, palette));
+          if (!label.trim()) setLabel(`${t("giftFlow.designs." + design)} — ${t("giftFlow.backgroundCreator.palettes." + palette)}`);
+        } catch { setError(t("giftFlow.genericError")); }
+        finally { setBusy(false); }
+      }} />
+      <p className="text-sm font-medium">{t("giftFlow.backgroundCreator.orUpload")}</p>
       <Label htmlFor="background-label">{t("giftFlow.backgroundName")}</Label>
       <Input
         id="background-label"
@@ -40,7 +51,7 @@ export default function GiftBackgroundAdmin() {
           setBusy(true);
           setError("");
           try {
-            setImage(await prepareGiftPhoto(f));
+            setImage(await prepareGiftPhoto(f, true));
           } catch {
             setError(t("giftFlow.errors.gift_invalid_photo"));
           } finally {
@@ -53,7 +64,7 @@ export default function GiftBackgroundAdmin() {
         <img
           src={image}
           alt=""
-          className="h-40 max-w-full rounded-xl object-contain"
+          className="h-52 max-w-full rounded-xl border bg-white object-contain"
         />
       )}
       <Button

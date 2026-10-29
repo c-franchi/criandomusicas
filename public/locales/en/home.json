@@ -515,6 +515,21 @@
     }
   },
   "giftFlow": {
+    "backgroundCreator": {
+      "title": "Create a decorative background",
+      "help": "Create artwork with a clear center, without people or photographs. Choose a design and colors, preview it, then Save to publish it in the gallery. Template creation does not use AI.",
+      "palette": "Background colors",
+      "create": "Create background preview",
+      "orUpload": "Or upload finished background artwork",
+      "preview": "Decorative background preview",
+      "safeArea": "Clear space for names and message",
+      "palettes": {
+        "rose": "Rose and lilac",
+        "blue": "Soft blue",
+        "gold": "Gold and lavender",
+        "christmas": "Soft green and red"
+      }
+    },
     "create": "Personalize a musical gift",
     "myGifts": "My musical gifts",
     "home": "Home",
@@ -775,9 +790,9 @@
     "reviewAndRelease": "Review and release card",
     "total": "Order total",
     "cardDesign": "Choose your card background",
-    "backgroundHelp": "The background decorates the card. Your photo stays in front with the names and message.",
-    "backgroundAdmin": "Team background gallery",
-    "backgroundUploadHelp": "Upload artwork without personal data, names or QR codes. It will appear in the public template gallery. Use JPG, PNG or WEBP; the system resizes the image.",
+    "backgroundHelp": "Choose a decorative background. Personal photos are added separately and are not used as backgrounds.",
+    "backgroundAdmin": "Decorative background library",
+    "backgroundUploadHelp": "Upload an illustration, texture or border with a clear center. Avoid portraits, text, names and QR codes. Personal photos are added separately. Use JPG, PNG or WEBP.",
     "backgroundName": "Template name",
     "backgroundImage": "Background image",
     "hideBackground": "Hide from new selections",
