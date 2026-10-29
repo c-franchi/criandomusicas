@@ -1,5 +1,5 @@
 /** Read the real file metadata before publishing a short audio track. */
-export function readAudioDuration(file: File): Promise<number> {
+export function readAudioDuration(file: File, signal?: AbortSignal): Promise<number> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file);
     const audio = new Audio();
@@ -7,6 +7,7 @@ export function readAudioDuration(file: File): Promise<number> {
       audio.onerror = null;
       audio.onloadedmetadata = null;
       clearTimeout(timer);
+      signal?.removeEventListener('abort', cancel);
       audio.removeAttribute("src");
       audio.load();
       URL.revokeObjectURL(url);
@@ -19,7 +20,10 @@ export function readAudioDuration(file: File): Promise<number> {
         ),
       );
     };
+    const cancel = () => { cleanup(); reject(new Error('Envio cancelado.')); };
     const timer = setTimeout(fail, 15000);
+    if (signal?.aborted) { cancel(); return; }
+    signal?.addEventListener('abort', cancel, { once: true });
     audio.preload = "metadata";
     audio.onerror = fail;
     audio.onloadedmetadata = () => {

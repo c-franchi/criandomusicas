@@ -3,11 +3,13 @@ import { CheckCircle, Loader2, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import type { MusicUploadOrder } from '@/lib/music-upload';
 
-export function MusicUploadControls({ order, uploading, onUpload, helpText }: {
+export function MusicUploadControls({ order, uploading, onUpload, helpText, uploadStage, onCancel }: {
   order: MusicUploadOrder & { uploadedVersions?: number[] };
   uploading: string | null;
   onUpload: (file: File, version: number) => void;
   helpText?: string;
+  uploadStage?: string;
+  onCancel?: () => void;
 }) {
   const inputs = useRef<Record<number, HTMLInputElement | null>>({});
   if (!['MUSIC_GENERATING', 'MUSIC_READY', 'COMPLETED'].includes(order.status)
@@ -33,9 +35,13 @@ export function MusicUploadControls({ order, uploading, onUpload, helpText }: {
           variant={version === primary ? 'default' : 'outline'} disabled={!!uploading || needsPrimary}
           onClick={() => inputs.current[version]?.click()}>
           {busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : ready ? <CheckCircle className="mr-2 h-4 w-4" /> : <Upload className="mr-2 h-4 w-4" />}
-          {busy ? 'Enviando…' : ready ? `Substituir versão ${version}` : version === primary ? 'Enviar música principal' : `Versão ${version} (opcional)`}
+          {busy ? uploadStage || 'Enviando…' : ready ? `Substituir versão ${version}` : version === primary ? 'Enviar música principal' : `Versão ${version} (opcional)`}
         </Button>
       </div>;
     })}
+    {uploading?.startsWith(`${order.id}-v`) && <div className="flex w-full flex-wrap items-center gap-2" role="status" aria-live="polite">
+      <span className="text-xs text-muted-foreground">Mantenha esta página aberta durante o envio.</span>
+      {onCancel && <Button type="button" size="sm" variant="outline" onClick={onCancel}>Cancelar envio</Button>}
+    </div>}
   </div>;
 }
