@@ -1,3 +1,4 @@
+import InstallAppButton from '@/components/InstallAppButton';
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -96,6 +97,8 @@ const AppHeader = ({
             {/* Theme Toggle */}
             <ThemeToggle />
 
+            <InstallAppButton iconOnly className="hover:scale-105 transition-transform hidden sm:flex rounded-xl" />
+
             {/* Notification Center - Bell Icon */}
             {user && <NotificationCenter />}
 
@@ -135,11 +138,6 @@ const AppHeader = ({
                 </Link>
                 
                 {/* Install Button */}
-                <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform hidden sm:flex rounded-xl">
-                  <Link to="/install" title={tCommon('navigation.install', 'Install')}>
-                    <Download className="w-4 h-4" />
-                  </Link>
-                </Button>
                 
                 {/* Tour Button - Only on home page */}
                 {isHomePage && (

@@ -1,3 +1,4 @@
+import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { isPublicGiftPath, giftEntries } from '@/lib/gift-entry-paths.mjs';
 import GiftAvailabilityProvider from '@/components/gifts/GiftAvailabilityProvider';
 import { Suspense, lazy } from "react";
@@ -102,6 +103,7 @@ const App = () => (
           <MaintenanceGate>
           <GiftAvailabilityProvider>
           <PageHelpers />
+          <PwaInstallPrompt />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Critical routes - loaded immediately */}

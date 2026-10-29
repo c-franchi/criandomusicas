@@ -152,16 +152,10 @@
     "installButton": "Instalar Ahora",
     "addToHome": "Añadir a Pantalla de Inicio",
     "addToHomeDesc": "Instala la app para acceso rápido",
-    "browserHint": "Abre el menú del navegador y selecciona \"Instalar\" o \"Añadir a pantalla de inicio\"",
+    "browserHint": "Este navegador no ofrece instalación directa. Continúa en el sitio o abre esta dirección en un navegador compatible, como Chrome o Edge en Android.",
     "installed": "¡App Instalada!",
     "installedDesc": "La app está instalada en tu pantalla de inicio",
     "installNow": "Instalar Ahora",
-    "ios": {
-      "title": "En iPhone/iPad:",
-      "step1": "Toca el botón compartir (cuadrado con flecha)",
-      "step2": "Desplázate hacia abajo y toca \"Añadir a pantalla de inicio\"",
-      "step3": "Toca \"Añadir\" en la esquina superior derecha"
-    },
     "notifications": {
       "title": "Notificaciones",
       "description": "Recibe alertas cuando tu canción esté lista"
@@ -182,7 +176,30 @@
       "fullscreen": "Experiencia a pantalla completa"
     },
     "alreadyInstalled": "¡App ya instalada!",
-    "openApp": "Abrir App"
+    "openApp": "Abrir App",
+    "direct": {
+      "title": "Instala con un toque",
+      "description": "Pulsa Instalar ahora para abrir la confirmación del navegador. Después podrás activar las notificaciones.",
+      "confirming": "Esperando confirmación de instalación…",
+      "waiting": "Esperando que el navegador habilite la instalación. El botón se activará automáticamente. Si ya está instalada, abre la app desde la pantalla de inicio.",
+      "unsupported": "Este navegador no ofrece instalación directa. Continúa en el sitio o abre esta dirección en un navegador compatible, como Chrome o Edge en Android.",
+      "preparing": "Esperando instalador",
+      "confirmation": "La instalación requiere tu confirmación en el navegador. El sitio sigue disponible.",
+      "dismissed": "Instalación cancelada. Puedes seguir usando el sitio.",
+      "error": "No se pudo abrir el instalador. Reintenta cuando el botón esté disponible."
+    },
+    "push": {
+      "title": "¿Activar las notificaciones ahora?",
+      "description": "Recibe avisos sobre la preparación y entrega de tus pedidos. El permiso se solicitará al pulsar Activar.",
+      "signInDescription": "Tu app está instalada. Inicia sesión para recibir avisos sobre tus pedidos en este dispositivo.",
+      "signIn": "Entrar para activar notificaciones",
+      "activate": "Activar notificaciones",
+      "activating": "Activando…",
+      "later": "Ahora no",
+      "active": "Notificaciones activadas en este dispositivo.",
+      "unavailable": "Las notificaciones no están disponibles en este navegador.",
+      "denied": "El permiso está bloqueado en este dispositivo. Puedes continuar usando la app."
+    }
   },
   "share": {
     "title": "Compartir",

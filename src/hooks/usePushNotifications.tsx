@@ -111,18 +111,10 @@ export const usePushNotifications = () => {
     setIsLoading(true);
 
     try {
-      const vapidPublicKey = await getVapidPublicKey();
-
-      if (!vapidPublicKey) {
-        toast({
-          title: "Erro de configuração",
-          description: "Chave VAPID inválida ou ausente.",
-          variant: "destructive",
-        });
-        return false;
-      }
-
-      const permissionResult = await Notification.requestPermission();
+      // Keep the browser permission prompt inside the user's click, before network waits.
+      const permissionResult = Notification.permission === 'default'
+        ? await Notification.requestPermission()
+        : Notification.permission;
       setPermission(permissionResult);
 
       if (permissionResult !== "granted") {
@@ -133,6 +125,9 @@ export const usePushNotifications = () => {
         });
         return false;
       }
+
+      const vapidPublicKey = await getVapidPublicKey();
+      if (!vapidPublicKey) throw new Error('Chave VAPID indisponível. Tente novamente.');
 
       const registration = await navigator.serviceWorker.ready;
 

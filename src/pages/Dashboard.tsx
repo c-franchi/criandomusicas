@@ -1,3 +1,4 @@
+import InstallAppButton from '@/components/InstallAppButton';
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Navigate, Link, useSearchParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -9,7 +10,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { NotificationBanner } from "@/components/PushNotificationPrompt";
 import { useCredits } from "@/hooks/useCredits";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useTranslation } from "react-i18next";
@@ -493,7 +493,7 @@ const Dashboard = () => {
           transition={{ duration: 0.3 }}
           className="space-y-3"
         >
-          <NotificationBanner />
+          {/* Post-install notification setup is centralized in PwaInstallPrompt. */}
           <ReceivedCreditsNotification variant="banner" />
         </motion.div>
 
@@ -538,11 +538,7 @@ const Dashboard = () => {
                 <Home className="w-4 h-4" />
               </Link>
             </Button>
-            <Button variant="outline" size="icon" asChild title={t('buttons.install')} className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
-              <Link to="/install">
-                <Download className="w-4 h-4" />
-              </Link>
-            </Button>
+            <InstallAppButton iconOnly className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10" />
             <Button variant="outline" size="icon" asChild className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
               <Link to="/perfil" title={t('buttons.profile')}>
                 <User className="w-4 h-4" />
