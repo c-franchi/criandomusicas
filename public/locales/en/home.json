@@ -871,6 +871,26 @@
       "readyActions": "Enjoy your gift",
       "musicFiles": "Listen and download song",
       "rate": "Review my song"
+    },
+    "adminSync": {
+      "manage": "Manage song and card",
+      "backList": "Back to requests",
+      "inconsistent": "A lyric is already selected on the order, but its approval needs to be synchronized. No new song or approval is needed.",
+      "sync": "Synchronize progress",
+      "prompt": "Production prompt and lyrics",
+      "copy": "Copy",
+      "stages": {
+        "released": "Gift released",
+        "check": "Check request progress",
+        "inconsistent": "Recorded approval needs synchronization",
+        "lyrics": "Waiting for lyric selection and approval",
+        "release": "Song attached: review and release gift",
+        "audio": "Lyrics approved: produce and attach song",
+        "draft": "Draft: continue customization",
+        "pay": "Waiting for payment",
+        "receipt": "Receipt received: verify payment",
+        "cancel": "Request cancelled"
+      }
     }
   },
   "giftResponse": {

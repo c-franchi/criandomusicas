@@ -871,6 +871,26 @@
       "readyActions": "Goditi il tuo regalo",
       "musicFiles": "Ascolta e scarica la canzone",
       "rate": "Valuta la mia canzone"
+    },
+    "adminSync": {
+      "manage": "Gestisci canzone e biglietto",
+      "backList": "Torna alle richieste",
+      "inconsistent": "Il testo è già selezionato nell’ordine, ma occorre sincronizzare l’approvazione. Non serve creare una nuova canzone o approvare di nuovo.",
+      "sync": "Sincronizza avanzamento",
+      "prompt": "Prompt e testo per produrre la canzone",
+      "copy": "Copia",
+      "stages": {
+        "released": "Regalo disponibile",
+        "check": "Controlla avanzamento della richiesta",
+        "inconsistent": "Approvazione registrata: sincronizzazione necessaria",
+        "lyrics": "In attesa della scelta e approvazione del testo",
+        "release": "Canzone allegata: controlla e rilascia il regalo",
+        "audio": "Testo approvato: produci e allega la canzone",
+        "draft": "Bozza: continua personalizzazione",
+        "pay": "In attesa del pagamento",
+        "receipt": "Ricevuta caricata: verifica pagamento",
+        "cancel": "Richiesta annullata"
+      }
     }
   },
   "giftResponse": {

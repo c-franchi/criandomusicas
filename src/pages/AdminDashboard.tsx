@@ -1,3 +1,6 @@
+import { loadAdminOrders } from "@/lib/admin-order-list";
+import GiftOrderSummary from "@/components/admin/GiftOrderSummary";
+import "@/components/admin/admin-responsive.css";
 import { MusicUploadControls } from "@/components/admin/MusicUploadControls";
 import { saveMusicUpload } from "@/lib/music-upload";
 import { createMusicUploadClient } from "@/lib/music-upload-client";
@@ -65,6 +68,7 @@ import {
 import { AdminStatsCards } from "@/components/admin";
 
 interface AdminOrder {
+  lyric_approval_state?: 'approved'|'pending'|'inconsistent';
   gift?: Pick<MusicalGift,"id"|"product"|"duration_seconds"|"music_source"|"is_test"|"recipient_name"|"track_version"|"status">;
   id: string;
   status: string;
@@ -111,7 +115,9 @@ const AdminDashboard = () => {
   const [orders, setOrders] = useState<AdminOrder[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [refreshingOrders, setRefreshingOrders] = useState(false);
+  const [ordersError, setOrdersError] = useState("");
   const fetchingOrders = useRef(false);
+  const orderMutationRevision = useRef(0);
   const [searchTerm, setSearchTerm] = useState(params.get("pedido") || "");
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
@@ -151,120 +157,20 @@ const AdminDashboard = () => {
     // loadingOrders is used only for the initial load.
     if (fetchingOrders.current) return;
     fetchingOrders.current = true;
+    const revision = orderMutationRevision.current;
     setRefreshingOrders(true);
+    setOrdersError("");
     try {
-      // Fetch orders with approved lyrics and payment info
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          status,
-          payment_status,
-          payment_method,
-          created_at,
-          music_type,
-          music_style,
-          story,
-          user_id,
-          final_prompt,
-          style_prompt,
-          approved_lyric_id,
-          is_instrumental,
-          has_custom_lyric,
-          instruments,
-          solo_instrument,
-          solo_moment,
-          song_title,
-          cover_url,
-          pix_receipt_url,
-          pix_rejection_reason,
-          amount,
-          purpose,
-          emotion,
-          voice_type,
-          audio_input_id
-        `)
-        .order('created_at', { ascending: false });
-
-      if (ordersError) throw ordersError;
-
-      const {data:gifts,error:giftError}=await supabase.from('musical_gifts').select('id,product,duration_seconds,music_source,is_test,recipient_name,track_version,checkout_order_id,production_order_id,status');
-      if(giftError) throw giftError;
-      // Fetch lyrics titles, tracks, and profiles for each order
-      const ordersWithDetails = await Promise.all(
-        (ordersData || []).map(async (order) => {
-          let lyric_title = null;
-          let track_url = null;
-          let user_whatsapp = null;
-          let user_name = null;
-          
-          // Fetch lyric title - try approved_lyric_id first, otherwise get latest lyric for the order
-          if (order.approved_lyric_id) {
-            const { data: lyricData } = await supabase
-              .from('lyrics')
-              .select('title')
-              .eq('id', order.approved_lyric_id)
-              .maybeSingle();
-            lyric_title = lyricData?.title;
-          } else {
-            // Fallback: get latest lyric title for this order
-            const { data: latestLyric } = await supabase
-              .from('lyrics')
-              .select('title')
-              .eq('order_id', order.id)
-              .order('created_at', { ascending: false })
-              .limit(1)
-              .maybeSingle();
-            lyric_title = latestLyric?.title;
-          }
-          
-          // Fetch ALL tracks for this order to know which versions are uploaded
-          const { data: tracksData } = await supabase
-            .from('tracks')
-            .select('audio_url, version')
-            .eq('order_id', order.id)
-            .eq('status', 'READY');
-          
-          // Get track URL (use version 1 as primary)
-          const v1Track = tracksData?.find(t => t.version === 1);
-          track_url = v1Track?.audio_url || tracksData?.[0]?.audio_url || null;
-          
-          // Get uploaded versions array
-          const uploadedVersions = tracksData?.map(t => t.version).filter((v): v is number => v !== null) || [];
-          
-          // Fetch user profile (whatsapp)
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('whatsapp, name')
-            .eq('user_id', order.user_id)
-            .maybeSingle();
-          user_whatsapp = profileData?.whatsapp;
-          user_name = profileData?.name;
-          
-          // Get audio input URL if audio mode order
-          let audio_input_url = null;
-          if (order.audio_input_id) {
-            const { data: audioInput } = await supabase
-              .from('audio_inputs')
-              .select('storage_path')
-              .eq('id', order.audio_input_id)
-              .maybeSingle();
-            if (audioInput?.storage_path) {
-              // audio-inputs is a private bucket, use signed URL
-              const { data: signedUrlData } = await supabase.storage
-                .from('audio-inputs')
-                .createSignedUrl(audioInput.storage_path, 3600); // 1 hour expiry
-              audio_input_url = signedUrlData?.signedUrl || null;
-            }
-          }
-
-          return { ...order, gift: gifts?.find(g=>g.checkout_order_id===order.id || g.production_order_id===order.id), lyric_title, track_url, user_whatsapp, user_name, uploadedVersions, audio_input_url };
-        })
-      );
-
-      setOrders(ordersWithDetails as unknown as AdminOrder[]);
+      const client = await createMusicUploadClient(supabase, new AbortController().signal);
+      const ordersWithDetails = await loadAdminOrders(client, base => {
+        if(revision !== orderMutationRevision.current) return;
+        setOrders(previous => previous.length ? previous : base as AdminOrder[]);
+        setLoadingOrders(false);
+      });
+      if(revision === orderMutationRevision.current) setOrders(ordersWithDetails as unknown as AdminOrder[]);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : 'Não foi possível carregar os detalhes dos pedidos.';
+      setOrdersError(errorMessage);
       toast({
         title: 'Erro ao carregar pedidos',
         description: errorMessage,
@@ -293,10 +199,14 @@ const AdminDashboard = () => {
       void fetchOrders();
     }, 60000);
 
-    return () => clearInterval(intervalId);
+    const refreshOnFocus = () => { if(document.visibilityState === 'visible') void fetchOrders(); };
+    window.addEventListener('focus', refreshOnFocus);
+    document.addEventListener('visibilitychange', refreshOnFocus);
+    return () => { clearInterval(intervalId); window.removeEventListener('focus', refreshOnFocus); document.removeEventListener('visibilitychange', refreshOnFocus); };
   }, [isAdmin, fetchOrders, uploadingMusic, confirmingPix, rejectingPix, generatingCover, showRejectDialog, receiptModalOpen, deleteOrderId]);
 
   const confirmDeleteOrder = async () => {
+    orderMutationRevision.current++;
     if (!deleteOrderId) return;
     try {
       const { error } = await supabase
@@ -325,6 +235,7 @@ const AdminDashboard = () => {
   };
 
   const updateOrderStatus = async (orderId: string, newStatus: "DRAFT" | "AWAITING_PAYMENT" | "PAID" | "BRIEFING_COMPLETE" | "LYRICS_PENDING" | "LYRICS_GENERATED" | "LYRICS_APPROVED" | "MUSIC_GENERATING" | "MUSIC_READY" | "COMPLETED" | "CANCELLED") => {
+    orderMutationRevision.current++;
     try {
       const { error } = await supabase
         .from('orders')
@@ -353,6 +264,7 @@ const AdminDashboard = () => {
 
   // Confirm PIX payment and auto-generate lyrics/style
   const confirmPixPayment = async (orderId: string, userId: string) => {
+    orderMutationRevision.current++;
     setConfirmingPix(orderId);
     try {
       // 1. Fetch order details for generation
@@ -604,6 +516,7 @@ const AdminDashboard = () => {
 
   // Reject PIX payment
   const rejectPixPayment = async (orderId: string, userId: string, reason: string) => {
+    orderMutationRevision.current++;
     setRejectingPix(orderId);
     try {
       // Update order to rejected status
@@ -693,6 +606,7 @@ const AdminDashboard = () => {
   // Save one recording and complete production, preserving the separate gift release.
   const handleMusicUpload = async (file: File, order: AdminOrder, version: number = 1) => {
     if (!file || musicUploadBusy.current) return;
+    orderMutationRevision.current++;
     musicUploadBusy.current = true;
     const controller = new AbortController();
     musicUploadAbort.current = controller;
@@ -985,7 +899,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="admin-workspace min-h-screen bg-background">
       {/* Delete Order Confirmation */}
       <AlertDialog open={!!deleteOrderId} onOpenChange={(open) => !open && setDeleteOrderId(null)}>
         <AlertDialogContent>
@@ -1166,36 +1080,36 @@ const AdminDashboard = () => {
                 <p className="text-xs sm:text-sm text-muted-foreground">Gerenciar produção de músicas</p>
               </div>
             </div>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+            <div className="admin-toolbar grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap">
+              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/">
                   <Home className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Home</span>
                 </Link>
               </Button>
               
-              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/admin/configuracoes">
                   <Settings className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Configurações</span>
                   <span className="sm:hidden">Config</span>
                 </Link>
               </Button>
-              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/admin/configuracoes?tab=maintenance">Manutenção</Link>
               </Button>
-              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/admin/presentes">Presentes musicais</Link>
               </Button>
               
-              <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                 <Link to="/admin/marketing">
                   <MessageCircle className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Marketing</span>
                 </Link>
               </Button>
               
-              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders || refreshingOrders || !!uploadingMusic} title="Buscar novos pedidos (automático a cada 1 minuto)" className="flex-1 sm:flex-none text-xs sm:text-sm">
+              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders || refreshingOrders || !!uploadingMusic} title="Buscar novos pedidos (automático a cada 1 minuto)" className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                 <RefreshCw className={`w-4 h-4 sm:mr-2 ${refreshingOrders ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Atualizar</span>
               </Button>
@@ -1204,7 +1118,7 @@ const AdminDashboard = () => {
                 variant="outline"
                 size="sm"
                 disabled={testingPush}
-                className="flex-1 sm:flex-none text-xs sm:text-sm"
+                className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm"
                 onClick={async () => {
                   if (!user) return;
                   setTestingPush(true);
@@ -1243,9 +1157,11 @@ const AdminDashboard = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-        <div className="mb-6 flex flex-wrap gap-2" aria-label="Tipo de solicitação">{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Cartões para imprimir']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label} ({orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length})</Button>)}</div>
+        <label className="mb-4 block text-sm sm:hidden">Tipo de solicitação<select className="mt-2 w-full min-w-0 rounded-xl border border-border bg-card p-3" value={productFilter} onChange={e=>{setProductFilter(e.target.value);setSearchTerm('');}}>{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Cartões para imprimir']].map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
+        <div className="mb-6 hidden flex-wrap gap-2 sm:flex" aria-label="Tipo de solicitação">{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Cartões para imprimir']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label} ({orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length})</Button>)}</div>
+        {ordersError && <div role="alert" className="mb-4 space-y-3 rounded-xl border border-destructive/40 p-4 text-sm"><p>{ordersError}</p><Button variant="outline" disabled={refreshingOrders} onClick={()=>void fetchOrders()}>Tentar carregar novamente</Button></div>}
         {/* Stats Cards */}
-        <AdminStatsCards statusCounts={statusCounts} />
+        <AdminStatsCards statusCounts={statusCounts} loading={loadingOrders} />
 
         {/* Filters */}
         <div className="flex flex-col gap-3 mb-4 sm:mb-6">
@@ -1258,7 +1174,7 @@ const AdminDashboard = () => {
               className="pl-9 bg-card/50 border-border/50 focus:border-primary/50"
             />
           </div>
-          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 -mx-3 px-3 sm:mx-0 sm:px-0 scrollbar-hide">
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             <Button
               variant={filterStatus === 'all' ? 'default' : 'outline'}
               size="sm"
@@ -1330,7 +1246,7 @@ const AdminDashboard = () => {
                 <h3 className="text-xl font-semibold mb-2">Nenhum pedido em andamento</h3>
               </Card>
             ) : (
-              filteredActiveOrders.map((order) => (
+              filteredActiveOrders.map((order) => order.gift ? <GiftOrderSummary key={order.id} order={order} /> : (
                 <Card key={order.id} className="p-3 sm:p-5 bg-card/50 border-border/50 hover:border-primary/30 transition-colors">
                   <div className="flex flex-col gap-3 sm:gap-4">
                     {/* Header Row */}
@@ -1764,7 +1680,7 @@ const AdminDashboard = () => {
                             }
                           }} 
                           size="sm" 
-                          className="flex-1 sm:flex-none text-xs sm:text-sm"
+                          className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm"
                         >
                           <PlayCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Iniciar Produção
@@ -1790,7 +1706,7 @@ const AdminDashboard = () => {
                             variant="outline" 
                             size="sm" 
                             asChild 
-                            className="flex-1 sm:flex-none text-xs sm:text-sm"
+                            className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm"
                           >
                             <a href={order.track_url} target="_blank" rel="noopener noreferrer">
                               <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
@@ -1801,7 +1717,7 @@ const AdminDashboard = () => {
                       )}
                       {/* Allow existing one-recording orders to finish without another upload. */}
                       {order.status === 'MUSIC_READY' && (order.gift ? order.uploadedVersions?.includes(order.gift.track_version) : !!order.uploadedVersions?.length) && (
-                        <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} size="sm" className="flex-1 sm:flex-none text-xs sm:text-sm">
+                        <Button onClick={() => updateOrderStatus(order.id, 'COMPLETED')} size="sm" className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                           <CheckCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Concluir com a música enviada
                         </Button>
@@ -1833,7 +1749,7 @@ const AdminDashboard = () => {
                           )}
                         </Button>
                       )}
-                      <Button variant="outline" size="sm" asChild className="flex-1 sm:flex-none text-xs sm:text-sm">
+                      <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
                         <Link to={`/pedido/${order.id}`}>
                           <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                           Detalhes
@@ -1856,7 +1772,7 @@ const AdminDashboard = () => {
                 <h3 className="text-lg sm:text-xl font-semibold mb-2">Nenhum pedido concluído</h3>
               </Card>
             ) : (
-              filteredCompletedOrders.map((order) => (
+              filteredCompletedOrders.map((order) => order.gift ? <GiftOrderSummary key={order.id} order={order} /> : (
                 <Card key={order.id} className="p-3 sm:p-4 bg-card/30 border-border/30 opacity-80 hover:opacity-100 transition-opacity">
                   <div className="flex items-center gap-3">
                     {/* Cover thumbnail */}

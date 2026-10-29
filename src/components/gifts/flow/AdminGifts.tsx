@@ -47,10 +47,12 @@ export default function AdminGifts() {
   const [statusFilter,setStatusFilter]=useState("all");
   const [search,setSearch]=useState("");
   const visible=(list.data||[]).filter(g=>(productFilter==="all"||g.product===productFilter)&&(statusFilter==="all"||g.status===statusFilter)&&[g.id,g.recipient_name,g.sender_name,g.production_order_id,g.checkout_order_id].some(v=>v?.toLowerCase().includes(search.toLowerCase().trim())));
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<string | undefined>(
     params.get("presente") || undefined,
   );
+  useEffect(() => { setSelected(params.get('presente') || undefined); }, [params]);
+  useEffect(() => { if(selected) window.scrollTo(0,0); }, [selected]);
   if (loading || roleLoading) return <PageLoader />;
   if (!user)
     return <Navigate to="/auth?redirect=%2Fadmin%2Fpresentes" replace />;
@@ -61,7 +63,7 @@ export default function AdminGifts() {
         <Link to="/admin">{t("giftFlow.backAdmin")}</Link>
       </Button>
       <Tabs defaultValue="orders">
-        <TabsList>
+        <TabsList className="w-full min-w-0">
           <TabsTrigger value="orders">{t("giftFlow.orders")}</TabsTrigger>
           <TabsTrigger value="commerce">{t("giftFlow.commerce")}</TabsTrigger>
         </TabsList>
@@ -72,7 +74,7 @@ export default function AdminGifts() {
             <select aria-label={t('giftFlow.filterStatus')} className="min-h-12 rounded-lg border border-border bg-background px-3" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">{t('giftFlow.allOrders')}</option>{['DRAFT','AWAITING_PAYMENT','RECEIPT_SENT','PAID','APPROVED_TEST','PRODUCTION','ACTIVE','CANCELLED'].map(status=><option key={status} value={status}>{t('giftFlow.status.'+status)}</option>)}</select>
           </div>
           <div className="mt-6 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-            <div className="space-y-3">
+            <div className={selected ? "hidden min-w-0 space-y-3 lg:block" : "min-w-0 space-y-3"}>
               {list.isPending ? (
                 <p>{t("giftFlow.loading")}</p>
               ) : list.isError ? (
@@ -81,7 +83,7 @@ export default function AdminGifts() {
                 visible.map((g) => (
                   <button
                     key={g.id}
-                    onClick={() => setSelected(g.id)}
+                    onClick={() => setParams({presente:g.id})}
                     className={`block w-full rounded-xl border bg-card p-4 text-left ${selected === g.id ? "border-primary" : "border-border"}`}
                   >
                     <p className="font-medium">
@@ -102,6 +104,7 @@ export default function AdminGifts() {
               {visible.length === 0 && <p>{t("giftFlow.noGifts")}</p>}
             </div>
             <div className="min-w-0">
+              {selected && <Button variant="outline" className="mb-4 w-full lg:hidden" onClick={()=>setParams({})}>{t('giftFlow.adminSync.backList')}</Button>}
               {selected ? (
                 <GiftAdminDetail key={selected} id={selected} />
               ) : (
@@ -201,7 +204,7 @@ function GiftAdminDetail({ id }: { id: string }) {
           {t("giftFlow.status." + g.status)}
           {g.is_test ? " · " + t("giftFlow.testBadge") : ""}
         </p>
-        <p className="text-xs text-muted-foreground">{g.id}</p>
+        <p className="break-all text-xs text-muted-foreground">{g.id}</p>
         {g.amount_cents !== null && (
           <p className="font-semibold">
             {getLocalizedPrice(g.amount_cents, i18n.language, "BRL").formatted}
@@ -261,7 +264,7 @@ function GiftAdminDetail({ id }: { id: string }) {
           </details>
         )}
         <GiftProductionPanel gift={g} onBusyChange={setUploadingAudio}/>
-        {g.checkout_order_id && <details className="rounded-xl bg-muted p-4"><summary className="cursor-pointer text-sm">{t('giftFlow.manageOrder')}</summary><Button asChild variant="outline" className="mt-3"><Link to={`/admin?produto=${g.product}&pedido=${g.checkout_order_id}`}>{t('giftFlow.manageOrder')}</Link></Button></details>}
+        {g.production_order_id && <p className="break-all text-xs text-muted-foreground">{t('giftFlow.productionId')}: {g.production_order_id}</p>}
         {g.receipt_path && (
           <Button
             variant="outline"
