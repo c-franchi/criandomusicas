@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { giftUrl, safeImage, type MusicalGift } from "@/lib/gifts";
 import GiftBackground from "./GiftBackground";
+import GiftBrandMark from "./GiftBrandMark";
 import GiftQr from "./GiftQr";
 export default function GiftBooklet({
   gift: g,
@@ -17,6 +18,7 @@ export default function GiftBooklet({
         <p className="gift-booklet-test">{t("giftFlow.testBadge")}</p>
       )}
       {content}
+      <GiftBrandMark />
     </section>
   );
   return (
@@ -31,7 +33,6 @@ export default function GiftBooklet({
             <p className="gift-booklet-tagline">
               {t("giftFlow.bookletKeepsake")}
             </p>
-            <p className="gift-booklet-small">criandomusicas.com.br</p>
           </>,
           "back",
         )}

@@ -1,0 +1,9 @@
+# Gift branding, decorative backgrounds and footer navigation
+
+The digital experience, single print card and all four booklet panels reuse GiftBrandMark: the existing music icon and criandomusicas.com.br. The mark is in normal flow on digital/single cards and inside each booklet panel's bottom safe area. Printed signatures use explicit small dimensions and stay separate from the QR quiet zone and message. Existing cards receive the signature when rendered; no stored gift is rewritten.
+
+The admin background library now offers four decorative generators (hearts, flowers, celebration, classic) and four color palettes. Previews contain only trusted SVG geometry with a transparent center. Creation produces a real PNG below the existing image-data size limit. Nothing is saved until the existing Save action is used. The gallery, administrator RLS, card selection and public-gift resolution are unchanged. Background uploads preserve transparency where the browser supports WebP; personal-photo processing remains unchanged. The generator uses templates, not AI or paid image services. Personal photos remain separate from background artwork.
+
+RouteScrollReset starts new pages at the top without resetting a wizard merely because search parameters change. Section hashes wait for lazy content using an observer with cleanup. Footer page links also reset same-page clicks; Contact resets the page and opens the existing dialog. No form is submitted during verification.
+
+Validation: TypeScript and production build, 22 passing decorative-export, rendered React and regression tests, existing gift sharing/presentation regressions. The production background library is readable through its existing public API and was empty during inspection. No production templates, orders, payments or private gift data were changed. Admin save and the native browser PNG encoder require a signed-in browser check; mocked encoder tests verify the size limit and PNG contract.

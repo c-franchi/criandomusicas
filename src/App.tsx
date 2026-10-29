@@ -1,3 +1,4 @@
+import RouteScrollReset from '@/components/RouteScrollReset';
 import PwaInstallPrompt from '@/components/PwaInstallPrompt';
 import { isPublicGiftPath, giftEntries } from '@/lib/gift-entry-paths.mjs';
 import GiftAvailabilityProvider from '@/components/gifts/GiftAvailabilityProvider';
@@ -100,6 +101,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <RouteScrollReset />
           <MaintenanceGate>
           <GiftAvailabilityProvider>
           <PageHelpers />

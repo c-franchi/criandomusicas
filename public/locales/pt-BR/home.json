@@ -533,6 +533,21 @@
     }
   },
   "giftFlow": {
+    "backgroundCreator": {
+      "title": "Criar um fundo decorativo",
+      "help": "Crie uma arte com centro livre, sem pessoas ou fotografias. Escolha o modelo e as cores, gere a prévia e clique em Salvar para disponibilizar na galeria. A criação por modelos não usa IA.",
+      "palette": "Cores do fundo",
+      "create": "Criar prévia do fundo",
+      "orUpload": "Ou envie uma arte de fundo pronta",
+      "preview": "Prévia do fundo decorativo",
+      "safeArea": "Espaço livre para nomes e mensagem",
+      "palettes": {
+        "rose": "Rosa e lilás",
+        "blue": "Azul suave",
+        "gold": "Dourado e lavanda",
+        "christmas": "Verde e vermelho suave"
+      }
+    },
     "create": "Personalizar presente musical",
     "myGifts": "Meus presentes musicais",
     "home": "Início",
@@ -793,9 +808,9 @@
     "reviewAndRelease": "Conferir e liberar cartão",
     "total": "Total do pedido",
     "cardDesign": "Escolha o fundo do cartão",
-    "backgroundHelp": "O fundo decora o cartão. Sua foto permanece na frente, junto dos nomes e da mensagem.",
-    "backgroundAdmin": "Fundos enviados pela equipe",
-    "backgroundUploadHelp": "Envie uma arte sem dados pessoais, nomes ou QR Code. Ela ficará disponível na galeria pública de modelos. Use JPG, PNG ou WEBP; o sistema ajusta o tamanho.",
+    "backgroundHelp": "Escolha um fundo decorativo. A foto da pessoa é adicionada separadamente e não será usada como fundo.",
+    "backgroundAdmin": "Biblioteca de fundos decorativos",
+    "backgroundUploadHelp": "Envie uma ilustração, textura ou moldura com o centro livre. Evite fotografias de pessoas, textos, nomes e QR Code. A foto pessoal é adicionada separadamente no cartão. Use JPG, PNG ou WEBP.",
     "backgroundName": "Nome do modelo",
     "backgroundImage": "Imagem de fundo",
     "hideBackground": "Ocultar das novas escolhas",

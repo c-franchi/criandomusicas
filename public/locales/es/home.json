@@ -515,6 +515,21 @@
     }
   },
   "giftFlow": {
+    "backgroundCreator": {
+      "title": "Crear un fondo decorativo",
+      "help": "Crea un diseño con el centro libre, sin personas ni fotografías. Elige el modelo y los colores, genera la vista previa y pulsa Guardar para publicarlo en la galería. Los modelos no usan IA.",
+      "palette": "Colores del fondo",
+      "create": "Crear vista previa del fondo",
+      "orUpload": "O sube un diseño de fondo terminado",
+      "preview": "Vista previa del fondo decorativo",
+      "safeArea": "Espacio libre para nombres y mensaje",
+      "palettes": {
+        "rose": "Rosa y lila",
+        "blue": "Azul suave",
+        "gold": "Dorado y lavanda",
+        "christmas": "Verde y rojo suaves"
+      }
+    },
     "create": "Personalizar regalo musical",
     "myGifts": "Mis regalos musicales",
     "home": "Inicio",
@@ -775,9 +790,9 @@
     "reviewAndRelease": "Revisar y liberar tarjeta",
     "total": "Total del pedido",
     "cardDesign": "Elige el fondo de la tarjeta",
-    "backgroundHelp": "El fondo decora la tarjeta. Tu foto permanece delante, con los nombres y el mensaje.",
-    "backgroundAdmin": "Fondos del equipo",
-    "backgroundUploadHelp": "Sube una imagen sin datos personales, nombres ni QR. Estará en la galería pública de modelos. Usa JPG, PNG o WEBP; el sistema ajusta el tamaño.",
+    "backgroundHelp": "Elige un fondo decorativo. La foto personal se añade por separado y no se usa como fondo.",
+    "backgroundAdmin": "Biblioteca de fondos decorativos",
+    "backgroundUploadHelp": "Sube una ilustración, textura o marco con el centro libre. Evita retratos, textos, nombres y códigos QR. La foto personal se añade por separado. Usa JPG, PNG o WEBP.",
     "backgroundName": "Nombre del modelo",
     "backgroundImage": "Imagen de fondo",
     "hideBackground": "Ocultar de nuevas selecciones",

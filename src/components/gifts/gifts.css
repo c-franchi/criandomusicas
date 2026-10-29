@@ -60,3 +60,13 @@
 
 /* Keep decorative patterns quieter behind photographs and lyrics. */
 .gift-design-layer{opacity:.6}
+
+/* A readable signature, separated from the photo, message and QR quiet zone. */
+.gift-brand-mark{display:flex;align-items:center;justify-content:center;gap:7px;margin:24px auto 0;color:#635472;font:500 11px/1.4 Arial,sans-serif;text-decoration:none;opacity:.78;white-space:nowrap;max-width:100%;break-inside:avoid}
+.gift-brand-mark img{width:22px!important;height:22px!important;flex-shrink:0;border-radius:5px;object-fit:contain}
+.gift-brand-mark-light{color:#fff;opacity:.72}
+.gift-brand-mark:focus-visible{outline:2px solid currentColor;outline-offset:5px;border-radius:4px}
+.gift-booklet-panel{padding-bottom:58px}
+.gift-booklet-panel > .gift-brand-mark{position:absolute;bottom:14px;left:8px;right:8px;margin:0;font-size:10px}
+@media print{.gift-brand-mark{opacity:1;color:#635472;font-size:8pt;print-color-adjust:exact;-webkit-print-color-adjust:exact}.gift-brand-mark img{width:6mm!important;height:6mm!important}.gift-booklet-panel{padding-bottom:22mm}.gift-booklet-panel > .gift-brand-mark{bottom:7mm;font-size:8pt}}
+@media screen and (max-width:600px){.gift-booklet-panel > .gift-brand-mark{font-size:8px;gap:4px}.gift-booklet-panel > .gift-brand-mark img{width:16px!important;height:16px!important}}
