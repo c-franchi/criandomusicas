@@ -201,6 +201,14 @@ function GiftAdminDetail({ id }: { id: string }) {
         <TabsTrigger value="preview">Prévia do cartão</TabsTrigger>
         <TabsTrigger value="lyrics">Letra sincronizada</TabsTrigger>
       </TabsList>
+        {error && (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
+          >
+            {error}
+          </p>
+        )}
       <TabsContent value="production" forceMount className="data-[state=inactive]:hidden">
       <section className="space-y-4 rounded-2xl border border-border bg-card p-4 sm:p-5">
         <h2 className="text-xl font-semibold">{g.recipient_name}</h2>
@@ -450,21 +458,14 @@ function GiftAdminDetail({ id }: { id: string }) {
             )}
           </div>
         )}
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
-          >
-            {error}
-          </p>
-        )}
+
       </section>
       </TabsContent>
       <TabsContent value="lyrics" forceMount className="data-[state=inactive]:hidden">
-        <details className="border-t border-border pt-5">
-          <summary className="cursor-pointer font-medium">
+        <section className="rounded-xl border border-border p-4">
+          <h2 className="font-medium">
             {t("giftFlow.syncLyrics")}
-          </summary>
+          </h2>
           <p className="my-3 text-xs text-muted-foreground">
             {t("giftFlow.lrcHelp")}
           </p>
@@ -489,7 +490,7 @@ function GiftAdminDetail({ id }: { id: string }) {
           >
             {t("giftFlow.saveCues")}
           </Button>
-        </details>
+        </section>
       </TabsContent>
       <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
       <GiftExperience
