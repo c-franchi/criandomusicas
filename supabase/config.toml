@@ -98,3 +98,9 @@ verify_jwt = false
 
 [functions.gift-response]
 verify_jwt = false
+
+[functions.create-it-test-checkout]
+verify_jwt = false
+
+[functions.stripe-it-test-webhook]
+verify_jwt = false
