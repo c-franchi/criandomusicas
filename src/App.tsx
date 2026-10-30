@@ -54,6 +54,7 @@ const GiftList = lazy(() => import('./components/gifts/flow/GiftTracking').then(
 const PublicGift = lazy(() => import('./components/gifts/flow/PublicGift'));
 const GiftPrint = lazy(() => import('./components/gifts/flow/GiftPrint'));
 const AdminGifts = lazy(() => import('./components/gifts/flow/AdminGifts'));
+const AdminItalyTest = lazy(() => import('./pages/AdminItalyTest'));
 const MusicalGiftProduct = lazy(() => import("./pages/MusicalGiftProduct"));
 const VideoCheckout = lazy(() => import("./pages/VideoCheckout"));
 const VideoUpload = lazy(() => import("./pages/VideoUpload"));
@@ -126,6 +127,7 @@ const App = () => (
               <Route path="/presente.html" element={<PublicGift />} />
               {Object.values(giftEntries).map(path => <Route key={path} path={path} element={<PublicGift />} />)}
               <Route path="/admin/presentes" element={<AdminGifts />} />
+              <Route path="/admin/teste-italia" element={<AdminItalyTest />} />
               <Route path="/briefing" element={<Briefing />} />
               <Route path="/cartao-digital" element={<MusicalGiftProduct product="digital" />} />
               <Route path="/musicas-curtas" element={<MusicalGiftProduct product="short" />} />

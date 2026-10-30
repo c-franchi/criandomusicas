@@ -427,6 +427,141 @@ export type Database = {
           },
         ]
       }
+      it_test_catalog: {
+        Row: {
+          account_id: string
+          active: boolean
+          currency: string
+          livemode: boolean
+          plan_id: string
+          price_id: string
+          product_id: string
+          unit_amount: number
+        }
+        Insert: {
+          account_id: string
+          active?: boolean
+          currency?: string
+          livemode?: boolean
+          plan_id: string
+          price_id: string
+          product_id: string
+          unit_amount: number
+        }
+        Update: {
+          account_id?: string
+          active?: boolean
+          currency?: string
+          livemode?: boolean
+          plan_id?: string
+          price_id?: string
+          product_id?: string
+          unit_amount?: number
+        }
+        Relationships: []
+      }
+      it_test_checkouts: {
+        Row: {
+          account_id: string
+          amount_cents: number
+          created_at: string
+          currency: string
+          expires_at: string | null
+          gift_id: string | null
+          id: string
+          items: Json
+          last_error: string | null
+          livemode: boolean
+          market: string
+          order_id: string
+          owner_id: string
+          paid_at: string | null
+          paid_event_id: string | null
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          gift_id?: string | null
+          id?: string
+          items: Json
+          last_error?: string | null
+          livemode?: boolean
+          market?: string
+          order_id: string
+          owner_id: string
+          paid_at?: string | null
+          paid_event_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          gift_id?: string | null
+          id?: string
+          items?: Json
+          last_error?: string | null
+          livemode?: boolean
+          market?: string
+          order_id?: string
+          owner_id?: string
+          paid_at?: string | null
+          paid_event_id?: string | null
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "it_test_checkouts_gift_id_fkey"
+            columns: ["gift_id"]
+            isOneToOne: false
+            referencedRelation: "musical_gifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "it_test_checkouts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      it_test_webhook_events: {
+        Row: {
+          event_id: string
+          event_type: string
+          received_at: string
+          result: string | null
+          session_id: string | null
+        }
+        Insert: {
+          event_id: string
+          event_type: string
+          received_at?: string
+          result?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          event_id?: string
+          event_type?: string
+          received_at?: string
+          result?: string | null
+          session_id?: string | null
+        }
+        Relationships: []
+      }
       lyrics: {
         Row: {
           approved_at: string | null
@@ -782,6 +917,7 @@ export type Database = {
           restricted_words: string | null
           review_notification_sent: boolean | null
           rhythm: string | null
+          sandbox_market: string | null
           solo_instrument: string | null
           solo_moment: string | null
           song_title: string | null
@@ -832,6 +968,7 @@ export type Database = {
           restricted_words?: string | null
           review_notification_sent?: boolean | null
           rhythm?: string | null
+          sandbox_market?: string | null
           solo_instrument?: string | null
           solo_moment?: string | null
           song_title?: string | null
@@ -882,6 +1019,7 @@ export type Database = {
           restricted_words?: string | null
           review_notification_sent?: boolean | null
           rhythm?: string | null
+          sandbox_market?: string | null
           solo_instrument?: string | null
           solo_moment?: string | null
           song_title?: string | null
@@ -1637,6 +1775,37 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      it_test_abort_checkout: {
+        Args: { p_id: string; p_owner: string; p_reason: string }
+        Returns: undefined
+      }
+      it_test_apply_event: {
+        Args: {
+          p_amount: number
+          p_checkout: string
+          p_currency: string
+          p_event_id: string
+          p_livemode: boolean
+          p_payment_status: string
+          p_price_ids: string[]
+          p_session: string
+          p_type: string
+        }
+        Returns: string
+      }
+      it_test_attach_session: {
+        Args: {
+          p_expires: string
+          p_id: string
+          p_owner: string
+          p_session: string
+        }
+        Returns: boolean
+      }
+      it_test_begin_checkout: {
+        Args: { p_order: string; p_owner: string }
+        Returns: Json
       }
       musical_gift_action: {
         Args: { p_action: string; p_data?: Json; p_id: string }

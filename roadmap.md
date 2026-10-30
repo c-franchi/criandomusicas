@@ -14,3 +14,4 @@
 - [ ] Distinct non-JavaScript social previews require approved server-rendering/hosting work beyond the current client-side SEO; no platform migration performed.
 - [x] Fluxo de criação por finalidade (Home CTA único, /briefing finalidade, empresa/motivacional, resumo)
 - [ ] Testar fluxo logado no celular (sem sessão de teste disponível)
+- [ ] IT sandbox checkout: waiting on STRIPE_IT_TEST_RESTRICTED_KEY + STRIPE_IT_TEST_WEBHOOK_SECRET, then one verified sandbox session
