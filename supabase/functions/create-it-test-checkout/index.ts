@@ -1,4 +1,4 @@
-// IT/EUR sandbox checkout. Never uses STRIPE_SECRET_KEY (Brazil). Price, currency, account and
+// IT/EUR sandbox checkout. Never uses the Brazilian Stripe key. Price, currency, account and
 // mode come from the database catalog and are re-verified against Stripe before a session exists.
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";

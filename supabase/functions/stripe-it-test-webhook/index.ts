@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     // Re-read the session and its line items from Stripe rather than trusting the payload alone.
     const session = await stripe.checkout.sessions.retrieve(sent.id);
     const lines = await stripe.checkout.sessions.listLineItems(sent.id, { limit: 10 });
-    const priceIds = lines.data.flatMap((l) => (l.quantity === 1 && l.price?.id ? [l.price.id] : ["invalid_line"]));
+    const priceIds = lines.data.flatMap((l: Stripe.LineItem) => (l.quantity === 1 && l.price?.id ? [l.price.id] : ["invalid_line"]));
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data, error } = await admin.rpc("it_test_apply_event", {
       p_event_id: event.id, p_type: event.type, p_session: session.id, p_checkout: checkoutId,
