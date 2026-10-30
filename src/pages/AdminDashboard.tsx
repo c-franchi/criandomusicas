@@ -1074,6 +1074,7 @@ const AdminDashboard = () => {
         </Button>
         <details className="admin-tools"><summary>Mais ações</summary><div className="admin-tools-content">
           <Button variant="outline" asChild><Link to="/admin/configuracoes?tab=maintenance">Manutenção</Link></Button>
+          <Button variant="outline" asChild><Link to="/admin/teste-italia">Teste de compra — Itália</Link></Button>
               <Button
                 variant="outline"
                 size="sm"
