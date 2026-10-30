@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.1.2";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -324,6 +325,10 @@ serve(async (req) => {
 
     const data: PurchaseEmailRequest = await req.json();
     
+    if(data.orderId) {
+      const sandboxClient=createClient(Deno.env.get('SUPABASE_URL')??'',Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')??'');
+      if(await isItalySandboxOrder(sandboxClient,data.orderId)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
+    }
     // If userId provided but no email/userName, fetch from auth
     let email = data.email;
     let userName = data.userName;

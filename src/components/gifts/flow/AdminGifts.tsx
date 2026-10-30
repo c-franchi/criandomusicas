@@ -219,7 +219,7 @@ function GiftAdminDetail({ id }: { id: string }) {
         <p className="break-all text-xs text-muted-foreground">{g.id}</p>
         {g.amount_cents !== null && (
           <p className="font-semibold">
-            {getLocalizedPrice(g.amount_cents, i18n.language, "BRL").formatted}
+            {getLocalizedPrice(g.amount_cents, i18n.language, g.is_test && (g.details as Record<string, unknown>).sandbox_market==='IT_TEST' ? "EUR" : "BRL").formatted}
           </p>
         )}
         {g.voucher_code && <p className="mt-3 text-sm text-muted-foreground">{t("giftFlow.voucherAppliedLine",{code:g.voucher_code,discount:getLocalizedPrice(g.voucher_discount_cents || 0,i18n.language,"BRL").formatted})}</p>}

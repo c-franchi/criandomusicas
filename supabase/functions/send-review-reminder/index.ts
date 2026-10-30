@@ -91,6 +91,7 @@ Deno.serve(async (req) => {
       .from('orders')
       .select('id, user_id, music_type')
       .eq('review_notification_sent', false)
+      .is('sandbox_market', null)
       .not('music_ready_at', 'is', null)
       .gte('music_ready_at', twentyFiveHoursAgo)
       .lte('music_ready_at', twentyFourHoursAgo);

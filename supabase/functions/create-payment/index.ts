@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import {closeGiftCheckout} from "../_shared/giftCheckout.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
@@ -72,6 +73,7 @@ serve(async (req) => {
     const userEmail = claimsData.claims.email as string;
     logStep("User authenticated", { email: userEmail });
 
+    if (!isVideoOrder && await isItalySandboxOrder(supabaseClient, orderId)) return new Response(JSON.stringify({error:'Pedidos de teste Itália não aceitam pagamentos reais.'}),{status:409,headers:{...corsHeaders,'Content-Type':'application/json'}});
     // Handle video order payment
     if (isVideoOrder) {
       const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {

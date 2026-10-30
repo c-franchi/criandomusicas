@@ -2,7 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '../integrations/supabase/types';
 import { lyricApprovalEvidence } from './gift-production-state.ts';
 
-const fields = 'id,status,payment_status,payment_method,created_at,music_type,music_style,story,user_id,final_prompt,style_prompt,approved_lyric_id,is_instrumental,has_custom_lyric,instruments,solo_instrument,solo_moment,song_title,cover_url,pix_receipt_url,pix_rejection_reason,amount,purpose,emotion,voice_type,audio_input_id';
+const fields = 'id,sandbox_market,currency,status,payment_status,payment_method,created_at,music_type,music_style,story,user_id,final_prompt,style_prompt,approved_lyric_id,is_instrumental,has_custom_lyric,instruments,solo_instrument,solo_moment,song_title,cover_url,pix_receipt_url,pix_rejection_reason,amount,purpose,emotion,voice_type,audio_input_id';
 const giftFields = 'id,product,duration_seconds,music_source,is_test,recipient_name,track_version,checkout_order_id,production_order_id,status';
 const check = <T extends {error: unknown}>(r: T): T => { if(r.error) throw r.error; return r; };
 /** A bounded number of batched reads, instead of three requests for every order. */
