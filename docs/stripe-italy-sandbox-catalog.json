@@ -4,8 +4,8 @@
   "livemode": false,
   "country": "IT",
   "currency": "eur",
-  "status": "catalog_created_checkout_not_connected",
-  "verified_at": "2026-10-29",
+  "status": "checkout_prepared_credentials_required",
+  "verified_at": "2026-10-30",
   "products": [
     {
       "plan_id": "gift_short_15",

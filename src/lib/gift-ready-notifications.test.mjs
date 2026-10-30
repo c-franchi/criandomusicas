@@ -1,10 +1,12 @@
+import {isItalySandboxOrder} from '../../supabase/functions/_shared/sandboxOrder.ts';
+globalThis.__sandboxCheck=isItalySandboxOrder;
 import { emailFetch } from '../../supabase/functions/_shared/emailRetry.ts';
 globalThis.__emailFetch=emailFetch;
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {transformSync} from 'esbuild';
-let gift=null,sent=false,requests=[],tables=[];
+let gift=null,sandbox=false,sent=false,requests=[],tables=[];
 globalThis.Deno={env:{get:()=> 'fixture-key'},serve:handler=>{globalThis.__pushHandler=handler;}};
 globalThis.__readyDb={
  auth:{getUser:async()=>({data:{user:{id:'admin'}},error:null}),admin:{getUserById:async()=>({data:{user:{email:'owner@example.invalid'}},error:null})}},
@@ -12,7 +14,7 @@ globalThis.__readyDb={
  from:table=>{
   tables.push(table);
   const q={select:()=>q,eq:()=>q,limit:()=>q,
-   maybeSingle:async()=>({data:table==='musical_gifts'?gift:table==='profiles'?{name:'Buyer'}:sent?{id:'sent'}:null,error:null}),
+   maybeSingle:async()=>({data:table==='orders'?{sandbox_market:sandbox?'IT_TEST':null}:table==='musical_gifts'?gift:table==='profiles'?{name:'Buyer'}:sent?{id:'sent'}:null,error:null}),
    insert:async()=>{if(table==='musical_gift_events')sent=true;return {error:null};},
    then:resolve=>resolve({data:[],error:null}),
   };return q;
@@ -23,17 +25,19 @@ globalThis.fetch=async(url,options)=>{assert.equal(url,'https://api.resend.com/e
 const emailSource=readFileSync(new URL('../../supabase/functions/send-music-ready-email/index.ts',import.meta.url),'utf8')
  .replace(/^import .*http\/server.ts.*$/m,'const serve=handler=>{globalThis.__emailHandler=handler;};')
  .replace(/^import .*resend@.*$/m,'const Resend=globalThis.__FakeResend;')
+ .replace(/^import .*sandboxOrder.*$/m,'const isItalySandboxOrder=globalThis.__sandboxCheck;')
  .replace(/^import .*emailFetch.*$/m,'const emailFetch=globalThis.__emailFetch;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__readyDb;');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(emailSource,{loader:'ts',format:'esm'}).code));
 const pushSource=readFileSync(new URL('../../supabase/functions/send-push-notification/index.ts',import.meta.url),'utf8')
+ .replace(/^import .*sandboxOrder.*$/m,'const isItalySandboxOrder=globalThis.__sandboxCheck;')
  .replace(/^import .*emailFetch.*$/m,'const emailFetch=globalThis.__emailFetch;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__readyDb;')
  .replace(/import \{[\s\S]*?\} from "https:\/\/esm.sh\/@block65[^;]+;/,'const buildPushPayload=()=>{throw Error("No real push in tests");};');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(pushSource,{loader:'ts',format:'esm'}).code));
 const fixture=(status='PRODUCTION',is_test=false)=>({id:'gift',owner_id:'owner',status,is_test,available_from:null});
 const request=body=>new Request('https://fixture.invalid',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer fixture-key'},body:JSON.stringify(body)});
-function reset(g){gift=g;sent=false;requests=[];tables=[];}
+function reset(g){gift=g;sandbox=false;sent=false;requests=[];tables=[];}
 test('cached upload email calls cannot announce unreleased or test gifts',async()=>{
  for(const g of [fixture(),fixture('ACTIVE',true)]){
   reset(g);const r=await globalThis.__emailHandler(request({orderId:'order',userId:'owner'}));
@@ -55,4 +59,13 @@ test('ordinary music ready emails retain the legacy delivery flow',async()=>{
 test('gift ready push is blocked before release, while lyric approval notifications remain available',async()=>{
  reset(fixture());const r=await globalThis.__pushHandler(request({order_id:'order',user_id:'owner',title:'Sua música está pronta!',body:'Ready'}));assert.equal((await r.json()).skipped,'gift_not_released');
  reset(fixture());const lyrics=await globalThis.__pushHandler(request({order_id:'order',user_id:'owner',title:'Letras prontas!',body:'Escolha uma letra'}));assert.equal(lyrics.status,200);assert(tables.includes('push_subscriptions'));assert.equal(requests.length,0);
+});
+
+test('Italy sandbox copies cannot send music-ready email or push even when marked released',async()=>{
+ const id='11111111-1111-4111-8111-111111111111';
+ reset(fixture('ACTIVE'));sandbox=true;
+ const email=await globalThis.__emailHandler(request({orderId:id,userId:'owner'}));
+ assert.equal((await email.json()).skipped,'italy_sandbox');assert.equal(requests.length,0);
+ const push=await globalThis.__pushHandler(request({order_id:id,user_id:'owner',title:'Letras prontas!',body:'Escolha'}));
+ assert.equal((await push.json()).skipped,'italy_sandbox');assert.equal(requests.length,0);
 });
