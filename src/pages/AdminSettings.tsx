@@ -1,3 +1,4 @@
+import AdminHeader from "@/components/admin/AdminHeader";
 import {giftVoucherPlans} from "@/lib/gifts";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Navigate, Link, useSearchParams } from "react-router-dom";
@@ -471,7 +472,7 @@ const AdminSettings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="admin-workspace min-h-screen bg-background">
       {/* Delete Audio Confirmation */}
       <AlertDialog open={!!deleteAudioId} onOpenChange={(open) => !open && setDeleteAudioId(null)}>
         <AlertDialogContent>
@@ -508,27 +509,11 @@ const AdminSettings = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/admin">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Link>
-            </Button>
-            <div>
-              <h1 className="font-bold text-xl gradient-text">Configurações do Sistema</h1>
-              <p className="text-sm text-muted-foreground">Gerencie preços, vouchers, áudios e configurações</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <AdminHeader title="Configurações" description="Preços, vouchers e configurações do sistema" />
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
         <Tabs value={configTab} onValueChange={(v) => setConfigTab(v as any)} className="space-y-6">
-          <TabsList className="w-full flex flex-wrap gap-1 bg-card/50 border border-border/50 p-1.5 h-auto">
+          <TabsList aria-label="Funções de configuração" className="admin-function-tabs">
             <TabsTrigger value="maintenance" className="flex-1 min-w-[100px] text-xs sm:text-sm py-2">Manutenção</TabsTrigger>
             <TabsTrigger value="pricing" className="flex-1 min-w-[100px] text-xs sm:text-sm py-2">
               <DollarSign className="w-4 h-4 mr-1.5" />

@@ -1,3 +1,5 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AdminHeader from "@/components/admin/AdminHeader";
 import { useState, useEffect, useCallback } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -403,27 +405,8 @@ const AdminEmailMarketing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/admin">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Link>
-            </Button>
-            <div className="flex-1">
-              <h1 className="font-bold text-xl flex items-center gap-2">
-                <Megaphone className="w-5 h-5 text-primary" />
-                <span className="gradient-text">Central de Marketing</span>
-              </h1>
-              <p className="text-sm text-muted-foreground">Campanhas de e-mail em massa</p>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="admin-workspace min-h-screen bg-background">
+      <AdminHeader title="Marketing" description="Campanhas e resultados de e-mail" />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         {/* Audience Stats */}
@@ -469,9 +452,13 @@ const AdminEmailMarketing = () => {
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left: Campaign Builder */}
-          <div className="lg:col-span-2 space-y-4">
+        <Tabs defaultValue="campaign" className="space-y-4">
+          <TabsList className="admin-function-tabs" aria-label="Funções de marketing">
+            <TabsTrigger value="campaign">Criar campanha</TabsTrigger>
+            <TabsTrigger value="history">Histórico e resultados</TabsTrigger>
+          </TabsList>
+          <TabsContent value="campaign" forceMount className="grid gap-4 lg:grid-cols-3 data-[state=inactive]:hidden">
+          <div className="min-w-0 space-y-4 lg:col-span-2">
             {/* Template Selector */}
             <Card>
               <CardHeader className="pb-3">
@@ -663,6 +650,9 @@ const AdminEmailMarketing = () => {
               </CardContent>
             </Card>
 
+          </div>
+          </TabsContent>
+          <TabsContent value="history" forceMount className="data-[state=inactive]:hidden">
             {/* Campaign History */}
             <Card>
               <CardHeader className="pb-3">
@@ -733,8 +723,8 @@ const AdminEmailMarketing = () => {
                 )}
               </CardContent>
             </Card>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Preview Modal */}

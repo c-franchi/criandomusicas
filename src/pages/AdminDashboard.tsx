@@ -1,3 +1,4 @@
+import AdminHeader from "@/components/admin/AdminHeader";
 import { loadAdminOrders } from "@/lib/admin-order-list";
 import GiftOrderSummary from "@/components/admin/GiftOrderSummary";
 import "@/components/admin/admin-responsive.css";
@@ -1067,53 +1068,12 @@ const AdminDashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Header */}
-      <header className="border-b border-border/50 bg-card/80 backdrop-blur-xl sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-primary/30 to-accent/20 flex items-center justify-center shadow-lg">
-                <Music className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="font-bold text-lg sm:text-xl gradient-text">Painel Admin</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground">Gerenciar produção de músicas</p>
-              </div>
-            </div>
-            <div className="admin-toolbar grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-wrap">
-              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
-                <Link to="/">
-                  <Home className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Home</span>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
-                <Link to="/admin/configuracoes">
-                  <Settings className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Configurações</span>
-                  <span className="sm:hidden">Config</span>
-                </Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
-                <Link to="/admin/configuracoes?tab=maintenance">Manutenção</Link>
-              </Button>
-              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
-                <Link to="/admin/presentes">Presentes musicais</Link>
-              </Button>
-              
-              <Button variant="outline" size="sm" asChild className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
-                <Link to="/admin/marketing">
-                  <MessageCircle className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Marketing</span>
-                </Link>
-              </Button>
-              
-              <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders || refreshingOrders || !!uploadingMusic} title="Buscar novos pedidos (automático a cada 1 minuto)" className="min-w-0 h-auto min-h-10 whitespace-normal flex-1 sm:flex-none text-xs sm:text-sm">
-                <RefreshCw className={`w-4 h-4 sm:mr-2 ${refreshingOrders ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Atualizar</span>
-              </Button>
-
+      <AdminHeader title="Pedidos" description="Acompanhe e gerencie a produção musical" actions={<>
+        <Button variant="outline" size="sm" onClick={fetchOrders} disabled={loadingOrders || refreshingOrders || !!uploadingMusic}>
+          <RefreshCw className={`mr-2 h-4 w-4 shrink-0 ${refreshingOrders ? 'animate-spin' : ''}`} />Buscar pedidos
+        </Button>
+        <details className="admin-tools"><summary>Mais ações</summary><div className="admin-tools-content">
+          <Button variant="outline" asChild><Link to="/admin/configuracoes?tab=maintenance">Manutenção</Link></Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -1149,16 +1109,15 @@ const AdminDashboard = () => {
                 }}
               >
                 {testingPush ? <Loader2 className="w-4 h-4 animate-spin sm:mr-2" /> : <Bell className="w-4 h-4 sm:mr-2" />}
-                <span className="hidden sm:inline">Testar Push</span>
+                <span>Testar notificações</span>
               </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+        </div></details>
+      </>} />
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
-        <label className="mb-4 block text-sm sm:hidden">Tipo de solicitação<select className="mt-2 w-full min-w-0 rounded-xl border border-border bg-card p-3" value={productFilter} onChange={e=>{setProductFilter(e.target.value);setSearchTerm('');}}>{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Cartões para imprimir']].map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
-        <div className="mb-6 hidden flex-wrap gap-2 sm:flex" aria-label="Tipo de solicitação">{[['all','Todas as solicitações'],['normal','Músicas normais'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Cartões para imprimir']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label} ({orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length})</Button>)}</div>
+        <fieldset className="admin-product-filter"><legend>Tipo de solicitação</legend><div>
+          {[['all','Todas'],['normal','Músicas'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Para imprimir']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} aria-pressed={productFilter===id} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label}<span className="admin-count">{loadingOrders?'…':orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length}</span></Button>)}
+        </div></fieldset>
         {ordersError && <div role="alert" className="mb-4 space-y-3 rounded-xl border border-destructive/40 p-4 text-sm"><p>{ordersError}</p><Button variant="outline" disabled={refreshingOrders} onClick={()=>void fetchOrders()}>Tentar carregar novamente</Button></div>}
         {/* Stats Cards */}
         <AdminStatsCards statusCounts={statusCounts} loading={loadingOrders} />
@@ -1168,7 +1127,8 @@ const AdminDashboard = () => {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por número do pedido, cliente, destinatário, título..."
+              aria-label="Buscar pedidos por número, cliente, destinatário ou título"
+              placeholder="Buscar pedido ou pessoa…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9 bg-card/50 border-border/50 focus:border-primary/50"
@@ -1224,13 +1184,11 @@ const AdminDashboard = () => {
         <Tabs defaultValue="active" className="space-y-3 sm:space-y-4">
           <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:flex bg-card/50 border border-border/50 p-1 h-auto">
             <TabsTrigger value="active" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              <span className="sm:hidden">🎯 {filteredActiveOrders.length}</span>
-              <span className="hidden sm:inline">🎯 Em Andamento ({filteredActiveOrders.length})</span>
+              <span>Em andamento ({loadingOrders ? "…" : filteredActiveOrders.length})</span>
             </TabsTrigger>
             <TabsTrigger value="completed" className="text-xs sm:text-sm px-2 sm:px-4 py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
               <Archive className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-1" />
-              <span className="hidden sm:inline">Concluídos ({filteredCompletedOrders.length})</span>
-              <span className="sm:hidden ml-1">{filteredCompletedOrders.length}</span>
+              <span>Concluídos ({loadingOrders ? "…" : filteredCompletedOrders.length})</span>
             </TabsTrigger>
           </TabsList>
 

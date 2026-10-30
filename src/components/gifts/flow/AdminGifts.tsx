@@ -1,3 +1,4 @@
+import AdminHeader from "@/components/admin/AdminHeader";
 import { useFlowBusy } from '@/hooks/useFlowBusy';
 import GiftProductionPanel from "./GiftProductionPanel";
 import { giftAudioLimit } from "@/lib/gift-duration";
@@ -58,17 +59,14 @@ export default function AdminGifts() {
     return <Navigate to="/auth?redirect=%2Fadmin%2Fpresentes" replace />;
   if (!isAdmin) return <Navigate to="/dashboard" replace />;
   return (
-    <GiftShell title={t("giftFlow.adminTitle")}>
-      <Button asChild variant="outline" className="mb-6">
-        <Link to="/admin">{t("giftFlow.backAdmin")}</Link>
-      </Button>
+    <GiftShell title={t("giftFlow.adminTitle")} header={<AdminHeader title="Cartões e presentes" description="Produção, conferência e liberação" />}>
       <Tabs defaultValue="orders">
-        <TabsList className="w-full min-w-0">
+        <TabsList className="admin-function-tabs" aria-label="Gestão de cartões">
           <TabsTrigger value="orders">{t("giftFlow.orders")}</TabsTrigger>
           <TabsTrigger value="commerce">{t("giftFlow.commerce")}</TabsTrigger>
         </TabsList>
         <TabsContent value="orders">
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className={selected ? "mt-6 hidden gap-3 lg:grid lg:grid-cols-3" : "mt-6 grid gap-3 sm:grid-cols-3"}>
             <Input aria-label={t('giftFlow.searchOrders')} placeholder={t('giftFlow.searchOrders')} value={search} onChange={e=>setSearch(e.target.value)} />
             <select aria-label={t('giftFlow.filterProduct')} className="min-h-12 rounded-lg border border-border bg-background px-3" value={productFilter} onChange={e=>setProductFilter(e.target.value)}><option value="all">{t('giftFlow.allOrders')}</option>{['digital','short','physical'].map(p=><option key={p} value={p}>{t(`gifts.products.${p}.name`)}</option>)}</select>
             <select aria-label={t('giftFlow.filterStatus')} className="min-h-12 rounded-lg border border-border bg-background px-3" value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">{t('giftFlow.allOrders')}</option>{['DRAFT','AWAITING_PAYMENT','RECEIPT_SENT','PAID','APPROVED_TEST','PRODUCTION','ACTIVE','CANCELLED'].map(status=><option key={status} value={status}>{t('giftFlow.status.'+status)}</option>)}</select>
@@ -197,8 +195,14 @@ function GiftAdminDetail({ id }: { id: string }) {
   const physicalTestBlocked =
     g.product === "physical" && g.is_test && !physicalEnabled;
   return (
-    <div className="space-y-6">
-      <section className="space-y-4 rounded-2xl border border-border bg-card p-5">
+    <Tabs defaultValue="production" className="space-y-4">
+      <TabsList className="admin-function-tabs" aria-label="Funções do presente">
+        <TabsTrigger value="production">Produção e liberação</TabsTrigger>
+        <TabsTrigger value="preview">Prévia do cartão</TabsTrigger>
+        <TabsTrigger value="lyrics">Letra sincronizada</TabsTrigger>
+      </TabsList>
+      <TabsContent value="production" forceMount className="data-[state=inactive]:hidden">
+      <section className="space-y-4 rounded-2xl border border-border bg-card p-4 sm:p-5">
         <h2 className="text-xl font-semibold">{g.recipient_name}</h2>
         <p>
           {t("giftFlow.status." + g.status)}
@@ -446,6 +450,17 @@ function GiftAdminDetail({ id }: { id: string }) {
             )}
           </div>
         )}
+        {error && (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
+          >
+            {error}
+          </p>
+        )}
+      </section>
+      </TabsContent>
+      <TabsContent value="lyrics" forceMount className="data-[state=inactive]:hidden">
         <details className="border-t border-border pt-5">
           <summary className="cursor-pointer font-medium">
             {t("giftFlow.syncLyrics")}
@@ -475,22 +490,16 @@ function GiftAdminDetail({ id }: { id: string }) {
             {t("giftFlow.saveCues")}
           </Button>
         </details>
-        {error && (
-          <p
-            role="alert"
-            className="rounded-lg border border-destructive/30 p-4 text-sm text-destructive"
-          >
-            {error}
-          </p>
-        )}
-      </section>
+      </TabsContent>
+      <TabsContent value="preview" forceMount className="data-[state=inactive]:hidden">
       <GiftExperience
         key={g.version}
         data={{ ...g, ...audio.data } as unknown as GiftPresentation}
         preview
         onDuration={setAudioDuration}
       />
-    </div>
+      </TabsContent>
+    </Tabs>
   );
 }
 function GiftCommerce() {
