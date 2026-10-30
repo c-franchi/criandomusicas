@@ -8,3 +8,4 @@
 - Keep marketing translations in the home/pricing namespaces for all four supported languages and use the existing currency formatter.
 - Resolve legacy Creator campaign hashes at the router boundary without redirecting ordinary package visitors.
 - Classic Vite serves one static head to non-JavaScript crawlers; route SEO is client-side and must not be represented as server-rendered social previews.- Briefing entry is purpose-first; purpose→musicType/route mapping lives only in src/lib/briefingPurpose.ts (tested) so quick orders are never silently classified as homenagem.
+- IT/EUR sandbox checkout is isolated (it_test_* tables, create-it-test-checkout, stripe-it-test-webhook, STRIPE_IT_TEST_* secrets); only the signed sandbox webhook marks orders paid, prices come from it_test_catalog, and Brazilian checkout code/keys are never reused.

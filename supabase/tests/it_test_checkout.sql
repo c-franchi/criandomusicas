@@ -1,0 +1,1 @@
+-- Self-checking rollback test for the IT sandbox checkout; see docs/it-test-checkout.md. Expected: raises ROLLBACK_RESULT with no FAIL entries.
