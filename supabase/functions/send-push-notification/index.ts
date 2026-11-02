@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.91.0";
 import {
   buildPushPayload,
@@ -51,6 +52,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { user_id, order_id, title, body, url, notification_type } = await req.json();
+    if(await isItalySandboxOrder(supabase,order_id)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     if (order_id && (notification_type === 'gift_ready' || (!/letr|lyric/i.test(title || '') && /pront|ready|liberad/i.test(title || '')))) {
       const {data:gift,error}=await supabase.from('musical_gifts').select('owner_id,status,is_test').eq('checkout_order_id',order_id).maybeSingle();
       if(error) throw error;

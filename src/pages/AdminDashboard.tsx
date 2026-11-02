@@ -98,6 +98,8 @@ interface AdminOrder {
   pix_receipt_url?: string | null;
   pix_rejection_reason?: string | null;
   amount?: number;
+  sandbox_market?: string | null;
+  currency?: string;
   purpose?: string;
   emotion?: string;
   voice_type?: string;
@@ -823,7 +825,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const scopeOrders=orders.filter(o=>productFilter==='all' || (productFilter==='normal' ? !o.gift : o.gift?.product===productFilter));
+  const scopeOrders=orders.filter(o=>productFilter==='test' ? o.sandbox_market==='IT_TEST' : o.sandbox_market!=='IT_TEST' && (productFilter==='all' || (productFilter==='normal' ? !o.gift : o.gift?.product===productFilter)));
   // Separar pedidos ativos e concluídos
   const activeOrders = scopeOrders.filter(o => o.gift ? !['ACTIVE','CANCELLED'].includes(o.gift.status) && o.status!=='CANCELLED' : !['COMPLETED', 'CANCELLED'].includes(o.status));
   const completedOrders = scopeOrders.filter(o => o.gift ? ['ACTIVE','CANCELLED'].includes(o.gift.status) || o.status==='CANCELLED' : ['COMPLETED', 'CANCELLED'].includes(o.status));
@@ -858,7 +860,7 @@ const AdminDashboard = () => {
     ready: scopeOrders.filter(o => o.status === 'LYRICS_APPROVED').length,
     generating: scopeOrders.filter(o => o.status === 'MUSIC_GENERATING').length,
     completed: completedOrders.length,
-    total: orders.length,
+    total: scopeOrders.length,
     awaitingPix: scopeOrders.filter(o => o.payment_status === 'AWAITING_PIX').length
   };
 
@@ -1117,7 +1119,7 @@ const AdminDashboard = () => {
 
       <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-8">
         <fieldset className="admin-product-filter"><legend>Tipo de solicitação</legend><div>
-          {[['all','Todas'],['normal','Músicas'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Para imprimir']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} aria-pressed={productFilter===id} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label}<span className="admin-count">{loadingOrders?'…':orders.filter(o=>id==='all'||(id==='normal'?!o.gift:o.gift?.product===id)).length}</span></Button>)}
+          {[['all','Todas'],['normal','Músicas'],['digital','Cartões digitais'],['short','Músicas curtas'],['physical','Para imprimir'],['test','Testes Itália']].map(([id,label])=><Button key={id} variant={productFilter===id?'default':'outline'} aria-pressed={productFilter===id} onClick={()=>{setProductFilter(id);setSearchTerm('');}}>{label}<span className="admin-count">{loadingOrders?'…':orders.filter(o=>id==='test'?o.sandbox_market==='IT_TEST':o.sandbox_market!=='IT_TEST'&&(id==='all'||(id==='normal'?!o.gift:o.gift?.product===id))).length}</span></Button>)}
         </div></fieldset>
         {ordersError && <div role="alert" className="mb-4 space-y-3 rounded-xl border border-destructive/40 p-4 text-sm"><p>{ordersError}</p><Button variant="outline" disabled={refreshingOrders} onClick={()=>void fetchOrders()}>Tentar carregar novamente</Button></div>}
         {/* Stats Cards */}
@@ -1213,7 +1215,7 @@ const AdminDashboard = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-center gap-2 mb-1">
                           {order.gift && <><Badge className="bg-primary/15 text-primary">{order.gift.product==='short'?`Música curta · aprox. ${order.gift.duration_seconds}s`:order.gift.product==='digital'?'Cartão digital':'Cartão para imprimir'}{order.gift.is_test?' · TESTE':''}</Badge><Button size="sm" variant="outline" asChild><Link to={`/admin/presentes?presente=${order.gift.id}`}>Abrir cartão / entrega</Link></Button></>}
-                          <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0,8)}</span>
+                          <span className="font-mono text-xs text-muted-foreground">#{order.id.slice(0,8)}</span>{order.sandbox_market==='IT_TEST' && <Badge>TESTE · Itália · EUR</Badge>}
                           {/* Type Badge - Áudio vs Vocal vs Instrumental vs Letra Própria */}
                           <Badge 
                             variant="outline" 

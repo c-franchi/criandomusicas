@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -47,6 +48,7 @@ serve(async (req) => {
     const { data: claimsData } = await supabaseClient.auth.getClaims(token);
     const userId = claimsData?.claims?.sub as string;
 
+    if (await isItalySandboxOrder(supabaseClient, orderId)) return new Response(JSON.stringify({error:'Pagamento de teste deve ser confirmado pelo webhook Itália.'}),{status:409,headers:{...corsHeaders,'Content-Type':'application/json'}});
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
     });

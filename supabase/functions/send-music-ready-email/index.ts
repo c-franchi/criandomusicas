@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { emailFetch } from '../_shared/emailRetry.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.1.2";
@@ -172,6 +173,7 @@ serve(async (req) => {
     const data: MusicReadyEmailRequest = await req.json();
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const admin = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey);
+    if(await isItalySandboxOrder(admin,data.orderId)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     const {data:gift,error:giftError} = await admin.from('musical_gifts')
       .select('id,owner_id,status,is_test,available_from').eq('checkout_order_id',data.orderId).maybeSingle();
     if (giftError) throw giftError;

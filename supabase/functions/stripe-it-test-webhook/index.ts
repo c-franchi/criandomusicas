@@ -1,6 +1,6 @@
 // Dedicated webhook for the IT/EUR sandbox account. The raw body signature is the only way a
 // payment becomes confirmed; the browser success page never marks anything paid.
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "npm:stripe@23.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { IT_TEST_KEY_NAME, IT_TEST_WEBHOOK_NAME, isHandledEvent, isTestStripeKey, isUuid } from "../_shared/itTestCheckout.ts";
 
@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
   if (!signature) return json({ error: "missing_signature" }, 400);
   const raw = await req.text();
-  const stripe = new Stripe(key!, { apiVersion: "2025-08-27.basil" });
+  const stripe = new Stripe(key!, { apiVersion: "2026-09-30.endive" });
   let event: Stripe.Event;
   try {
     event = await stripe.webhooks.constructEventAsync(raw, signature, secret, undefined, Stripe.createSubtleCryptoProvider());
@@ -33,6 +33,7 @@ Deno.serve(async (req) => {
     // Re-read the session and its line items from Stripe rather than trusting the payload alone.
     const session = await stripe.checkout.sessions.retrieve(sent.id);
     const lines = await stripe.checkout.sessions.listLineItems(sent.id, { limit: 10 });
+    if (lines.has_more || session.metadata?.it_test_checkout_id !== checkoutId || session.client_reference_id !== checkoutId || !session.id.startsWith("cs_test_")) throw Error("session_mismatch");
     const priceIds = lines.data.flatMap((l: Stripe.LineItem) => (l.quantity === 1 && l.price?.id ? [l.price.id] : ["invalid_line"]));
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data, error } = await admin.rpc("it_test_apply_event", {
@@ -43,7 +44,7 @@ Deno.serve(async (req) => {
     if (error) throw error;
     return json({ received: true, result: data });
   } catch (e) {
-    console.error("[IT-TEST-WEBHOOK] processing failed", e instanceof Error ? e.message : "unknown");
+    console.error("[IT-TEST-WEBHOOK] processing failed");
     return json({ error: "processing_failed" }, 500); // Stripe retries; the event row was rolled back.
   }
 });

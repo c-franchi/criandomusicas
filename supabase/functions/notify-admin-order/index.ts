@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
@@ -122,6 +123,7 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+    if(await isItalySandboxOrder(supabase,orderId)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     const isInstrumental = orderType === "instrumental";
     const typeLabel = isInstrumental ? "instrumental" : "cantada";
 

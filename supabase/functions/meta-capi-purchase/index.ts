@@ -1,3 +1,4 @@
+import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -64,6 +65,7 @@ serve(async (req) => {
       user_id,
     } = body || {};
 
+    if(await isItalySandboxOrder(supabase,transaction_id)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     // If email not supplied but user_id is, resolve via auth admin
     let resolvedEmail: string | null = email || null;
     if (!resolvedEmail && user_id) {

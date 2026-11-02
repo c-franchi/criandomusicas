@@ -1,9 +1,9 @@
 // IT/EUR sandbox checkout. Never uses the Brazilian Stripe key. Price, currency, account and
 // mode come from the database catalog and are re-verified against Stripe before a session exists.
-import Stripe from "https://esm.sh/stripe@18.5.0";
+import Stripe from "npm:stripe@23.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import {
-  IT_TEST_ERRORS, IT_TEST_KEY_NAME, IT_TEST_RETURN_PATH, IT_TEST_ACCOUNT_ID, IT_TEST_CURRENCY,
+  IT_TEST_ERRORS, IT_TEST_KEY_NAME, IT_TEST_WEBHOOK_NAME, IT_TEST_RETURN_PATH, IT_TEST_ACCOUNT_ID, IT_TEST_CURRENCY,
   isTestStripeKey, isUuid, itTestErrorCode, itTestReturnOrigin, priceMatchesCatalog, type CatalogItem,
 } from "../_shared/itTestCheckout.ts";
 
@@ -31,12 +31,15 @@ Deno.serve(async (req) => {
 
   let body: any;
   try { body = await req.json(); } catch { return json({ error: "invalid_body" }, 400); }
+  const key = Deno.env.get(IT_TEST_KEY_NAME);
+  const signingSecret = Deno.env.get(IT_TEST_WEBHOOK_NAME);
+  const configured = isTestStripeKey(key) && !!signingSecret?.startsWith("whsec_");
+  if (body?.action === "status") return json({ configured, missing: [!isTestStripeKey(key) ? IT_TEST_KEY_NAME : null, !signingSecret?.startsWith("whsec_") ? IT_TEST_WEBHOOK_NAME : null].filter(Boolean) });
   // Only the order id is accepted; amount/plan/market/currency from the browser are ignored.
   if (!body || !isUuid(body.orderId)) return json({ error: "orderId inválido" }, 400);
   const orderId = body.orderId as string;
 
-  const key = Deno.env.get(IT_TEST_KEY_NAME);
-  if (!isTestStripeKey(key)) {
+  if (!configured) {
     return json({ error: "Checkout de teste Itália indisponível até a configuração da credencial de teste.", code: "it_test_not_configured" }, 503);
   }
 
@@ -50,7 +53,7 @@ Deno.serve(async (req) => {
 
   try {
     if (checkout.currency !== IT_TEST_CURRENCY || checkout.account_id !== IT_TEST_ACCOUNT_ID) throw Error("catalog_invalid");
-    const stripe = new Stripe(key!, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(key!, { apiVersion: "2026-09-30.endive" });
     for (const item of checkout.items) {
       // A price from another account (e.g. Brazil) is not retrievable with this key; a live price fails livemode.
       const price = await stripe.prices.retrieve(item.price_id);
@@ -59,6 +62,9 @@ Deno.serve(async (req) => {
     const origin = itTestReturnOrigin(req.headers.get("origin"));
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      managed_payments: { enabled: false },
+      adaptive_pricing: { enabled: false },
+      integration_identifier: "cm_it_test_" + checkout.id.replaceAll("-", "").slice(0, 8).split("").map(c => String.fromCharCode(97 + parseInt(c, 16))).join(""),
       line_items: checkout.items.map((i) => ({ price: i.price_id, quantity: 1 })),
       success_url: `${origin}${IT_TEST_RETURN_PATH}?checkout=${checkout.id}&esito=ok`,
       cancel_url: `${origin}${IT_TEST_RETURN_PATH}?checkout=${checkout.id}&esito=annullato`,
@@ -79,8 +85,9 @@ Deno.serve(async (req) => {
     return json({ url: session.url, checkoutId: checkout.id, amount_cents: checkout.amount_cents, currency: "eur", test: true });
   } catch (e) {
     const reason = e instanceof Error ? e.message : "unknown";
-    console.error("[IT-TEST-CHECKOUT] failed", reason);
-    await abort(reason);
+    const safeReason=["catalog_invalid","price_mismatch","session_mismatch","attach_failed"].includes(reason)?reason:"provider_error";
+    console.error("[IT-TEST-CHECKOUT] failed", safeReason);
+    await abort(safeReason);
     return json({ error: "Checkout de teste indisponível: preço/conta de teste não conferem ou o Stripe recusou a sessão.", code: "it_test_stripe_error" }, 502);
   }
 });
