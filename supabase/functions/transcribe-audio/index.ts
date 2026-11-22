@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { transcriptionLanguageCode, transcriptionPrompt } from '../_shared/orderLanguageCopy.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,7 +46,8 @@ serve(async (req) => {
     // Service role client for storage/db operations
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { audio_id, language = 'pt' } = await req.json();
+    const { audio_id, language } = await req.json();
+    const resolvedLanguage = transcriptionLanguageCode(language);
 
     if (!audio_id) {
       return new Response(JSON.stringify({ error: 'audio_id is required' }), {
@@ -54,7 +56,7 @@ serve(async (req) => {
       });
     }
 
-    console.log('[transcribe-audio] Audio ID:', audio_id, '| Language:', language);
+    console.log('[transcribe-audio] Audio ID:', audio_id, '| Language:', resolvedLanguage);
 
     // 1. Fetch audio_input record
     const { data: audioInput, error: audioError } = await supabase
@@ -111,10 +113,10 @@ serve(async (req) => {
     const formData = new FormData();
     formData.append('file', new File([audioFile], `audio.${ext}`, { type: audioInput.mime_type }));
     formData.append('model', 'whisper-1');
-    formData.append('language', language);
+    formData.append('language', resolvedLanguage);
     formData.append('response_format', 'verbose_json');
     formData.append('temperature', '0');
-    formData.append('prompt', 'Transcrição fiel em português brasileiro. O áudio pode conter fala, canto, narração ou ditado. Transcrever exatamente cada palavra pronunciada, incluindo nomes próprios, siglas, números e palavras estrangeiras. Manter pontuação adequada.');
+    formData.append('prompt', transcriptionPrompt(resolvedLanguage));
 
     console.log('[transcribe-audio] Calling OpenAI Whisper API...');
 

@@ -42,7 +42,7 @@ const Order = () => {
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'dashboard']);
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingPayment, setProcessingPayment] = useState(false);
@@ -172,7 +172,7 @@ const Order = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando pedido...</p>
+          <p className="text-muted-foreground">{t('buttons.loading')}</p>
         </div>
       </div>
     );
@@ -189,30 +189,30 @@ const Order = () => {
   const getStatusInfo = () => {
     // Check payment status first for PIX
     if (order.payment_status === 'AWAITING_PIX') {
-      return { text: 'Aguardando Confirmação PIX', progress: 15, icon: Clock, color: 'text-yellow-500' };
+      return { text: t('dashboard:statuses.AWAITING_PIX'), progress: 15, icon: Clock, color: 'text-yellow-500' };
     }
 
     switch (order.status) {
       case 'DRAFT':
-        return { text: 'Rascunho', progress: 10, icon: Clock, color: 'text-muted-foreground' };
+        return { text: t('dashboard:statuses.DRAFT'), progress: 10, icon: Clock, color: 'text-muted-foreground' };
       case 'AWAITING_PAYMENT':
-        return { text: 'Aguardando Pagamento', progress: 20, icon: CreditCard, color: 'text-orange-500' };
+        return { text: t('dashboard:statuses.AWAITING_PAYMENT'), progress: 20, icon: CreditCard, color: 'text-orange-500' };
       case 'PAID':
-        return { text: 'Pago - Gerando Letras', progress: 35, icon: Clock, color: 'text-blue-500' };
+        return { text: t('dashboard:statuses.PAID'), progress: 35, icon: Clock, color: 'text-blue-500' };
       case 'LYRICS_PENDING':
-        return { text: 'Gerando Letras...', progress: 40, icon: Clock, color: 'text-blue-500' };
+        return { text: t('dashboard:statuses.LYRICS_PENDING'), progress: 40, icon: Clock, color: 'text-blue-500' };
       case 'LYRICS_GENERATED':
-        return { text: 'Letras Prontas', progress: 50, icon: CheckCircle, color: 'text-purple-500' };
+        return { text: t('dashboard:statuses.LYRICS_GENERATED'), progress: 50, icon: CheckCircle, color: 'text-purple-500' };
       case 'LYRICS_APPROVED':
-        return { text: 'Letras Aprovadas', progress: 60, icon: CheckCircle, color: 'text-green-500' };
+        return { text: t('dashboard:statuses.LYRICS_APPROVED'), progress: 60, icon: CheckCircle, color: 'text-green-500' };
       case 'MUSIC_GENERATING':
-        return { text: 'Produzindo Música...', progress: 80, icon: Music, color: 'text-yellow-500' };
+        return { text: t('dashboard:statuses.MUSIC_GENERATING'), progress: 80, icon: Music, color: 'text-yellow-500' };
       case 'MUSIC_READY':
-        return { text: 'Música Pronta!', progress: 95, icon: CheckCircle, color: 'text-green-600' };
+        return { text: t('dashboard:statuses.MUSIC_READY'), progress: 95, icon: CheckCircle, color: 'text-green-600' };
       case 'COMPLETED':
-        return { text: 'Concluído', progress: 100, icon: CheckCircle, color: 'text-green-600' };
+        return { text: t('dashboard:statuses.COMPLETED'), progress: 100, icon: CheckCircle, color: 'text-green-600' };
       default:
-        return { text: 'Em andamento', progress: 0, icon: Clock, color: 'text-muted-foreground' };
+        return { text: t('dashboard:orderTracking.inProgress'), progress: 0, icon: Clock, color: 'text-muted-foreground' };
     }
   };
 
@@ -231,10 +231,10 @@ const Order = () => {
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">
-            {order.lyric_title || `Música ${order.music_type}`}
+            {order.lyric_title || `${t('dashboard:orderTracking.music')} ${order.music_type}`}
           </h1>
           <p className="text-muted-foreground">
-            Pedido #{order.id.slice(0, 8)} • {order.music_style}
+            {t('dashboard:orderTracking.order')} #{order.id.slice(0, 8)} • {order.music_style}
           </p>
         </div>
 
@@ -245,10 +245,10 @@ const Order = () => {
             <div className="flex-1">
               <h3 className="font-semibold text-lg">{statusInfo.text}</h3>
               <p className="text-sm text-muted-foreground">
-                {order.payment_status === 'AWAITING_PIX' && 'Aguardando confirmação do pagamento PIX'}
-                {order.status === 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && 'Complete o pagamento para iniciar a produção'}
-                {order.status === 'MUSIC_GENERATING' && 'Sua música está sendo produzida...'}
-                {order.status === 'COMPLETED' && 'Sua música está pronta!'}
+                {order.payment_status === 'AWAITING_PIX' && t('dashboard:orderTracking.descriptions.awaitingPix')}
+                {order.status === 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && t('dashboard:orderTracking.descriptions.awaitingPayment')}
+                {order.status === 'MUSIC_GENERATING' && t('dashboard:orderTracking.descriptions.musicGenerating')}
+                {order.status === 'COMPLETED' && t('dashboard:orderTracking.descriptions.completed')}
               </p>
             </div>
             <div className="text-2xl font-bold text-primary">

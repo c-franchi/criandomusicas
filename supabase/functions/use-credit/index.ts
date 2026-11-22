@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { generationNotificationCopy } from '../_shared/orderLanguageCopy.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -64,7 +65,7 @@ serve(async (req) => {
     // Get order to verify ownership and get details for notification
     const { data: orderData, error: orderFetchError } = await supabaseClient
       .from('orders')
-      .select('user_id, music_type, music_style, is_instrumental, payment_status')
+      .select('user_id, music_type, music_style, is_instrumental, payment_status, language')
       .eq('id', orderId)
       .single();
     
@@ -99,6 +100,7 @@ serve(async (req) => {
     const userName = profileData?.name || userEmail || 'Cliente';
     
     logStep("Order verified", { orderId });
+    const notification = generationNotificationCopy(orderData.language);
 
     // Find an active credit package with available credits (FIFO - oldest first)
     // Universal credits: any credit can be used for any order type
@@ -279,8 +281,8 @@ serve(async (req) => {
           body: {
             user_id: userId,
             order_id: orderId,
-            title: "🎵 Pedido recebido!",
-            body: "Seu crédito foi utilizado. Estamos criando sua música!",
+            title: notification.creditTitle,
+            body: notification.creditBody,
             url: `/pedido/${orderId}`,
           },
         });
@@ -428,8 +430,8 @@ serve(async (req) => {
           body: {
             user_id: userId,
             order_id: orderId,
-            title: "🎵 Pedido recebido!",
-            body: `Seu crédito foi utilizado. ${creditToUse.total_credits - newUsedCredits > 0 ? `Restam ${creditToUse.total_credits - newUsedCredits} crédito(s).` : 'Estamos criando sua música!'}`,
+            title: notification.creditTitle,
+            body: `${notification.creditBody} ${creditToUse.total_credits - newUsedCredits > 0 ? notification.creditsRemaining.replace('{count}', String(creditToUse.total_credits - newUsedCredits)) : ''}`,
             url: `/pedido/${orderId}`,
           },
         });

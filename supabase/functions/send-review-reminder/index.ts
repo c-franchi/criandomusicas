@@ -1,4 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
+import { generationNotificationCopy } from '../_shared/orderLanguageCopy.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -89,7 +91,7 @@ Deno.serve(async (req) => {
 
     const { data: eligibleOrders, error: ordersError } = await supabase
       .from('orders')
-      .select('id, user_id, music_type')
+      .select('id, user_id, music_type, language')
       .eq('review_notification_sent', false)
       .is('sandbox_market', null)
       .not('music_ready_at', 'is', null)
@@ -115,7 +117,7 @@ Deno.serve(async (req) => {
 
     for (const order of eligibleOrders) {
       try {
-        const {data:gift,error:giftError}=await supabase.from('musical_gifts').select('id,status,is_test').or(`checkout_order_id.eq.${order.id},production_order_id.eq.${order.id}`).maybeSingle();
+        const {data:gift,error:giftError}=await supabase.from('musical_gifts').select('id,status,is_test,details').or(`checkout_order_id.eq.${order.id},production_order_id.eq.${order.id}`).maybeSingle();
         if(giftError) throw giftError;
         if(gift && (gift.status!=='ACTIVE'||gift.is_test)) continue;
         // Check if review already exists
@@ -152,8 +154,10 @@ Deno.serve(async (req) => {
           continue;
         }
 
-        const title = '⭐ O que achou da sua música?';
-        const body = 'Sua opinião é muito importante para nós! Avalie sua música personalizada.';
+        const language = resolveGenerationLanguage(gift?.details?.language, order.language);
+        const notification = generationNotificationCopy(language);
+        const title = notification.reviewTitle;
+        const body = notification.reviewBody;
         const url = gift ? `/presentes/${gift.id}#avaliacao` : `/pedido/${order.id}`;
 
         // Send to all active subscriptions

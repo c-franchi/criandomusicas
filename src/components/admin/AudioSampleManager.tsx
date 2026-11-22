@@ -23,6 +23,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { AudioSample, ApprovedMusicTrack } from "./types";
+import { audioSampleFallbackDescription } from '../../../supabase/functions/_shared/orderLanguageCopy';
 
 interface AudioSampleManagerProps {
   audioSamples: AudioSample[];
@@ -98,7 +99,7 @@ const AudioSampleManager = ({
       for (const track of tracksData) {
         const { data: orderData } = await supabase
           .from('orders')
-          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title, story, is_instrumental')
+          .select('music_type, music_style, user_id, created_at, purpose, cover_url, song_title, story, is_instrumental, language')
           .eq('id', track.order_id)
           .single();
 
@@ -136,7 +137,8 @@ const AudioSampleManager = ({
           lyric_body: lyricData?.body || null,
           user_name: userName,
           created_at: orderData?.created_at || '',
-          story: orderData?.story || null
+          story: orderData?.story || null,
+          language: orderData?.language || null
         });
       }
 
@@ -315,7 +317,8 @@ const AudioSampleManager = ({
             story: track.story,
             lyricBody: track.lyric_body,
             userName: track.user_name,
-            musicType: track.music_type
+            musicType: track.music_type,
+            language: track.language
           }
         });
 
@@ -336,9 +339,7 @@ const AudioSampleManager = ({
       } catch (error) {
         console.error('Error generating AI description:', error);
         // Fallback to simple description
-        const fallbackDesc = track.purpose 
-          ? `Uma música especial criada para celebrar ${track.purpose.toLowerCase()}.`
-          : 'Uma música única, feita com carinho e emoção.';
+        const fallbackDesc = audioSampleFallbackDescription(track.language, track.purpose);
         
         if (editingAudio) {
           setEditingAudio(prev => prev ? { ...prev, description: fallbackDesc } : prev);

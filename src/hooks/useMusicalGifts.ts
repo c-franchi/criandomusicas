@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { Json } from "@/integrations/supabase/types";
 import type { MusicalGift } from "@/lib/gifts";
+import { generationNotificationCopy } from "../../supabase/functions/_shared/orderLanguageCopy";
+import { resolveGenerationLanguage } from "../../supabase/functions/_shared/generationLanguage";
 export function useGiftList(admin = false) {
   const { user } = useAuth();
   return useQuery({
@@ -124,13 +126,14 @@ export function useGiftCommands() {
       if (r.error) throw r.error;
       refresh();
       if (action === 'publish') {
-        const { data: gift, error } = await supabase.from('musical_gifts').select('owner_id,checkout_order_id,production_order_id,is_test,status').eq('id', id).single();
+        const { data: gift, error } = await supabase.from('musical_gifts').select('owner_id,checkout_order_id,production_order_id,is_test,status,details').eq('id', id).single();
         if(error) throw new Error('gift_released_notification_failed');
         if (!error && gift?.status === 'ACTIVE' && !gift.is_test) {
           const orderId = gift.checkout_order_id || gift.production_order_id;
+          const notification = generationNotificationCopy(resolveGenerationLanguage((gift.details as {language?: string} | null)?.language));
           const results = await Promise.allSettled([
             supabase.functions.invoke('send-music-ready-email', {body:{userId:gift.owner_id,orderId}}),
-            supabase.functions.invoke('send-push-notification', {body:{user_id:gift.owner_id,order_id:orderId,notification_type:'gift_ready',title:'🎁 Seu presente musical foi liberado!',body:'Seu cartão foi conferido e liberado. Acesse para compartilhar.',url:`/presentes/${id}`}}),
+            supabase.functions.invoke('send-push-notification', {body:{user_id:gift.owner_id,order_id:orderId,notification_type:'gift_ready',title:notification.giftReadyTitle,body:notification.giftReadyBody,url:`/presentes/${id}`}}),
           ]);
           if (results.some(r => r.status === 'rejected' || r.value.error)) {
             // The gift is released even if an external notification channel fails.

@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AudioCapture from "./AudioCapture";
 import { AudioConfigStep } from "./AudioConfigStep";
+import { useTranslation } from 'react-i18next';
+import { transcriptionLanguageCode } from '../../../supabase/functions/_shared/orderLanguageCopy';
 
 type WizardStep = "capture" | "transcribing" | "config";
 type SectionType = "VERSE" | "CHORUS" | "INTRO_MONOLOGUE" | "BRIDGE";
@@ -30,6 +32,8 @@ interface AudioModeWizardProps {
 }
 
 export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) => {
+  const { i18n } = useTranslation();
+  const audioLanguage = transcriptionLanguageCode(i18n.resolvedLanguage || i18n.language);
   const [currentStep, setCurrentStep] = useState<WizardStep>("capture");
   const [audioId, setAudioId] = useState<string | null>(null);
 
@@ -72,7 +76,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
       try {
         console.log("[AudioWizard] Auto-transcribing audio:", audioId);
         const { data, error } = await supabase.functions.invoke("transcribe-audio", {
-          body: { audio_id: audioId, language: "pt" },
+          body: { audio_id: audioId, language: audioLanguage },
         });
         if (cancelled) return;
         if (error) throw error;
@@ -96,7 +100,7 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
     return () => {
       cancelled = true;
     };
-  }, [currentStep, audioId]);
+  }, [currentStep, audioId, audioLanguage]);
 
   // When user clicks "Gerar letra completa", pass data back to Briefing for standard flow
   const handleGenerate = useCallback(() => {

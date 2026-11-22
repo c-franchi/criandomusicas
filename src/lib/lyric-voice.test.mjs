@@ -5,11 +5,12 @@ import { transformSync } from 'esbuild';
 import { lyricVoiceRules } from '../../supabase/functions/_shared/lyricVoice.ts';
 import { inspectShortLyric, shortLyricLimits } from '../../supabase/functions/_shared/shortLyrics.ts';
 import { resolveGenerationLanguage } from '../../supabase/functions/_shared/generationLanguage.ts';
+import { generationNotificationCopy } from '../../supabase/functions/_shared/orderLanguageCopy.ts';
 
 // Exercise the actual HTTP handler with fake AI/database boundaries. No paid calls.
 let gift = null, aiCalls = [], inserts = [], updates = [];
 globalThis.__voiceRules = lyricVoiceRules;
-globalThis.__generationLanguage = { resolveGenerationLanguage };
+globalThis.__generationLanguage = { resolveGenerationLanguage, generationNotificationCopy };
 globalThis.__shortRules = { inspectShortLyric, shortLyricLimits };
 globalThis.Deno = { env: { get: name => name === 'SUPABASE_URL' ? 'https://fixture.invalid' : 'fixture-key' } };
 globalThis.__voiceDb = {
@@ -32,6 +33,7 @@ let source = readFileSync(new URL('../../supabase/functions/generate-lyrics/inde
   .replace(/^import .*shortLyrics.ts.*$/m, 'const { inspectShortLyric, shortLyricLimits } = globalThis.__shortRules;')
   .replace(/^import .*lyricVoice.ts.*$/m, 'const lyricVoiceRules = globalThis.__voiceRules;')
   .replace(/^import .*generationLanguage.ts.*$/m, 'const { resolveGenerationLanguage } = globalThis.__generationLanguage;')
+  .replace(/^import .*orderLanguageCopy.ts.*$/m, 'const { generationNotificationCopy } = globalThis.__generationLanguage;')
   .replace(/^import .*http\/server.ts.*$/m, 'const serve = callback => { globalThis.__lyricsHandler = callback; };')
   .replace(/^import .*supabase-js.*$/m, 'const createClient = () => globalThis.__voiceDb;');
 await import('data:text/javascript,' + encodeURIComponent(transformSync(source, { loader: 'ts', format: 'esm' }).code));

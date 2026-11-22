@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { generationNotificationCopy } from '../_shared/orderLanguageCopy.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -88,15 +89,8 @@ serve(async (req) => {
 
     // Send push notification to user for important status changes
     if (status && data?.user_id) {
-      const pushMessages: Record<string, { title: string; body: string }> = {
-        'LYRICS_PENDING': { title: '📝 Letra em criação!', body: 'Estamos criando a letra da sua música.' },
-        'LYRICS_GENERATED': { title: '📝 Letra pronta!', body: 'A letra da sua música está pronta para revisão.' },
-        'MUSIC_GENERATING': { title: '🎶 Música em produção!', body: 'Sua música está sendo produzida. Falta pouco!' },
-        'MUSIC_READY': { title: '🎉 Música pronta!', body: `Sua música ${data.song_title ? `"${data.song_title}" ` : ''}está pronta para ouvir!` },
-        'COMPLETED': { title: '✅ Pedido finalizado!', body: 'Seu pedido foi concluído. Aproveite sua música!' },
-      };
-
-      const pushMsg = pushMessages[status];
+      const notification = generationNotificationCopy(data.language);
+      const pushMsg = notification.status[status as keyof typeof notification.status];
       if (pushMsg) {
         try {
           await supabaseClient.functions.invoke("send-push-notification", {

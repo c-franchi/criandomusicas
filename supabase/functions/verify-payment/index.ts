@@ -1,5 +1,6 @@
 import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
+import { generationNotificationCopy } from "../_shared/orderLanguageCopy.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -132,6 +133,7 @@ serve(async (req) => {
       };
 
       const generationLanguage = resolveGenerationLanguage(orderData.language, requestedLanguage);
+      const notification = generationNotificationCopy(generationLanguage);
 
       // Route generation based on order type
       try {
@@ -166,8 +168,8 @@ serve(async (req) => {
           body: {
             user_id: userId,
             order_id: orderId,
-            title: "✅ Pagamento confirmado!",
-            body: "Seu pagamento foi aprovado. Estamos criando sua música!",
+            title: notification.paymentTitle,
+            body: notification.paymentBody,
             url: `/pedido/${orderId}`,
           },
         });
@@ -226,7 +228,7 @@ serve(async (req) => {
           success: true,
           status: "paid",
           paid: true,
-          message: "Pagamento confirmado.",
+          message: notification.paymentBody,
           orderType: isInstrumental ? "instrumental" : hasCustomLyric ? "custom_lyric" : "vocal",
           amount: session.amount_total ? session.amount_total / 100 : 0,
           currency: (session.currency || "brl").toUpperCase(),

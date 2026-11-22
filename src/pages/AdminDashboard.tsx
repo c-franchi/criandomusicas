@@ -67,6 +67,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AdminStatsCards } from "@/components/admin";
+import { generationNotificationCopy } from "../../supabase/functions/_shared/orderLanguageCopy";
 
 interface AdminOrder {
   lyric_approval_state?: 'approved'|'pending'|'inconsistent';
@@ -99,6 +100,7 @@ interface AdminOrder {
   pix_rejection_reason?: string | null;
   amount?: number;
   sandbox_market?: string | null;
+  language?: string | null;
   currency?: string;
   purpose?: string;
   emotion?: string;
@@ -429,15 +431,14 @@ const AdminDashboard = () => {
       }
 
       // 5. Send push notification to user
+      const paymentNotification = generationNotificationCopy(orderData.language);
       try {
         await supabase.functions.invoke('send-push-notification', {
           body: {
             user_id: userId,
             order_id: orderId,
-            title: '✅ Pagamento PIX confirmado!',
-            body: isInstrumental 
-              ? 'Seu pagamento foi recebido. Sua música instrumental está sendo preparada!'
-              : 'Seu pagamento foi recebido. As letras da sua música estão sendo geradas!',
+            title: paymentNotification.paymentTitle,
+            body: paymentNotification.paymentBody,
             url: `/criar-musica?orderId=${orderId}`
           }
         });
@@ -629,14 +630,13 @@ const AdminDashboard = () => {
       if (result.newlyCompleted && !order.gift) {
         // Notification delivery must not hold the upload controls open.
         void (async () => {
+        const notification = generationNotificationCopy(order.language);
         try {
           const { error } = await supabase.functions.invoke('send-push-notification', {
             body: {
               user_id: order.user_id, order_id: order.id,
-              title: '🎵 Sua música está pronta!',
-              body: order.gift
-                ? 'A música do seu presente está pronta. Acompanhe a preparação e a liberação do cartão.'
-                : 'Sua música está disponível para ouvir e baixar!',
+              title: notification.musicReadyTitle,
+              body: notification.musicReadyBody,
               url: order.gift ? `/presentes/${order.gift.id}` : `/pedido/${order.id}`,
             },
           });

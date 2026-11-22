@@ -3,6 +3,8 @@ import { emailFetch } from '../_shared/emailRetry.ts';
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.1.2";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
+import { musicReadyEmailCopy } from '../_shared/orderLanguageCopy.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -29,17 +31,18 @@ interface MusicReadyEmailRequest {
   isInstrumental?: boolean;
 }
 
-const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitle: string, musicType: string, isInstrumental: boolean): string => {
-  const musicTypeLabel = isInstrumental ? 'Instrumental' : (musicType || 'Vocal');
+const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitle: string, musicType: string, isInstrumental: boolean, language: unknown): string => {
+  const copy = musicReadyEmailCopy(language);
+  const musicTypeLabel = isInstrumental ? copy.instrumental : (musicType || 'Vocal');
   const orderIdShort = orderId.substring(0, 8);
 
   return `
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="${resolveGenerationLanguage(language)}">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sua música está pronta! - Criando Músicas</title>
+  <title>${copy.htmlTitle}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
   <table role="presentation" style="width: 100%; border-collapse: collapse;">
@@ -53,7 +56,7 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
                 🎵 Criando Músicas
               </h1>
               <p style="margin: 10px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 16px;">
-                Sua música está pronta!
+                ${copy.headerReady}
               </p>
             </td>
           </tr>
@@ -65,10 +68,10 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
               <div style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 64px; line-height: 1;">🎉</div>
                 <h2 style="margin: 16px 0 8px; color: #1f2937; font-size: 24px;">
-                  Parabéns, ${userName}!
+                  ${copy.greeting.replace('{name}', userName)}
                 </h2>
                 <p style="margin: 0; color: #6b7280; font-size: 16px;">
-                  Sua música foi finalizada com sucesso
+                  ${copy.finished}
                 </p>
               </div>
 
@@ -80,7 +83,7 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
                     ${songTitle}
                   </h3>
                   <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                    ${musicTypeLabel} • Pedido #${orderIdShort}
+                    ${musicTypeLabel} • ${copy.order} #${orderIdShort}
                   </p>
                 </div>
               </div>
@@ -89,31 +92,28 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
               <div style="text-align: center; margin: 30px 0;">
                 <a href="https://criandomusicas.lovable.app/pedido/${orderId}" 
                    style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; text-decoration: none; padding: 16px 36px; border-radius: 8px; font-weight: 600; font-size: 18px;">
-                  🎧 Ouvir Minha Música
+                  ${copy.listen}
                 </a>
               </div>
 
               <!-- What's next -->
               <div style="background-color: #f0fdf4; border-radius: 12px; padding: 20px; margin-bottom: 25px; border: 1px solid #bbf7d0;">
                 <h3 style="margin: 0 0 12px; color: #166534; font-size: 14px; font-weight: 600;">
-                  ✅ O que você pode fazer agora:
+                  ${copy.nextTitle}
                 </h3>
                 <ul style="margin: 0; padding-left: 20px; color: #15803d; font-size: 14px; line-height: 1.8;">
-                  <li>Ouvir e baixar sua música em alta qualidade</li>
-                  <li>Compartilhar nas redes sociais</li>
-                  <li>Enviar para a pessoa especial</li>
-                  <li>Deixar uma avaliação sobre nosso serviço</li>
+                  ${copy.nextItems.map(item => `<li>${item}</li>`).join('')}
                 </ul>
               </div>
 
               <!-- Share CTA -->
               <div style="text-align: center; margin: 25px 0;">
                 <p style="margin: 0 0 12px; color: #6b7280; font-size: 14px;">
-                  Gostou da sua música? Conte para o mundo!
+                  ${copy.sharePrompt}
                 </p>
                 <a href="https://criandomusicas.lovable.app/share/${orderId}" 
                    style="display: inline-block; background-color: #ffffff; color: #7c3aed; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 500; font-size: 14px; border: 2px solid #7c3aed;">
-                  📤 Compartilhar Música
+                  ${copy.shareCta}
                 </a>
               </div>
 
@@ -123,18 +123,18 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
               <!-- Review Request -->
               <div style="text-align: center;">
                 <p style="margin: 0 0 12px; color: #4b5563; font-size: 14px; line-height: 1.6;">
-                  Sua opinião é muito importante para nós!<br>
-                  <strong>Avalie sua experiência</strong> e ajude outras pessoas a conhecerem nosso trabalho.
+                  ${copy.reviewLead}<br>
+                  <strong>${copy.reviewStrong}</strong>
                 </p>
                 <a href="https://criandomusicas.lovable.app/pedido/${orderId}#avaliar" 
                    style="color: #7c3aed; text-decoration: none; font-weight: 500; font-size: 14px;">
-                  ⭐ Deixar minha avaliação
+                  ${copy.reviewCta}
                 </a>
               </div>
 
               <!-- Support -->
               <p style="margin: 30px 0 0; color: #6b7280; font-size: 14px; text-align: center; line-height: 1.6;">
-                Dúvidas? Entre em contato conosco:<br>
+                ${copy.support}<br>
                 <a href="mailto:contato@criandomusicas.com.br" style="color: #7c3aed; text-decoration: none; font-weight: 500;">
                   contato@criandomusicas.com.br
                 </a>
@@ -146,10 +146,10 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
           <tr>
             <td style="background-color: #f9fafb; padding: 24px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
               <p style="margin: 0 0 8px; color: #6b7280; font-size: 12px;">
-                © ${new Date().getFullYear()} Criando Músicas. Todos os direitos reservados.
+                © ${new Date().getFullYear()} Criando Músicas. ${copy.rights}
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 11px;">
-                Você recebeu este email porque sua música personalizada foi concluída.
+                ${copy.reason}
               </p>
             </td>
           </tr>
@@ -175,8 +175,13 @@ serve(async (req) => {
     const admin = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey);
     if(await isItalySandboxOrder(admin,data.orderId)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     const {data:gift,error:giftError} = await admin.from('musical_gifts')
-      .select('id,owner_id,status,is_test,available_from').eq('checkout_order_id',data.orderId).maybeSingle();
+      .select('id,owner_id,status,is_test,available_from,details').eq('checkout_order_id',data.orderId).maybeSingle();
     if (giftError) throw giftError;
+    const {data:order,error:orderError}=await admin.from('orders')
+      .select('language,song_title,music_type,is_instrumental').eq('id',data.orderId).maybeSingle();
+    if(orderError) throw orderError;
+    const language=resolveGenerationLanguage(gift?.details?.language,order?.language);
+    const copy=musicReadyEmailCopy(language);
     if (gift) {
       // Cached/older admin screens may still call this endpoint during upload.
       if (gift.status !== 'ACTIVE' || gift.is_test) return Response.json({success:true,skipped:'gift_not_released'},{headers:corsHeaders});
@@ -203,7 +208,7 @@ serve(async (req) => {
     }
 
     let email = data.email;
-    let userName = data.userName || 'Cliente';
+    let userName = data.userName || copy.customer;
 
     // If userId provided, fetch email from Supabase auth
     if (data.userId && !email) {
@@ -253,21 +258,22 @@ serve(async (req) => {
       songTitle: data.songTitle 
     });
 
-    const songTitle = data.songTitle || 'Sua música personalizada';
+    const songTitle = data.songTitle || order?.song_title || copy.defaultSongTitle;
     const escape = (s:string) => s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-    const html = gift ? `<!doctype html><html lang="pt-BR"><body style="font-family:Arial,sans-serif;padding:24px;color:#222"><h1>Seu presente musical foi liberado!</h1><p>Olá, ${escape(userName)}. O ADM conferiu e liberou seu cartão.</p><p>${gift.available_from?'O acesso do destinatário respeitará a data e o horário escolhidos.':''}</p><p><a href="https://criandomusicas.com.br/presentes/${gift.id}">Abrir meu cartão e compartilhar</a></p><p>Criando Músicas</p></body></html>` : generateMusicReadyEmailHtml(
+    const html = gift ? `<!doctype html><html lang="${language}"><body style="font-family:Arial,sans-serif;padding:24px;color:#222"><h1>${copy.giftTitle}</h1><p>${copy.giftGreeting.replace('{name}',escape(userName))} ${copy.giftReleased}</p><p>${gift.available_from?copy.giftSchedule:''}</p><p><a href="https://criandomusicas.com.br/presentes/${gift.id}">${copy.giftCta}</a></p><p>Criando Músicas</p></body></html>` : generateMusicReadyEmailHtml(
       userName, 
       data.orderId, 
       songTitle, 
-      data.musicType || '',
-      data.isInstrumental || false
+      data.musicType || order?.music_type || '',
+      data.isInstrumental ?? order?.is_instrumental ?? false,
+      language
     );
 
     const payload = {
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
       replyTo: "contato@criandomusicas.com.br",
       to: [email],
-      subject: gift ? '🎁 Seu presente musical foi liberado!' : `🎉 "${songTitle}" está pronta para ouvir!`,
+      subject: gift ? copy.giftSubject : copy.subjectReady.replace('{title}',songTitle),
       html,
     };
     // REST idempotency works independently of the older SDK pinned for legacy emails.

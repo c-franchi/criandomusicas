@@ -1,6 +1,7 @@
 import { inspectShortLyric, shortLyricLimits } from "../_shared/shortLyrics.ts";
 import { lyricVoiceRules } from "../_shared/lyricVoice.ts";
 import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
+import { generationNotificationCopy } from "../_shared/orderLanguageCopy.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -1418,6 +1419,7 @@ ${story}`;
     if (!isStandaloneMode && !isModification && orderInfo?.user_id && !autoApprove) {
       try {
         console.log("Sending push notification for lyrics ready...");
+        const notification = generationNotificationCopy(language);
         
         await fetch(`${supabaseUrl}/functions/v1/send-push-notification`, {
           method: 'POST',
@@ -1428,8 +1430,8 @@ ${story}`;
           body: JSON.stringify({
             user_id: orderInfo.user_id,
             order_id: orderId,
-            title: '✨ Letras prontas!',
-            body: 'As letras da sua música foram geradas. Acesse para escolher sua favorita!',
+            title: notification.lyricsTitle,
+            body: notification.lyricsBody,
             url: `/criar-musica?orderId=${orderId}`
           })
         });

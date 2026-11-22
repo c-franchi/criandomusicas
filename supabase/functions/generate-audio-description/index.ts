@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { generationLanguageEnglishName, resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,7 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const { title, style, purpose, story, lyricBody, userName, musicType } = await req.json();
+    const { title, style, purpose, story, lyricBody, userName, musicType, language } = await req.json();
+    const outputLanguage = generationLanguageEnglishName(resolveGenerationLanguage(language));
 
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
@@ -48,6 +50,8 @@ A descrição deve:
 Contexto da música:
 ${contextParts.join('\n')}
 
+IDIOMA OBRIGATÓRIO DA DESCRIÇÃO: ${outputLanguage}. Não use outro idioma.
+
 Responda APENAS com a descrição, sem explicações ou formatação adicional.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -59,7 +63,7 @@ Responda APENAS com a descrição, sem explicações ou formatação adicional.`
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: [
-          { role: 'system', content: 'Você é um copywriter brasileiro especializado em conteúdo emocional e humano para músicas.' },
+          { role: 'system', content: `You are a copywriter specialized in emotional, human music descriptions. Write only in ${outputLanguage}.` },
           { role: 'user', content: prompt }
         ],
         temperature: 0.8,

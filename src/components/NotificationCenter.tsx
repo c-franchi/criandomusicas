@@ -44,6 +44,7 @@ interface OrderNotification {
   music_ready_at?: string | null;
   updated_at: string;
   song_title: string | null;
+  language?: string | null;
 }
 
 const DISMISSED_STORAGE_KEY = 'dismissed_notifications';
@@ -137,7 +138,7 @@ const NotificationCenter = () => {
 
       const { data: readyOrders } = await supabase
         .from('orders')
-        .select('id, status, payment_status, music_ready_at, updated_at, song_title')
+        .select('id, status, payment_status, music_ready_at, updated_at, song_title, language')
         .eq('user_id', user.id)
         .in('status', ['MUSIC_READY', 'COMPLETED'])
         .not('music_ready_at', 'is', null)
@@ -171,7 +172,7 @@ const NotificationCenter = () => {
 
       const { data: paidOrders } = await supabase
         .from('orders')
-        .select('id, status, payment_status, payment_method, updated_at, song_title')
+        .select('id, status, payment_status, payment_method, updated_at, song_title, language')
         .eq('user_id', user.id)
         .eq('payment_status', 'PAID')
         .in('status', ['PAID', 'BRIEFING_COMPLETE', 'LYRICS_PENDING', 'LYRICS_GENERATED', 'LYRICS_APPROVED', 'MUSIC_GENERATING'])
@@ -203,7 +204,7 @@ const NotificationCenter = () => {
       // 4. Orders still awaiting payment / receipt (last 7 days)
       const { data: pendingOrders } = await supabase
         .from('orders')
-        .select('id, status, payment_status, payment_method, updated_at, song_title')
+        .select('id, status, payment_status, payment_method, updated_at, song_title, language')
         .eq('user_id', user.id)
         .eq('status', 'AWAITING_PAYMENT')
         .gte('updated_at', sevenDaysAgo.toISOString())

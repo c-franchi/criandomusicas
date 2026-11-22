@@ -34,6 +34,7 @@
   "statuses": {
     "DRAFT": "Bozza",
     "AWAITING_PAYMENT": "In attesa di pagamento",
+    "AWAITING_PIX": "In attesa della conferma PIX",
     "PAID": "Pagato",
     "BRIEFING_COMPLETE": "Briefing completo",
     "LYRICS_PENDING": "Generazione testo",
@@ -263,6 +264,8 @@
       "readyForProduction": "Pronto per Produzione"
     },
     "descriptions": {
+      "awaitingPix": "In attesa della conferma del pagamento PIX",
+      "awaitingPayment": "Completa il pagamento per avviare la produzione",
       "musicGenerating": "La tua canzone è in produzione. Potrebbe richiedere qualche minuto...",
       "lyricsApproved": "Testo approvato! In attesa della produzione musicale.",
       "lyricsGenerated": "Il tuo testo è pronto per l'approvazione.",

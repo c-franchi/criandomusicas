@@ -36,7 +36,7 @@ const ContinueFlowBar = () => {
 
       const { data } = await supabase
         .from('orders')
-        .select('id, status, payment_status, song_title, updated_at')
+        .select('id, status, payment_status, song_title, language, updated_at')
         .eq('user_id', user.id)
         .in('status', ACTIVE_STATUSES)
         .order('updated_at', { ascending: false })
