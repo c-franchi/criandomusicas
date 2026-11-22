@@ -22,6 +22,13 @@
       "when": 1793375998820,
       "tag": "0002_italy_test_checkout",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1795361056696,
+      "tag": "0003_add_order_generation_language",
+      "breakpoints": true
     }
   ]
 }

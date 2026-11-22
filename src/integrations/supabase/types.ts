@@ -926,6 +926,7 @@ export type Database = {
           is_confidential: boolean | null
           is_instrumental: boolean | null
           is_preview: boolean | null
+          language: string | null
           mandatory_words: string | null
           monologue_position: string | null
           music_ready_at: string | null
@@ -977,6 +978,7 @@ export type Database = {
           is_confidential?: boolean | null
           is_instrumental?: boolean | null
           is_preview?: boolean | null
+          language?: string | null
           mandatory_words?: string | null
           monologue_position?: string | null
           music_ready_at?: string | null
@@ -1028,6 +1030,7 @@ export type Database = {
           is_confidential?: boolean | null
           is_instrumental?: boolean | null
           is_preview?: boolean | null
+          language?: string | null
           mandatory_words?: string | null
           monologue_position?: string | null
           music_ready_at?: string | null
