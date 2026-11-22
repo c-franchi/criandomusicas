@@ -2,6 +2,7 @@ import { inspectShortLyric } from "../../supabase/functions/_shared/shortLyrics"
 import { supabase } from "@/integrations/supabase/client";
 import { OrderStatusService } from "./OrderStatusService";
 import i18n from "@/lib/i18n";
+import { resolveGenerationLanguage } from "../../supabase/functions/_shared/generationLanguage";
 
 /**
  * MusicCreationService
@@ -241,7 +242,7 @@ export class MusicCreationService {
    * Idioma ativo para geração
    */
   static getActiveLanguage(): string {
-    return i18n.resolvedLanguage || i18n.language || "pt-BR";
+    return resolveGenerationLanguage(i18n.resolvedLanguage, i18n.language);
   }
 
   /**

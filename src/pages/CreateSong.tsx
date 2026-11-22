@@ -15,6 +15,7 @@ import PronunciationModal from "@/components/PronunciationModal";
 import { useTranslation } from "react-i18next";
 import { MusicCreationService } from "@/services/MusicCreationService";
 import { findForbiddenWords } from "@/lib/profanity-filter";
+import { buildModificationStory, resolveGenerationLanguage } from "../../supabase/functions/_shared/generationLanguage";
 
 interface LyricOption {
   id: string;
@@ -41,6 +42,7 @@ interface BriefingData {
   plan: string;
   lgpdConsent: boolean;
   voiceType?: string;
+  language?: string;
   hasCustomLyric?: boolean;
 }
 
@@ -250,6 +252,7 @@ const CreateSong = () => {
           plan: 'single',
           lgpdConsent: true,
           voiceType: orderData.voice_type || 'feminina',
+        language: resolveGenerationLanguage(orderData.language, MusicCreationService.getActiveLanguage()),
           hasCustomLyric: true
         };
         setBriefingData(customBriefing);
@@ -279,6 +282,7 @@ const CreateSong = () => {
         plan: 'single',
         lgpdConsent: true,
         voiceType: orderData.voice_type || 'feminina',
+        language: resolveGenerationLanguage(orderData.language, MusicCreationService.getActiveLanguage()),
         hasCustomLyric: orderData.has_custom_lyric || false
       };
       setBriefingData(reconstructedBriefing);
@@ -316,7 +320,7 @@ const CreateSong = () => {
           body: {
             orderId: existingOrderId,
             story: orderData.story || '',
-            language: MusicCreationService.getActiveLanguage(),
+            language: resolveGenerationLanguage(orderData.language, MusicCreationService.getActiveLanguage()),
             briefing: reconstructedBriefing,
           },
         }).then(async ({data,error}) => {
@@ -397,7 +401,8 @@ const CreateSong = () => {
           has_monologue: briefing.hasMonologue,
           monologue_position: briefing.monologuePosition,
           mandatory_words: briefing.mandatoryWords,
-          restricted_words: briefing.restrictedWords
+          restricted_words: briefing.restrictedWords,
+          language: resolveGenerationLanguage(briefing.language, MusicCreationService.getActiveLanguage())
         })
         .select()
         .single();
@@ -414,7 +419,7 @@ const CreateSong = () => {
         body: {
           orderId: orderData.id,
           story: briefing.story,
-          language: MusicCreationService.getActiveLanguage(),
+          language: resolveGenerationLanguage(briefing.language, MusicCreationService.getActiveLanguage()),
           briefing: {
             musicType: briefing.musicType,
             emotion: briefing.emotion,
@@ -686,8 +691,13 @@ const CreateSong = () => {
       const { data, error } = await supabase.functions.invoke('generate-lyrics', {
         body: {
           orderId,
-          language: MusicCreationService.getActiveLanguage(),
-          story: `${briefingData.story}\n\n[INSTRUÇÕES DE AJUSTE DO USUÁRIO]: ${editInstructions}\n\n[LETRA ANTERIOR PARA REFERÊNCIA]:\n${editedLyric}`,
+          language: resolveGenerationLanguage(briefingData.language, MusicCreationService.getActiveLanguage()),
+          story: buildModificationStory(
+            briefingData.story,
+            editInstructions,
+            editedLyric,
+            resolveGenerationLanguage(briefingData.language, MusicCreationService.getActiveLanguage()),
+          ),
           briefing: {
             musicType: briefingData.musicType,
             emotion: briefingData.emotion,

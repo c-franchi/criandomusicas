@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { MusicCreationService } from "./MusicCreationService";
+import { resolveGenerationLanguage } from "../../supabase/functions/_shared/generationLanguage";
 
 /**
  * OrderProcessingService
@@ -168,7 +169,7 @@ export class OrderProcessingService {
         songTitle: briefing.songName || null,
         customCoverUrl: briefing.customCoverUrl || null,
         coverMode: briefing.coverMode || 'auto',
-        language: MusicCreationService.getActiveLanguage(),
+        language: resolveGenerationLanguage(briefing.language, MusicCreationService.getActiveLanguage()),
         briefing: {
           ...briefing,
           instruments: briefing.instruments || [],
@@ -273,7 +274,7 @@ export class OrderProcessingService {
           orderId,
           story: briefing.story,
           briefing,
-          language: MusicCreationService.getActiveLanguage(),
+          language: resolveGenerationLanguage(briefing.language, MusicCreationService.getActiveLanguage()),
           ...(audioInsert ? { audioInsert } : {}),
         },
       });
@@ -329,7 +330,7 @@ export class OrderProcessingService {
             story: briefing.story,
             briefing,
             autoApprove: true,
-            language: MusicCreationService.getActiveLanguage(),
+            language: resolveGenerationLanguage(briefing.language, MusicCreationService.getActiveLanguage()),
           },
         }),
         LYRICS_TIMEOUT_MS,
@@ -416,6 +417,7 @@ export class OrderProcessingService {
         isInstrumental: order.is_instrumental || false,
         hasCustomLyric: order.has_custom_lyric || false,
         story: order.story || '',
+        language: order.language || undefined,
         musicType: order.music_type || 'homenagem',
         emotion: order.emotion || 'alegria',
         emotionIntensity: order.emotion_intensity || 3,

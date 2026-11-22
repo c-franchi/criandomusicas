@@ -1,4 +1,11 @@
 import { inspectShortLyric } from "../_shared/shortLyrics.ts";
+import {
+  generationLanguageEnglishName,
+  instrumentalTitleExamples,
+  resolveGenerationLanguage,
+  vocalLanguageInstruction,
+  withVocalLanguage,
+} from "../_shared/generationLanguage.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -289,7 +296,7 @@ serve(async (req) => {
   }
 
   try {
-    const { 
+    let { 
       orderId, 
       lyricId, 
       approvedLyrics, 
@@ -299,7 +306,8 @@ serve(async (req) => {
       pronunciations = [],
       isInstrumental = false,
       customCoverUrl = null,
-      coverMode = 'auto'
+      coverMode = 'auto',
+      language
     } = await req.json() as {
       orderId: string;
       lyricId?: string;
@@ -311,6 +319,7 @@ serve(async (req) => {
       isInstrumental?: boolean;
       customCoverUrl?: string | null;
       coverMode?: string;
+      language?: string;
     };
 
     console.log("generate-style-prompt called with orderId:", orderId, "isInstrumental:", isInstrumental);
@@ -330,7 +339,7 @@ serve(async (req) => {
     const supabaseKeyCheck = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseCheck = createClient(supabaseUrlCheck, supabaseKeyCheck);
 
-    const {data: giftContext,error: giftError}=await supabaseCheck.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,photo_data').eq('production_order_id',orderId).maybeSingle();
+    const {data: giftContext,error: giftError}=await supabaseCheck.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,photo_data,details').eq('production_order_id',orderId).maybeSingle();
     if(giftError) throw giftError;
     if(giftContext){
       if(!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
@@ -341,9 +350,12 @@ serve(async (req) => {
     }
     const { data: existingOrder, error: orderError } = await supabaseCheck
       .from('orders')
-      .select('style_prompt, song_title, has_custom_lyric')
+      .select('style_prompt, song_title, has_custom_lyric, language')
       .eq('id', orderId)
       .single();
+
+    language = resolveGenerationLanguage(giftContext?.details?.language, existingOrder?.language, language);
+    console.log("Resolved generation language:", language);
 
     if (!giftContext?.duration_seconds && !orderError && existingOrder?.style_prompt && existingOrder.style_prompt.trim().length > 0) {
       // Já tem style_prompt customizado, apenas atualizar status e final_prompt se necessário
@@ -377,6 +389,7 @@ serve(async (req) => {
           status: 'LYRICS_APPROVED',
           final_prompt: finalPrompt,
           song_title: songTitle || existingOrder.song_title,
+          language,
           updated_at: new Date().toISOString()
         })
         .eq('id', orderId);
@@ -580,11 +593,11 @@ Track details:
 - Mood: ${isAmbientRelaxation ? 'Very calm, peaceful, meditative' : (rhythm === 'lento' ? 'Slow, contemplative' : rhythm === 'animado' ? 'Energetic, upbeat' : 'Balanced, flowing')}
 
 Requirements:
-- Title in Portuguese (Brazil)
+- Title in ${generationLanguageEnglishName(language)}
 - 2-5 words maximum
 - Evocative and memorable
 - No quotes, just the title text
-${isAmbientRelaxation ? '- Should evoke peace, tranquility, focus (Ex: "Serenidade", "Momento de Paz", "Brisa Suave")' : '- Examples: "Aurora Dourada", "Ventos do Sul", "Despertar Épico"'}
+- Examples: ${instrumentalTitleExamples(language, isAmbientRelaxation)}${isAmbientRelaxation ? '\n- Should evoke peace, tranquility and focus' : ''}
 
 Return ONLY the title, nothing else.`;
 
@@ -739,7 +752,7 @@ FORMAT (very brief):
 Genre: (genre/subgenre)
 Mood: (1-2 words)
 Instruments: (brief list)
-Vocal: (${vocalStyle.split(',')[0]})
+Vocal: (${vocalStyle.split(',')[0]}, ${vocalLanguageInstruction(language)})
 Tempo: (BPM)
 Key: (key)
 Production: (brief)
@@ -749,7 +762,7 @@ Mix: voice-forward mix, minimal instrumental during spoken parts, instrumental v
       const userPrompt = `Create VOCAL track style prompt (UNDER 950 CHARS):
 Type: ${musicType}, Emotion: ${emotion} (${emotionIntensity}/5)
 Style: ${style}, Tempo: ${rhythm} (${bpmMap[rhythm] || '90-110 BPM'})
-Atmosphere: ${atmosphere}, Voice: ${vocalStyle}
+Atmosphere: ${atmosphere}, Voice: ${vocalStyle}, ${vocalLanguageInstruction(language)}
 ${isSomenteMonologo ? 'FULLY SPOKEN WORD track - CRITICAL MIX: voice-forward mix, minimal instrumental throughout entire track, instrumental very subtle under narration, reduced arrangement during all monologue sections, spoken voice must be clearly dominant' : hasMonologue ? 'Has spoken word sections - IMPORTANT: voice-forward mix, minimal instrumental during spoken parts, instrumental very subtle under narration, reduced arrangement during monologue' : ''}
 
 Lyrics context (first 500 chars):
@@ -806,6 +819,8 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      stylePrompt = withVocalLanguage(stylePrompt, vocalStyle, language);
 
       // SANITIZAÇÃO: Remover qualquer [Lyrics] que a IA possa ter incluído erroneamente
       const lyricsIndex = stylePrompt.indexOf('[Lyrics]');
@@ -870,6 +885,7 @@ BE VERY CONCISE - under 950 characters total. No artist names.`;
     const updateData: Record<string, unknown> = {
       style_prompt: stylePrompt,
       final_prompt: finalPrompt,
+      language,
       updated_at: new Date().toISOString()
     };
 

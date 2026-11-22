@@ -23,6 +23,7 @@ import { draftMatchesPurpose, getPurposeStart, isPurposeId, mapQuickPurpose, typ
 import { AudioModeWizard, type AudioModeResult } from "@/components/briefing/AudioModeWizard";
 import AudioModeLoadingOverlay from "@/components/briefing/AudioModeLoadingOverlay";
 import { OrderProcessingService, type BriefingPayload } from "@/services/OrderProcessingService";
+import { resolveGenerationLanguage } from "../../supabase/functions/_shared/generationLanguage";
 import { analytics, trackEvent } from "@/lib/analytics";
 import { 
   genreImages, typeImages, emotionImages, voiceImages, corporateImages, gospelContextImages,
@@ -2283,6 +2284,7 @@ const Briefing = () => {
       motivationalIntensity: data.motivationalIntensity,
       motivationalPerspective: data.motivationalPerspective,
       plan: userPlan,
+      language: resolveGenerationLanguage(i18n.resolvedLanguage, i18n.language),
       lgpdConsent: true,
       // Cover (will be populated after upload)
       customCoverUrl: undefined as string | undefined,
@@ -2346,6 +2348,7 @@ const Briefing = () => {
           user_id: user?.id,
           status: 'AWAITING_PAYMENT',
           payment_status: 'PENDING',
+          language: briefingData.language,
           amount: orderAmount, // Incluir amount na criação
           plan_id: selectedPlanId, // Save the selected plan for credit tracking
           is_instrumental: briefingData.isInstrumental,
@@ -2840,6 +2843,7 @@ const Briefing = () => {
       contactInfo: data.contactInfo,
       callToAction: data.callToAction,
       plan: userPlan,
+      language: resolveGenerationLanguage(i18n.resolvedLanguage, i18n.language),
       lgpdConsent: true
     };
 
@@ -2881,6 +2885,7 @@ const Briefing = () => {
           user_id: user?.id,
           status: 'AWAITING_PAYMENT',
           payment_status: 'PENDING',
+          language: briefingData.language,
           amount: orderAmount, // Incluir amount na criação
           plan_id: selectedPlanId || 'single',
           is_instrumental: briefingData.isInstrumental,

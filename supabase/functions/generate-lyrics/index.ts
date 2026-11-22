@@ -1,5 +1,6 @@
 import { inspectShortLyric, shortLyricLimits } from "../_shared/shortLyrics.ts";
 import { lyricVoiceRules } from "../_shared/lyricVoice.ts";
+import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -331,7 +332,7 @@ serve(async (req) => {
 
   let giftLockOrderId: string | null = null;
   try {
-    let { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false, language = 'pt-BR' } = await req.json() as {
+    let { orderId, story, briefing, pronunciations = [], isPreview = false, autoApprove = false, audioInsert, isModification = false, language } = await req.json() as {
       orderId?: string;
       story: string;
       briefing: BriefingData;
@@ -381,12 +382,12 @@ serve(async (req) => {
       language=giftContext.details?.language || language;
     }
     const shortSeconds = !!giftContext?.duration_seconds ? Math.min(giftContext.duration_seconds || 30,40) : null;
-    let orderInfo: { is_preview?: boolean; plan_id?: string; user_id?: string } | null = null;
+    let orderInfo: { is_preview?: boolean; plan_id?: string; user_id?: string; language?: string | null } | null = null;
     
     if (!isStandaloneMode) {
       const { data: fetchedOrder, error: orderFetchError } = await supabase
         .from('orders')
-        .select('is_preview, plan_id, user_id')
+        .select('is_preview, plan_id, user_id, language')
         .eq('id', orderId!)
         .single();
       
@@ -395,6 +396,9 @@ serve(async (req) => {
       }
       orderInfo = fetchedOrder;
     }
+
+    language = resolveGenerationLanguage(giftContext?.details?.language, orderInfo?.language, language);
+    console.log("Resolved generation language:", language);
     
     if(giftContext && !isModification){
       const {data:claimed,error:claimError}=await supabase.rpc('claim_gift_lyrics',{p_order_id:orderId});
@@ -1355,7 +1359,8 @@ ${story}`;
       const updateData: Record<string, unknown> = { 
         status: newStatus, 
         updated_at: new Date().toISOString(),
-        voice_type: voiceType
+        voice_type: voiceType,
+        language
       };
       
       if (autoApprove && insertedLyrics?.[0]?.id) {
@@ -1397,6 +1402,7 @@ ${story}`;
             lyricId: insertedLyrics[0].id,
             approvedLyrics: lyricsResponse[0].text,
             isInstrumental: false,
+            language,
             briefing: {
               ...briefing,
               voiceType

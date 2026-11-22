@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { analytics } from "@/lib/analytics";
 
 const PaymentSuccess = () => {
-  const { t } = useTranslation('checkout');
+  const { t, i18n } = useTranslation('checkout');
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -43,6 +43,7 @@ const PaymentSuccess = () => {
           body: {
             sessionId,
             orderId,
+            language: i18n.resolvedLanguage || i18n.language,
             fbp,
             fbc,
             event_source_url: window.location.href,

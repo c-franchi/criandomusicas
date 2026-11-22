@@ -1,4 +1,5 @@
 import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
+import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
@@ -29,7 +30,7 @@ serve(async (req) => {
 
 
     const reqBody = await req.json();
-    const { sessionId, orderId, fbp, fbc, event_source_url } = reqBody || {};
+    const { sessionId, orderId, fbp, fbc, event_source_url, language: requestedLanguage } = reqBody || {};
     if (!sessionId || !orderId) {
       throw new Error("Session ID and Order ID are required");
     }
@@ -130,6 +131,8 @@ serve(async (req) => {
         instrumentationNotes: orderData.instrumentation_notes || '',
       };
 
+      const generationLanguage = resolveGenerationLanguage(orderData.language, requestedLanguage);
+
       // Route generation based on order type
       try {
         if (gift?.music_source === 'existing') {
@@ -138,7 +141,7 @@ serve(async (req) => {
           // INSTRUMENTAL: generate style prompt directly, skip lyrics
           logStep("Triggering instrumental style prompt generation");
           await supabaseClient.functions.invoke("generate-style-prompt", {
-            body: { orderId, isInstrumental: true, briefing },
+            body: { orderId, isInstrumental: true, briefing, language: generationLanguage },
           });
           logStep("Instrumental style prompt generated");
         } else if (hasCustomLyric) {
@@ -148,7 +151,7 @@ serve(async (req) => {
           // VOCAL: generate lyrics via AI
           logStep("Triggering vocal lyrics generation");
           await supabaseClient.functions.invoke("generate-lyrics", {
-            body: { orderId, story: orderData.story, briefing },
+            body: { orderId, story: orderData.story, briefing, language: generationLanguage },
           });
           logStep("Vocal lyrics generation started");
         }

@@ -4,10 +4,12 @@ import { readFileSync } from 'node:fs';
 import { transformSync } from 'esbuild';
 import { lyricVoiceRules } from '../../supabase/functions/_shared/lyricVoice.ts';
 import { inspectShortLyric, shortLyricLimits } from '../../supabase/functions/_shared/shortLyrics.ts';
+import { resolveGenerationLanguage } from '../../supabase/functions/_shared/generationLanguage.ts';
 
 // Exercise the actual HTTP handler with fake AI/database boundaries. No paid calls.
 let gift = null, aiCalls = [], inserts = [];
 globalThis.__voiceRules = lyricVoiceRules;
+globalThis.__generationLanguage = { resolveGenerationLanguage };
 globalThis.__shortRules = { inspectShortLyric, shortLyricLimits };
 globalThis.Deno = { env: { get: name => name === 'SUPABASE_URL' ? 'https://fixture.invalid' : 'fixture-key' } };
 globalThis.__voiceDb = {
@@ -19,7 +21,7 @@ globalThis.__voiceDb = {
       select: () => q, eq: () => q, update: () => q,
       insert: data => { insert = true; inserts.push(...data); return q; },
       maybeSingle: async () => ({ data: gift, error: null }),
-      single: async () => ({ data: { user_id: 'owner' }, error: null }),
+      single: async () => ({ data: { user_id: 'owner', language: globalThis.__orderLanguage }, error: null }),
       then: resolve => resolve({ data: insert ? [{ id: 'a' }, { id: 'b' }] : null, error: null }),
     };
     return q;
@@ -28,12 +30,14 @@ globalThis.__voiceDb = {
 let source = readFileSync(new URL('../../supabase/functions/generate-lyrics/index.ts', import.meta.url), 'utf8')
   .replace(/^import .*shortLyrics.ts.*$/m, 'const { inspectShortLyric, shortLyricLimits } = globalThis.__shortRules;')
   .replace(/^import .*lyricVoice.ts.*$/m, 'const lyricVoiceRules = globalThis.__voiceRules;')
+  .replace(/^import .*generationLanguage.ts.*$/m, 'const { resolveGenerationLanguage } = globalThis.__generationLanguage;')
   .replace(/^import .*http\/server.ts.*$/m, 'const serve = callback => { globalThis.__lyricsHandler = callback; };')
   .replace(/^import .*supabase-js.*$/m, 'const createClient = () => globalThis.__voiceDb;');
 await import('data:text/javascript,' + encodeURIComponent(transformSync(source, { loader: 'ts', format: 'esm' }).code));
 
-async function generate({ duration = null, modification = false, standalone = false, perspective = '', audioInsert } = {}) {
-  gift = standalone ? null : {
+async function generate({ duration = null, modification = false, standalone = false, perspective = '', audioInsert, withGift = true, orderLanguage = 'pt-BR', requestedLanguage } = {}) {
+  globalThis.__orderLanguage = orderLanguage;
+  gift = standalone || !withGift ? null : {
     owner_id: 'owner', product: duration ? 'short' : 'digital', duration_seconds: duration,
     is_test: false, payment_confirmed_at: '2026-10-28', details: { language: 'pt-BR' },
     sender_name: 'Claudinei', recipient_name: 'Maria',
@@ -51,7 +55,7 @@ async function generate({ duration = null, modification = false, standalone = fa
     body: JSON.stringify({ orderId: standalone ? undefined : 'order',
       story: 'Claudinei quer dizer para Maria que ama muito ela.',
       briefing: { musicType: 'homenagem', motivationalPerspective: perspective },
-      autoApprove: true, isModification: modification, audioInsert,
+      autoApprove: true, isModification: modification, audioInsert, language: requestedLanguage,
     }),
   }));
   assert.equal(response.status, 200);
@@ -82,6 +86,12 @@ test('revisions retain the voice instruction and still create only an unapproved
   assert.equal(inserts[0].version, 'M');
   assert.equal(inserts[0].is_approved, false);
 });
+test('stored Italian order language overrides a conflicting browser payload', async () => {
+  const messages = await generate({ withGift: false, orderLanguage: 'it', requestedLanguage: 'pt-BR' });
+  assert.match(messages[0].content, /italiano \(Italiano\)/);
+  assert.match(messages[0].content, /NÃO use português/);
+});
+
 test('ordinary/audio-mode songs preserve explicit perspective and literal audio excerpts', async () => {
   const messages = await generate({ standalone: true, perspective: 'mentor',
     audioInsert: { section: 'VERSE', mode: 'keep_exact', transcript: 'Claudinei te ama' } });

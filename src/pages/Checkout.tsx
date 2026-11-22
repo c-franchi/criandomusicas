@@ -15,6 +15,7 @@ import { useCredits, getPlanLabel } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/i18n-format';
+import { resolveGenerationLanguage } from '../../supabase/functions/_shared/generationLanguage';
 
 interface PixConfigData {
   pix_key: string;
@@ -35,6 +36,7 @@ interface OrderData {
   voucher_code: string | null;
   discount_applied: number;
   payment_method: string | null;
+  language?: string | null;
   is_instrumental: boolean | null;
   has_custom_lyric: boolean | null;
   pix_rejection_reason: string | null;
@@ -124,6 +126,9 @@ export default function Checkout() {
     };
     return credits[planId] || 1;
   };
+
+  const getGenerationLanguage = (orderData: { language?: string | null }) =>
+    resolveGenerationLanguage(orderData.language, i18n.resolvedLanguage, i18n.language);
 
   // Fetch PIX config
   useEffect(() => {
@@ -331,6 +336,7 @@ export default function Checkout() {
                   body: {
                     orderId: order.id,
                     isInstrumental: true,
+                    language: getGenerationLanguage(orderData),
                     briefing
                   }
                 });
@@ -346,6 +352,7 @@ export default function Checkout() {
                   body: {
                     orderId: order.id,
                     story: orderData.story,
+                    language: getGenerationLanguage(orderData),
                     briefing
                   }
                 });
@@ -504,6 +511,7 @@ export default function Checkout() {
                   body: {
                     orderId: order.id,
                     isInstrumental: true,
+                    language: getGenerationLanguage(orderData),
                     briefing
                   }
                 });
@@ -513,6 +521,7 @@ export default function Checkout() {
                   body: {
                     orderId: order.id,
                     story: orderData.story,
+                    language: getGenerationLanguage(orderData),
                     briefing
                   }
                 });
@@ -851,7 +860,7 @@ export default function Checkout() {
             // Instrumental: generate style prompt directly
             toast.info(t('toast.preparingInstrumental'));
             await supabase.functions.invoke('generate-style-prompt', {
-              body: { orderId: order.id, isInstrumental: true, briefing }
+              body: { orderId: order.id, isInstrumental: true, language: getGenerationLanguage(orderData), briefing }
             });
             navigate('/dashboard');
             return;
@@ -863,7 +872,7 @@ export default function Checkout() {
             // Vocal: GENERATE LYRICS VIA AI
             toast.info(t('toast.generatingLyrics'));
             await supabase.functions.invoke('generate-lyrics', {
-              body: { orderId: order.id, story: orderData.story, briefing }
+              body: { orderId: order.id, story: orderData.story, language: getGenerationLanguage(orderData), briefing }
             });
           }
         } catch (genError) {
