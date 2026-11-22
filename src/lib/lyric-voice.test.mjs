@@ -7,7 +7,7 @@ import { inspectShortLyric, shortLyricLimits } from '../../supabase/functions/_s
 import { resolveGenerationLanguage } from '../../supabase/functions/_shared/generationLanguage.ts';
 
 // Exercise the actual HTTP handler with fake AI/database boundaries. No paid calls.
-let gift = null, aiCalls = [], inserts = [];
+let gift = null, aiCalls = [], inserts = [], updates = [];
 globalThis.__voiceRules = lyricVoiceRules;
 globalThis.__generationLanguage = { resolveGenerationLanguage };
 globalThis.__shortRules = { inspectShortLyric, shortLyricLimits };
@@ -18,7 +18,8 @@ globalThis.__voiceDb = {
   from: table => {
     let insert = false;
     const q = {
-      select: () => q, eq: () => q, update: () => q,
+      select: () => q, eq: () => q,
+      update: data => { updates.push(data); return q; },
       insert: data => { insert = true; inserts.push(...data); return q; },
       maybeSingle: async () => ({ data: gift, error: null }),
       single: async () => ({ data: { user_id: 'owner', language: globalThis.__orderLanguage }, error: null }),
@@ -42,7 +43,7 @@ async function generate({ duration = null, modification = false, standalone = fa
     is_test: false, payment_confirmed_at: '2026-10-28', details: { language: 'pt-BR' },
     sender_name: 'Claudinei', recipient_name: 'Maria',
   };
-  aiCalls = []; inserts = [];
+  aiCalls = []; inserts = []; updates = [];
   globalThis.fetch = async (url, options) => {
     if (!String(url).includes('chat/completions')) return Response.json({ ok: true });
     aiCalls.push(JSON.parse(options.body));
@@ -90,6 +91,7 @@ test('stored Italian order language overrides a conflicting browser payload', as
   const messages = await generate({ withGift: false, orderLanguage: 'it', requestedLanguage: 'pt-BR' });
   assert.match(messages[0].content, /italiano \(Italiano\)/);
   assert.match(messages[0].content, /NÃO use português/);
+  assert(updates.some(update => update.language === 'it'));
 });
 
 test('ordinary/audio-mode songs preserve explicit perspective and literal audio excerpts', async () => {

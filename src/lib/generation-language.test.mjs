@@ -55,4 +55,12 @@ test('checkout generation calls and payment verification propagate language', ()
   const verification = readFileSync(new URL('../../supabase/functions/verify-payment/index.ts', import.meta.url), 'utf8');
   assert.match(verification, /const generationLanguage = resolveGenerationLanguage\(orderData\.language, requestedLanguage\)/);
   assert.equal((verification.match(/language: generationLanguage/g) || []).length, 2);
+
+  const briefing = readFileSync(new URL('../pages/Briefing.tsx', import.meta.url), 'utf8');
+  assert.equal((briefing.match(/language: briefingData\.language/g) || []).length, 2);
+  const revisions = readFileSync(new URL('../pages/CreateSong.tsx', import.meta.url), 'utf8');
+  assert.match(revisions, /story: buildModificationStory\(/);
+  assert.match(revisions, /resolveGenerationLanguage\(briefingData\.language/);
+  const retries = readFileSync(new URL('../services/OrderProcessingService.ts', import.meta.url), 'utf8');
+  assert.match(retries, /language: order\.language \|\| undefined/);
 });
