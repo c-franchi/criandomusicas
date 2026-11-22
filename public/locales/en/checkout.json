@@ -60,6 +60,9 @@
     "applyDiscount": "Apply Discount"
   },
   "payment": {
+    "countryLoading": "Checking payment availability…",
+    "countryUnavailable": "We could not verify your access country. Reload the page to try again.",
+    "euroUnavailable": "Euro payments are temporarily unavailable. No payment has been taken.",
     "title": "Payment Method",
     "card": {
       "title": "Credit Card",

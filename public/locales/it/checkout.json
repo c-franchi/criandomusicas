@@ -60,6 +60,9 @@
     "applyDiscount": "Applica Sconto"
   },
   "payment": {
+    "countryLoading": "Verifica della disponibilità del pagamento…",
+    "countryUnavailable": "Non è stato possibile verificare il paese di accesso. Ricarica la pagina per riprovare.",
+    "euroUnavailable": "Il pagamento in euro è temporaneamente non disponibile. Nessun addebito è stato effettuato.",
     "title": "Metodo di Pagamento",
     "card": {
       "title": "Carta di Credito",

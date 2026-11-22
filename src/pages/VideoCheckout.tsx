@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaymentAccess } from "@/hooks/usePaymentAccess";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
@@ -45,8 +46,10 @@ const VideoCheckout = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
   const { toast } = useToast();
   const { t } = useTranslation('common');
+  const { t: tCheckout } = useTranslation('checkout');
   const [selectedType, setSelectedType] = useState<VideoType>('photos_5');
   const [loading, setLoading] = useState(false);
   const [orderTitle, setOrderTitle] = useState<string>('');
@@ -133,7 +136,7 @@ const VideoCheckout = () => {
 
   // Handle card payment via Stripe
   const handleCardPayment = async () => {
-    if (!user || !orderId) return;
+    if (!user || !orderId || !brazilCardAvailable) return;
 
     setLoading(true);
     try {
@@ -190,7 +193,7 @@ const VideoCheckout = () => {
 
   // Handle PIX payment selection
   const handlePixPayment = async () => {
-    if (!user || !orderId) return;
+    if (!user || !orderId || !pixAvailable) return;
 
     setLoading(true);
     try {
@@ -286,7 +289,7 @@ const VideoCheckout = () => {
         </div>
 
         {/* PIX Section - Show when PIX is selected */}
-        {showPixSection ? (
+        {showPixSection && pixAvailable ? (
           <Card className="mb-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -420,11 +423,12 @@ const VideoCheckout = () => {
             {/* Payment Methods */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-center">Escolha a forma de pagamento</h3>
+              {!brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{tCheckout(unavailableReason)}</p>}
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className={`grid gap-4 ${pixAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}>
                 <Button 
                   onClick={handleCardPayment} 
-                  disabled={loading}
+                  disabled={loading || !brazilCardAvailable}
                   className="h-16 flex flex-col items-center justify-center"
                   variant="outline"
                   size="lg"
@@ -439,7 +443,7 @@ const VideoCheckout = () => {
                   )}
                 </Button>
 
-                <Button 
+                {pixAvailable && <Button 
                   onClick={handlePixPayment} 
                   disabled={loading}
                   className="h-16 flex flex-col items-center justify-center"
@@ -454,7 +458,7 @@ const VideoCheckout = () => {
                       <span className="text-sm">PIX</span>
                     </>
                   )}
-                </Button>
+                </Button>}
               </div>
             </div>
           </>

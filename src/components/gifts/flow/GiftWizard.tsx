@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import GiftDesignPicker from "./GiftDesignPicker";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaymentAccess } from "@/hooks/usePaymentAccess";
 import { useAdminRole } from "@/hooks/useAdminRole";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -120,6 +121,7 @@ function Editor({
 }) {
   const { t, i18n } = useTranslation("home");
   const { user } = useAuth();
+  const { pixAvailable } = usePaymentAccess();
   const { isAdmin } = useAdminRole(user?.id);
   const nav = useNavigate();
   useFlowBusy(true);
@@ -828,9 +830,9 @@ function Editor({
                   {catalog.data.operations.production_estimate}
                 </p>
               )}
-              <p className="text-sm text-muted-foreground">
+              {pixAvailable && <p className="text-sm text-muted-foreground">
                 {t("giftFlow.pixHelp")}
-              </p>
+              </p>}
               <p className="text-sm text-muted-foreground">
                 {t("giftFlow.productionHelp")}
               </p>

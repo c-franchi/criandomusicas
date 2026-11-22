@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { usePaymentAccess } from "@/hooks/usePaymentAccess";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -35,6 +37,8 @@ const PaymentGateway = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
+  const { t } = useTranslation('checkout');
   const { toast } = useToast();
 
   const planIdFromUrl = searchParams.get("planId") || "single";
@@ -163,10 +167,12 @@ const PaymentGateway = () => {
   };
 
   const goToCardCheckout = () => {
+    if (!brazilCardAvailable) return;
     navigate(`/checkout/${orderId}?planId=${planIdFromUrl}`);
   };
 
   const goToPixCheckout = () => {
+    if (!pixAvailable) return;
     navigate(`/checkout/${orderId}?planId=${planIdFromUrl}&method=pix`);
   };
 
@@ -276,14 +282,16 @@ const PaymentGateway = () => {
 
               <Button
                 onClick={goToCardCheckout}
+                disabled={!brazilCardAvailable}
                 className="w-full h-12"
                 size="lg"
               >
                 <CreditCard className="w-5 h-5 mr-2" />
                 Pagar com cartão
               </Button>
+              {!brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{t(unavailableReason)}</p>}
 
-              <Button
+              {pixAvailable && <Button
                 onClick={goToPixCheckout}
                 className="w-full h-12"
                 size="lg"
@@ -291,7 +299,7 @@ const PaymentGateway = () => {
               >
                 <QrCode className="w-5 h-5 mr-2" />
                 Pagar com PIX
-              </Button>
+              </Button>}
 
               <Button
                 onClick={goToPlans}

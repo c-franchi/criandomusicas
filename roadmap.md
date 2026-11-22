@@ -15,3 +15,5 @@
 - [x] Fluxo de criação por finalidade (Home CTA único, /briefing finalidade, empresa/motivacional, resumo)
 - [ ] Testar fluxo logado no celular (sem sessão de teste disponível)
 - [ ] IT sandbox checkout: waiting on STRIPE_IT_TEST_RESTRICTED_KEY + STRIPE_IT_TEST_WEBHOOK_SECRET, then one verified sandbox session
+- [x] Hide Pix for foreign-IP access across music, gift and video checkout entry points; preserve Brazilian billing code. 26 tests pass; simulated BR/IT/unknown screens checked desktop/mobile, including existing pending Pix; build OK. No live account/session check available.
+- [ ] Italian live EUR checkout: user confirmed prices exist only in test mode; blocked on production account, live EUR catalog and credentials before implementing/activating live billing and verified confirmation. Foreign checkout shows unavailable, without a BRL fallback. No frontend publication.

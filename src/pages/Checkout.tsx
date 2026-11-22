@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tag, CreditCard, CheckCircle, Music, ArrowLeft, Sparkles, Gift, QrCode, Copy, Clock, Upload, ImageIcon, Loader2, Zap } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { usePaymentAccess } from '@/hooks/usePaymentAccess';
 import { useVIPAccess, bypassPaymentForVIP } from '@/hooks/useVIPAccess';
 import { useCredits, getPlanLabel } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,6 +68,7 @@ export default function Checkout() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
   const { isVIP, loading: vipLoading } = useVIPAccess(user?.id, user?.email || undefined);
   const { hasCredits, totalCredits, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
 
@@ -90,6 +92,7 @@ export default function Checkout() {
   const [uploadingReceipt, setUploadingReceipt] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [receiptPreview, setReceiptPreview] = useState<string | null>(null);
+  const pixVisible = pixAvailable && showPixSection;
   const receiptInputRef = useRef<HTMLInputElement>(null);
   const pixSectionRef = useRef<HTMLDivElement>(null);
   const receiptUploadRef = useRef<HTMLDivElement>(null);
@@ -556,7 +559,7 @@ export default function Checkout() {
 
   // Handle card payment via Stripe
   const handleCardPayment = async () => {
-    if (!order) return;
+    if (!order || !brazilCardAvailable) return;
 
     setProcessingPayment(true);
 
@@ -627,7 +630,7 @@ export default function Checkout() {
 
   // Handle PIX payment selection
   const handlePixPayment = async () => {
-    if (!order) return;
+    if (!order || !pixAvailable) return;
 
     try {
       // Update order to AWAITING_PIX status (cobrança PIX "criada")
@@ -925,7 +928,7 @@ export default function Checkout() {
   const originalPrice = hasDiscount ? (currentPrice + order.discount_applied) : 1990;
 
   // PIX Waiting State
-  if (showPixSection && pixConfirmed) {
+  if (pixVisible && pixConfirmed) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-card/50 to-background py-8 px-4">
         <div className="max-w-lg mx-auto">
@@ -1158,7 +1161,7 @@ export default function Checkout() {
 
 
         {/* Voucher Section - Only show if not in PIX mode */}
-        {!showPixSection && (
+        {!pixVisible && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -1258,7 +1261,7 @@ export default function Checkout() {
         )}
 
         {/* Payment Section */}
-        {!showPixSection && (
+        {!pixVisible && (
           <Card className="border-primary/30">
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
@@ -1279,10 +1282,11 @@ export default function Checkout() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
+              {!brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{t(unavailableReason)}</p>}
               {/* Card Payment */}
               <Button
                 onClick={handleCardPayment}
-                disabled={processingPayment}
+                disabled={processingPayment || !brazilCardAvailable}
                 className="w-full h-14 justify-start gap-4"
                 variant="hero"
               >
@@ -1298,6 +1302,7 @@ export default function Checkout() {
               </Button>
 
               {/* PIX Payment */}
+              {pixAvailable && <>
               <Button
                 onClick={handlePixPayment}
                 variant="outline"
@@ -1320,6 +1325,7 @@ export default function Checkout() {
                   <li>4. {t('payment.pix.step4')}</li>
                 </ol>
               </div>
+              </>}
 
               <p className="text-xs text-center text-muted-foreground mt-3">
                 {t('payment.securePayment')}
@@ -1329,7 +1335,7 @@ export default function Checkout() {
         )}
 
         {/* PIX Payment Details */}
-        {showPixSection && !pixConfirmed && (
+        {pixVisible && !pixConfirmed && (
           <Card ref={pixSectionRef} className="border-emerald-600/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
