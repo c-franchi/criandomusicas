@@ -467,13 +467,17 @@ export type Database = {
           created_at: string
           currency: string
           expires_at: string | null
+          fulfillment_gift_id: string | null
+          fulfillment_order_id: string | null
           gift_id: string | null
+          gift_snapshot: Json | null
           id: string
           items: Json
           last_error: string | null
           livemode: boolean
           market: string
           order_id: string
+          order_snapshot: Json | null
           owner_id: string
           paid_at: string | null
           paid_event_id: string | null
@@ -487,13 +491,17 @@ export type Database = {
           created_at?: string
           currency?: string
           expires_at?: string | null
+          fulfillment_gift_id?: string | null
+          fulfillment_order_id?: string | null
           gift_id?: string | null
+          gift_snapshot?: Json | null
           id?: string
           items: Json
           last_error?: string | null
           livemode?: boolean
           market?: string
           order_id: string
+          order_snapshot?: Json | null
           owner_id: string
           paid_at?: string | null
           paid_event_id?: string | null
@@ -507,13 +515,17 @@ export type Database = {
           created_at?: string
           currency?: string
           expires_at?: string | null
+          fulfillment_gift_id?: string | null
+          fulfillment_order_id?: string | null
           gift_id?: string | null
+          gift_snapshot?: Json | null
           id?: string
           items?: Json
           last_error?: string | null
           livemode?: boolean
           market?: string
           order_id?: string
+          order_snapshot?: Json | null
           owner_id?: string
           paid_at?: string | null
           paid_event_id?: string | null
@@ -522,6 +534,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "it_test_checkouts_fulfillment_gift_id_fkey"
+            columns: ["fulfillment_gift_id"]
+            isOneToOne: false
+            referencedRelation: "musical_gifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "it_test_checkouts_fulfillment_order_id_fkey"
+            columns: ["fulfillment_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "it_test_checkouts_gift_id_fkey"
             columns: ["gift_id"]
