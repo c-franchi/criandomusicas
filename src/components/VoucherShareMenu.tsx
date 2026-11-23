@@ -26,7 +26,7 @@ interface VoucherShareMenuProps {
 }
 
 const PLAN_LABELS: Record<string, string> = {
-  single: 'Música Única',
+  single: '1 Crédito Universal + cartões',
   package: 'Pacote 3 Músicas',
   subscription: 'Pacote 5 Músicas',
   single_custom_lyric: 'Letra Própria',

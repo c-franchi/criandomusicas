@@ -25,7 +25,13 @@ begin
   bad_code:=upper('BAD-'||gen_random_uuid()::text);
   insert into public.vouchers(code,discount_type,discount_value,plan_ids) values(bad_code,'percent',50,array['single']) returning id into invalid_vid;
   perform set_config('request.jwt.claims',json_build_object('sub',uid,'role','authenticated')::text,true);execute 'set local role authenticated';
-  begin perform public.apply_gift_voucher(oid,bad_code);raise exception 'Normal-only voucher accepted on gift';exception when others then if sqlerrm<>'gift_voucher_product' then raise;end if;end;
+  if g.has_card then
+   result:=public.quote_gift_voucher(oid,bad_code);
+   if (result->>'original_price')::integer<>price then raise exception 'Universal-credit voucher rejected card gift';end if;
+   if (result->>'discount_amount')::integer<>round((price-g.shipping_cents)::numeric*50/100)::integer then raise exception 'Universal-credit voucher did not discount card addon without shipping';end if;
+  else
+   begin perform public.apply_gift_voucher(oid,bad_code);raise exception 'Universal-credit voucher accepted short music without card';exception when others then if sqlerrm<>'gift_voucher_product' then raise;end if;end;
+  end if;
   result:=public.quote_gift_voucher(oid,code);
   if result->>'original_price'<>price::text then raise exception 'Quote did not include addon/shipping';end if;
   if (select count(*) from public.voucher_redemptions where order_id=oid)<>0 then raise exception 'Validation consumed a use';end if;

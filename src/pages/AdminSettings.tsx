@@ -685,7 +685,7 @@ const AdminSettings = () => {
                         <Label>Válido para planos (opcional)</Label>
                         <div className="mt-2 border rounded-md p-3 max-h-48 overflow-y-auto space-y-2 bg-background">
                           {[
-                            { id: 'single', label: '1 Crédito Universal' },
+                            { id: 'single', label: '1 Crédito Universal + cartões' },
                             { id: 'package', label: '3 Créditos Universais' },
                             { id: 'subscription', label: '5 Créditos Universais' },
                             { id: 'creator_start', label: 'Creator Start' },
@@ -720,7 +720,7 @@ const AdminSettings = () => {
                           })}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Deixe todos desmarcados para permitir em todos os planos e presentes musicais. Nos presentes, o desconto inclui os adicionais do produto e não inclui eventual frete.
+                          O 1 Crédito Universal também vale para presentes com cartão. Deixe todos desmarcados para permitir em todos os planos e presentes musicais. Nos presentes, o desconto inclui os adicionais do produto e não inclui eventual frete.
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
