@@ -18,6 +18,9 @@ describe("Italian euro vouchers", () => {
   test("voucher limited to another plan is refused", () => {
     expect(quoteItLiveVoucher(v({ plan_ids: ["package"] }), 1999, 0)).toEqual({ ok: false, error: "plan" });
   });
+  test("package voucher applies to the €49.99 package order", () => {
+    expect(quoteItLiveVoucher(v({ plan_ids: ["package"] }), 4999, 0, new Date(), "package")).toEqual({ ok: true, discount: 4499, final: 500 });
+  });
   test("per-user limit is enforced", () => {
     expect(quoteItLiveVoucher(v({ max_uses_per_user: 1 }), 1999, 1)).toEqual({ ok: false, error: "user_limit" });
   });

@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     const { data: v } = await admin.from("vouchers").select("*").eq("code", rawCode).maybeSingle();
     if (!v) return json({ valid: false, error: itVoucherMessage("invalid", lang) }, body?.action === "quote" ? 200 : 409);
     const { count } = await admin.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("voucher_id", v.id).eq("user_id", userId);
-    const q = quoteItLiveVoucher(v as any, base, count ?? 0);
+    const q = quoteItLiveVoucher(v as any, base, count ?? 0, new Date(), order.plan_id);
     if (!q.ok) return json({ valid: false, error: itVoucherMessage(q.error, lang) }, body?.action === "quote" ? 200 : 409);
     voucher = { id: v.id, code: v.code, discount: q.discount, final: q.final };
   }

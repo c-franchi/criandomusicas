@@ -11,13 +11,19 @@ export type ItVoucherQuote =
   | { ok: true; discount: number; final: number }
   | { ok: false; error: 'inactive' | 'not_started' | 'expired' | 'exhausted' | 'user_limit' | 'plan' | 'currency' | 'below_minimum' };
 
-export function quoteItLiveVoucher(v: ItVoucher, base: number, userUses: number, now = new Date()): ItVoucherQuote {
+// Order plan → voucher plan family (vouchers are configured with base plan ids like 'single' / 'package').
+export function itVoucherPlanFamily(planId?: string | null): string {
+  const p = String(planId || 'single');
+  return p.startsWith('package') ? 'package' : 'single';
+}
+
+export function quoteItLiveVoucher(v: ItVoucher, base: number, userUses: number, now = new Date(), planId: string | null = 'single'): ItVoucherQuote {
   if (!v.is_active) return { ok: false, error: 'inactive' };
   if (v.valid_from && new Date(v.valid_from) > now) return { ok: false, error: 'not_started' };
   if (v.valid_until && new Date(v.valid_until) < now) return { ok: false, error: 'expired' };
   if (v.max_uses !== null && (v.current_uses ?? 0) >= v.max_uses) return { ok: false, error: 'exhausted' };
   if (v.max_uses_per_user !== null && userUses >= v.max_uses_per_user) return { ok: false, error: 'user_limit' };
-  if (v.plan_ids && v.plan_ids.length > 0 && !v.plan_ids.includes('single')) return { ok: false, error: 'plan' };
+  if (v.plan_ids && v.plan_ids.length > 0 && !v.plan_ids.includes(String(planId || 'single')) && !v.plan_ids.includes(itVoucherPlanFamily(planId))) return { ok: false, error: 'plan' };
   if (v.discount_type !== 'percent') return { ok: false, error: 'currency' };
   const discount = Math.round(base * Math.min(100, Math.max(0, v.discount_value)) / 100);
   const final = base - discount;
