@@ -4,7 +4,7 @@ const REQUEST_TIMEOUT = 8_000;
 const WORKER_CHECK_INTERVAL = 60_000;
 
 export function watchAppVersion(
-  onAvailable: () => void,
+  onAvailable: (entry: string) => void,
   host: Window = window,
   doc: Document = document,
 ) {
@@ -43,7 +43,7 @@ export function watchAppVersion(
       if (next !== normalize(entry) && next !== lastReported) {
         lastReported = next;
         checkWorker(true);
-        onAvailable();
+        onAvailable(next);
       }
     } catch { /* Keep the current page usable offline and retry automatically. */ }
     finally {
