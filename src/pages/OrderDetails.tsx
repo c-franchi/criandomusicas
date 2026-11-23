@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+import { formatOrderAmount } from "@/lib/order-price-display";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Navigate, Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -341,7 +343,7 @@ const OrderDetails = () => {
   };
 
   // Include language parameter in share URL so recipients see the page in the same language
-  const getShareUrl = () => `https://criandomusicas.com.br/m/${orderId}?lang=${i18n.language}`;
+  const getShareUrl = () => `${i18n.language?.startsWith("it") ? "https://creandomusica.it" : "https://criandomusicas.com.br"}/m/${orderId}?lang=${i18n.language}`;
 
   // Track share analytics
   const trackShare = async (platform: string) => {
@@ -670,7 +672,7 @@ const OrderDetails = () => {
                       </Button>
                       <Button 
                         onClick={() => {
-                          const shareUrl = `https://criandomusicas.com.br/m/${orderId}/${track.version}?lang=${i18n.language}`;
+                          const shareUrl = `${i18n.language?.startsWith("it") ? "https://creandomusica.it" : "https://criandomusicas.com.br"}/m/${orderId}/${track.version}?lang=${i18n.language}`;
                           if (navigator.share) {
                             navigator.share({
                               title: `🎵 ${getSongTitle()} (V${track.version})`,
@@ -934,7 +936,7 @@ const OrderDetails = () => {
               <div>
                 <p className="text-muted-foreground">{t('orderTracking.amount')}</p>
                 <p className="font-medium">
-                  R$ {(order.amount / 100).toFixed(2).replace('.', ',')}
+                  {formatOrderAmount(order.amount, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                 </p>
               </div>
             </div>

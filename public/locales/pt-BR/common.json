@@ -339,5 +339,10 @@
     "whatsapp": "WhatsApp (opcional)",
     "phonePlaceholder": "(00) 00000-0000",
     "whatsappHint": "Para receber atualizações sobre seus pedidos"
+  },
+  "coverUpload": {
+    "formats": "JPG, PNG ou WEBP • Máx. 10MB",
+    "asIs": "A imagem será usada como está para a capa da música.",
+    "enhance": "A IA vai aprimorar a imagem para criar uma capa artística."
   }
 }

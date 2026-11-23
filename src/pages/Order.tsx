@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+import { formatOrderAmount } from "@/lib/order-price-display";
 import { useState, useEffect } from "react";
 import { useParams, Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -275,7 +277,7 @@ const Order = () => {
                 <div>
                   <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
                   <p className="text-2xl font-bold text-primary">
-                    R$ {((order.amount || 1990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                    {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                   </p>
                 </div>
                 <div>
@@ -311,7 +313,7 @@ const Order = () => {
             <div className="mb-4">
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-3xl font-bold">
-                  R$ {((order.amount || 1990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                 </span>
                 <span className="text-sm text-muted-foreground line-through">R$ 47,90</span>
                 <Badge variant="secondary">PROMOÇÃO</Badge>
@@ -403,7 +405,7 @@ const Order = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Valor</p>
                 <p className="font-medium">
-                  R$ {((order.amount || 1990) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                 </p>
               </div>
             </div>

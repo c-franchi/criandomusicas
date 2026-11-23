@@ -339,5 +339,10 @@
     "whatsapp": "WhatsApp (optional)",
     "phonePlaceholder": "+1 555 123 4567",
     "whatsappHint": "To receive updates about your orders"
+  },
+  "coverUpload": {
+    "formats": "JPG, PNG or WEBP • Max. 10MB",
+    "asIs": "The image will be used as-is for the song cover.",
+    "enhance": "The AI will enhance the image to create an artistic cover."
   }
 }

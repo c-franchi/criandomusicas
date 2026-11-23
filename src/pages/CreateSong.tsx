@@ -985,7 +985,7 @@ const CreateSong = () => {
                   <ImagePlus className="w-10 h-10 text-muted-foreground" />
                   <div className="text-center">
                     <p className="text-sm font-medium">Clique para enviar uma imagem</p>
-                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WEBP • Máx. 10MB</p>
+                    <p className="text-xs text-muted-foreground mt-1">{tc('coverUpload.formats')}</p>
                   </div>
                 </button>
               ) : (
@@ -1025,8 +1025,8 @@ const CreateSong = () => {
                   
                   <p className="text-xs text-muted-foreground text-center">
                     {coverMode === "original" 
-                      ? "A imagem será usada como está para a capa da música." 
-                      : "A IA vai aprimorar a imagem para criar uma capa artística."}
+                      ? tc('coverUpload.asIs') 
+                      : tc('coverUpload.enhance')}
                   </p>
                   
                   <p className="text-xs text-center text-muted-foreground/70">
@@ -1263,7 +1263,7 @@ const CreateSong = () => {
                   <ImagePlus className="w-10 h-10 text-muted-foreground" />
                   <div className="text-center">
                     <p className="text-sm font-medium">Clique para enviar uma imagem</p>
-                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG ou WEBP • Máx. 10MB</p>
+                    <p className="text-xs text-muted-foreground mt-1">{tc('coverUpload.formats')}</p>
                   </div>
                 </button>
               ) : (
@@ -1303,8 +1303,8 @@ const CreateSong = () => {
                   
                   <p className="text-xs text-muted-foreground text-center">
                     {coverMode === "original" 
-                      ? "A imagem será usada como está para a capa da música." 
-                      : "A IA vai aprimorar a imagem para criar uma capa artística."}
+                      ? tc('coverUpload.asIs') 
+                      : tc('coverUpload.enhance')}
                   </p>
                   
                   <p className="text-xs text-center text-muted-foreground/70">

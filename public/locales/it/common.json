@@ -339,5 +339,10 @@
     "whatsapp": "WhatsApp (facoltativo)",
     "phonePlaceholder": "+39 333 123 4567",
     "whatsappHint": "Per ricevere aggiornamenti sui tuoi ordini"
+  },
+  "coverUpload": {
+    "formats": "JPG, PNG o WEBP • Max. 10MB",
+    "asIs": "L'immagine verrà usata così com'è per la copertina.",
+    "enhance": "L'IA migliorerà l'immagine per creare una copertina artistica."
   }
 }

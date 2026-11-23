@@ -339,5 +339,10 @@
     "whatsapp": "WhatsApp (opcional)",
     "phonePlaceholder": "+34 600 123 456",
     "whatsappHint": "Para recibir novedades sobre tus pedidos"
+  },
+  "coverUpload": {
+    "formats": "JPG, PNG o WEBP • Máx. 10MB",
+    "asIs": "La imagen se usará tal cual para la portada.",
+    "enhance": "La IA mejorará la imagen para crear una portada artística."
   }
 }
