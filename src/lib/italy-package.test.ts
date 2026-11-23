@@ -1,3 +1,4 @@
+// @ts-nocheck -- Bun's test module is resolved by Bun, not the frontend TypeScript config.
 import { expect, test } from "bun:test";
 import { itLiveItemForOrderPlan } from "../../supabase/functions/_shared/itLiveCheckout";
 import { euroAmountForPlan } from "./order-price-display";
