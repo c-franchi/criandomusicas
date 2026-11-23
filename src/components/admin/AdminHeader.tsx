@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Music, Home, ClipboardList, Gift, Megaphone, Settings } from "lucide-react";
+import { Music, Home, ClipboardList, Gift, Megaphone, Settings, Euro } from "lucide-react";
 import "./admin-responsive.css";
 
 const sections = [
   { to: "/admin", label: "Pedidos", icon: ClipboardList, end: true },
   { to: "/admin/presentes", label: "Cartões", icon: Gift, end: false },
+  { to: "/admin/vendas-italia", label: "Vendas EUR", icon: Euro, end: false },
   { to: "/admin/marketing", label: "Marketing", icon: Megaphone, end: false },
   { to: "/admin/configuracoes", label: "Configurações", icon: Settings, end: false },
 ];
