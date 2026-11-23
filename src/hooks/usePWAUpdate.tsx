@@ -8,7 +8,7 @@ export const usePWAUpdate = () => {
  const [dismissed,setDismissed]=useState(false);
  const [isUpdating,setIsUpdating]=useState(false);
  const [blocked,setBlocked]=useState(()=>shouldBlockUpdate(window.location.pathname));
- useEffect(()=>watchAppVersion((entry)=>{nextEntry=entry;setUpdateAvailable(true);setDismissed(localStorage.getItem('dismissed-app-entry')===entry);}),[]);
+ useEffect(()=>watchAppVersion((entry)=>{nextEntry=entry;setUpdateAvailable(true);setDismissed(localStorage.getItem('dismissed-app-entry')===entry||sessionStorage.getItem('attempted-app-entry')===entry);}),[]);
  useEffect(()=>{
   const check=()=>setBlocked(shouldBlockUpdate(window.location.pathname));check();
   const interval=setInterval(check,1000),unsubscribe=subscribeFlowBusy(check);
@@ -28,7 +28,12 @@ export const usePWAUpdate = () => {
     const names=await caches.keys();
     await Promise.allSettled(names.filter(n=>/workbox|precache|runtime/i.test(n)).map(n=>caches.delete(n)));
    }
-  } finally {window.location.reload();}
+  } finally {
+   // If this version still does not load after one attempt, do not loop the banner.
+   if(nextEntry)sessionStorage.setItem('attempted-app-entry',nextEntry);
+   const url=new URL(window.location.href);url.searchParams.set('_v',String(Date.now()));
+   window.location.replace(url.toString());
+  }
  },[]);
  return {showUpdateBanner:updateAvailable&&!dismissed&&!blocked,updateAvailable,isUpdating,forceUpdate,dismissBanner:useCallback(()=>{if(nextEntry)localStorage.setItem('dismissed-app-entry',nextEntry);setDismissed(true);},[])};
 };
