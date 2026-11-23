@@ -85,7 +85,11 @@
       "alreadyPaid": "Ho Già Effettuato il Pagamento PIX",
       "backToOptions": "Torna alle opzioni di pagamento"
     },
-    "securePayment": "Pagamento sicuro • Dati protetti"
+    "securePayment": "Pagamento sicuro • Dati protetti",
+    "euroCard": {
+      "title": "Carta in euro — {{price}}",
+      "description": "Pagamento sicuro in EUR."
+    }
   },
   "receipt": {
     "title": "Invia la Ricevuta",

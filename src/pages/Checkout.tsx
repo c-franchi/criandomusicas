@@ -70,7 +70,27 @@ export default function Checkout() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
+  const { country: accessCountry, loading: accessLoading, pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
+  const [euroReady, setEuroReady] = useState(false);
+  const [processingEuro, setProcessingEuro] = useState(false);
+  useEffect(() => {
+    if (accessLoading || !accessCountry || brazilCardAvailable || !user) return;
+    void supabase.functions.invoke('create-it-live-checkout', { body: { action: 'status' } })
+      .then(({ data }) => setEuroReady(data?.configured === true));
+  }, [accessLoading, accessCountry, brazilCardAvailable, user]);
+  const handleEuroCardPayment = async () => {
+    if (!order || giftOrder) return;
+    setProcessingEuro(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-it-live-checkout', { body: { orderId: order.id } });
+      if (error || !data?.url) throw error || new Error('no_url');
+      window.location.href = data.url;
+    } catch (e) {
+      console.error('Euro checkout failed:', e);
+      toast.error(t('errors.paymentFailed'));
+      setProcessingEuro(false);
+    }
+  };
   const { isVIP, loading: vipLoading } = useVIPAccess(user?.id, user?.email || undefined);
   const { hasCredits, totalCredits, activePackage, loading: creditsLoading, refresh: refreshCredits } = useCredits();
 
@@ -1291,7 +1311,15 @@ export default function Checkout() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {!brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{t(unavailableReason)}</p>}
+              {!brazilCardAvailable && euroReady && !giftOrder ? (
+                <Button onClick={handleEuroCardPayment} disabled={processingEuro} className="w-full h-14 justify-start gap-4" variant="hero">
+                  {processingEuro ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
+                  <div className="flex-1 text-left">
+                    <p className="font-medium">{t('payment.euroCard.title', { price: new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format(19.99) })}</p>
+                    <p className="text-xs opacity-80">{t('payment.euroCard.description')}</p>
+                  </div>
+                </Button>
+              ) : !brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{t(unavailableReason)}</p>}
               {/* Card Payment */}
               <Button
                 onClick={handleCardPayment}

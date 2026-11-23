@@ -427,6 +427,78 @@ export type Database = {
           },
         ]
       }
+      it_live_payments: {
+        Row: {
+          account_id: string
+          amount_cents: number
+          created_at: string
+          currency: string
+          id: string
+          order_id: string
+          paid_at: string | null
+          plan_id: string
+          price_id: string
+          session_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          amount_cents: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id: string
+          paid_at?: string | null
+          plan_id: string
+          price_id: string
+          session_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          amount_cents?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          order_id?: string
+          paid_at?: string | null
+          plan_id?: string
+          price_id?: string
+          session_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      it_live_webhook_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          result: string | null
+          session_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          result?: string | null
+          session_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          result?: string | null
+          session_id?: string | null
+          type?: string
+        }
+        Relationships: []
+      }
       it_test_catalog: {
         Row: {
           account_id: string

@@ -36,6 +36,13 @@
       "when": 1795432482892,
       "tag": "0004_tighten_public_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795437700880,
+      "tag": "0005_italy_live_checkout",
+      "breakpoints": true
     }
   ]
 }

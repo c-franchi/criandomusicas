@@ -85,7 +85,11 @@
       "alreadyPaid": "Ya Hice el Pago PIX",
       "backToOptions": "Volver a opciones de pago"
     },
-    "securePayment": "Pago seguro • Datos protegidos"
+    "securePayment": "Pago seguro • Datos protegidos",
+    "euroCard": {
+      "title": "Tarjeta en euros — {{price}}",
+      "description": "Pago seguro en EUR."
+    }
   },
   "receipt": {
     "title": "Envía el Comprobante",

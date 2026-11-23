@@ -104,3 +104,9 @@ verify_jwt = false
 
 [functions.stripe-it-test-webhook]
 verify_jwt = false
+
+[functions.create-it-live-checkout]
+verify_jwt = false
+
+[functions.stripe-it-live-webhook]
+verify_jwt = false

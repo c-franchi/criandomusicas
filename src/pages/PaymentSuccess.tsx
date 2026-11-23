@@ -24,8 +24,33 @@ const PaymentSuccess = () => {
   const [giftId, setGiftId] = useState<string | null>(null);
   const orderId = searchParams.get('order_id');
   const sessionId = searchParams.get('session_id');
+  const itPaymentId = searchParams.get('it_payment');
+
+  // Italian EUR payments are confirmed only by the signed webhook; here we just wait for it.
+  useEffect(() => {
+    if (!itPaymentId || !orderId || !user) return;
+    let tries = 0;
+    let active = true;
+    const poll = async () => {
+      const { data } = await supabase.from('it_live_payments').select('status').eq('id', itPaymentId).maybeSingle();
+      if (!active) return;
+      if (data?.status === 'paid') {
+        const { data: o } = await supabase.from('orders').select('is_instrumental,has_custom_lyric').eq('id', orderId).maybeSingle();
+        setOrderType(o?.is_instrumental ? 'instrumental' : o?.has_custom_lyric ? 'custom_lyric' : 'vocal');
+        analytics.purchase({ value: 19.99, currency: 'EUR', transaction_id: orderId, event_id: `purchase_${orderId}` });
+        setVerified(true); setVerifying(false); return;
+      }
+      if (data?.status === 'failed' || data?.status === 'expired' || ++tries > 40) {
+        setError(t('errors.verificationFailed')); setVerifying(false); return;
+      }
+      setTimeout(poll, 3000);
+    };
+    void poll();
+    return () => { active = false; };
+  }, [itPaymentId, orderId, user, t]);
 
   useEffect(() => {
+    if (itPaymentId) return;
     const verifyPayment = async () => {
       if (!orderId || !sessionId || !user) {
         setVerifying(false);
