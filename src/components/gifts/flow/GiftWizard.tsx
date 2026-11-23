@@ -40,7 +40,7 @@ import {
   type MusicalGift,
 } from "@/lib/gifts";
 import { mapGiftProduction } from "@/lib/briefingPurpose";
-import { getLocalizedPrice } from "@/lib/i18n-format";
+import { formatGiftOfferPrice } from "@/lib/gift-price-display";
 import { supabase } from "@/integrations/supabase/client";
 import GiftShell from "./GiftShell";
 import GiftExperience from "./GiftExperience";
@@ -283,6 +283,9 @@ function Editor({
         catalog.data.operations,
       )
     : null;
+  const formattedTotal = total === null
+    ? null
+    : formatGiftOfferPrice(total, form as MusicalGift, i18n.language);
   const field = (key: keyof MusicalGift, label: string, multiline = false) => (
     <div className="space-y-2">
       <Label htmlFor={"gift-" + key}>{t("giftFlow." + label)}</Label>
@@ -337,7 +340,7 @@ function Editor({
         <strong>
           {total === null
             ? t("giftFlow.pricePending")
-            : getLocalizedPrice(total, i18n.language, "BRL").formatted}
+            : formattedTotal ?? t("giftFlow.pricePending")}
         </strong>
       </div>
       <div className="rounded-2xl border border-border bg-card p-5 sm:p-7">
@@ -823,7 +826,7 @@ function Editor({
               <p className="text-2xl font-semibold">
                 {total === null
                   ? t("giftFlow.pricePending")
-                  : getLocalizedPrice(total, i18n.language, "BRL").formatted}
+                  : formattedTotal ?? t("giftFlow.pricePending")}
               </p>
               {catalog.data?.operations.production_estimate && (
                 <p className="text-sm">
