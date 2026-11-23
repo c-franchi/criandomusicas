@@ -326,7 +326,7 @@ const MusicShare = () => {
               ))}
             </div>
             <p className="text-sm font-medium text-foreground">
-              {tu('MusicShare.text016', { count: totalSongs ? `${totalSongs}+` : '500+' })}
+              {tu('MusicShare.text016', { count: (totalSongs ? `${totalSongs}+` : '500+') as unknown as number })}
             </p>
           </div>
 
