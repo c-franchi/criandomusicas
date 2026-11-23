@@ -71,6 +71,13 @@
       "when": 1795441706516,
       "tag": "0009_secure_customer_record_creation",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1795442747535,
+      "tag": "0010_italy_live_vouchers",
+      "breakpoints": true
     }
   ]
 }

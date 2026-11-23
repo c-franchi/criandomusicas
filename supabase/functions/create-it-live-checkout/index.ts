@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { IT_LIVE_ACCOUNT_ID, IT_LIVE_ALLOWED_ORDER_PLANS, IT_LIVE_KEY_NAME, IT_LIVE_MUSIC_FULL, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, itLiveReturnOrigin, livePriceMatches } from "../_shared/itLiveCheckout.ts";
 import { isUuid } from "../_shared/itTestCheckout.ts";
+import { itVoucherMessage, quoteItLiveVoucher } from "../_shared/itLiveVoucher.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,13 +39,33 @@ Deno.serve(async (req) => {
   if (gift) return json({ error: "gift_unavailable", code: "it_live_unavailable" }, 409);
   if (order.plan_id && !IT_LIVE_ALLOWED_ORDER_PLANS.includes(order.plan_id)) return json({ error: "plan_unavailable", code: "it_live_unavailable" }, 409);
 
+  // Vouchers are re-validated on the server for every quote and checkout; the client never sends an amount.
+  const base = IT_LIVE_MUSIC_FULL.unit_amount;
+  let voucher: { id: string; code: string; discount: number; final: number } | null = null;
+  const rawCode = typeof body?.voucherCode === "string" ? body.voucherCode.trim().toUpperCase().slice(0, 64) : "";
+  if (rawCode) {
+    const lang = body?.language;
+    const { data: v } = await admin.from("vouchers").select("*").eq("code", rawCode).maybeSingle();
+    if (!v) return json({ valid: false, error: itVoucherMessage("invalid", lang) }, body?.action === "quote" ? 200 : 409);
+    const { count } = await admin.from("voucher_redemptions").select("id", { count: "exact", head: true }).eq("voucher_id", v.id).eq("user_id", userId);
+    const q = quoteItLiveVoucher(v as any, base, count ?? 0);
+    if (!q.ok) return json({ valid: false, error: itVoucherMessage(q.error, lang) }, body?.action === "quote" ? 200 : 409);
+    voucher = { id: v.id, code: v.code, discount: q.discount, final: q.final };
+  }
+  if (body?.action === "quote") {
+    if (!voucher) return json({ valid: false, error: itVoucherMessage("invalid", body?.language) });
+    return json({ valid: true, currency: "eur", original_price: base, discount_amount: voucher.discount, final_price: voucher.final, is_free: false, voucher: { code: voucher.code, discount_type: "percent", discount_value: Math.round(voucher.discount * 100 / base) } });
+  }
+  const amount = voucher ? voucher.final : base;
+
   try {
     const stripe = new Stripe(key!, { apiVersion: "2026-09-30.endive" });
     const price = await stripe.prices.retrieve(IT_LIVE_MUSIC_FULL.price_id);
     if (!livePriceMatches(price as any)) throw Error("price_mismatch");
     const { data: row, error: insErr } = await admin.from("it_live_payments").insert({
       order_id: orderId, user_id: userId, plan_id: IT_LIVE_MUSIC_FULL.plan_id, price_id: price.id,
-      amount_cents: IT_LIVE_MUSIC_FULL.unit_amount, account_id: IT_LIVE_ACCOUNT_ID,
+      amount_cents: amount, account_id: IT_LIVE_ACCOUNT_ID,
+      original_amount_cents: base, discount_cents: voucher?.discount ?? 0, voucher_id: voucher?.id ?? null, voucher_code: voucher?.code ?? null,
     }).select("id").single();
     if (insErr || !row) throw Error("record_failed");
     const origin = itLiveReturnOrigin(req.headers.get("origin"));
@@ -52,7 +73,9 @@ Deno.serve(async (req) => {
       mode: "payment",
       managed_payments: { enabled: false },
       adaptive_pricing: { enabled: false },
-      line_items: [{ price: price.id, quantity: 1 }],
+      line_items: [voucher
+        ? { price_data: { currency: "eur", product: IT_LIVE_MUSIC_FULL.product_id, unit_amount: amount, tax_behavior: price.tax_behavior ?? undefined }, quantity: 1 }
+        : { price: price.id, quantity: 1 }],
       success_url: `${origin}/pagamento-sucesso?order_id=${orderId}&it_payment=${row.id}`,
       cancel_url: `${origin}/checkout/${orderId}`,
       client_reference_id: row.id,
@@ -60,13 +83,13 @@ Deno.serve(async (req) => {
       payment_intent_data: { metadata: { it_live_payment_id: row.id, order_id: orderId } },
       expires_at: Math.floor(Date.now() / 1000) + 60 * 60,
     } as any, { idempotencyKey: `it-live-checkout/${row.id}` });
-    if (session.livemode !== true || session.currency !== "eur" || session.amount_total !== IT_LIVE_MUSIC_FULL.unit_amount || !session.url) {
+    if (session.livemode !== true || session.currency !== "eur" || session.amount_total !== amount || !session.url) {
       if (session.status === "open") await stripe.checkout.sessions.expire(session.id);
       await admin.from("it_live_payments").update({ status: "failed" }).eq("id", row.id);
       throw Error("session_mismatch");
     }
     await admin.from("it_live_payments").update({ session_id: session.id, status: "open", updated_at: new Date().toISOString() }).eq("id", row.id);
-    return json({ url: session.url, amount_cents: IT_LIVE_MUSIC_FULL.unit_amount, currency: "eur" });
+    return json({ url: session.url, amount_cents: amount, currency: "eur" });
   } catch (e) {
     console.error("[IT-LIVE-CHECKOUT] failed", e instanceof Error ? e.message : "unknown");
     return json({ error: "provider_error", code: "it_live_stripe_error" }, 502);

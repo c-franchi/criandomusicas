@@ -72,17 +72,21 @@ export default function Checkout() {
   const { user, loading: authLoading } = useAuth();
   const { country: accessCountry, loading: accessLoading, pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
   const [euroReady, setEuroReady] = useState(false);
+  const euroMode = !brazilCardAvailable && euroReady && !giftOrder;
   const [processingEuro, setProcessingEuro] = useState(false);
   useEffect(() => {
     if (accessLoading || !accessCountry || brazilCardAvailable || !user) return;
     void supabase.functions.invoke('create-it-live-checkout', { body: { action: 'status' } })
       .then(({ data }) => setEuroReady(data?.configured === true));
   }, [accessLoading, accessCountry, brazilCardAvailable, user]);
+  // Euro vouchers are quoted and re-checked by the Italian checkout itself; BRL voucher flows are never used abroad.
+  const [euroVoucher, setEuroVoucher] = useState<{ code: string; discount: number; final: number } | null>(null);
+  const formatEuro = (cents: number) => new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format(cents / 100);
   const handleEuroCardPayment = async () => {
     if (!order || giftOrder) return;
     setProcessingEuro(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-it-live-checkout', { body: { orderId: order.id } });
+      const { data, error } = await supabase.functions.invoke('create-it-live-checkout', { body: { orderId: order.id, ...(euroVoucher ? { voucherCode: euroVoucher.code, language: i18n.resolvedLanguage } : {}) } });
       if (error || !data?.url) throw error || new Error('no_url');
       window.location.href = data.url;
     } catch (e) {
@@ -429,6 +433,13 @@ export default function Checkout() {
     setVoucherResult(null);
 
     try {
+      if (euroMode && order) {
+        const { data, error } = await supabase.functions.invoke('create-it-live-checkout', { body: { action: 'quote', orderId: order.id, voucherCode, language: i18n.resolvedLanguage } });
+        if (error) throw error;
+        setVoucherResult(data);
+        if (data.valid) toast.success(t('toast.voucherValid')); else toast.error(data.error || t('voucher.invalid'));
+        return;
+      }
       const effectivePlanId = getEffectivePlanId();
       const { data, error } = await supabase.functions.invoke('validate-voucher', {
         body: { code: voucherCode, planId: effectivePlanId, ...(giftOrder ? {orderId:order?.id} : {}) },
@@ -453,6 +464,12 @@ export default function Checkout() {
 
   const applyVoucher = async () => {
     if (!voucherResult?.valid || !order) return;
+    if (euroMode) {
+      setEuroVoucher({ code: voucherCode.trim().toUpperCase(), discount: voucherResult.discount_amount, final: voucherResult.final_price });
+      setVoucherResult(null);
+      toast.success(t('voucher.applied'));
+      return;
+    }
 
     setApplyingVoucher(true);
 
@@ -1199,7 +1216,18 @@ export default function Checkout() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {hasDiscount ? (
+              {euroMode && euroVoucher ? (
+                <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg border border-success/30">
+                  <CheckCircle className="h-5 w-5 text-success" />
+                  <div className="flex-1">
+                    <p className="font-medium text-success">{t('voucher.applied')}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('voucher.code')}: {euroVoucher.code} • {t('voucher.discount')}: {formatEuro(euroVoucher.discount)} • {t('voucher.finalPrice')}: {formatEuro(euroVoucher.final)}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setEuroVoucher(null)} aria-label={t('common:cancel', 'Cancel')}>×</Button>
+                </div>
+              ) : !euroMode && hasDiscount ? (
                 <div className="flex items-center gap-2 p-3 bg-success/10 rounded-lg border border-success/30">
                   <CheckCircle className="h-5 w-5 text-success" />
                   <div>
@@ -1253,12 +1281,12 @@ export default function Checkout() {
                               <span className="text-muted-foreground">{t('voucher.discount')}:</span>{' '}
                               {voucherResult.voucher?.discount_type === 'percent' 
                                 ? `${voucherResult.voucher?.discount_value}%`
-                                : formatPrice(voucherResult.discount_amount)}
+                                : (euroMode ? formatEuro : formatPrice)(voucherResult.discount_amount)}
                             </p>
                             <p>
                               <span className="text-muted-foreground">{t('voucher.finalPrice')}:</span>{' '}
                               <span className="font-bold text-lg">
-                                {voucherResult.is_free ? t('voucher.free') : formatPrice(voucherResult.final_price)}
+                                {voucherResult.is_free ? t('voucher.free') : (euroMode ? formatEuro : formatPrice)(voucherResult.final_price)}
                               </span>
                             </p>
                           </div>
@@ -1296,6 +1324,10 @@ export default function Checkout() {
                   {t('payment.title')}
                 </span>
                 <div className="text-right">
+                  {euroMode ? (<>
+                    {euroVoucher && <p className="text-sm text-muted-foreground line-through">{formatEuro(1999)}</p>}
+                    <p className="text-2xl font-bold text-primary">{formatEuro(euroVoucher?.final ?? 1999)}</p>
+                  </>) : (<>
                   {hasDiscount && (
                     <p className="text-sm text-muted-foreground line-through">
                       {formatPrice(1990)}
@@ -1304,6 +1336,7 @@ export default function Checkout() {
                   <p className="text-2xl font-bold text-primary">
                     {formatPrice(currentPrice)}
                   </p>
+                  </>)}
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1312,7 +1345,7 @@ export default function Checkout() {
                 <Button onClick={handleEuroCardPayment} disabled={processingEuro} className="w-full h-14 justify-start gap-4" variant="hero">
                   {processingEuro ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
                   <div className="flex-1 text-left">
-                    <p className="font-medium">{t('payment.euroCard.title', { price: new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format(19.99) })}</p>
+                    <p className="font-medium">{t('payment.euroCard.title', { price: new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format((euroVoucher?.final ?? 1999) / 100) })}</p>
                     <p className="text-xs opacity-80">{t('payment.euroCard.description')}</p>
                   </div>
                 </Button>

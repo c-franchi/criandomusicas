@@ -5,7 +5,7 @@ export const IT_LIVE_KEY_NAME = 'STRIPE_IT_LIVE_RESTRICTED_KEY';
 export const IT_LIVE_WEBHOOK_NAME = 'STRIPE_IT_LIVE_WEBHOOK_SECRET';
 
 // Verified live catalog (docs/stripe-italy-live-catalog.json). Only music orders are sold for now.
-export const IT_LIVE_MUSIC_FULL = { plan_id: 'music_full', price_id: 'price_1UewUgPdfOmvIwtRtFOUAAuJ', unit_amount: 1999 };
+export const IT_LIVE_MUSIC_FULL = { plan_id: 'music_full', product_id: 'prod_VgJ6jrRVEKqjwd', price_id: 'price_1UewUgPdfOmvIwtRtFOUAAuJ', unit_amount: 1999 };
 export const IT_LIVE_ALLOWED_ORDER_PLANS = ['single', 'single_instrumental', 'single_custom_lyric'];
 
 export const IT_LIVE_ALLOWED_ORIGINS = [

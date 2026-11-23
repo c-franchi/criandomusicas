@@ -1,7 +1,7 @@
 // Live Italian EUR webhook. Only a signed, re-verified paid session marks an order paid.
 import Stripe from "npm:stripe@23.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { IT_LIVE_KEY_NAME, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, livePaidSessionValid } from "../_shared/itLiveCheckout.ts";
+import { IT_LIVE_MUSIC_FULL, IT_LIVE_KEY_NAME, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, livePaidSessionValid } from "../_shared/itLiveCheckout.ts";
 import { isHandledEvent, isUuid } from "../_shared/itTestCheckout.ts";
 import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
 import { generationNotificationCopy } from "../_shared/orderLanguageCopy.ts";
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     }
     if (session.payment_status !== "paid") { await finish("not_paid"); return json({ received: true, result: "not_paid" }); }
     const lines = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
-    if (lines.data.length !== 1 || lines.data[0].price?.id !== pay.price_id || lines.data[0].quantity !== 1 || !livePaidSessionValid(session as any, pay.amount_cents)) throw Error("amount_mismatch");
+    if (lines.data.length !== 1 || !(lines.data[0].price?.id === pay.price_id || (pay.voucher_id && lines.data[0].price?.product === IT_LIVE_MUSIC_FULL.product_id)) || lines.data[0].quantity !== 1 || !livePaidSessionValid(session as any, pay.amount_cents)) throw Error("amount_mismatch");
     if (pay.status === "paid") { await finish("already_paid"); return json({ received: true, result: "already_paid" }); }
 
     const { error: payErr } = await admin.from("it_live_payments").update({ status: "paid", paid_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", pay.id).neq("status", "paid");
@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
       .eq("id", pay.order_id).eq("user_id", pay.user_id).neq("payment_status", "PAID").select("*");
     if (orderErr) throw orderErr;
     const o = updated?.[0];
+    if (o && pay.voucher_id) await recordVoucher(admin, pay);
     if (o) await startProduction(admin, o, pay.user_id, session);
     await finish("paid");
     return json({ received: true, result: "paid" });
@@ -82,4 +83,15 @@ async function startProduction(admin: any, o: any, userId: string, session: Stri
   try {
     await admin.functions.invoke("meta-capi-purchase", { body: { transaction_id: o.id, event_id: `purchase_${o.id}`, value: (session.amount_total ?? 0) / 100, currency: "EUR", email: session.customer_details?.email ?? null } });
   } catch { /* non-blocking */ }
+}
+
+// Count the voucher only once the signed payment succeeded; a failure here must not undo the paid order.
+async function recordVoucher(admin: any, pay: any) {
+  try {
+    const { error } = await admin.from("voucher_redemptions").insert({ voucher_id: pay.voucher_id, user_id: pay.user_id, order_id: pay.order_id, discount_applied: pay.discount_cents });
+    if (error) throw error;
+    const { data: v } = await admin.from("vouchers").select("current_uses").eq("id", pay.voucher_id).maybeSingle();
+    await admin.from("vouchers").update({ current_uses: (v?.current_uses ?? 0) + 1 }).eq("id", pay.voucher_id);
+    await admin.from("orders").update({ voucher_code: pay.voucher_code }).eq("id", pay.order_id);
+  } catch (e) { console.error("[IT-LIVE-WEBHOOK] voucher record failed", e instanceof Error ? e.message : "unknown"); }
 }

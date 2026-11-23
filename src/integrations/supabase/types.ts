@@ -433,8 +433,10 @@ export type Database = {
           amount_cents: number
           created_at: string
           currency: string
+          discount_cents: number
           id: string
           order_id: string
+          original_amount_cents: number | null
           paid_at: string | null
           plan_id: string
           price_id: string
@@ -442,14 +444,18 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          voucher_code: string | null
+          voucher_id: string | null
         }
         Insert: {
           account_id: string
           amount_cents: number
           created_at?: string
           currency?: string
+          discount_cents?: number
           id?: string
           order_id: string
+          original_amount_cents?: number | null
           paid_at?: string | null
           plan_id: string
           price_id: string
@@ -457,14 +463,18 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          voucher_code?: string | null
+          voucher_id?: string | null
         }
         Update: {
           account_id?: string
           amount_cents?: number
           created_at?: string
           currency?: string
+          discount_cents?: number
           id?: string
           order_id?: string
+          original_amount_cents?: number | null
           paid_at?: string | null
           plan_id?: string
           price_id?: string
@@ -472,8 +482,18 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          voucher_code?: string | null
+          voucher_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "it_live_payments_voucher_id_fkey"
+            columns: ["voucher_id"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       it_live_webhook_events: {
         Row: {
