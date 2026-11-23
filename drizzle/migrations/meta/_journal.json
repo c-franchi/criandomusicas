@@ -64,6 +64,13 @@
       "when": 1795441519938,
       "tag": "0008_restrict_public_media_directory_listing",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1795441706516,
+      "tag": "0009_secure_customer_record_creation",
+      "breakpoints": true
     }
   ]
 }
