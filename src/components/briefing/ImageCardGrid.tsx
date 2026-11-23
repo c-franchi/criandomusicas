@@ -1,3 +1,5 @@
+import i18n from '@/lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { useRef, useState, useEffect, useCallback } from "react";
 import { ImageCard } from "./ImageCard";
 import { cn } from "@/lib/utils";
@@ -33,11 +35,12 @@ export const ImageCardGrid = ({
   selectedId,
   variant = 'square',
   onSelect,
-  title = "Opções",
+  title = i18n.t('text126', { ns: 'uiBriefing' }),
   showOther = true,
-  otherLabel = "Outro",
+  otherLabel = i18n.t('text094', { ns: 'uiBriefing' }),
   onOtherSelect,
 }: ImageCardGridProps) => {
+  const { t: tb } = useTranslation('uiBriefing');
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showAll, setShowAll] = useState(false);
   const [showOtherInput, setShowOtherInput] = useState(false);
@@ -152,7 +155,7 @@ export const ImageCardGrid = ({
               autoFocus
               value={otherValue}
               onChange={(e) => setOtherValue(e.target.value)}
-              placeholder="Digite sua opção..."
+              placeholder={tb('text127')}
               className="flex-1"
               onKeyDown={(e) => e.key === 'Enter' && handleOtherSubmit()}
             />
@@ -160,7 +163,7 @@ export const ImageCardGrid = ({
               <Send className="w-4 h-4" />
             </Button>
             <Button variant="ghost" onClick={() => setShowOtherInput(false)}>
-              Cancelar
+              {tb('text128')}
             </Button>
           </div>
         ) : (

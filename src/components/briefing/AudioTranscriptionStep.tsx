@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { motion } from "framer-motion";
 import { FileText, Loader2, RotateCcw, Edit3, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ export const AudioTranscriptionStep = ({
   onTranscriptChange,
   onNext,
 }: AudioTranscriptionStepProps) => {
+  const { t: tb } = useTranslation('uiBriefing');
   return (
     <motion.div
       key="transcription"
@@ -28,11 +30,11 @@ export const AudioTranscriptionStep = ({
       className="space-y-6"
     >
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-bold">Transcrição do áudio</h2>
+        <h2 className="text-xl font-bold">{tb('text116')}</h2>
         <p className="text-sm text-muted-foreground">
           {transcript
-            ? 'Revise o texto transcrito. Você pode editar antes de continuar.'
-            : 'Clique para transcrever o áudio enviado.'}
+            ? tb('text117')
+            : tb('text118')}
         </p>
       </div>
 
@@ -40,7 +42,7 @@ export const AudioTranscriptionStep = ({
         <div className="flex justify-center">
           <Button size="lg" onClick={onTranscribe}>
             <FileText className="w-5 h-5 mr-2" />
-            Transcrever áudio
+            {tb('text119')}
           </Button>
         </div>
       )}
@@ -48,7 +50,7 @@ export const AudioTranscriptionStep = ({
       {isTranscribing && (
         <div className="flex flex-col items-center gap-3 py-8">
           <Loader2 className="w-10 h-10 text-primary animate-spin" />
-          <p className="text-sm text-muted-foreground animate-pulse">Transcrevendo seu áudio...</p>
+          <p className="text-sm text-muted-foreground animate-pulse">{tb('text120')}</p>
         </div>
       )}
 
@@ -56,7 +58,7 @@ export const AudioTranscriptionStep = ({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <Badge variant="secondary" className="text-xs">
-              <Edit3 className="w-3 h-3 mr-1" /> Editável
+              <Edit3 className="w-3 h-3 mr-1" /> {tb('text121')}
             </Badge>
             <Button
               variant="ghost"
@@ -65,23 +67,23 @@ export const AudioTranscriptionStep = ({
               disabled={isTranscribing}
             >
               <RotateCcw className="w-3.5 h-3.5 mr-1" />
-              Re-transcrever
+              {tb('text122')}
             </Button>
           </div>
           <Textarea
             value={transcript}
             onChange={(e) => onTranscriptChange(e.target.value)}
             rows={4}
-            placeholder="Texto transcrito aparecerá aqui..."
+            placeholder={tb('text123')}
             className="text-base"
           />
           <p className="text-xs text-muted-foreground">
-            💡 Você pode corrigir palavras antes de gerar a letra final.
+            {tb('text124')}
           </p>
 
           <div className="flex justify-end">
             <Button onClick={onNext}>
-              Continuar
+              {tb('text125')}
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>

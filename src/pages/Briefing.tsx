@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useRef } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -165,6 +166,7 @@ const CurrencyWarning = ({ language }: { language: string }) => {
 };
 
 const Briefing = () => {
+  const { t: tb } = useTranslation('uiBriefing');
   const { user, profile, loading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -486,10 +488,10 @@ const Briefing = () => {
         // Criar objeto de celebração a partir dos params da URL
         const urlCelebration = {
           id: celebrationFromUrl,
-          localizedName: celebrationNameFromUrl || 'Celebração',
+          localizedName: celebrationNameFromUrl || tb('text001'),
           emoji: decodeURIComponent(celebrationEmojiFromUrl || '🎉'),
           // Campos com defaults seguros para compatibilidade
-          name: celebrationNameFromUrl || 'Celebração',
+          name: celebrationNameFromUrl || tb('text001'),
           name_en: null,
           name_es: null,
           name_it: null,
@@ -1587,7 +1589,7 @@ const Briefing = () => {
       return;
     }
     if (messages.some(m => m.type === 'user')) {
-      const ok = window.confirm('Seu briefing fica salvo e você pode continuar depois. Deseja sair?');
+      const ok = window.confirm(tb('text002'));
       if (!ok) return;
     }
     navigate('/');
@@ -1836,7 +1838,7 @@ const Briefing = () => {
     const customStyle = inputValue.trim();
     if (!customStyle) {
       toast({
-        title: 'Digite o estilo musical',
+        title: tb('text003'),
         variant: 'destructive'
       });
       return;
@@ -1877,7 +1879,7 @@ const Briefing = () => {
     if (!currentMsg?.field) return;
 
     setFormData(prev => ({ ...prev, [currentMsg.field!]: yes }));
-    addUserMessage(yes ? "✅ Sim" : "❌ Não");
+    addUserMessage(yes ? tb('text004') : tb('text005'));
     setStepHistory(prev => [...prev, currentStep]);
 
     const updatedFormData = { ...formData, [currentMsg.field]: yes };
@@ -1957,7 +1959,7 @@ const Briefing = () => {
     const value = customInstrumentValue.trim();
     if (!value) {
       toast({
-        title: 'Digite o nome do instrumento',
+        title: tb('text006'),
         variant: 'destructive'
       });
       return;
@@ -1973,7 +1975,7 @@ const Briefing = () => {
     setShowCustomInstrumentInput(false);
     
     toast({
-      title: '✓ Instrumento adicionado',
+      title: tb('text007'),
       description: value
     });
   };
@@ -1981,7 +1983,7 @@ const Briefing = () => {
   const handleInstrumentsSubmit = () => {
     if (selectedInstruments.length === 0) {
       toast({
-        title: 'Selecione ao menos um instrumento',
+        title: tb('text008'),
         variant: 'destructive'
       });
       return;
@@ -2034,7 +2036,7 @@ const Briefing = () => {
     
     const finalValue = allWords.join(', ');
     setFormData(prev => ({ ...prev, mandatoryWords: finalValue }));
-    addUserMessage(finalValue || "(nenhum)");
+    addUserMessage(finalValue || tb('text009'));
     setInputValue("");
     setSelectedSuggestions([]);
     setStepHistory(prev => [...prev, currentStep]);
@@ -2071,10 +2073,10 @@ const Briefing = () => {
     // Validação para história
     if (field === 'story' && value.length < 20) {
       toast({
-        title: 'Contexto muito curto',
+        title: tb('text010'),
         description: formData.isInstrumental 
-          ? 'Conte mais detalhes para uma música mais personalizada (mínimo 20 caracteres).'
-          : 'Conte mais detalhes para uma letra melhor (mínimo 20 caracteres).',
+          ? tb('text011')
+          : tb('text012'),
         variant: 'destructive'
       });
       return;
@@ -2083,8 +2085,8 @@ const Briefing = () => {
     // Validação para letra customizada
     if (field === 'customLyricText' && value.length < 50) {
       toast({
-        title: 'Letra muito curta',
-        description: 'Cole sua letra completa (mínimo 50 caracteres).',
+        title: tb('text013'),
+        description: tb('text014'),
         variant: 'destructive'
       });
       return;
@@ -2092,10 +2094,10 @@ const Briefing = () => {
 
     // Campos opcionais podem ficar vazios
     if (!value && (field === 'mandatoryWords' || field === 'restrictedWords' || field === 'instrumentationNotes')) {
-      addUserMessage("(nenhum)");
+      addUserMessage(tb('text009'));
     } else if (!value && field === 'songName') {
       toast({
-        title: 'Digite o nome da música',
+        title: tb('text015'),
         variant: 'destructive'
       });
       return;
@@ -2444,8 +2446,8 @@ const Briefing = () => {
         
         // Crédito consumido! Processar baseado no modo
         toast({
-          title: '✨ Crédito utilizado!',
-          description: 'Gerando sua música...',
+          title: tb('text016'),
+          description: tb('text017'),
         });
         
         await processOrderAfterCredit(orderData.id, briefingData);
@@ -2462,8 +2464,8 @@ const Briefing = () => {
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
-        title: 'Erro ao criar pedido',
-        description: 'Tente novamente.',
+        title: tb('text018'),
+        description: tb('text019'),
         variant: 'destructive'
       });
       setIsCreatingOrder(false);
@@ -2500,17 +2502,17 @@ const Briefing = () => {
           navigate(`/criar-musica?orderId=${orderId}`);
         } else {
           toast({
-            title: result.message || '🎵 Pedido enviado!',
+            title: result.message || tb('text020'),
             description: isQuickMode
               ? t('quickCreation.deliveryNotice', 'Você receberá sua música em até 12 horas. Acompanhe no dashboard.')
-              : 'Você pode acompanhar o progresso no dashboard.',
+              : tb('text021'),
           });
           navigate('/dashboard');
         }
       } else {
         toast({
-          title: 'Erro na geração',
-          description: result.message || 'Tente novamente pelo dashboard.',
+          title: tb('text022'),
+          description: result.message || tb('text023'),
           variant: 'destructive',
         });
         clearSavedBriefing();
@@ -2519,8 +2521,8 @@ const Briefing = () => {
     } catch (error) {
       console.error('Error processing order after credit:', error);
       toast({
-        title: 'Erro inesperado',
-        description: 'Ocorreu um erro. Você pode tentar novamente pelo dashboard.',
+        title: tb('text024'),
+        description: tb('text025'),
         variant: 'destructive',
       });
       clearSavedBriefing();
@@ -2614,7 +2616,7 @@ const Briefing = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <Music className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Carregando...</p>
+          <p className="text-muted-foreground">{tb('text026')}</p>
         </div>
       </div>
     );
@@ -2965,8 +2967,8 @@ const Briefing = () => {
         }
         
         toast({
-          title: '✨ Crédito utilizado!',
-          description: 'Gerando sua música...',
+          title: tb('text016'),
+          description: tb('text017'),
         });
         
         await processOrderAfterCredit(orderData.id, briefingData);
@@ -2982,8 +2984,8 @@ const Briefing = () => {
     } catch (error) {
       console.error('Error creating order:', error);
       toast({
-        title: 'Erro ao criar pedido',
-        description: 'Tente novamente.',
+        title: tb('text018'),
+        description: tb('text019'),
         variant: 'destructive'
       });
       setIsCreatingOrder(false);
@@ -3280,13 +3282,13 @@ const Briefing = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-semibold text-sm">🎤 Criar por Áudio</p>
+                      <p className="font-semibold text-sm">{tb('text027')}</p>
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0.5 border-green-500/50 text-green-500 bg-green-500/10">
-                        Novo!
+                        {tb('text028')}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Grave ou envie um áudio cantando e transforme em música completa
+                      {tb('text029')}
                     </p>
                   </div>
                 </div>
@@ -3544,34 +3546,34 @@ const Briefing = () => {
                     />
                     {/* Cover Upload for Instrumental */}
                     <div className="space-y-2 pt-2 border-t border-border/50">
-                      <p className="text-sm font-medium">🖼️ Capa da música (opcional)</p>
+                      <p className="text-sm font-medium">{tb('text030')}</p>
                       {coverPreview ? (
                         <div className="space-y-2">
-                          <img src={coverPreview} alt="Capa" className="w-24 h-24 rounded-xl object-cover" />
+                          <img src={coverPreview} alt={tb('text031')} className="w-24 h-24 rounded-xl object-cover" />
                           <div className="flex gap-2">
                             <Badge
                               variant={coverMode === 'original' ? 'default' : 'outline'}
                               className="cursor-pointer"
                               onClick={() => setCoverMode('original')}
                             >
-                              📌 Manter original
+                              {tb('text032')}
                             </Badge>
                             <Badge
                               variant={coverMode === 'enhanced' ? 'default' : 'outline'}
                               className="cursor-pointer"
                               onClick={() => setCoverMode('enhanced')}
                             >
-                              ✨ Melhorar com IA
+                              {tb('text033')}
                             </Badge>
                           </div>
                           <Button variant="ghost" size="sm" onClick={() => { setCoverFile(null); setCoverPreview(null); }}>
-                            Remover capa
+                            {tb('text034')}
                           </Button>
                         </div>
                       ) : (
                         <div>
                           <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                            📷 Escolher imagem
+                            {tb('text035')}
                             <input
                               type="file"
                               accept="image/*"
@@ -3585,7 +3587,7 @@ const Briefing = () => {
                               }}
                             />
                           </label>
-                          <p className="text-xs text-muted-foreground mt-1">Deixe vazio para gerar automaticamente com IA</p>
+                          <p className="text-xs text-muted-foreground mt-1">{tb('text036')}</p>
                         </div>
                       )}
                     </div>
@@ -3630,34 +3632,34 @@ const Briefing = () => {
                     {/* Cover Upload for Custom Lyrics */}
                     {formData.hasCustomLyric && (
                       <div className="space-y-2 pt-2 border-t border-border/50">
-                        <p className="text-sm font-medium">🖼️ Capa da música (opcional)</p>
+                        <p className="text-sm font-medium">{tb('text030')}</p>
                         {coverPreview ? (
                           <div className="space-y-2">
-                            <img src={coverPreview} alt="Capa" className="w-24 h-24 rounded-xl object-cover" />
+                            <img src={coverPreview} alt={tb('text031')} className="w-24 h-24 rounded-xl object-cover" />
                             <div className="flex gap-2">
                               <Badge
                                 variant={coverMode === 'original' ? 'default' : 'outline'}
                                 className="cursor-pointer"
                                 onClick={() => setCoverMode('original')}
                               >
-                                📌 Manter original
+                                {tb('text032')}
                               </Badge>
                               <Badge
                                 variant={coverMode === 'enhanced' ? 'default' : 'outline'}
                                 className="cursor-pointer"
                                 onClick={() => setCoverMode('enhanced')}
                               >
-                                ✨ Melhorar com IA
+                                {tb('text033')}
                               </Badge>
                             </div>
                             <Button variant="ghost" size="sm" onClick={() => { setCoverFile(null); setCoverPreview(null); }}>
-                              Remover capa
+                              {tb('text034')}
                             </Button>
                           </div>
                         ) : (
                           <div>
                             <label className="cursor-pointer inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-border hover:border-primary/50 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                              📷 Escolher imagem
+                              {tb('text035')}
                               <input
                                 type="file"
                                 accept="image/*"
@@ -3671,7 +3673,7 @@ const Briefing = () => {
                                 }}
                               />
                             </label>
-                            <p className="text-xs text-muted-foreground mt-1">Deixe vazio para gerar automaticamente com IA</p>
+                            <p className="text-xs text-muted-foreground mt-1">{tb('text036')}</p>
                           </div>
                         )}
                       </div>
@@ -3693,10 +3695,10 @@ const Briefing = () => {
                 />
                 <label htmlFor="confidential" className="text-sm cursor-pointer">
                   <span className="font-semibold flex items-center gap-1">
-                    🔒 Quero confidencialidade na minha letra
+                    {tb('text037')}
                   </span>
                   <p className="text-muted-foreground mt-1">
-                    Sua letra não será compartilhada publicamente e será tratada com total privacidade.
+                    {tb('text038')}
                   </p>
                 </label>
               </div>
@@ -3718,18 +3720,18 @@ const Briefing = () => {
                 disabled={isCreatingOrder}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Recomeçar
+                {tb('text039')}
               </Button>
               <Button onClick={checkWhatsAppAndFinish} className="flex-1" disabled={isCreatingOrder}>
                 {isCreatingOrder ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Criando...
+                    {tb('text040')}
                   </>
                 ) : (
                   <>
                     <Check className="w-4 h-4 mr-2" />
-                    Confirmar e Criar
+                    {tb('text041')}
                   </>
                 )}
               </Button>
@@ -4297,7 +4299,7 @@ const Briefing = () => {
                     disabled={selectedInstruments.length === 0}
                     className="flex-1"
                   >
-                    Confirmar {selectedInstruments.length > 0 && `(${selectedInstruments.length})`}
+                    {tb('text042')} {selectedInstruments.length > 0 && `(${selectedInstruments.length})`}
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
@@ -4307,12 +4309,12 @@ const Briefing = () => {
             {/* Input de instrumento personalizado */}
             {showCustomInstrumentInput && (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Digite o nome do instrumento:</p>
+                <p className="text-sm text-muted-foreground">{tb('text043')}</p>
                 <div className="flex gap-2">
                   <Input
                     value={customInstrumentValue}
                     onChange={(e) => setCustomInstrumentValue(e.target.value)}
-                    placeholder="Ex: Gaita, Berimbau, Kalimba..."
+                    placeholder={tb('text044')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -4334,7 +4336,7 @@ const Briefing = () => {
                   }}
                 >
                   <ArrowLeft className="w-4 h-4 mr-1" />
-                  Voltar aos instrumentos
+                  {tb('text045')}
                 </Button>
               </div>
             )}
@@ -4394,12 +4396,12 @@ const Briefing = () => {
             {/* Custom style input */}
             {showCustomStyleInput && (
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground">Digite o estilo musical desejado:</p>
+                <p className="text-sm text-muted-foreground">{tb('text046')}</p>
                 <div className="flex gap-2">
                   <Input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Ex: Lo-fi, Indie, Eletrônica..."
+                    placeholder={tb('text047')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -4416,7 +4418,7 @@ const Briefing = () => {
                   size="sm"
                   onClick={() => setShowCustomStyleInput(false)}
                 >
-                  <ArrowLeft className="w-4 h-4 mr-1" /> Voltar às opções
+                  <ArrowLeft className="w-4 h-4 mr-1" /> {tb('text048')}
                 </Button>
               </div>
             )}
@@ -4426,7 +4428,7 @@ const Briefing = () => {
               <div className="space-y-3">
                 {suggestedKeywords.length > 0 && (
                   <div>
-                    <p className="text-sm text-muted-foreground mb-2">Sugestões da sua história:</p>
+                    <p className="text-sm text-muted-foreground mb-2">{tb('text049')}</p>
                     <div className="flex flex-wrap gap-2">
                       {suggestedKeywords.map((word) => (
                         <Badge
@@ -4446,7 +4448,7 @@ const Briefing = () => {
                   <Input
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
-                    placeholder="Adicione mais palavras (separadas por vírgula)"
+                    placeholder={tb('text050')}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -4467,7 +4469,7 @@ const Briefing = () => {
                     handleWordSuggestionsSubmit();
                   }}
                 >
-                  Pular esta etapa <ArrowRight className="w-4 h-4 ml-1" />
+                  {tb('text051')} <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
             )}
@@ -4480,14 +4482,14 @@ const Briefing = () => {
                   onClick={() => handleYesNo(true)}
                   className="flex-1"
                 >
-                  ✅ Sim, quero
+                  {tb('text052')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => handleYesNo(false)}
                   className="flex-1"
                 >
-                  ❌ Não precisa
+                  {tb('text053')}
                 </Button>
               </div>
             )}
@@ -4516,7 +4518,7 @@ const Briefing = () => {
                     <Textarea
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
-                      placeholder="Digite ou use o microfone..."
+                      placeholder={tb('text054')}
                       rows={3}
                       className="flex-1 resize-none"
                     />
@@ -4526,8 +4528,8 @@ const Briefing = () => {
                       onChange={(e) => setInputValue(e.target.value)}
                       placeholder={
                         currentBotMessage.field === 'mandatoryWords' || currentBotMessage.field === 'restrictedWords'
-                          ? "Digite ou pressione Enter para pular"
-                          : "Digite aqui..."
+                          ? tb('text055')
+                          : tb('text056')
                       }
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -4557,7 +4559,7 @@ const Briefing = () => {
                 
                 {isListening && (
                   <p className="text-sm text-primary animate-pulse">
-                    🎤 Ouvindo... fale agora
+                    {tb('text057')}
                   </p>
                 )}
               </div>
@@ -4573,7 +4575,7 @@ const Briefing = () => {
                   handleTextSubmit();
                 }}
               >
-                Pular esta etapa <ArrowRight className="w-4 h-4 ml-1" />
+                {tb('text051')} <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             )}
           </div>

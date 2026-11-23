@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Sparkles, Loader2, Edit3 } from "lucide-react";
@@ -11,18 +12,6 @@ import { cn } from "@/lib/utils";
 type SectionType = "VERSE" | "CHORUS" | "INTRO_MONOLOGUE" | "BRIDGE";
 type ModeType = "keep_exact" | "light_edit";
 type VoiceType = "male" | "female"; // ✅ NOVO
-
-const SECTION_OPTIONS = [
-  { id: "VERSE" as const, label: "Verso", emoji: "🎵", desc: "Inserir como verso da música" },
-  { id: "CHORUS" as const, label: "Refrão", emoji: "🔁", desc: "Inserir como refrão (parte principal)" },
-  { id: "INTRO_MONOLOGUE" as const, label: "Intro falada", emoji: "🎙️", desc: "Inserir como monólogo na introdução" },
-  { id: "BRIDGE" as const, label: "Ponte", emoji: "🌉", desc: "Inserir como ponte musical" },
-];
-
-const MODE_OPTIONS = [
-  { id: "keep_exact" as const, label: "Manter exatamente", emoji: "📌", desc: "Usar o texto como foi cantado" },
-  { id: "light_edit" as const, label: "Ajustar levemente", emoji: "✨", desc: "Pequenos ajustes de rima e fluidez" },
-];
 
 const STYLE_OPTIONS = ["Pop", "MPB", "Sertanejo Raiz", "Sertanejo Universitário", "Rock", "Gospel", "Pagode", "Bossa Nova", "Forró", "Reggae"];
 
@@ -67,6 +56,20 @@ export const AudioConfigStep = ({
   onBack,
   onGenerate,
 }: AudioConfigStepProps) => {
+  const { t: tb } = useTranslation('uiBriefing');
+  const SECTION_OPTIONS = [
+    { id: "VERSE" as const, label: tb('text065'), emoji: "🎵", desc: tb('text066') },
+    { id: "CHORUS" as const, label: tb('text067'), emoji: "🔁", desc: tb('text068') },
+    { id: "INTRO_MONOLOGUE" as const, label: tb('text069'), emoji: "🎙️", desc: tb('text070') },
+    { id: "BRIDGE" as const, label: tb('text071'), emoji: "🌉", desc: tb('text072') },
+  ];
+
+  const MODE_OPTIONS = [
+    { id: "keep_exact" as const, label: tb('text073'), emoji: "📌", desc: tb('text074') },
+    { id: "light_edit" as const, label: tb('text075'), emoji: "✨", desc: tb('text076') },
+  ];
+
+
   const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const canAdvance = section && mode && voiceType;
 
@@ -79,14 +82,14 @@ export const AudioConfigStep = ({
       className="space-y-6"
     >
       <div className="text-center space-y-2">
-        <h2 className="text-xl font-bold">Configure sua música</h2>
-        <p className="text-sm text-muted-foreground">Onde inserir o trecho e como usar o texto transcrito.</p>
+        <h2 className="text-xl font-bold">{tb('text077')}</h2>
+        <p className="text-sm text-muted-foreground">{tb('text078')}</p>
       </div>
 
       {/* Transcribed text - editable */}
       <div className="bg-muted/50 p-3 rounded-lg border border-border space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-xs text-muted-foreground font-medium">Trecho transcrito:</p>
+          <p className="text-xs text-muted-foreground font-medium">{tb('text079')}</p>
           <Button
             variant="ghost"
             size="sm"
@@ -94,7 +97,7 @@ export const AudioConfigStep = ({
             onClick={() => setIsEditingTranscript(!isEditingTranscript)}
           >
             <Edit3 className="w-3 h-3" />
-            {isEditingTranscript ? "Fechar" : "Editar"}
+            {isEditingTranscript ? tb('text080') : tb('text081')}
           </Button>
         </div>
         {isEditingTranscript ? (
@@ -104,10 +107,10 @@ export const AudioConfigStep = ({
               onChange={(e) => onTranscriptChange?.(e.target.value)}
               rows={4}
               className="text-sm"
-              placeholder="Edite a transcrição aqui..."
+              placeholder={tb('text082')}
             />
             <p className="text-xs text-muted-foreground">
-              💡 Corrija erros de transcrição antes de gerar a letra. Isso evita gastar créditos com resultados incorretos.
+              {tb('text083')}
             </p>
           </div>
         ) : (
@@ -117,7 +120,7 @@ export const AudioConfigStep = ({
 
       {/* Section selection */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Onde inserir o trecho? *</label>
+        <label className="text-sm font-semibold">{tb('text084')}</label>
         <div className="grid grid-cols-2 gap-2">
           {SECTION_OPTIONS.map((opt) => (
             <button
@@ -140,7 +143,7 @@ export const AudioConfigStep = ({
 
       {/* Mode selection */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Como usar o texto? *</label>
+        <label className="text-sm font-semibold">{tb('text085')}</label>
         <div className="grid grid-cols-2 gap-2">
           {MODE_OPTIONS.map((opt) => (
             <button
@@ -163,14 +166,14 @@ export const AudioConfigStep = ({
 
       {/* 🎤 VOICE SELECTION (NOVO BLOCO) */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Tipo de voz desejada *</label>
+        <label className="text-sm font-semibold">{tb('text086')}</label>
         <div className="flex gap-2">
           <Badge
             variant={voiceType === "female" ? "default" : "outline"}
             className="cursor-pointer"
             onClick={() => onVoiceTypeChange("female")}
           >
-            🎙️ Feminina
+            {tb('text087')}
           </Badge>
 
           <Badge
@@ -178,34 +181,34 @@ export const AudioConfigStep = ({
             className="cursor-pointer"
             onClick={() => onVoiceTypeChange("male")}
           >
-            🎙️ Masculina
+            {tb('text088')}
           </Badge>
         </div>
       </div>
 
       {/* Theme */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Tema / Dedicatória (opcional)</label>
+        <label className="text-sm font-semibold">{tb('text089')}</label>
         <Input
           value={theme}
           onChange={(e) => onThemeChange(e.target.value)}
-          placeholder="Ex: Feliz aniversário para minha mãe"
+          placeholder={tb('text090')}
         />
       </div>
 
       {/* Song Name */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Nome da música (opcional)</label>
+        <label className="text-sm font-semibold">{tb('text091')}</label>
         <Input
           value={songName || ""}
           onChange={(e) => onSongNameChange?.(e.target.value)}
-          placeholder="Deixe vazio para gerar automaticamente"
+          placeholder={tb('text092')}
         />
       </div>
 
       {/* Style */}
       <div className="space-y-2">
-        <label className="text-sm font-semibold">Estilo musical</label>
+        <label className="text-sm font-semibold">{tb('text093')}</label>
         <div className="flex flex-wrap gap-2">
           {STYLE_OPTIONS.map((s) => (
             <Badge
@@ -224,14 +227,14 @@ export const AudioConfigStep = ({
             className="cursor-pointer"
             onClick={() => onStyleChange("__custom__")}
           >
-            Outro
+            {tb('text094')}
           </Badge>
         </div>
         {(style === "__custom__" || (style !== "" && !STYLE_OPTIONS.includes(style) && style !== "__custom__")) && (
           <Input
             value={style === "__custom__" ? "" : style}
             onChange={(e) => onStyleChange(e.target.value || "__custom__")}
-            placeholder="Digite o estilo musical desejado"
+            placeholder={tb('text095')}
             className="mt-2"
             autoFocus
           />
@@ -242,18 +245,18 @@ export const AudioConfigStep = ({
       <div className="flex items-center gap-3 pt-2">
         <Button variant="outline" onClick={onBack}>
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar
+          {tb('text096')}
         </Button>
         <Button className="flex-1" onClick={onGenerate} disabled={!canAdvance || isGenerating}>
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Gerando letra...
+              {tb('text097')}
             </>
           ) : (
             <>
               <Sparkles className="w-4 h-4 mr-2" />
-              Gerar letra completa
+              {tb('text098')}
             </>
           )}
         </Button>
@@ -263,7 +266,7 @@ export const AudioConfigStep = ({
         <div className="space-y-2">
           <Progress value={generateProgress} className="h-2" />
           <p className="text-xs text-muted-foreground text-center animate-pulse">
-            Criando a letra com IA... pode levar até 2 minutos
+            {tb('text099')}
           </p>
         </div>
       )}

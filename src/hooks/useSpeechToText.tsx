@@ -61,6 +61,7 @@ interface UseSpeechToTextReturn {
 }
 
 export const useSpeechToText = (): UseSpeechToTextReturn => {
+  const { t: tb } = useTranslation('uiBriefing');
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const { toast } = useToast();
@@ -121,14 +122,14 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
       
       if (event.error === 'not-allowed') {
         toast({
-          title: 'Microfone bloqueado',
-          description: 'Permita o acesso ao microfone nas configurações do navegador.',
+          title: tb('text129'),
+          description: tb('text130'),
           variant: 'destructive'
         });
       } else if (event.error !== 'aborted') {
         toast({
-          title: 'Erro no reconhecimento',
-          description: 'Tente novamente.',
+          title: tb('text131'),
+          description: tb('text019'),
           variant: 'destructive'
         });
       }

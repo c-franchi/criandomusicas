@@ -1,17 +1,19 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Loader2, Music } from "lucide-react";
 
 const AudioModeLoadingOverlay = () => {
+  const { t: tb } = useTranslation('uiBriefing');
   const [progress, setProgress] = useState(0);
-  const [statusText, setStatusText] = useState("Analisando sua história...");
+  const [statusText, setStatusText] = useState(tb('text058'));
 
   useEffect(() => {
     const statuses = [
-      "Analisando sua história...",
-      "Criando estrofes e refrões...",
-      "Refinando a letra...",
-      "Quase pronto...",
+      tb('text058'),
+      tb('text059'),
+      tb('text060'),
+      tb('text061'),
     ];
 
     let currentIdx = 0;
@@ -41,16 +43,16 @@ const AudioModeLoadingOverlay = () => {
           <Loader2 className="w-6 h-6 text-primary animate-spin absolute -bottom-1 -right-1" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-foreground">Gerando sua letra...</h2>
+          <h2 className="text-xl font-bold text-foreground">{tb('text062')}</h2>
           <p className="text-sm text-muted-foreground">
-            A IA está compondo duas opções de letra para você escolher
+            {tb('text063')}
           </p>
         </div>
         <div className="w-full space-y-3">
           <Progress value={progress} className="h-2" />
           <p className="text-sm text-muted-foreground animate-pulse">{statusText}</p>
           <p className="text-xs text-muted-foreground/70">
-            ⏱️ Esse processo pode levar até 2 minutos
+            {tb('text064')}
           </p>
         </div>
       </div>

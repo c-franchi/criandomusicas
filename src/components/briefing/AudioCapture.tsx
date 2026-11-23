@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, MicOff, Play, Pause, RotateCcw, Upload, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
@@ -31,6 +32,7 @@ const formatSize = (bytes: number) => {
 };
 
 export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) => {
+  const { t: tb } = useTranslation('uiBriefing');
   const { user } = useAuth();
   const recorder = useAudioRecorder();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -56,12 +58,12 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
     if (!file) return;
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast.error('Formato não suportado. Use WAV, MP3, M4A ou WebM.');
+      toast.error(tb('text100'));
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      toast.error('Arquivo muito grande. Máximo 20MB.');
+      toast.error(tb('text101'));
       return;
     }
 
@@ -72,12 +74,12 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
     audio.onloadedmetadata = () => {
       const duration = Math.round(audio.duration);
       if (duration < 3) {
-        toast.error('Áudio muito curto. Mínimo 3 segundos.');
+        toast.error(tb('text102'));
         URL.revokeObjectURL(audioUrl);
         return;
       }
       if (duration > 360) {
-        toast.error('Áudio muito longo. Máximo 6 minutos.');
+        toast.error(tb('text103'));
         URL.revokeObjectURL(audioUrl);
         return;
       }
@@ -88,7 +90,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
     };
 
     audio.onerror = () => {
-      toast.error('Erro ao ler o arquivo de áudio.');
+      toast.error(tb('text104'));
       URL.revokeObjectURL(audioUrl);
     };
 
@@ -103,7 +105,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
     source: 'recording' | 'upload'
   ) => {
     if (!user) {
-      toast.error('Faça login para continuar.');
+      toast.error(tb('text105'));
       return;
     }
 
@@ -151,12 +153,12 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
 
       setUploadProgress(100);
 
-      toast.success('Áudio enviado com sucesso!');
+      toast.success(tb('text106'));
       onAudioUploaded(audioInput.id, duration);
 
     } catch (error: unknown) {
       console.error('Upload error:', error);
-      const msg = error instanceof Error ? error.message : 'Erro ao enviar áudio';
+      const msg = error instanceof Error ? error.message : tb('text107');
       toast.error('Falha no upload', { description: msg });
     } finally {
       setIsUploading(false);
@@ -208,7 +210,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
               <p className="text-2xl font-mono font-bold text-red-500">
                 {formatTime(recorder.duration)}
               </p>
-              <p className="text-xs text-muted-foreground">Gravando... (máx 6:00)</p>
+              <p className="text-xs text-muted-foreground">{tb('text108')}</p>
               <div className="w-48 mx-auto">
                 <Progress value={(recorder.duration / 360) * 100} className="h-1" />
               </div>
@@ -217,7 +219,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
 
           {recorder.status === 'idle' && !recorder.error && (
             <p className="text-sm text-muted-foreground">
-              Toque para gravar (3s a 6min)
+              {tb('text109')}
             </p>
           )}
 
@@ -284,7 +286,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
                   disabled={isUploading}
                 >
                   <RotateCcw className="w-4 h-4 mr-1" />
-                  Refazer
+                  {tb('text110')}
                 </Button>
               </div>
 
@@ -297,12 +299,12 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
                 {isUploading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Enviando...
+                    {tb('text111')}
                   </>
                 ) : (
                   <>
                     <Upload className="w-4 h-4 mr-2" />
-                    Enviar áudio
+                    {tb('text112')}
                   </>
                 )}
               </Button>
@@ -322,7 +324,7 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
           <span className="w-full border-t border-border" />
         </div>
         <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">ou</span>
+          <span className="bg-background px-2 text-muted-foreground">{tb('text113')}</span>
         </div>
       </div>
 
@@ -343,10 +345,10 @@ export const AudioCapture = ({ onAudioUploaded, disabled }: AudioCaptureProps) =
           className="w-full max-w-xs"
         >
           <Upload className="w-4 h-4 mr-2" />
-          Enviar arquivo de áudio
+          {tb('text114')}
         </Button>
         <p className="text-xs text-muted-foreground mt-2">
-          WAV, MP3, M4A, WebM • Máx 50MB • 3s a 6min
+          {tb('text115')}
         </p>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -201,6 +202,7 @@ const PronunciationModal = ({
   onSubmit,
   loading = false
 }: PronunciationModalProps) => {
+  const { t: tb } = useTranslation('uiBriefing');
   // Pre-populate with known pronunciations
   const [pronunciations, setPronunciations] = useState<Record<string, string>>(
     Object.fromEntries(
@@ -224,14 +226,14 @@ const PronunciationModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-orange-500" />
-            Pronúncia Especial Necessária
+            {tb('text136')}
           </DialogTitle>
           <DialogDescription className="text-left">
             <span className="block mb-2">
-              Detectamos termos especiais que precisam de pronúncia definida para que o cantor pronuncie corretamente.
+              {tb('text137')}
             </span>
             <span className="block text-primary font-medium">
-              ⚠️ Sem essa informação, não conseguimos produzir sua música.
+              {tb('text138')}
             </span>
           </DialogDescription>
         </DialogHeader>
@@ -244,7 +246,7 @@ const PronunciationModal = ({
                 <Volume2 className="w-4 h-4 text-muted-foreground" />
               </Label>
               <Input
-                placeholder={`Como pronunciar "${term}"?`}
+                placeholder={tb('text139', { term })}
                 value={pronunciations[term] || ''}
                 onChange={(e) => setPronunciations(prev => ({
                   ...prev,
@@ -253,38 +255,38 @@ const PronunciationModal = ({
                 className="text-base"
               />
               <p className="text-xs text-muted-foreground">
-                Escreva <strong>exatamente como se pronuncia verbalmente</strong>
+                {tb('text140')} <strong>{tb('text141')}</strong>
               </p>
             </div>
           ))}
         </div>
 
         <div className="bg-primary/5 border border-primary/20 p-4 rounded-lg text-sm space-y-2">
-          <p className="font-medium text-foreground">💡 Exemplos de pronúncia:</p>
+          <p className="font-medium text-foreground">{tb('text142')}</p>
           <ul className="text-muted-foreground space-y-1 list-disc list-inside">
-            <li><strong>UTI</strong> → "utei" (como palavra)</li>
-            <li><strong>CPF</strong> → "cê pê éfe" (soletrado)</li>
+            <li><strong>UTI</strong> {tb('text143')}</li>
+            <li><strong>CPF</strong> {tb('text144')}</li>
             <li><strong>iPhone</strong> → "aifón"</li>
             <li><strong>Wi-Fi</strong> → "uái-fái"</li>
-            <li><strong>CEO</strong> → "ci-i-ôu" (soletrado em inglês)</li>
+            <li><strong>CEO</strong> {tb('text145')}</li>
           </ul>
           <p className="text-xs text-muted-foreground mt-2">
-            💡 Algumas siglas brasileiras são preenchidas automaticamente!
+            {tb('text146')}
           </p>
         </div>
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose} disabled={loading}>
-            Cancelar
+            {tb('text128')}
           </Button>
           <Button onClick={handleSubmit} disabled={!allFilled || loading}>
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Processando...
+                {tb('text147')}
               </>
             ) : (
-              'Confirmar e Aprovar'
+              tb('text148')
             )}
           </Button>
         </DialogFooter>

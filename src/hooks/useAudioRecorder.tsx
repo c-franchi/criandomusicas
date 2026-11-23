@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useCallback, useRef, useEffect } from 'react';
 
 interface AudioRecorderState {
@@ -20,6 +21,7 @@ const MAX_DURATION_SEC = 360; // 6 minutos
 const MIN_DURATION_SEC = 3;
 
 export const useAudioRecorder = (): UseAudioRecorderReturn => {
+  const { t: tb } = useTranslation('uiBriefing');
   const [state, setState] = useState<AudioRecorderState>({
     status: 'idle',
     audioBlob: null,
@@ -96,7 +98,7 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
           setState(prev => ({
             ...prev,
             status: 'idle',
-            error: `Áudio muito curto. Mínimo de ${MIN_DURATION_SEC} segundos.`,
+            error: tb('text132', { seconds: MIN_DURATION_SEC }),
           }));
           URL.revokeObjectURL(url);
           return;
@@ -131,10 +133,10 @@ export const useAudioRecorder = (): UseAudioRecorderReturn => {
     } catch (error: unknown) {
       console.error('Error starting recording:', error);
       const message = error instanceof Error && error.name === 'NotAllowedError'
-        ? 'Permissão de microfone negada. Permita o acesso nas configurações do navegador.'
+        ? tb('text133')
         : error instanceof Error && error.name === 'NotFoundError'
-          ? 'Nenhum microfone encontrado no dispositivo.'
-          : 'Erro ao acessar o microfone.';
+          ? tb('text134')
+          : tb('text135');
       
       setState(prev => ({ ...prev, status: 'idle', error: message }));
     }
