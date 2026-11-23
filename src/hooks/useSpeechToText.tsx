@@ -1,5 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslation } from 'react-i18next';
+import { speechLocale } from '@/lib/order-price-display';
 
 // Web Speech API types
 interface SpeechRecognitionEvent extends Event {
@@ -62,6 +64,8 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const { toast } = useToast();
+  const { i18n } = useTranslation();
+  const lang = speechLocale(i18n.resolvedLanguage || i18n.language || 'pt-BR');
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const processedResultsRef = useRef<Set<string>>(new Set());
   const intentionalStopRef = useRef(false);
@@ -82,7 +86,7 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
     const recognition = recognitionRef.current;
     recognition.continuous = true;
     recognition.interimResults = false; // Only get final results to avoid duplicates
-    recognition.lang = 'pt-BR';
+    recognition.lang = lang;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       // Get only the latest result
@@ -156,7 +160,7 @@ export const useSpeechToText = (): UseSpeechToTextReturn => {
         recognition.stop();
       }
     };
-  }, [isSupported, toast]);
+  }, [isSupported, toast, lang]);
 
   const startListening = useCallback(() => {
     if (!recognitionRef.current || isListening) return;

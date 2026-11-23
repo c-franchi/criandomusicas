@@ -1,5 +1,8 @@
 {
-  "region": {"automatic": "Automático (país de acesso)", "automaticShort": "Auto"},
+  "region": {
+    "automatic": "Automático (país de acesso)",
+    "automaticShort": "Auto"
+  },
   "notifications": {
     "title": "Notificações",
     "new": "nova",
@@ -311,5 +314,30 @@
     "terms": "Termos",
     "adminBanner": "Manutenção ativa. Você está navegando como administrador.",
     "manage": "Gerenciar manutenção"
+  },
+  "profileOnboarding": {
+    "invalidFormat": "Formato inválido",
+    "selectImage": "Por favor, selecione uma imagem.",
+    "fileTooLarge": "Arquivo muito grande",
+    "maxSize": "O arquivo deve ter no máximo 5MB.",
+    "photoUploaded": "Foto carregada!",
+    "photoUpdated": "Sua foto de perfil foi atualizada.",
+    "photoError": "Erro ao carregar foto",
+    "nameRequired": "Nome obrigatório",
+    "enterName": "Por favor, informe seu nome.",
+    "profileUpdated": "Perfil atualizado!",
+    "savedOk": "Seus dados foram salvos com sucesso.",
+    "saveError": "Erro ao salvar",
+    "namePlaceholder": "Seu nome completo",
+    "saveContinue": "Salvar e Continuar",
+    "retry": "Tente novamente.",
+    "title": "Complete seu Perfil",
+    "subtitle": "Preencha seus dados para uma experiência personalizada",
+    "addPhoto": "Clique para adicionar sua foto",
+    "saving": "Salvando...",
+    "name": "Nome",
+    "whatsapp": "WhatsApp (opcional)",
+    "phonePlaceholder": "(00) 00000-0000",
+    "whatsappHint": "Para receber atualizações sobre seus pedidos"
   }
 }

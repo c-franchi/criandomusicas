@@ -1,5 +1,8 @@
 {
-  "region": {"automatic": "Automatico (paese di accesso)", "automaticShort": "Auto"},
+  "region": {
+    "automatic": "Automatico (paese di accesso)",
+    "automaticShort": "Auto"
+  },
   "nav": {
     "home": "Home",
     "plans": "Piani",
@@ -311,5 +314,30 @@
     "terms": "Termini",
     "adminBanner": "Manutenzione attiva. Stai navigando come amministratore.",
     "manage": "Gestisci manutenzione"
+  },
+  "profileOnboarding": {
+    "invalidFormat": "Formato non valido",
+    "selectImage": "Seleziona un'immagine.",
+    "fileTooLarge": "File troppo grande",
+    "maxSize": "Il file deve essere al massimo 5MB.",
+    "photoUploaded": "Foto caricata!",
+    "photoUpdated": "La tua foto profilo è stata aggiornata.",
+    "photoError": "Errore nel caricamento della foto",
+    "nameRequired": "Nome obbligatorio",
+    "enterName": "Inserisci il tuo nome.",
+    "profileUpdated": "Profilo aggiornato!",
+    "savedOk": "I tuoi dati sono stati salvati.",
+    "saveError": "Errore durante il salvataggio",
+    "namePlaceholder": "Il tuo nome completo",
+    "saveContinue": "Salva e continua",
+    "retry": "Riprova.",
+    "title": "Completa il tuo profilo",
+    "subtitle": "Inserisci i tuoi dati per un'esperienza personalizzata",
+    "addPhoto": "Clicca per aggiungere la tua foto",
+    "saving": "Salvataggio...",
+    "name": "Nome",
+    "whatsapp": "WhatsApp (facoltativo)",
+    "phonePlaceholder": "+39 333 123 4567",
+    "whatsappHint": "Per ricevere aggiornamenti sui tuoi ordini"
   }
 }

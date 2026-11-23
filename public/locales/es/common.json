@@ -1,5 +1,8 @@
 {
-  "region": {"automatic": "Automático (país de acceso)", "automaticShort": "Auto"},
+  "region": {
+    "automatic": "Automático (país de acceso)",
+    "automaticShort": "Auto"
+  },
   "nav": {
     "home": "Inicio",
     "plans": "Planes",
@@ -311,5 +314,30 @@
     "terms": "Términos",
     "adminBanner": "Mantenimiento activo. Estás navegando como administrador.",
     "manage": "Gestionar mantenimiento"
+  },
+  "profileOnboarding": {
+    "invalidFormat": "Formato no válido",
+    "selectImage": "Selecciona una imagen.",
+    "fileTooLarge": "Archivo demasiado grande",
+    "maxSize": "El archivo debe tener como máximo 5MB.",
+    "photoUploaded": "¡Foto subida!",
+    "photoUpdated": "Tu foto de perfil se actualizó.",
+    "photoError": "Error al subir la foto",
+    "nameRequired": "Nombre obligatorio",
+    "enterName": "Indica tu nombre.",
+    "profileUpdated": "¡Perfil actualizado!",
+    "savedOk": "Tus datos se guardaron correctamente.",
+    "saveError": "Error al guardar",
+    "namePlaceholder": "Tu nombre completo",
+    "saveContinue": "Guardar y continuar",
+    "retry": "Inténtalo de nuevo.",
+    "title": "Completa tu perfil",
+    "subtitle": "Completa tus datos para una experiencia personalizada",
+    "addPhoto": "Haz clic para añadir tu foto",
+    "saving": "Guardando...",
+    "name": "Nombre",
+    "whatsapp": "WhatsApp (opcional)",
+    "phonePlaceholder": "+34 600 123 456",
+    "whatsappHint": "Para recibir novedades sobre tus pedidos"
   }
 }

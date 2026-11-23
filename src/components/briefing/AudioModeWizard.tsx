@@ -32,7 +32,7 @@ interface AudioModeWizardProps {
 }
 
 export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) => {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation('briefing');
   const audioLanguage = transcriptionLanguageCode(i18n.resolvedLanguage || i18n.language);
   const [currentStep, setCurrentStep] = useState<WizardStep>("capture");
   const [audioId, setAudioId] = useState<string | null>(null);
@@ -80,16 +80,16 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
         });
         if (cancelled) return;
         if (error) throw error;
-        if (!data?.ok) throw new Error(data?.error || "Falha na transcrição");
+        if (!data?.ok) throw new Error(data?.error || t("audioWizard.failed"));
 
         setTranscript(data.transcript);
-        toast.success("Transcrição concluída!");
+        toast.success(t("audioWizard.done"));
         setCurrentStep("config");
       } catch (error: unknown) {
         if (cancelled) return;
         console.error("Transcription error:", error);
-        const msg = error instanceof Error ? error.message : "Erro na transcrição";
-        toast.error("Falha na transcrição", { description: msg });
+        const msg = error instanceof Error ? error.message : t("audioWizard.error");
+        toast.error(t("audioWizard.failed"), { description: msg });
         setCurrentStep("capture");
         setAudioId(null);
       }
@@ -105,11 +105,11 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
   // When user clicks "Gerar letra completa", pass data back to Briefing for standard flow
   const handleGenerate = useCallback(() => {
     if (!transcript || !section) {
-      toast.error("Selecione a posição do trecho na música");
+      toast.error(t("audioWizard.selectPosition"));
       return;
     }
     if (!audioId) {
-      toast.error("Áudio não encontrado. Tente novamente.");
+      toast.error(t("audioWizard.notFound"));
       return;
     }
     if (!voiceType) {
@@ -178,9 +178,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
           {currentStep === "capture" && (
             <div key="capture" className="space-y-6">
               <div className="text-center space-y-2">
-                <h2 className="text-xl font-bold">Grave ou envie seu áudio</h2>
+                <h2 className="text-xl font-bold">{t("audioWizard.title")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  Cante uma frase curta e clara (3s a 90s). Após enviar, a IA vai transcrever automaticamente.
+                  {t("audioWizard.subtitle")}
                 </p>
               </div>
               <AudioCapture onAudioUploaded={handleAudioUploaded} />
@@ -201,9 +201,9 @@ export const AudioModeWizard = ({ onBack, onComplete }: AudioModeWizardProps) =>
                 </div>
               </div>
               <div className="text-center space-y-2">
-                <h2 className="text-xl font-bold">Transcrevendo seu áudio...</h2>
+                <h2 className="text-xl font-bold">{t("audioWizard.transcribing")}</h2>
                 <p className="text-sm text-muted-foreground">
-                  A IA está ouvindo e convertendo em texto. Aguarde alguns segundos.
+                  {t("audioWizard.wait")}
                 </p>
               </div>
               <Progress value={50} className="h-2 w-48 animate-pulse" />

@@ -801,5 +801,31 @@
     "restart": "Start over",
     "reviewButton": "Review order",
     "customizeMore": "Customize more (optional)"
+  },
+  "whatsappModal": {
+    "invalidTitle": "Invalid number",
+    "invalidDesc": "Enter a valid WhatsApp number",
+    "savedTitle": "WhatsApp saved!",
+    "savedDesc": "We can contact you if needed.",
+    "errorTitle": "Error saving",
+    "errorDesc": "Please try again",
+    "title": "Your WhatsApp (optional)",
+    "description": "Share your number so we can contact you if needed. Your song will be delivered right here on the platform.",
+    "label": "WhatsApp number",
+    "hint": "Only used for support contact, if needed",
+    "saving": "Saving...",
+    "confirm": "Confirm and continue",
+    "skip": "Skip and continue"
+  },
+  "audioWizard": {
+    "failed": "Transcription failed",
+    "done": "Transcription complete!",
+    "error": "Transcription error",
+    "selectPosition": "Select where this part goes in the song",
+    "notFound": "Audio not found. Please try again.",
+    "title": "Record or upload your audio",
+    "transcribing": "Transcribing your audio...",
+    "subtitle": "Sing a short, clear phrase (3s to 90s). After uploading, the AI will transcribe it automatically.",
+    "wait": "The AI is listening and converting it to text. Please wait a few seconds."
   }
 }

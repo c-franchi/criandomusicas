@@ -147,5 +147,18 @@
     "preparingInstrumental": "Preparing your instrumental music...",
     "generatingLyrics": "Generating your song lyrics...",
     "paymentConfirmed": "Payment confirmed!"
+  },
+  "voucherToast": {
+    "appliedTitle": "🎉 Voucher applied!",
+    "appliedDesc": "Credit applied to your order.",
+    "invalidTitle": "Invalid voucher",
+    "invalidDesc": "This voucher is not valid for this order.",
+    "retry": "Please try again.",
+    "errorTitle": "Error applying voucher",
+    "notFound": "Order not found",
+    "notFoundDesc": "We couldn't find this order.",
+    "alreadyPaid": "Order already paid",
+    "alreadyPaidDesc": "This order was already processed.",
+    "loadError": "Error loading order"
   }
 }

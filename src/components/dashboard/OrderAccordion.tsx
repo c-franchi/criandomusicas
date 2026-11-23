@@ -1,3 +1,5 @@
+import i18n from "@/lib/i18n";
+import { formatOrderAmount } from "@/lib/order-price-display";
 import { useGiftList } from "@/hooks/useMusicalGifts";
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
@@ -106,7 +108,7 @@ export const OrderAccordion = ({
                     </Badge>
                   )}
                   <span className="font-bold text-primary text-xs sm:text-sm hidden sm:block">
-                    R$ {((order.amount || 0) / 100).toFixed(2).replace('.', ',')}
+                    {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                   </span>
                 </div>
               </div>
@@ -141,7 +143,7 @@ export const OrderAccordion = ({
                     </Badge>
                   )}
                   <span className="text-xs text-muted-foreground sm:hidden font-bold">
-                    R$ {((order.amount || 0) / 100).toFixed(2).replace('.', ',')}
+                    {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                   </span>
                 </div>
 

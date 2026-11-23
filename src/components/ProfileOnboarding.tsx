@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera, Loader2, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileOnboardingProps {
@@ -30,6 +31,7 @@ const ProfileOnboarding = ({
   initialName,
 }: ProfileOnboardingProps) => {
   const { toast } = useToast();
+  const { t } = useTranslation("common");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -52,8 +54,8 @@ const ProfileOnboarding = ({
 
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Formato inválido",
-        description: "Por favor, selecione uma imagem.",
+        title: t("profileOnboarding.invalidFormat"),
+        description: t("profileOnboarding.selectImage"),
         variant: "destructive",
       });
       return;
@@ -61,8 +63,8 @@ const ProfileOnboarding = ({
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Arquivo muito grande",
-        description: "O arquivo deve ter no máximo 5MB.",
+        title: t("profileOnboarding.fileTooLarge"),
+        description: t("profileOnboarding.maxSize"),
         variant: "destructive",
       });
       return;
@@ -86,14 +88,14 @@ const ProfileOnboarding = ({
 
       setAvatarUrl(publicUrl);
       toast({
-        title: "Foto carregada!",
-        description: "Sua foto de perfil foi atualizada.",
+        title: t("profileOnboarding.photoUploaded"),
+        description: t("profileOnboarding.photoUpdated"),
       });
     } catch (error) {
       console.error("Error uploading avatar:", error);
       toast({
-        title: "Erro ao carregar foto",
-        description: "Tente novamente.",
+        title: t("profileOnboarding.photoError"),
+        description: t("profileOnboarding.retry"),
         variant: "destructive",
       });
     } finally {
@@ -106,8 +108,8 @@ const ProfileOnboarding = ({
     
     if (!formData.name.trim()) {
       toast({
-        title: "Nome obrigatório",
-        description: "Por favor, informe seu nome.",
+        title: t("profileOnboarding.nameRequired"),
+        description: t("profileOnboarding.enterName"),
         variant: "destructive",
       });
       return;
@@ -157,15 +159,15 @@ const ProfileOnboarding = ({
       if (error) throw error;
 
       toast({
-        title: "Perfil atualizado!",
-        description: "Seus dados foram salvos com sucesso.",
+        title: t("profileOnboarding.profileUpdated"),
+        description: t("profileOnboarding.savedOk"),
       });
       onComplete();
     } catch (error) {
       console.error("Error saving profile:", error);
       toast({
-        title: "Erro ao salvar",
-        description: "Tente novamente.",
+        title: t("profileOnboarding.saveError"),
+        description: t("profileOnboarding.retry"),
         variant: "destructive",
       });
     } finally {
@@ -178,10 +180,10 @@ const ProfileOnboarding = ({
       <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-xl text-center">
-            Complete seu Perfil
+            {t("profileOnboarding.title")}
           </DialogTitle>
           <DialogDescription className="text-center">
-            Preencha seus dados para uma experiência personalizada
+            {t("profileOnboarding.subtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -215,15 +217,15 @@ const ProfileOnboarding = ({
             </div>
           </div>
           <p className="text-xs text-center text-muted-foreground">
-            Clique para adicionar sua foto
+            {t("profileOnboarding.addPhoto")}
           </p>
 
           {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Nome *</Label>
+            <Label htmlFor="name">{t("profileOnboarding.name")} *</Label>
             <Input
               id="name"
-              placeholder="Seu nome completo"
+              placeholder={t("profileOnboarding.namePlaceholder")}
               value={formData.name}
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
@@ -234,10 +236,10 @@ const ProfileOnboarding = ({
 
           {/* WhatsApp */}
           <div className="space-y-2">
-            <Label htmlFor="whatsapp">WhatsApp (opcional)</Label>
+            <Label htmlFor="whatsapp">{t("profileOnboarding.whatsapp")}</Label>
             <Input
               id="whatsapp"
-              placeholder="(00) 00000-0000"
+              placeholder={t("profileOnboarding.phonePlaceholder")}
               value={formData.whatsapp}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -247,7 +249,7 @@ const ProfileOnboarding = ({
               }
             />
             <p className="text-xs text-muted-foreground">
-              Para receber atualizações sobre seus pedidos
+              {t("profileOnboarding.whatsappHint")}
             </p>
           </div>
 
@@ -261,10 +263,10 @@ const ProfileOnboarding = ({
             {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Salvando...
+                {t("profileOnboarding.saving")}
               </>
             ) : (
-              "Salvar e Continuar"
+              t("profileOnboarding.saveContinue")
             )}
           </Button>
         </form>

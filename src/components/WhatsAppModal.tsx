@@ -12,6 +12,7 @@ import {
 import { MessageCircle, Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface WhatsAppModalProps {
   open: boolean;
@@ -24,6 +25,8 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
   const [whatsapp, setWhatsapp] = useState("");
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
+  const { t, i18n } = useTranslation("briefing");
+  const isBR = (i18n.resolvedLanguage || i18n.language || "pt").startsWith("pt");
 
   const formatPhone = (value: string) => {
     // Remove tudo que não é número
@@ -40,20 +43,20 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhone(e.target.value);
+    const formatted = isBR ? formatPhone(e.target.value) : e.target.value.replace(/[^\d+ ]/g, '');
     setWhatsapp(formatted);
   };
 
   const isValidPhone = () => {
     const numbers = whatsapp.replace(/\D/g, '');
-    return numbers.length >= 10 && numbers.length <= 11;
+    return isBR ? numbers.length >= 10 && numbers.length <= 11 : numbers.length >= 8 && numbers.length <= 15;
   };
 
   const handleSubmit = async () => {
     if (!isValidPhone()) {
       toast({
-        title: "Número inválido",
-        description: "Digite um número de WhatsApp válido",
+        title: t("whatsappModal.invalidTitle"),
+        description: t("whatsappModal.invalidDesc"),
         variant: "destructive"
       });
       return;
@@ -91,16 +94,16 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
       }
 
       toast({
-        title: "WhatsApp salvo!",
-        description: "Poderemos entrar em contato caso necessário.",
+        title: t("whatsappModal.savedTitle"),
+        description: t("whatsappModal.savedDesc"),
       });
 
       onConfirm();
     } catch (error) {
       console.error('Error saving whatsapp:', error);
       toast({
-        title: "Erro ao salvar",
-        description: "Tente novamente",
+        title: t("whatsappModal.errorTitle"),
+        description: t("whatsappModal.errorDesc"),
         variant: "destructive"
       });
     } finally {
@@ -114,26 +117,26 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-primary" />
-            Informe seu WhatsApp (opcional)
+            {t("whatsappModal.title")}
           </DialogTitle>
           <DialogDescription>
-            Informe seu número para que possamos entrar em contato caso necessário. Sua música será entregue diretamente na plataforma.
+            {t("whatsappModal.description")}
           </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="whatsapp">Número do WhatsApp</Label>
+            <Label htmlFor="whatsapp">{t("whatsappModal.label")}</Label>
             <Input
               id="whatsapp"
               type="tel"
-              placeholder="(11) 99999-9999"
+              placeholder={isBR ? "(11) 99999-9999" : "+39 333 123 4567"}
               value={whatsapp}
               onChange={handleChange}
               maxLength={16}
             />
             <p className="text-xs text-muted-foreground">
-              Usado apenas para contato de suporte, se necessário
+              {t("whatsappModal.hint")}
             </p>
           </div>
           
@@ -143,13 +146,16 @@ const WhatsAppModal = ({ open, onOpenChange, onConfirm, userId }: WhatsAppModalP
             disabled={!isValidPhone() || saving}
           >
             {saving ? (
-              "Salvando..."
+              t("whatsappModal.saving")
             ) : (
               <>
                 <Check className="w-4 h-4 mr-2" />
-                Confirmar e Continuar
+                {t("whatsappModal.confirm")}
               </>
             )}
+          </Button>
+          <Button variant="ghost" className="w-full" onClick={onConfirm} disabled={saving}>
+            {t("whatsappModal.skip")}
           </Button>
         </div>
       </DialogContent>

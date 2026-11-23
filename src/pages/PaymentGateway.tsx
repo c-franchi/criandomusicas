@@ -38,7 +38,8 @@ const PaymentGateway = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { pixAvailable, brazilCardAvailable, unavailableReason } = usePaymentAccess();
-  const { t } = useTranslation('checkout');
+  const { t, i18n } = useTranslation('checkout');
+  const isPt = (i18n.resolvedLanguage || i18n.language || 'pt').startsWith('pt');
   const { toast } = useToast();
 
   const planIdFromUrl = searchParams.get("planId") || "single";
@@ -70,8 +71,8 @@ const PaymentGateway = () => {
         if (error) throw error;
         if (!data) {
           toast({
-            title: "Pedido não encontrado",
-            description: "Não foi possível localizar o pedido.",
+            title: t("voucherToast.notFound"),
+            description: t("voucherToast.notFoundDesc"),
             variant: "destructive",
           });
           navigate("/dashboard");
@@ -81,8 +82,8 @@ const PaymentGateway = () => {
         // If already paid, send to dashboard
         if (data.payment_status === "PAID") {
           toast({
-            title: "Pedido já pago",
-            description: "Este pedido já foi processado.",
+            title: t("voucherToast.alreadyPaid"),
+            description: t("voucherToast.alreadyPaidDesc"),
           });
           navigate("/dashboard");
           return;
@@ -92,7 +93,7 @@ const PaymentGateway = () => {
       } catch (err) {
         console.error("[PaymentGateway] fetch order error:", err);
         toast({
-          title: "Erro ao carregar pedido",
+          title: t("voucherToast.loadError"),
           description: "Tente novamente.",
           variant: "destructive",
         });
@@ -135,29 +136,29 @@ const PaymentGateway = () => {
 
       if (data?.success) {
         toast({
-          title: "🎉 Voucher aplicado!",
-          description: data.message || "Crédito aplicado ao seu pedido.",
+          title: t("voucherToast.appliedTitle"),
+          description: isPt ? (data.message || t("voucherToast.appliedDesc")) : t("voucherToast.appliedDesc"),
         });
         navigate(`/criar-musica?orderId=${orderId}`);
       } else {
         toast({
-          title: "Voucher inválido",
-          description: backendError || data?.error || (error as any)?.message || "Não foi possível aplicar este voucher.",
+          title: t("voucherToast.invalidTitle"),
+          description: isPt ? (backendError || data?.error || t("voucherToast.invalidDesc")) : t("voucherToast.invalidDesc"),
           variant: "destructive",
         });
       }
     } catch (err: any) {
       console.error("[PaymentGateway] voucher error:", err);
-      let description = err?.message || "Tente novamente.";
+      let description = t("voucherToast.retry");
       try {
         const ctxResp = err?.context;
         if (ctxResp && typeof ctxResp.json === "function") {
           const body = await ctxResp.json();
-          if (body?.error) description = body.error;
+          if (body?.error && isPt) description = body.error;
         }
       } catch { /* ignore */ }
       toast({
-        title: "Erro ao aplicar voucher",
+        title: t("voucherToast.errorTitle"),
         description,
         variant: "destructive",
       });

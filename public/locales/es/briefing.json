@@ -780,5 +780,31 @@
     "restart": "Empezar de nuevo",
     "reviewButton": "Revisar pedido",
     "customizeMore": "Personalizar más (opcional)"
+  },
+  "whatsappModal": {
+    "invalidTitle": "Número inválido",
+    "invalidDesc": "Introduce un número de WhatsApp válido",
+    "savedTitle": "¡WhatsApp guardado!",
+    "savedDesc": "Podremos contactarte si es necesario.",
+    "errorTitle": "Error al guardar",
+    "errorDesc": "Inténtalo de nuevo",
+    "title": "Tu WhatsApp (opcional)",
+    "description": "Indica tu número para que podamos contactarte si es necesario. Tu canción se entregará directamente en la plataforma.",
+    "label": "Número de WhatsApp",
+    "hint": "Solo se usa para soporte, si es necesario",
+    "saving": "Guardando...",
+    "confirm": "Confirmar y continuar",
+    "skip": "Omitir y continuar"
+  },
+  "audioWizard": {
+    "failed": "Error en la transcripción",
+    "done": "¡Transcripción completada!",
+    "error": "Error en la transcripción",
+    "selectPosition": "Selecciona la posición del fragmento en la canción",
+    "notFound": "Audio no encontrado. Inténtalo de nuevo.",
+    "title": "Graba o sube tu audio",
+    "transcribing": "Transcribiendo tu audio...",
+    "subtitle": "Canta una frase corta y clara (3s a 90s). Al enviarla, la IA la transcribirá automáticamente.",
+    "wait": "La IA está escuchando y convirtiendo en texto. Espera unos segundos."
   }
 }

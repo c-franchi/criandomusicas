@@ -1,5 +1,8 @@
 {
-  "region": {"automatic": "Automatic (access country)", "automaticShort": "Auto"},
+  "region": {
+    "automatic": "Automatic (access country)",
+    "automaticShort": "Auto"
+  },
   "nav": {
     "home": "Home",
     "plans": "Plans",
@@ -311,5 +314,30 @@
     "terms": "Terms",
     "adminBanner": "Maintenance is active. You are browsing as an administrator.",
     "manage": "Manage maintenance"
+  },
+  "profileOnboarding": {
+    "invalidFormat": "Invalid format",
+    "selectImage": "Please select an image.",
+    "fileTooLarge": "File too large",
+    "maxSize": "The file must be 5MB or less.",
+    "photoUploaded": "Photo uploaded!",
+    "photoUpdated": "Your profile photo was updated.",
+    "photoError": "Error uploading photo",
+    "nameRequired": "Name required",
+    "enterName": "Please enter your name.",
+    "profileUpdated": "Profile updated!",
+    "savedOk": "Your details were saved.",
+    "saveError": "Error saving",
+    "namePlaceholder": "Your full name",
+    "saveContinue": "Save and continue",
+    "retry": "Please try again.",
+    "title": "Complete your profile",
+    "subtitle": "Fill in your details for a personalized experience",
+    "addPhoto": "Click to add your photo",
+    "saving": "Saving...",
+    "name": "Name",
+    "whatsapp": "WhatsApp (optional)",
+    "phonePlaceholder": "+1 555 123 4567",
+    "whatsappHint": "To receive updates about your orders"
   }
 }

@@ -147,5 +147,18 @@
     "preparingInstrumental": "Preparando sua música instrumental...",
     "generatingLyrics": "Gerando letras da sua música...",
     "paymentConfirmed": "Pagamento confirmado!"
+  },
+  "voucherToast": {
+    "appliedTitle": "🎉 Voucher aplicado!",
+    "appliedDesc": "Crédito aplicado ao seu pedido.",
+    "invalidTitle": "Voucher inválido",
+    "invalidDesc": "Este voucher não é válido para este pedido.",
+    "retry": "Tente novamente.",
+    "errorTitle": "Erro ao aplicar voucher",
+    "notFound": "Pedido não encontrado",
+    "notFoundDesc": "Não foi possível localizar o pedido.",
+    "alreadyPaid": "Pedido já pago",
+    "alreadyPaidDesc": "Este pedido já foi processado.",
+    "loadError": "Erro ao carregar pedido"
   }
 }

@@ -147,5 +147,18 @@
     "preparingInstrumental": "Preparazione della tua musica strumentale...",
     "generatingLyrics": "Generazione dei testi della tua canzone...",
     "paymentConfirmed": "Pagamento confermato!"
+  },
+  "voucherToast": {
+    "appliedTitle": "🎉 Voucher applicato!",
+    "appliedDesc": "Credito applicato al tuo ordine.",
+    "invalidTitle": "Voucher non valido",
+    "invalidDesc": "Questo voucher non è valido per questo ordine.",
+    "retry": "Riprova.",
+    "errorTitle": "Errore nell'applicare il voucher",
+    "notFound": "Ordine non trovato",
+    "notFoundDesc": "Non è stato possibile trovare l'ordine.",
+    "alreadyPaid": "Ordine già pagato",
+    "alreadyPaidDesc": "Questo ordine è già stato elaborato.",
+    "loadError": "Errore nel caricamento dell'ordine"
   }
 }
