@@ -275,6 +275,16 @@ const OrderDetails = () => {
     };
   }, [user?.id, orderId]);
 
+  // Stop any playing track when leaving the page
+  const audioElementsRef = useRef(audioElements);
+  audioElementsRef.current = audioElements;
+  useEffect(() => () => {
+    Object.values(audioElementsRef.current).forEach((audio) => {
+      audio.pause();
+      audio.src = '';
+    });
+  }, []);
+
   // Audio controls - now supports multiple tracks
   const togglePlay = (version: number) => {
     const trackToPlay = tracks.find(t => t.version === version);
