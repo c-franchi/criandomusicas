@@ -150,9 +150,9 @@ const CurrencyWarning = ({ language }: { language: string }) => {
   if (language === 'pt-BR') return null;
   
   const messages: Record<string, string> = {
-    'en': '💱 Prices displayed in local currency. Payment processed in BRL (Brazilian Real).',
-    'es': '💱 Precios mostrados en moneda local. Pago procesado en BRL (Real Brasileño).',
-    'it': '💱 Prezzi visualizzati in valuta locale. Pagamento elaborato in BRL (Real Brasiliano).',
+    'en': '💶 Payments from outside Brazil are charged in euros (EUR).',
+    'es': '💶 Los pagos desde fuera de Brasil se cobran en euros (EUR).',
+    'it': '💶 I pagamenti dall\'estero vengono addebitati in euro (EUR).',
   };
   
   return (
