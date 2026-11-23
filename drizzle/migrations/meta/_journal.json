@@ -29,6 +29,13 @@
       "when": 1795361056696,
       "tag": "0003_add_order_generation_language",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795432482892,
+      "tag": "0004_tighten_public_policies",
+      "breakpoints": true
     }
   ]
 }
