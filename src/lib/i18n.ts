@@ -29,7 +29,7 @@ i18n
     fallbackLng: 'pt-BR',
     supportedLngs: ['pt-BR', 'en', 'es', 'it'],
     defaultNS: 'common',
-    ns: ['common', 'home', 'auth', 'dashboard', 'pricing', 'checkout', 'admin', 'legal', 'briefing'],
+    ns: ['common', 'home', 'auth', 'dashboard', 'pricing', 'checkout', 'admin', 'legal', 'briefing', 'uiBriefing', 'uiOrders', 'uiPayments', 'uiAccount'],
     interpolation: { 
       escapeValue: false 
     },

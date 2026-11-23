@@ -1,24 +1,2 @@
-# Marketing / UX reorganization
-- [x] Make gift evaluation visible and add recipient replies with selectable emoji, editable preset phrases, sender notifications and email; preserve Git updates. Verified stored reply, rating and sender notification on an existing admin-test gift; email provider mocked (no real email sent); frontend not published.
-- [x] Add recipient action to gift another person using the existing gift flow; correct social sharing without overwriting Git updates (18 tests passed; existing released admin-test card verified through sharing and creation sign-in entry; no publishing).
-- [x] Add existing music reviews and reaction uploads to released gift tracking; keep original music order association.
-- [x] Share legacy gifts through the static gift preview, retaining their private key.
-- [x] Focus HOME on gifts, samples and one-time packs; preserve creation modes.
-- [x] Remove all creator content from HOME (PlanComparison teaser removed).
-- [x] Dedicated public /criadores with dynamic subscription plans and rights information.
-- [x] One-time-only /planos, nav/footer and legacy campaign links.
-- [x] Audit marketing claims, four languages, metadata, sitemap and existing route analytics.
-- [x] Verify public navigation, checkout/login entry, mobile/desktop, currencies and translations; no publishing.
-- [ ] Authenticated briefing and checkout completion: no session available; self-session mint failed because requester has no matching app account.
-- [ ] Owner/legal confirmation of mode-specific delivery and commercial license: terms say 24h lyrics, 3–7 business days production and separate commercial license; marketing promises removed, contracts unchanged.
-- [ ] Distinct non-JavaScript social previews require approved server-rendering/hosting work beyond the current client-side SEO; no platform migration performed.
-- [x] Fluxo de criação por finalidade (Home CTA único, /briefing finalidade, empresa/motivacional, resumo)
-- [ ] Testar fluxo logado no celular (sem sessão de teste disponível)
-- [ ] IT sandbox checkout: waiting on STRIPE_IT_TEST_RESTRICTED_KEY + STRIPE_IT_TEST_WEBHOOK_SECRET, then one verified sandbox session
-- [x] Hide Pix for foreign-IP access across music, gift and video checkout entry points; preserve Brazilian billing code. 26 tests pass; simulated BR/IT/unknown screens checked desktop/mobile, including existing pending Pix; build OK. No live account/session check available.
-- [ ] Italian live EUR checkout: user confirmed prices exist only in test mode; blocked on production account, live EUR catalog and credentials before implementing/activating live billing and verified confirmation. Foreign checkout shows unavailable, without a BRL fallback. No frontend publication.
-- [x] Preserve briefing language through order creation, checkout/payment confirmation, lyrics/style generation and revisions in all four locales; order language column applied, Deno/TypeScript checks and 12 targeted tests passed, and only generate-lyrics, generate-style-prompt and verify-payment deployed. No real AI/payment calls.
-- [x] Sweep remaining generation and customer-facing order paths: legacy lyric URL now uses canonical flow; audio transcription, sample descriptions, next-step/status text, payment/credit/lyric/music/gift notices, review reminders and purchase/ready emails follow stored order/gift language. Gift/sandbox copies already preserved locale; visual cover prompts and technical validation need no locale output. 189 Node + 12 Bun tests, typecheck and build passed; nine necessary functions deployed without real AI/payment/email/push calls or settled-record changes.
-- [x] Make 1-credit universal vouchers automatically valid for gifts with digital, printable or add-on cards, excluding shipping and short music without a card; database rule applied, admin/share copy updated and the full transactional gift-voucher regression test passed without retained fixtures or external calls.
-- [x] Add a separate admin-only Italian live sales page with EUR totals, webhook payment status, search/filtering, responsive order links and targeted tests; four tests passed, real empty state and mocked populated desktop/mobile views verified without billing or data changes.
-- [x] Fix only the 68 selected security findings: endpoint authorization, HTML escaping/log redaction, checkout validation, sensitive database updates, receipt links and public-media directory listing; all 68 marked resolved, follow-up basic scans clear, 194 Node + 16 Bun tests and Deno/TypeScript checks passed, anonymous deployed-endpoint checks returned 401, and no other findings were changed. Follow-up sweep also blocked creation of self-paid orders, altered-price video orders, pre-approved reactions and manual credit transfers; transactional tests passed and all fixtures rolled back.
+# Roadmap
+- [ ] Site 100% no idioma em uso (it/en/es) — traduzir textos fixos em português de todas as telas do cliente (4 grupos em paralelo)
