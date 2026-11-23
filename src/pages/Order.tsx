@@ -41,6 +41,7 @@ interface OrderData {
 }
 
 const Order = () => {
+  const { t: tu } = useTranslation('uiOrders');
   const { orderId } = useParams();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
@@ -149,13 +150,13 @@ const Order = () => {
         }
         window.location.href = data.url;
       } else {
-        throw new Error('URL de pagamento não recebida');
+        throw new Error(tu('Order.text001'));
       }
     } catch (err) {
       console.error('Payment error:', err);
       toast({
-        title: 'Erro ao processar pagamento',
-        description: err instanceof Error ? err.message : 'Erro desconhecido',
+        title: tu('Order.text002'),
+        description: err instanceof Error ? err.message : tu('Order.text003'),
         variant: 'destructive',
       });
       setProcessingPayment(false);
@@ -165,7 +166,7 @@ const Order = () => {
   const copyPixKey = () => {
     navigator.clipboard.writeText(PIX_KEY);
     setCopiedKey(true);
-    toast({ title: 'Chave PIX copiada!' });
+    toast({ title: tu('Order.text004') });
     setTimeout(() => setCopiedKey(false), 3000);
   };
 
@@ -265,23 +266,22 @@ const Order = () => {
           <Card className="p-6 mb-6 border-yellow-600/30 bg-yellow-600/5">
             <div className="flex items-center gap-3 mb-4">
               <Clock className="w-6 h-6 text-yellow-500" />
-              <h3 className="font-semibold text-lg">Aguardando Confirmação PIX</h3>
+              <h3 className="font-semibold text-lg">{tu('Order.text005')}</h3>
             </div>
             <p className="text-sm text-muted-foreground mb-4">
-              Após realizar o pagamento, nossa equipe irá confirmar em até 30 minutos. 
-              Você receberá uma notificação quando o pagamento for confirmado.
+              {tu('Order.text006')}
             </p>
             
             <Card className="p-4 bg-muted/50 mb-4">
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs text-muted-foreground">Valor a pagar:</Label>
+                  <Label className="text-xs text-muted-foreground">{tu('Order.text007')}</Label>
                   <p className="text-2xl font-bold text-primary">
                     {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Chave PIX (CNPJ):</Label>
+                  <Label className="text-xs text-muted-foreground">{tu('Order.text008')}</Label>
                   <div className="flex items-center gap-2 mt-1">
                     <code className="flex-1 p-2 bg-background rounded text-sm font-mono">{PIX_KEY}</code>
                     <Button variant="outline" size="sm" onClick={copyPixKey}>
@@ -290,7 +290,7 @@ const Order = () => {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-xs text-muted-foreground">Nome:</Label>
+                  <Label className="text-xs text-muted-foreground">{tu('Order.text009')}</Label>
                   <p className="font-medium">{PIX_NAME}</p>
                 </div>
               </div>
@@ -299,7 +299,7 @@ const Order = () => {
             <div className="text-center">
               <img 
                 src="/images/pix-qrcode.jpg" 
-                alt="QR Code PIX" 
+                alt={tu('Order.text010')} 
                 className="w-40 h-40 mx-auto rounded-lg border shadow-lg object-contain"
               />
             </div>
@@ -309,17 +309,17 @@ const Order = () => {
         {/* Payment Section */}
         {order.status === 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && (
           <Card className="p-6 mb-6 border-orange-600/30 bg-orange-600/5">
-            <h3 className="font-semibold text-lg mb-4">💳 Pagamento</h3>
+            <h3 className="font-semibold text-lg mb-4">{tu('Order.text011')}</h3>
             <div className="mb-4">
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-3xl font-bold">
                   {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                 </span>
                 <span className="text-sm text-muted-foreground line-through">R$ 47,90</span>
-                <Badge variant="secondary">PROMOÇÃO</Badge>
+                <Badge variant="secondary">{tu('Order.text012')}</Badge>
               </div>
               <p className="text-sm text-muted-foreground mb-4">
-                Escolha a forma de pagamento
+                {tu('Order.text013')}
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -333,12 +333,12 @@ const Order = () => {
                 {processingPayment ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Processando...
+                    {tu('Order.text014')}
                   </>
                 ) : (
                   <>
                     <CreditCard className="w-4 h-4 mr-2" />
-                    Cartão de Crédito
+                    {tu('Order.text015')}
                   </>
                 )}
               </Button>
@@ -355,7 +355,7 @@ const Order = () => {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground mt-3 text-center">
-              Pagamento seguro • Dados protegidos
+              {tu('Order.text016')}
             </p>
           </Card>
         )}
@@ -363,19 +363,19 @@ const Order = () => {
         {/* Actions */}
         {order.status !== 'AWAITING_PAYMENT' && order.payment_status !== 'AWAITING_PIX' && (
           <Card className="p-6 mb-6">
-            <h3 className="font-semibold text-lg mb-4">Ações</h3>
+            <h3 className="font-semibold text-lg mb-4">{tu('Order.text017')}</h3>
             <div className="space-y-3">
               <Button asChild className="w-full" variant="default">
                 <Link to={`/acompanhar/${order.id}`}>
                   <Clock className="w-4 h-4 mr-2" />
-                  Acompanhar em Tempo Real
+                  {tu('Order.text018')}
                 </Link>
               </Button>
               
               {(order.status === 'LYRICS_GENERATED' || order.status === 'LYRICS_APPROVED') && (
                 <Button asChild variant="outline" className="w-full">
                   <Link to={`/pedido/${order.id}/letras`}>
-                    Ver Letras
+                    {tu('Order.text019')}
                   </Link>
                 </Button>
               )}
@@ -385,25 +385,25 @@ const Order = () => {
 
         {/* Order Details */}
         <Card className="p-6">
-          <h3 className="font-semibold text-lg mb-4">Detalhes do Pedido</h3>
+          <h3 className="font-semibold text-lg mb-4">{tu('Order.text020')}</h3>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">Tipo</p>
+                <p className="text-sm text-muted-foreground">{tu('Order.text021')}</p>
                 <p className="font-medium">{order.music_type}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Estilo</p>
+                <p className="text-sm text-muted-foreground">{tu('Order.text022')}</p>
                 <p className="font-medium">{order.music_style}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Criado em</p>
+                <p className="text-sm text-muted-foreground">{tu('Order.text023')}</p>
                 <p className="font-medium">
                   {new Date(order.created_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Valor</p>
+                <p className="text-sm text-muted-foreground">{tu('Order.text024')}</p>
                 <p className="font-medium">
                   {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
                 </p>
@@ -412,7 +412,7 @@ const Order = () => {
             
             {order.story && (
               <div>
-                <p className="text-sm text-muted-foreground mb-2">História</p>
+                <p className="text-sm text-muted-foreground mb-2">{tu('Order.text025')}</p>
                 <p className="text-sm bg-muted p-3 rounded-lg">{order.story}</p>
               </div>
             )}

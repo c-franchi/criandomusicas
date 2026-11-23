@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useFlowBusy } from '@/hooks/useFlowBusy';
 import { useState, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,6 +16,7 @@ interface ReactionVideoUploadProps {
 }
 
 const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVideoUploadProps) => {
+  const { t: tu } = useTranslation('uiOrders');
   const { toast } = useToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -31,8 +33,8 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
     // Validate file type
     if (!file.type.startsWith('video/')) {
       toast({
-        title: 'Arquivo inválido',
-        description: 'Por favor, selecione um arquivo de vídeo.',
+        title: tu('ReactionVideoUpload.text001'),
+        description: tu('ReactionVideoUpload.text002'),
         variant: 'destructive',
       });
       return;
@@ -41,8 +43,8 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
     // Validate file size (max 100MB)
     if (file.size > 100 * 1024 * 1024) {
       toast({
-        title: 'Arquivo muito grande',
-        description: 'O vídeo deve ter no máximo 100MB.',
+        title: tu('ReactionVideoUpload.text003'),
+        description: tu('ReactionVideoUpload.text004'),
         variant: 'destructive',
       });
       return;
@@ -98,15 +100,15 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
 
       setUploaded(true);
       toast({
-        title: '🎉 Vídeo enviado!',
-        description: 'Seu vídeo foi enviado para aprovação. Obrigado por compartilhar!',
+        title: tu('ReactionVideoUpload.text005'),
+        description: tu('ReactionVideoUpload.text006'),
       });
 
       onUploadComplete?.();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : tu('ReactionVideoUpload.text007');
       toast({
-        title: 'Erro ao enviar vídeo',
+        title: tu('ReactionVideoUpload.text008'),
         description: errorMessage,
         variant: 'destructive',
       });
@@ -120,9 +122,9 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
       <Card className="border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10">
         <CardContent className="pt-6 text-center">
           <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-          <h3 className="font-semibold text-lg mb-1">Vídeo Enviado!</h3>
+          <h3 className="font-semibold text-lg mb-1">{tu('ReactionVideoUpload.text009')}</h3>
           <p className="text-sm text-muted-foreground">
-            Seu vídeo de reação está em análise. Após aprovação, aparecerá em nossa página inicial como prova social.
+            {tu('ReactionVideoUpload.text010')}
           </p>
         </CardContent>
       </Card>
@@ -134,13 +136,12 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-purple-600">
           <Video className="w-5 h-5" />
-          Compartilhe a Reação!
+          {tu('ReactionVideoUpload.text011')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-sm text-muted-foreground">
-          Grave um vídeo mostrando a reação de quem recebeu sua música personalizada! 
-          Seu vídeo pode aparecer em nossa página inicial como prova social.
+          {tu('ReactionVideoUpload.text012')}
         </p>
 
         <input
@@ -159,10 +160,10 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
           >
             <Upload className="w-6 h-6 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">
-              Clique para selecionar um vídeo
+              {tu('ReactionVideoUpload.text013')}
             </span>
             <span className="text-xs text-muted-foreground">
-              Máximo 100MB
+              {tu('ReactionVideoUpload.text014')}
             </span>
           </Button>
         ) : (
@@ -190,9 +191,9 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
 
         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
           <div>
-            <Label htmlFor="is-public" className="font-medium">Exibir na página inicial</Label>
+            <Label htmlFor="is-public" className="font-medium">{tu('ReactionVideoUpload.text015')}</Label>
             <p className="text-xs text-muted-foreground">
-              Seu vídeo poderá inspirar outras pessoas!
+              {tu('ReactionVideoUpload.text016')}
             </p>
           </div>
           <Switch
@@ -210,18 +211,18 @@ const ReactionVideoUpload = ({ orderId, userId, onUploadComplete }: ReactionVide
           {uploading ? (
             <>
               <Video className="w-4 h-4 animate-spin" />
-              Enviando...
+              {tu('ReactionVideoUpload.text017')}
             </>
           ) : (
             <>
               <Upload className="w-4 h-4" />
-              Enviar Vídeo de Reação
+              {tu('ReactionVideoUpload.text018')}
             </>
           )}
         </Button>
 
         <p className="text-xs text-muted-foreground text-center">
-          Ao enviar, você autoriza a exibição do vídeo em nossos canais.
+          {tu('ReactionVideoUpload.text019')}
         </p>
       </CardContent>
     </Card>

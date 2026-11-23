@@ -26,10 +26,11 @@ const SEO = ({
   noIndex = false,
   updatedAt,
 }: SEOProps) => {
+  const { t: tu } = useTranslation('uiAccount');
   const { pathname } = useLocation();
   const { i18n } = useTranslation();
   const locales: Record<string, string> = { 'pt-BR': 'pt_BR', en: 'en_US', es: 'es_ES', it: 'it_IT' };
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} - Músicas Personalizadas com IA`;
+  const fullTitle = title ? `${title} | ${SITE_NAME}` : tu('seoTitle', { brand: SITE_NAME });
   const fullCanonical = `${BASE_URL}${canonical || pathname}`;
   const fullImage = image?.startsWith('https://') ? image : undefined;
 

@@ -29,6 +29,7 @@ interface TrackData {
 }
 
 const MusicShare = () => {
+  const { t: tu } = useTranslation('uiOrders');
   const { t, i18n } = useTranslation(['common', 'briefing']);
   const { orderId, version } = useParams();
   const [searchParams] = useSearchParams();
@@ -175,7 +176,7 @@ const MusicShare = () => {
   }
 
   const ogImage = track.cover_url || 'https://criandomusicas.com.br/og-image.jpg';
-  const versionLabel = trackVersion === 2 ? ' (Versão 2)' : '';
+  const versionLabel = trackVersion === 2 ? tu('MusicShare.text015') : '';
   const pageTitle = `${track.title}${versionLabel} | Criando Músicas`;
   const pageDescription = `${t('common:share.listenTo')} "${track.title}"${versionLabel} - ${t('common:share.personalizedMusic')}. ${track.music_style ? `${t('common:share.style')}: ${track.music_style}` : ''}`;
 
@@ -230,9 +231,9 @@ const MusicShare = () => {
 
             {/* Emotional headline */}
             <p className="text-sm text-muted-foreground mb-4 italic leading-relaxed">
-              Essa música foi criada em menos de 2 minutos com inteligência artificial.
+              {tu('MusicShare.text001')}
               <br />
-              <span className="text-primary font-medium">Agora imagine a sua história aqui.</span>
+              <span className="text-primary font-medium">{tu('MusicShare.text002')}</span>
             </p>
 
             {/* Audio Element */}
@@ -274,11 +275,11 @@ const MusicShare = () => {
               >
                 <Link to="/auth">
                   <Gift className="w-5 h-5 mr-2" />
-                  🎁 Criar minha música grátis
+                  {tu('MusicShare.text003')}
                 </Link>
               </Button>
               <p className="text-xs text-muted-foreground">
-                1 crédito gratuito. Sem cartão. Sem compromisso.
+                {tu('MusicShare.text004')}
               </p>
             </div>
           </Card>
@@ -289,29 +290,29 @@ const MusicShare = () => {
               <div className="flex items-start gap-2">
                 <PenTool className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Letra personalizada</p>
-                  <p className="text-xs text-muted-foreground">Com a sua história</p>
+                  <p className="text-sm font-medium">{tu('MusicShare.text005')}</p>
+                  <p className="text-xs text-muted-foreground">{tu('MusicShare.text006')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Music className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Escolha o estilo</p>
-                  <p className="text-xs text-muted-foreground">+15 gêneros</p>
+                  <p className="text-sm font-medium">{tu('MusicShare.text007')}</p>
+                  <p className="text-xs text-muted-foreground">{tu('MusicShare.text008')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Zap className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Pronta em minutos</p>
-                  <p className="text-xs text-muted-foreground">IA avançada</p>
+                  <p className="text-sm font-medium">{tu('MusicShare.text009')}</p>
+                  <p className="text-xs text-muted-foreground">{tu('MusicShare.text010')}</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
                 <Share2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-sm font-medium">Fácil de compartilhar</p>
-                  <p className="text-xs text-muted-foreground">Um link e pronto</p>
+                  <p className="text-sm font-medium">{tu('MusicShare.text011')}</p>
+                  <p className="text-xs text-muted-foreground">{tu('MusicShare.text012')}</p>
                 </div>
               </div>
             </div>
@@ -325,7 +326,7 @@ const MusicShare = () => {
               ))}
             </div>
             <p className="text-sm font-medium text-foreground">
-              Mais de {totalSongs ? `${totalSongs}+` : '500+'} músicas já criadas e compartilhadas.
+              {tu('MusicShare.text016', { count: totalSongs ? `${totalSongs}+` : '500+' })}
             </p>
           </div>
 
@@ -333,7 +334,7 @@ const MusicShare = () => {
           <Card className="p-6 text-center space-y-3">
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <Shield className="w-3 h-3" />
-              <span>Site oficial verificado</span>
+              <span>{tu('MusicShare.text013')}</span>
             </div>
             
             <Button 
@@ -344,7 +345,7 @@ const MusicShare = () => {
             >
               <Link to="/auth">
                 <Sparkles className="w-5 h-5 mr-2 shrink-0" />
-                <span className="truncate">🔥 Transformar minha história em música</span>
+                <span className="truncate">{tu('MusicShare.text014')}</span>
               </Link>
             </Button>
           </Card>

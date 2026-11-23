@@ -1,3 +1,4 @@
+import i18n from '@/lib/i18n';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -18,9 +19,9 @@ export interface CreatorSubscription {
 // Credits are fetched from pricing_config table - these are fallback values
 // Values should match: creator_start=40, creator_pro=150, creator_studio=230
 const PLAN_DETAILS: Record<string, { name: string; price: string; credits: number }> = {
-  creator_start: { name: 'Creator Start', price: 'R$ 49,90/mês', credits: 40 },
-  creator_pro: { name: 'Creator Pro', price: 'R$ 89,90/mês', credits: 150 },
-  creator_studio: { name: 'Creator Studio', price: 'R$ 119,90/mês', credits: 230 },
+  creator_start: { name: 'Creator Start', get price() { return i18n.t('subscription.startPrice', { ns: 'uiPayments' }); }, credits: 40 },
+  creator_pro: { name: 'Creator Pro', get price() { return i18n.t('subscription.proPrice', { ns: 'uiPayments' }); }, credits: 150 },
+  creator_studio: { name: 'Creator Studio', get price() { return i18n.t('subscription.studioPrice', { ns: 'uiPayments' }); }, credits: 230 },
 };
 
 export function getPlanDetails(planId: string | null) {
@@ -64,7 +65,7 @@ export function useCreatorSubscription() {
 
   const cancelSubscription = useCallback(async () => {
     if (!session?.access_token) {
-      return { success: false, error: 'Não autenticado' };
+      return { success: false, error: i18n.t('subscription.unauthenticated', { ns: 'uiPayments' }) };
     }
 
     setCancelling(true);
@@ -87,7 +88,7 @@ export function useCreatorSubscription() {
       await checkSubscription();
       return { success: true, cancel_at: data.cancel_at };
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      const errorMessage = err instanceof Error ? err.message : i18n.t('unknownError', { ns: 'uiPayments' });
       return { success: false, error: errorMessage };
     } finally {
       setCancelling(false);

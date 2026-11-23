@@ -64,6 +64,7 @@ interface VoucherValidation {
 }
 
 export default function Checkout() {
+  const { t: tu } = useTranslation('uiPayments');
   const { t, i18n } = useTranslation(['checkout', 'common']);
   const { t: th } = useTranslation('home');
   const [giftOrder, setGiftOrder] = useState<MusicalGift | null>(null);
@@ -588,7 +589,7 @@ export default function Checkout() {
         }
       } else {
         // Show the specific error from the server
-        const errorMsg = data.error || 'Erro ao aplicar voucher';
+        const errorMsg = data.error || tu('checkout.voucherError');
         toast.error(errorMsg);
         setVoucherResult(null);
         setVoucherCode('');
@@ -988,7 +989,7 @@ export default function Checkout() {
             <div className="bg-white p-4 rounded-xl mx-auto w-fit mb-6">
               <img 
                 src={pixConfig?.qr_code_url || '/images/pix-qrcode.jpg'} 
-                alt="QR Code PIX" 
+                alt={tu('video.qrAlt')} 
                 className="w-48 h-48 object-contain"
               />
             </div>
@@ -1135,13 +1136,13 @@ export default function Checkout() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-destructive mb-1">
-                    Pagamento PIX rejeitado
+                    {tu('checkout.pixRejected')}
                   </h3>
                   <p className="text-sm text-foreground">
-                    <strong>Motivo:</strong> {order.pix_rejection_reason}
+                    <strong>{tu('checkout.reason')}</strong> {order.pix_rejection_reason}
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    Faça um novo pagamento e envie o comprovante novamente.
+                    {tu('checkout.payAgain')}
                   </p>
                 </div>
               </div>
@@ -1416,7 +1417,7 @@ export default function Checkout() {
                 <div className="bg-white p-4 rounded-xl mx-auto w-fit mb-3">
                   <img 
                     src={pixConfig?.qr_code_url || '/images/pix-qrcode.jpg'} 
-                    alt="QR Code PIX" 
+                    alt={tu('video.qrAlt')} 
                     className="w-48 h-48 object-contain"
                   />
                 </div>

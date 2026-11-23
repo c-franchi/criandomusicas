@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { RefreshCw, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ interface UpdateBannerProps {
 }
 
 const UpdateBanner = ({ onUpdate, onDismiss }: UpdateBannerProps) => {
+  const { t: tu } = useTranslation('uiAccount');
   const [isVisible, setIsVisible] = useState(true);
 
   const handleDismiss = () => {
@@ -38,10 +40,10 @@ const UpdateBanner = ({ onUpdate, onDismiss }: UpdateBannerProps) => {
                 </div>
                 <div>
                   <p className="font-semibold text-sm sm:text-base">
-                    Nova versão disponível! 🎉
+                    {tu('newVersion')}
                   </p>
                   <p className="text-xs sm:text-sm text-white/80">
-                    Atualize agora para ter as últimas melhorias
+                    {tu('updateImprovements')}
                   </p>
                 </div>
               </div>
@@ -53,12 +55,12 @@ const UpdateBanner = ({ onUpdate, onDismiss }: UpdateBannerProps) => {
                   className="bg-white text-primary hover:bg-white/90 font-semibold"
                 >
                   <RefreshCw className="w-4 h-4 mr-1" />
-                  Atualizar
+                  {tu('update')}
                 </Button>
                 <button
                   onClick={handleDismiss}
                   className="p-1.5 hover:bg-white/20 rounded-full transition-colors"
-                  aria-label="Fechar"
+                  aria-label={tu('close')}
                 >
                   <X className="w-4 h-4" />
                 </button>

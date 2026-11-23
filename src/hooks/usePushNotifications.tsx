@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -48,6 +49,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 }
 
 export const usePushNotifications = () => {
+  const { t: tu } = useTranslation('uiAccount');
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -101,8 +103,8 @@ export const usePushNotifications = () => {
   const subscribe = useCallback(async () => {
     if (!isSupported || !user) {
       toast({
-        title: "Notificações indisponíveis",
-        description: "Seu navegador não suporta notificações push.",
+        title: tu('pushUnavailable'),
+        description: tu('pushUnsupported'),
         variant: "destructive",
       });
       return false;
@@ -119,15 +121,15 @@ export const usePushNotifications = () => {
 
       if (permissionResult !== "granted") {
         toast({
-          title: "Permissão negada",
-          description: "Você precisa permitir notificações.",
+          title: tu('permissionDenied'),
+          description: tu('allowNotifications'),
           variant: "destructive",
         });
         return false;
       }
 
       const vapidPublicKey = await getVapidPublicKey();
-      if (!vapidPublicKey) throw new Error('Chave VAPID indisponível. Tente novamente.');
+      if (!vapidPublicKey) throw new Error(tu('vapidUnavailable'));
 
       const registration = await navigator.serviceWorker.ready;
 
@@ -143,7 +145,7 @@ export const usePushNotifications = () => {
       const json = subscription.toJSON();
 
       if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
-        throw new Error("Dados da subscription incompletos");
+        throw new Error(tu('incompleteSubscription'));
       }
 
       // Deactivate any existing subscriptions with the same endpoint (different users on same device)
@@ -168,16 +170,16 @@ export const usePushNotifications = () => {
 
       setIsSubscribed(true);
       toast({
-        title: "🔔 Notificações ativadas",
-        description: "Você receberá atualizações importantes.",
+        title: tu('pushEnabled'),
+        description: tu('importantUpdates'),
       });
 
       return true;
     } catch (err: any) {
       console.error("[Push] Erro ao ativar notificações:", err);
       toast({
-        title: "Erro ao ativar notificações",
-        description: err.message || "Tente novamente.",
+        title: tu('pushEnableError'),
+        description: err.message || tu('tryAgain'),
         variant: "destructive",
       });
       return false;
@@ -207,16 +209,16 @@ export const usePushNotifications = () => {
 
       setIsSubscribed(false);
       toast({
-        title: "Notificações desativadas",
-        description: "Você não receberá mais notificações.",
+        title: tu('pushDisabled'),
+        description: tu('noMoreNotifications'),
       });
 
       return true;
     } catch (err) {
       console.error("[Push] Erro ao desativar:", err);
       toast({
-        title: "Erro ao desativar",
-        description: "Tente novamente.",
+        title: tu('pushDisableError'),
+        description: tu('tryAgain'),
         variant: "destructive",
       });
       return false;

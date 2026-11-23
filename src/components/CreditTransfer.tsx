@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from 'react';
 import { Gift, Send, Inbox, Clock, CheckCircle, XCircle, Loader2, AlertCircle, Copy, Share2, Link2, Key } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -45,6 +46,7 @@ interface CreditTransferProps {
 }
 
 export function CreditTransfer({ className = '' }: CreditTransferProps) {
+  const { t: tu } = useTranslation('uiAccount');
   const { toast } = useToast();
   const { user } = useAuth();
   const { totalAvailable, refresh: refreshCredits } = useCredits();
@@ -110,13 +112,13 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
     // Validações para modo email
     if (shareMode === 'email') {
       if (!email) {
-        toast({ title: 'Erro', description: 'Preencha o email do destinatário.', variant: 'destructive' });
+        toast({ title: tu('error'), description: tu('recipientEmail'), variant: 'destructive' });
         return;
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
-        toast({ title: 'Erro', description: 'Digite um email válido.', variant: 'destructive' });
+        toast({ title: tu('error'), description: tu('validEmail'), variant: 'destructive' });
         return;
       }
     }
@@ -126,8 +128,8 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
 
     if (totalAvailable < 1) {
       toast({ 
-        title: 'Créditos insuficientes', 
-        description: 'Você não tem créditos disponíveis para transferir.', 
+        title: tu('insufficient'), 
+        description: tu('noTransferCredits'), 
         variant: 'destructive' 
       });
       return;
@@ -163,23 +165,23 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
       if (!data?.success) {
         // Check for rate limit info
         if (data?.daysRemaining) {
-          throw new Error(`Você só pode transferir 1 crédito a cada 15 dias. Próxima transferência em ${data.daysRemaining} dia(s).`);
+          throw new Error(tu('transferLimit', { days: data.daysRemaining }));
         }
-        throw new Error(data?.error || 'Erro ao transferir créditos');
+        throw new Error(data?.error || tu('transferFailed'));
       }
 
       if (shareMode === 'code') {
         // Modo código - mostrar código gerado
         setGeneratedCode(data.transfer?.code);
         toast({ 
-          title: 'Código gerado!', 
-          description: 'Compartilhe o código com seu amigo.' 
+          title: tu('codeGenerated'), 
+          description: tu('shareCode') 
         });
       } else {
         // Modo email
         toast({ 
-          title: 'Créditos enviados!', 
-          description: `1 crédito enviado para ${email}` 
+          title: tu('creditsSent'), 
+          description: tu('creditSentTo', { email }) 
         });
         // Reset form
         setEmail('');
@@ -190,8 +192,8 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
       refreshCredits();
       fetchTransfers();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast({ title: 'Erro ao enviar', description: errorMessage, variant: 'destructive' });
+      const errorMessage = error instanceof Error ? error.message : tu('unknownError');
+      toast({ title: tu('sendError'), description: errorMessage, variant: 'destructive' });
     } finally {
       setSending(false);
     }
@@ -201,20 +203,13 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
   const copyCode = async (code: string) => {
     await navigator.clipboard.writeText(code);
     setCopiedCode(true);
-    toast({ title: 'Código copiado!' });
+    toast({ title: tu('codeCopied') });
     setTimeout(() => setCopiedCode(false), 3000);
   };
 
   // Texto padrão para compartilhamento
   const getShareText = (code: string) => {
-    return `🎵 Presente para você! Use o código ${code} para resgatar uma música personalizada GRÁTIS no site Criando Músicas!
-
-📱 Como resgatar:
-1. Acesse o site e crie sua conta
-2. Vá em "Transferir Créditos" > "Resgatar"
-3. Digite o código: ${code}
-
-🎶 https://criandomusicas.lovable.app/auth`;
+    return tu('shareGift', { code });
   };
 
   // Compartilhar via WhatsApp
@@ -228,8 +223,8 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
     const text = getShareText(code);
     await navigator.clipboard.writeText(text);
     toast({ 
-      title: 'Texto copiado!', 
-      description: 'Cole nos Stories ou Direct do Instagram.' 
+      title: tu('textCopied'), 
+      description: tu('instagramPaste') 
     });
     // Instagram doesn't have a share URL, so we just copy
   };
@@ -251,7 +246,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: '🎁 Presente Musical para você!',
+          title: tu('musicalGift'),
           text: getShareText(code),
           url: 'https://criandomusicas.lovable.app/auth',
         });
@@ -262,14 +257,14 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
     } else {
       // Fallback: copy to clipboard
       await navigator.clipboard.writeText(getShareText(code));
-      toast({ title: 'Link copiado!' });
+      toast({ title: tu('linkCopied') });
     }
   };
 
   // Resgatar código
   const handleRedeemCode = async () => {
     if (!redeemCode.trim()) {
-      toast({ title: 'Erro', description: 'Digite o código de transferência.', variant: 'destructive' });
+      toast({ title: tu('error'), description: tu('enterTransferCode'), variant: 'destructive' });
       return;
     }
 
@@ -282,20 +277,20 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
       if (error) throw error;
 
       if (!data.success) {
-        throw new Error(data.error || 'Erro ao resgatar código');
+        throw new Error(data.error || tu('redeemCodeError'));
       }
 
       toast({ 
-        title: 'Créditos resgatados!', 
-        description: 'Os créditos foram adicionados à sua conta.' 
+        title: tu('creditsRedeemed'), 
+        description: tu('creditsAdded') 
       });
 
       setRedeemCode('');
       refreshCredits();
       fetchTransfers();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast({ title: 'Erro ao resgatar', description: errorMessage, variant: 'destructive' });
+      const errorMessage = error instanceof Error ? error.message : tu('unknownError');
+      toast({ title: tu('redeemError'), description: errorMessage, variant: 'destructive' });
     } finally {
       setRedeeming(false);
     }
@@ -311,21 +306,21 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
       if (error) throw error;
 
       if (!data.success) {
-        throw new Error(data.error || 'Erro ao processar transferência');
+        throw new Error(data.error || tu('processTransferError'));
       }
 
       toast({ 
-        title: action === 'accept' ? 'Créditos recebidos!' : 'Transferência recusada',
+        title: action === 'accept' ? tu('creditsReceived') : tu('transferDeclined'),
         description: action === 'accept' 
-          ? 'Os créditos foram adicionados à sua conta.' 
-          : 'A transferência foi recusada.' 
+          ? tu('creditsAdded') 
+          : tu('transferWasDeclined') 
       });
 
       refreshCredits();
       fetchTransfers();
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      toast({ title: 'Erro', description: errorMessage, variant: 'destructive' });
+      const errorMessage = error instanceof Error ? error.message : tu('unknownError');
+      toast({ title: tu('error'), description: errorMessage, variant: 'destructive' });
     } finally {
       setProcessing(false);
       setConfirmTransferId(null);
@@ -336,13 +331,13 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="text-yellow-600"><Clock className="w-3 h-3 mr-1" />Pendente</Badge>;
+        return <Badge variant="outline" className="text-yellow-600"><Clock className="w-3 h-3 mr-1" />{tu('pending')}</Badge>;
       case 'accepted':
-        return <Badge variant="default" className="bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />Aceito</Badge>;
+        return <Badge variant="default" className="bg-green-600"><CheckCircle className="w-3 h-3 mr-1" />{tu('accepted')}</Badge>;
       case 'rejected':
-        return <Badge variant="secondary"><XCircle className="w-3 h-3 mr-1" />Recusado</Badge>;
+        return <Badge variant="secondary"><XCircle className="w-3 h-3 mr-1" />{tu('rejected')}</Badge>;
       case 'expired':
-        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />Expirado</Badge>;
+        return <Badge variant="destructive"><AlertCircle className="w-3 h-3 mr-1" />{tu('expired')}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -364,23 +359,23 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {confirmAction === 'accept' ? 'Aceitar Créditos' : 'Recusar Transferência'}
+              {confirmAction === 'accept' ? tu('acceptCredits') : tu('rejectTransfer')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {confirmAction === 'accept' 
-                ? 'Os créditos serão adicionados à sua conta.'
-                : 'A transferência será cancelada e os créditos voltarão para o remetente.'}
+                ? tu('willAddCredits')
+                : tu('willCancelTransfer')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={processing}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={processing}>{tu('cancel')}</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => confirmTransferId && confirmAction && handleTransferAction(confirmTransferId, confirmAction)}
               disabled={processing}
               className={confirmAction === 'reject' ? 'bg-destructive hover:bg-destructive/90' : ''}
             >
               {processing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              {confirmAction === 'accept' ? 'Aceitar' : 'Recusar'}
+              {confirmAction === 'accept' ? tu('accept') : tu('reject')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -392,9 +387,9 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
             <Gift className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg">Transferir Créditos</h3>
+            <h3 className="font-semibold text-lg">{tu('transferCredits')}</h3>
             <p className="text-sm text-muted-foreground">
-              Envie créditos para amigos ou aceite transferências
+              {tu('transferSubtitle')}
             </p>
           </div>
         </div>
@@ -403,11 +398,11 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
           <TabsList className="grid w-full grid-cols-3 mb-4">
             <TabsTrigger value="send" className="flex items-center gap-2">
               <Send className="w-4 h-4" />
-              Enviar
+              {tu('send')}
             </TabsTrigger>
             <TabsTrigger value="received" className="flex items-center gap-2 relative">
               <Inbox className="w-4 h-4" />
-              Recebidas
+              {tu('received')}
               {receivedTransfers.length > 0 && (
                 <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs">
                   {receivedTransfers.length}
@@ -416,7 +411,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
             </TabsTrigger>
             <TabsTrigger value="redeem" className="flex items-center gap-2">
               <Key className="w-4 h-4" />
-              Resgatar
+              {tu('redeem')}
             </TabsTrigger>
           </TabsList>
 
@@ -426,10 +421,10 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
               <div className="text-center py-8">
                 <Gift className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
                 <p className="text-muted-foreground">
-                  Você não tem créditos de pacotes disponíveis para transferir.
+                  {tu('noPackageCredits')}
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Nota: Créditos de assinatura Creator não podem ser transferidos.
+                  {tu('creatorNote')}
                 </p>
               </div>
             ) : generatedCode ? (
@@ -437,7 +432,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
               <div className="space-y-4">
                 <div className="text-center p-6 rounded-lg border-2 border-dashed border-primary/50 bg-primary/5">
                   <Gift className="w-10 h-10 text-primary mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground mb-2">Código de Transferência:</p>
+                  <p className="text-sm text-muted-foreground mb-2">{tu('transferCodeLabel')}</p>
                   <code className="text-2xl font-mono font-bold text-primary block mb-4">
                     {generatedCode}
                   </code>
@@ -450,11 +445,11 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                     className="mb-4"
                   >
                     {copiedCode ? <CheckCircle className="w-4 h-4 mr-1" /> : <Copy className="w-4 h-4 mr-1" />}
-                    Copiar Código
+                    {tu('copyCode')}
                   </Button>
                   
                   {/* Redes Sociais */}
-                  <p className="text-xs text-muted-foreground mb-3">Compartilhar convite:</p>
+                  <p className="text-xs text-muted-foreground mb-3">{tu('shareInvite')}</p>
                   <div className="flex flex-wrap gap-2 justify-center">
                     <Button 
                       size="sm" 
@@ -507,13 +502,13 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                         onClick={() => shareNative(generatedCode)}
                       >
                         <Share2 className="w-4 h-4 mr-1" />
-                        Mais
+                        {tu('more')}
                       </Button>
                     )}
                   </div>
                 </div>
                 <p className="text-xs text-center text-muted-foreground">
-                  O código expira em 7 dias. Compartilhe com seu amigo!
+                  {tu('codeExpiryInvite')}
                 </p>
                 <Button 
                   variant="outline" 
@@ -523,7 +518,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                     setMessage('');
                   }}
                 >
-                  Gerar Novo Código
+                  {tu('newCode')}
                 </Button>
               </div>
             ) : (
@@ -537,7 +532,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                     className="flex-1"
                   >
                     <Send className="w-4 h-4 mr-1" />
-                    Por Email
+                    {tu('byEmail')}
                   </Button>
                   <Button 
                     variant={shareMode === 'code' ? 'default' : 'outline'} 
@@ -546,17 +541,17 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                     className="flex-1"
                   >
                     <Link2 className="w-4 h-4 mr-1" />
-                    Gerar Código
+                    {tu('generateCode')}
                   </Button>
                 </div>
 
                 {shareMode === 'email' && (
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email do amigo</Label>
+                    <Label htmlFor="email">{tu('friendEmail')}</Label>
                     <Input
                       id="email"
                       type="email"
-                      placeholder="amigo@email.com"
+                      placeholder={tu('friendEmailPlaceholder')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -564,29 +559,29 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                 )}
 
                 <div className="space-y-2">
-                  <Label>Créditos disponíveis</Label>
+                  <Label>{tu('availableCredits')}</Label>
                   <div className="text-center p-3 rounded-lg bg-primary/10 border border-primary/20">
                     <p className="text-2xl font-bold text-primary">{totalAvailable}</p>
-                    <p className="text-xs text-muted-foreground">crédito(s) disponível(is)</p>
+                    <p className="text-xs text-muted-foreground">{tu('creditsAvailable')}</p>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Quantidade a transferir</Label>
+                  <Label>{tu('transferAmount')}</Label>
                   <div className="text-center p-3 rounded-lg bg-muted/50 border">
                     <p className="text-2xl font-bold">1</p>
-                    <p className="text-xs text-muted-foreground">crédito por transferência</p>
+                    <p className="text-xs text-muted-foreground">{tu('creditPerTransfer')}</p>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Cada código permite o resgate de 1 música.
+                    {tu('oneSongCode')}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="message">Mensagem (opcional)</Label>
+                  <Label htmlFor="message">{tu('optionalMessage')}</Label>
                   <Textarea
                     id="message"
-                    placeholder="Escreva uma mensagem para seu amigo..."
+                    placeholder={tu('friendMessage')}
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     className="resize-none"
@@ -600,18 +595,18 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                   className="w-full"
                 >
                   {sending ? (
-                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processando...</>
+                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{tu('processing')}</>
                   ) : shareMode === 'code' ? (
-                    <><Link2 className="w-4 h-4 mr-2" />Gerar Código para 1 Crédito</>
+                    <><Link2 className="w-4 h-4 mr-2" />{tu('generateOneCredit')}</>
                   ) : (
-                    <><Send className="w-4 h-4 mr-2" />Enviar 1 Crédito</>
+                    <><Send className="w-4 h-4 mr-2" />{tu('sendOneCredit')}</>
                   )}
                 </Button>
 
                 {/* Sent transfers history */}
                 {sentTransfers.length > 0 && (
                   <div className="mt-6 pt-4 border-t">
-                    <h4 className="text-sm font-medium text-muted-foreground mb-3">Histórico de Envios</h4>
+                    <h4 className="text-sm font-medium text-muted-foreground mb-3">{tu('sendHistory')}</h4>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
                       {sentTransfers.map((transfer) => (
                         <div key={transfer.id} className="p-3 rounded-lg border bg-muted/30 text-sm">
@@ -620,7 +615,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                             {getStatusBadge(transfer.status)}
                           </div>
                           <div className="text-muted-foreground text-xs">
-                            {transfer.credits_amount} crédito(s) {transfer.credit_type} • {format(new Date(transfer.created_at), "dd/MM/yy 'às' HH:mm", { locale: ptBR })}
+                            {transfer.credits_amount} {tu('creditsUnit')} {transfer.credit_type} • {format(new Date(transfer.created_at), tu('transferDateFormat'), { locale: ptBR })}
                           </div>
                         </div>
                       ))}
@@ -636,7 +631,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
               <div className="text-center py-8">
                 <Inbox className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
                 <p className="text-muted-foreground">
-                  Você não tem transferências pendentes.
+                  {tu('noPendingTransfers')}
                 </p>
               </div>
             ) : (
@@ -646,10 +641,10 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <p className="font-medium">
-                          Você recebeu {transfer.credits_amount} crédito(s) {transfer.credit_type}!
+                          {tu('youReceived')} {transfer.credits_amount} {tu('creditsUnit')} {transfer.credit_type}!
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
-                          Código: {transfer.transfer_code}
+                          {tu('codeLabel')} {transfer.transfer_code}
                         </p>
                         {transfer.message && (
                           <p className="text-sm mt-2 p-2 rounded bg-muted/50 italic">
@@ -657,7 +652,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground mt-2">
-                          Expira em: {format(new Date(transfer.expires_at), "dd/MM/yyyy", { locale: ptBR })}
+                          {tu('expiresOn')} {format(new Date(transfer.expires_at), "dd/MM/yyyy", { locale: ptBR })}
                         </p>
                       </div>
                       <div className="flex flex-col gap-2">
@@ -669,7 +664,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                           }}
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
-                          Aceitar
+                          {tu('accept')}
                         </Button>
                         <Button 
                           size="sm" 
@@ -680,7 +675,7 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
                           }}
                         >
                           <XCircle className="w-4 h-4 mr-1" />
-                          Recusar
+                          {tu('reject')}
                         </Button>
                       </div>
                     </div>
@@ -694,14 +689,14 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
           <TabsContent value="redeem" className="space-y-4">
             <div className="text-center mb-4">
               <Key className="w-10 h-10 text-primary mx-auto mb-2" />
-              <h4 className="font-medium">Resgatar Código de Créditos</h4>
+              <h4 className="font-medium">{tu('redeemCreditsCode')}</h4>
               <p className="text-sm text-muted-foreground">
-                Recebeu um código de um amigo? Insira aqui para receber seus créditos.
+                {tu('redeemHelp')}
               </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="redeemCode">Código de Transferência</Label>
+              <Label htmlFor="redeemCode">{tu('transferCode')}</Label>
               <Input
                 id="redeemCode"
                 placeholder="TRF-XXXXXXXX"
@@ -717,14 +712,14 @@ export function CreditTransfer({ className = '' }: CreditTransferProps) {
               className="w-full"
             >
               {redeeming ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Resgatando...</>
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" />{tu('redeeming')}</>
               ) : (
-                <><Gift className="w-4 h-4 mr-2" />Resgatar Créditos</>
+                <><Gift className="w-4 h-4 mr-2" />{tu('redeemCredits')}</>
               )}
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
-              Os códigos expiram em 7 dias após a criação.
+              {tu('codesExpire')}
             </p>
           </TabsContent>
         </Tabs>

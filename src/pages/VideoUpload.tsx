@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Upload, Image, Video, X, CheckCircle, Loader2, ArrowLeft, Send } from "lucide-react";
@@ -20,6 +21,7 @@ interface UploadedFile {
 }
 
 const VideoUpload = () => {
+  const { t: tu } = useTranslation('uiPayments');
   const { videoOrderId } = useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -50,8 +52,8 @@ const VideoUpload = () => {
 
       if (error || !data) {
         toast({
-          title: 'Pedido não encontrado',
-          description: 'Verifique se o pagamento foi realizado.',
+          title: tu('upload.notFound'),
+          description: tu('upload.checkPayment'),
           variant: 'destructive'
         });
         navigate('/dashboard');
@@ -60,8 +62,8 @@ const VideoUpload = () => {
 
       if (data.payment_status !== 'PAID') {
         toast({
-          title: 'Pagamento pendente',
-          description: 'Complete o pagamento para fazer upload.',
+          title: tu('upload.pending'),
+          description: tu('upload.payFirst'),
           variant: 'destructive'
         });
         navigate('/dashboard');
@@ -103,8 +105,8 @@ const VideoUpload = () => {
         // Check video size (max 100MB)
         if (file.size > 100 * 1024 * 1024) {
           toast({
-            title: 'Vídeo muito grande',
-            description: 'O tamanho máximo é 100MB',
+            title: tu('upload.tooLarge'),
+            description: tu('upload.maxSize'),
             variant: 'destructive'
           });
           return;
@@ -186,15 +188,15 @@ const VideoUpload = () => {
 
       setSubmitted(true);
       toast({
-        title: 'Arquivos enviados!',
-        description: 'Seu vídeo será editado em até 48 horas.'
+        title: tu('upload.sentToast'),
+        description: tu('upload.delivery')
       });
 
     } catch (error) {
       console.error('Upload error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : tu('unknownError');
       toast({
-        title: 'Erro ao enviar arquivos',
+        title: tu('upload.error'),
         description: errorMessage,
         variant: 'destructive'
       });
@@ -218,13 +220,12 @@ const VideoUpload = () => {
           <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold mb-4">Arquivos Enviados!</h1>
+          <h1 className="text-2xl font-bold mb-4">{tu('upload.sentTitle')}</h1>
           <p className="text-muted-foreground mb-8">
-            Recebemos seus arquivos e seu vídeo será editado em até 48 horas. 
-            Você receberá uma notificação quando estiver pronto.
+            {tu('upload.sentBody')}
           </p>
           <Button onClick={() => navigate('/dashboard')}>
-            Voltar ao Painel
+            {tu('upload.dashboard')}
           </Button>
         </div>
       </div>
@@ -242,18 +243,18 @@ const VideoUpload = () => {
         <div className="mb-8">
           <Button variant="ghost" onClick={() => navigate('/dashboard')} className="mb-4">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar ao Painel
+            {tu('upload.dashboard')}
           </Button>
           <div className="text-center">
             <Badge className="mb-4 bg-primary/20 text-primary">
               <Upload className="w-3 h-3 mr-1" />
-              Upload de Arquivos
+              {tu('upload.badge')}
             </Badge>
-            <h1 className="text-3xl font-bold mb-2">Envie suas Fotos e Vídeos</h1>
+            <h1 className="text-3xl font-bold mb-2">{tu('upload.title')}</h1>
             <p className="text-muted-foreground">
-              {videoOrder.video_type === 'photos_5' && 'Envie até 5 fotos para criar seu vídeo'}
-              {videoOrder.video_type === 'photos_8' && 'Envie até 8 fotos e 1 vídeo (máx. 1 min)'}
-              {videoOrder.video_type === 'video_2min' && 'Envie 1 vídeo de até 2 minutos'}
+              {videoOrder.video_type === 'photos_5' && tu('upload.five')}
+              {videoOrder.video_type === 'photos_8' && tu('upload.eight')}
+              {videoOrder.video_type === 'video_2min' && tu('upload.two')}
             </p>
           </div>
         </div>
@@ -262,8 +263,8 @@ const VideoUpload = () => {
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between text-sm mb-2">
-              <span>Progresso do upload</span>
-              <span>{currentImages}/{maxImages} fotos • {currentVideos}/{maxVideos} vídeos</span>
+              <span>{tu('upload.progress')}</span>
+              <span>{tu('upload.counts', { currentImages, maxImages, currentVideos, maxVideos })}</span>
             </div>
             <Progress value={(files.length / (maxImages + maxVideos)) * 100} />
           </CardContent>
@@ -274,19 +275,19 @@ const VideoUpload = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Upload className="w-5 h-5" />
-              Selecionar Arquivos
+              {tu('upload.select')}
             </CardTitle>
             <CardDescription>
-              Formatos aceitos: JPG, PNG, MP4, MOV
+              {tu('upload.formats')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <label className="block">
               <div className="border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 text-center cursor-pointer hover:border-primary/50 transition-colors">
                 <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-lg font-medium mb-2">Clique para selecionar arquivos</p>
+                <p className="text-lg font-medium mb-2">{tu('upload.click')}</p>
                 <p className="text-sm text-muted-foreground">
-                  ou arraste e solte aqui
+                  {tu('upload.drag')}
                 </p>
               </div>
               <input
@@ -304,7 +305,7 @@ const VideoUpload = () => {
         {files.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Arquivos Selecionados</CardTitle>
+              <CardTitle>{tu('upload.selected')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -314,7 +315,7 @@ const VideoUpload = () => {
                       {file.type === 'image' ? (
                         <img 
                           src={file.preview} 
-                          alt="Preview" 
+                          alt={tu('upload.preview')} 
                           className="w-full h-full object-cover"
                         />
                       ) : (
@@ -344,7 +345,7 @@ const VideoUpload = () => {
                     )}
                     <Badge className="absolute bottom-2 left-2 text-xs">
                       {file.type === 'image' ? <Image className="w-3 h-3 mr-1" /> : <Video className="w-3 h-3 mr-1" />}
-                      {file.type === 'image' ? 'Foto' : 'Vídeo'}
+                      {file.type === 'image' ? tu('upload.photo') : tu('upload.video')}
                     </Badge>
                   </div>
                 ))}
@@ -363,12 +364,12 @@ const VideoUpload = () => {
           {submitting ? (
             <>
               <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Enviando...
+              {tu('upload.sending')}
             </>
           ) : (
             <>
               <Send className="w-5 h-5 mr-2" />
-              Enviar para Edição
+              {tu('upload.submit')}
             </>
           )}
         </Button>

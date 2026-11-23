@@ -1,9 +1,11 @@
+import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowUp } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ScrollToTop = () => {
+  const { t: tu } = useTranslation('uiAccount');
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const ScrollToTop = () => {
             onClick={scrollToTop}
             size="icon"
             className="w-12 h-12 rounded-full shadow-lg bg-primary hover:bg-primary/90 text-primary-foreground"
-            aria-label="Voltar ao topo"
+            aria-label={tu('backToTop')}
           >
             <ArrowUp className="w-5 h-5" />
           </Button>

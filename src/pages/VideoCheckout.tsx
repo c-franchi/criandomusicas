@@ -1,3 +1,4 @@
+import i18n from '@/lib/i18n';
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Video, Image, Play, CreditCard, CheckCircle, ArrowLeft, Loader2, QrCode, Copy, Clock, Home } from "lucide-react";
@@ -24,25 +25,26 @@ type VideoType = 'photos_5' | 'photos_8' | 'video_2min';
 const videoOptions = [
   {
     id: 'photos_5' as VideoType,
-    title: '5 Fotos + Áudio',
-    description: 'Slideshow com até 5 fotos',
+    get title() { return i18n.t('video.fiveTitle', { ns: 'uiPayments' }); },
+    get description() { return i18n.t('video.fiveDescription', { ns: 'uiPayments' }); },
     icon: Image,
   },
   {
     id: 'photos_8' as VideoType,
-    title: '8 Fotos + 1 Vídeo',
-    description: '8 fotos + vídeo de até 1 min',
+    get title() { return i18n.t('video.eightTitle', { ns: 'uiPayments' }); },
+    get description() { return i18n.t('video.eightDescription', { ns: 'uiPayments' }); },
     icon: Image,
   },
   {
     id: 'video_2min' as VideoType,
-    title: 'Vídeo de 2 min',
-    description: 'Envie vídeo de até 2 minutos',
+    get title() { return i18n.t('video.twoTitle', { ns: 'uiPayments' }); },
+    get description() { return i18n.t('video.twoDescription', { ns: 'uiPayments' }); },
     icon: Play,
   },
 ];
 
 const VideoCheckout = () => {
+  const { t: tu } = useTranslation('uiPayments');
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -141,7 +143,7 @@ const VideoCheckout = () => {
     setLoading(true);
     try {
       const videoOrder = await createVideoOrder();
-      if (!videoOrder) throw new Error('Erro ao criar pedido');
+      if (!videoOrder) throw new Error(tu('video.createOrderError'));
 
       setVideoOrderId(videoOrder.id);
 
@@ -168,14 +170,14 @@ const VideoCheckout = () => {
         }
         window.location.href = paymentData.url;
       } else {
-        throw new Error('URL de pagamento não recebida');
+        throw new Error(tu('video.paymentUrlError'));
       }
 
     } catch (error) {
       console.error('Payment error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : tu('unknownError');
       toast({
-        title: 'Erro ao processar pagamento',
+        title: tu('video.paymentError'),
         description: errorMessage,
         variant: 'destructive'
       });
@@ -191,7 +193,7 @@ const VideoCheckout = () => {
     setLoading(true);
     try {
       const videoOrder = await createVideoOrder();
-      if (!videoOrder) throw new Error('Erro ao criar pedido');
+      if (!videoOrder) throw new Error(tu('video.createOrderError'));
 
       setVideoOrderId(videoOrder.id);
 
@@ -208,9 +210,9 @@ const VideoCheckout = () => {
       setShowPixSection(true);
     } catch (error) {
       console.error('PIX error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : tu('unknownError');
       toast({
-        title: 'Erro ao processar pagamento',
+        title: tu('video.paymentError'),
         description: errorMessage,
         variant: 'destructive'
       });
@@ -225,8 +227,8 @@ const VideoCheckout = () => {
     navigator.clipboard.writeText(pixConfig.pix_key);
     setCopiedKey(true);
     toast({
-      title: 'Chave PIX copiada!',
-      description: 'Cole no seu aplicativo de banco',
+      title: tu('video.keyCopied'),
+      description: tu('video.pasteKey'),
     });
     setTimeout(() => setCopiedKey(false), 3000);
   };
@@ -235,8 +237,8 @@ const VideoCheckout = () => {
   const confirmPixPayment = () => {
     setPixConfirmed(true);
     toast({
-      title: 'Aguardando confirmação',
-      description: 'Seu pagamento será confirmado em até 30 minutos pelo administrador.',
+      title: tu('video.awaiting'),
+      description: tu('video.confirmationToast'),
     });
   };
 
@@ -260,22 +262,22 @@ const VideoCheckout = () => {
           <div className="flex items-center gap-2 mb-4">
             <Button variant="ghost" onClick={() => navigate(-1)}>
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
+              {tu('back')}
             </Button>
             <Button variant="ghost" onClick={() => navigate('/')}>
               <Home className="w-4 h-4 mr-2" />
-              Home
+              {tu('home')}
             </Button>
           </div>
           <div className="text-center">
             <Badge className="mb-4 bg-primary/20 text-primary">
               <Video className="w-3 h-3 mr-1" />
-              Criar Vídeo
+              {tu('video.create')}
             </Badge>
-            <h1 className="text-3xl font-bold mb-2">Vídeo Personalizado</h1>
+            <h1 className="text-3xl font-bold mb-2">{tu('video.title')}</h1>
             {orderTitle && (
               <p className="text-muted-foreground">
-                Para a música: <strong>{orderTitle}</strong>
+                {tu('video.forSong')} <strong>{orderTitle}</strong>
               </p>
             )}
           </div>
@@ -287,7 +289,7 @@ const VideoCheckout = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <QrCode className="w-5 h-5" />
-                Pagamento via PIX
+                {tu('video.pixPayment')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -302,7 +304,7 @@ const VideoCheckout = () => {
                       <div className="mb-6">
                         <img 
                           src={pixConfig.qr_code_url} 
-                          alt="QR Code PIX" 
+                          alt={tu('video.qrAlt')} 
                           className="w-48 h-48 mx-auto rounded-lg border"
                         />
                       </div>
@@ -310,7 +312,7 @@ const VideoCheckout = () => {
                     
                     <div className="space-y-3">
                       <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">Chave PIX (CNPJ):</p>
+                        <p className="text-sm text-muted-foreground mb-1">{tu('video.pixKey')}</p>
                         <div className="flex items-center justify-center gap-2">
                           <code className="font-mono text-sm">{pixConfig?.pix_key || '14.389.841/0001-47'}</code>
                           <Button variant="ghost" size="sm" onClick={copyPixKey}>
@@ -320,7 +322,7 @@ const VideoCheckout = () => {
                       </div>
                       
                       <div className="p-3 bg-muted rounded-lg">
-                        <p className="text-sm text-muted-foreground mb-1">Nome do beneficiário:</p>
+                        <p className="text-sm text-muted-foreground mb-1">{tu('video.beneficiary')}</p>
                         <p className="font-medium">{pixConfig?.pix_name || 'Criando Músicas'}</p>
                       </div>
                     </div>
@@ -331,7 +333,7 @@ const VideoCheckout = () => {
                     className="w-full h-12"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
-                    Já fiz o pagamento PIX
+                    {tu('video.paidPix')}
                   </Button>
                 </>
               ) : (
@@ -339,10 +341,9 @@ const VideoCheckout = () => {
                   <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Clock className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Aguardando confirmação</h3>
+                  <h3 className="text-xl font-semibold mb-2">{tu('video.awaiting')}</h3>
                   <p className="text-muted-foreground mb-6">
-                    Seu pagamento PIX será confirmado pelo administrador em até 30 minutos.
-                    Você receberá uma notificação quando for aprovado.
+                    {tu('video.confirmationBody')}
                   </p>
                   <Button variant="outline" onClick={() => navigate('/dashboard')}>
                     {t('video.goToOrders', 'Ir para Meus Pedidos')}
@@ -356,7 +357,7 @@ const VideoCheckout = () => {
             {/* Video Type Selection */}
             <Card className="mb-8">
               <CardHeader>
-                <CardTitle>Escolha o tipo de vídeo</CardTitle>
+                <CardTitle>{tu('video.chooseType')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup 
@@ -393,21 +394,21 @@ const VideoCheckout = () => {
             <Card className="mb-8">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="text-lg">Valor do serviço</span>
+                  <span className="text-lg">{tu('video.servicePrice')}</span>
                   <span className="text-2xl font-bold text-primary">R$ 50,00</span>
                 </div>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-primary" />
-                    Edição profissional
+                    {tu('video.editing')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-primary" />
-                    Sincronização com sua música
+                    {tu('video.sync')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4 text-primary" />
-                    Entrega em até 48 horas
+                    {tu('video.delivery')}
                   </li>
                 </ul>
               </CardContent>
@@ -415,7 +416,7 @@ const VideoCheckout = () => {
 
             {/* Payment Methods */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-center">Escolha a forma de pagamento</h3>
+              <h3 className="text-lg font-semibold text-center">{tu('video.choosePayment')}</h3>
               {!brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{tCheckout(unavailableReason)}</p>}
               
               <div className={`grid gap-4 ${pixAvailable ? 'grid-cols-2' : 'grid-cols-1'}`}>
@@ -431,7 +432,7 @@ const VideoCheckout = () => {
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5 mb-1" />
-                      <span className="text-sm">Cartão de Crédito</span>
+                      <span className="text-sm">{tu('video.creditCard')}</span>
                     </>
                   )}
                 </Button>

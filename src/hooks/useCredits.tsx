@@ -1,3 +1,4 @@
+import i18n from '@/lib/i18n';
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
@@ -116,7 +117,7 @@ export function useCredits() {
       setState(prev => ({
         ...prev,
         loading: false,
-        error: err instanceof Error ? err.message : 'Erro desconhecido',
+        error: err instanceof Error ? err.message : i18n.t('unknownError', { ns: 'uiPayments' }),
       }));
     }
   }, [user]);
@@ -150,7 +151,7 @@ export function useCredits() {
     } catch (err) {
       return { 
         success: false, 
-        error: err instanceof Error ? err.message : 'Erro ao usar crédito',
+        error: err instanceof Error ? err.message : i18n.t('credits.useError', { ns: 'uiPayments' }),
       };
     }
   }, [fetchCredits]);
@@ -164,13 +165,13 @@ export function useCredits() {
 
 // Plan labels for display (simplified - no type distinction)
 export const PLAN_LABELS: Record<string, string> = {
-  'single': 'Música Única',
-  'single_instrumental': 'Música Única',
-  'single_custom_lyric': 'Letra Própria',
-  'package': 'Pacote 3 Músicas',
-  'package_instrumental': 'Pacote 3 Músicas',
-  'subscription': 'Pacote 5 Músicas',
-  'subscription_instrumental': 'Pacote 5 Músicas',
+  get 'single'() { return i18n.t('credits.single', { ns: 'uiPayments' }); },
+  get 'single_instrumental'() { return i18n.t('credits.single', { ns: 'uiPayments' }); },
+  get 'single_custom_lyric'() { return i18n.t('credits.customLyric', { ns: 'uiPayments' }); },
+  get 'package'() { return i18n.t('credits.package3', { ns: 'uiPayments' }); },
+  get 'package_instrumental'() { return i18n.t('credits.package3', { ns: 'uiPayments' }); },
+  get 'subscription'() { return i18n.t('credits.package5', { ns: 'uiPayments' }); },
+  get 'subscription_instrumental'() { return i18n.t('credits.package5', { ns: 'uiPayments' }); },
   // Creator subscription plans
   'creator_start': 'Creator Start',
   'creator_pro': 'Creator Pro',

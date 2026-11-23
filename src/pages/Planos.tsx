@@ -53,6 +53,7 @@ const getPricePerCredit = (plan: PricingPlan): number => {
 };
 
 const Planos = () => {
+  const { t: tu } = useTranslation('uiPayments');
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { toast } = useToast();
@@ -200,7 +201,7 @@ const Planos = () => {
         canonical="/planos"
         title={t('seo.title')}
         description={t('seo.description')}
-        keywords="pacotes música personalizada, presente musical, homenagem, compra avulsa"
+        keywords={tu('plans.keywords')}
       />
       
       {/* Header Navigation */}

@@ -25,6 +25,7 @@ interface ReviewFormProps {
 }
 
 const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: ReviewFormProps) => {
+  const { t: tu } = useTranslation('uiOrders');
   const { toast } = useToast();
   const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
@@ -41,8 +42,8 @@ const ReviewForm = ({ orderId, userId, existingReview, onReviewSubmitted }: Revi
   const handleSubmit = async () => {
     if (rating === 0) {
       toast({
-        title: "Selecione uma nota",
-        description: "Por favor, avalie sua música de 1 a 5 estrelas",
+        title: tu('ReviewForm.text001'),
+        description: tu('ReviewForm.text002'),
         variant: "destructive"
       });
       return;

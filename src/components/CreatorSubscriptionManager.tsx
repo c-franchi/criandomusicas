@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -31,13 +32,14 @@ import { useCreatorSubscription } from '@/hooks/useCreatorSubscription';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { ptBR, enUS, es, it } from 'date-fns/locale';
 
 interface CreatorSubscriptionManagerProps {
   className?: string;
 }
 
 export function CreatorSubscriptionManager({ className = '' }: CreatorSubscriptionManagerProps) {
+  const { t: tu, i18n: paymentI18n } = useTranslation('uiPayments');
   const { 
     loading, 
     subscription, 
@@ -48,6 +50,7 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
     refresh 
   } = useCreatorSubscription();
   const { toast } = useToast();
+  const dateLocale = ({ en: enUS, es, it } as Record<string, typeof ptBR>)[paymentI18n.language.split('-')[0]] || ptBR;
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -61,15 +64,15 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
     
     if (result.success) {
       toast({
-        title: 'Assinatura cancelada',
+        title: tu('subscription.cancelled'),
         description: result.cancel_at 
-          ? `Sua assinatura será cancelada em ${format(new Date(result.cancel_at), "dd 'de' MMMM", { locale: ptBR })}.`
-          : 'Sua assinatura foi cancelada com sucesso.',
+          ? tu('subscription.cancellationDate', { date: format(new Date(result.cancel_at), tu('subscription.shortDate'), { locale: dateLocale }) })
+          : tu('subscription.cancelSuccess'),
       });
     } else {
       toast({
-        title: 'Erro ao cancelar',
-        description: result.error || 'Tente novamente mais tarde.',
+        title: tu('subscription.cancelError'),
+        description: result.error || tu('subscription.retryLater'),
         variant: 'destructive',
       });
     }
@@ -93,9 +96,9 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
             <Crown className="w-5 h-5 text-muted-foreground" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg">Assinatura Creator</h3>
+            <h3 className="font-semibold text-lg">{tu('subscription.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              Você não possui uma assinatura ativa
+              {tu('subscription.inactive')}
             </p>
           </div>
         </div>
@@ -103,11 +106,11 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
         <div className="text-center py-6">
           <Crown className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
           <p className="text-muted-foreground mb-4">
-            Assine um plano Creator e receba créditos mensais para criar músicas ilimitadas!
+            {tu('subscription.pitch')}
           </p>
           <Button asChild>
             <Link to="/planos">
-              Ver Planos Creator
+              {tu('subscription.viewPlans')}
               <ExternalLink className="w-4 h-4 ml-2" />
             </Link>
           </Button>
@@ -129,9 +132,9 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
             <Crown className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h3 className="font-semibold text-lg">Assinatura Creator</h3>
+            <h3 className="font-semibold text-lg">{tu('subscription.title')}</h3>
             <p className="text-sm text-muted-foreground">
-              Gerencie sua assinatura mensal
+              {tu('subscription.manage')}
             </p>
           </div>
         </div>
@@ -150,29 +153,29 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
         <Alert variant="destructive" className="mb-6 border-amber-500/50 bg-amber-500/10">
           <CalendarX className="h-4 w-4 text-amber-600" />
           <AlertTitle className="text-amber-700 dark:text-amber-400">
-            Cancelamento Programado
+            {tu('subscription.scheduled')}
           </AlertTitle>
           <AlertDescription className="text-amber-600 dark:text-amber-300/90 space-y-2">
             <div className="flex items-center gap-2 mt-2">
               <Clock className="w-4 h-4" />
               <span>
-                <strong>Solicitado em:</strong>{' '}
+                <strong>{tu('subscription.requested')}</strong>{' '}
                 {subscription?.canceled_at 
-                  ? format(new Date(subscription.canceled_at), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })
-                  : 'Data não registrada'}
+                  ? format(new Date(subscription.canceled_at), tu('subscription.dateTime'), { locale: dateLocale })
+                  : tu('subscription.noDateRecorded')}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <CalendarX className="w-4 h-4" />
               <span>
-                <strong>Acesso até:</strong>{' '}
+                <strong>{tu('subscription.accessUntil')}</strong>{' '}
                 {subscription?.subscription_end 
-                  ? format(new Date(subscription.subscription_end), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-                  : 'Data não disponível'}
+                  ? format(new Date(subscription.subscription_end), tu('subscription.longDate'), { locale: dateLocale })
+                  : tu('subscription.noDate')}
               </span>
             </div>
             <p className="text-sm mt-2 pt-2 border-t border-amber-500/30">
-              Você continua tendo acesso aos seus <strong>{subscription?.credits_remaining} créditos restantes</strong> até a data de encerramento.
+              {tu('subscription.accessPrefix')} <strong>{subscription?.credits_remaining} {tu('subscription.remainingCredits')}</strong> {tu('subscription.accessSuffix')}
             </p>
           </AlertDescription>
         </Alert>
@@ -186,7 +189,7 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
             <p className="text-sm text-muted-foreground">{planDetails?.price}</p>
           </div>
           <Badge variant="default" className={subscription?.cancel_at_period_end ? "bg-amber-500" : "bg-primary"}>
-            {subscription?.cancel_at_period_end ? 'Cancelando' : 'Ativo'}
+            {subscription?.cancel_at_period_end ? tu('subscription.cancelling') : tu('subscription.active')}
           </Badge>
         </div>
 
@@ -195,15 +198,15 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
           <div className="flex items-center justify-between text-sm">
             <span className="flex items-center gap-2">
               <Music className="w-4 h-4 text-primary" />
-              Créditos este mês
+              {tu('subscription.monthlyCredits')}
             </span>
             <span className="font-medium">
-              {subscription?.credits_remaining} de {subscription?.credits_total} restantes
+              {tu('subscription.remaining', { remaining: subscription?.credits_remaining, total: subscription?.credits_total })}
             </span>
           </div>
           <Progress value={creditsUsedPercent} className="h-2" />
           <p className="text-xs text-muted-foreground text-right">
-            {subscription?.credits_used} música{subscription?.credits_used !== 1 ? 's' : ''} criada{subscription?.credits_used !== 1 ? 's' : ''}
+            {tu('subscription.created', { count: subscription?.credits_used ?? 0 })}
           </p>
         </div>
       </div>
@@ -213,11 +216,11 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
         <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 mb-6">
           <Calendar className="w-5 h-5 text-muted-foreground" />
           <div className="flex-1">
-            <p className="text-sm font-medium">Próxima renovação</p>
+            <p className="text-sm font-medium">{tu('subscription.renewal')}</p>
             <p className="text-xs text-muted-foreground">
               {subscription?.subscription_end 
-                ? format(new Date(subscription.subscription_end), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
-                : 'Data não disponível'}
+                ? format(new Date(subscription.subscription_end), tu('subscription.longDate'), { locale: dateLocale })
+                : tu('subscription.noDate')}
             </p>
           </div>
         </div>
@@ -227,7 +230,7 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
       <div className="space-y-3">
         <Button asChild variant="outline" className="w-full">
           <Link to="/planos">
-            {subscription?.cancel_at_period_end ? 'Reativar / Mudar Plano' : 'Alterar Plano'}
+            {subscription?.cancel_at_period_end ? tu('subscription.reactivate') : tu('subscription.change')}
             <ExternalLink className="w-4 h-4 ml-2" />
           </Link>
         </Button>
@@ -243,10 +246,10 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
                 {cancelling ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Cancelando...
+                    {tu('subscription.cancellingProgress')}
                   </>
                 ) : (
-                  'Cancelar Assinatura'
+                  tu('subscription.cancel')
                 )}
               </Button>
             </AlertDialogTrigger>
@@ -254,32 +257,32 @@ export function CreatorSubscriptionManager({ className = '' }: CreatorSubscripti
               <AlertDialogHeader>
                 <AlertDialogTitle className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-destructive" />
-                  Cancelar assinatura?
+                  {tu('subscription.confirmTitle')}
                 </AlertDialogTitle>
                 <AlertDialogDescription className="space-y-2">
                   <p>
-                    Você tem certeza que deseja cancelar sua assinatura <strong>{planDetails?.name}</strong>?
+                    {tu('subscription.confirmPrefix')} <strong>{planDetails?.name}</strong>?
                   </p>
                   <p>
-                    Você continuará tendo acesso aos seus <strong>{subscription?.credits_remaining} créditos restantes</strong> até o final do período atual em{' '}
+                    {tu('subscription.keepAccessPrefix')} <strong>{subscription?.credits_remaining} {tu('subscription.remainingCredits')}</strong> {tu('subscription.periodSuffix')}{' '}
                     <strong>
                       {subscription?.subscription_end 
-                        ? format(new Date(subscription.subscription_end), "dd 'de' MMMM", { locale: ptBR })
-                        : 'data não disponível'}
+                        ? format(new Date(subscription.subscription_end), tu('subscription.shortDate'), { locale: dateLocale })
+                        : tu('subscription.noDateLower')}
                     </strong>.
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Após essa data, sua assinatura não será renovada automaticamente.
+                    {tu('subscription.noRenewal')}
                   </p>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Manter Assinatura</AlertDialogCancel>
+                <AlertDialogCancel>{tu('subscription.keep')}</AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={handleCancelSubscription}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  Confirmar Cancelamento
+                  {tu('subscription.confirm')}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>

@@ -33,6 +33,7 @@ interface OrderInfo {
 }
 
 const PaymentGateway = () => {
+  const { t: tu } = useTranslation('uiPayments');
   const { orderId } = useParams<{ orderId: string }>();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ const PaymentGateway = () => {
         console.error("[PaymentGateway] fetch order error:", err);
         toast({
           title: t("voucherToast.loadError"),
-          description: "Tente novamente.",
+          description: tu('tryAgain'),
           variant: "destructive",
         });
         navigate("/dashboard");
@@ -201,7 +202,7 @@ const PaymentGateway = () => {
           className="mb-4"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar para o dashboard
+          {tu('gateway.back')}
         </Button>
 
         <Card className="premium-card">
@@ -210,9 +211,9 @@ const PaymentGateway = () => {
               <Music className="h-7 w-7 text-primary" />
               <span className="text-lg font-bold gradient-text">Criando Músicas</span>
             </div>
-            <CardTitle className="text-2xl">Finalizar pedido</CardTitle>
+            <CardTitle className="text-2xl">{tu('gateway.title')}</CardTitle>
             <CardDescription>
-              Escolha como deseja prosseguir para iniciar a criação da sua música.
+              {tu('gateway.description')}
             </CardDescription>
           </CardHeader>
 
@@ -220,24 +221,24 @@ const PaymentGateway = () => {
             {/* Order summary */}
             <div className="rounded-lg border bg-muted/30 p-4 space-y-1.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Pedido:</span>
+                <span className="text-muted-foreground">{tu('gateway.order')}</span>
                 <span className="font-mono">#{order.id.slice(0, 8)}</span>
               </div>
               {order.song_title && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Música:</span>
+                  <span className="text-muted-foreground">{tu('gateway.song')}</span>
                   <span className="font-medium">{order.song_title}</span>
                 </div>
               )}
               {order.music_style && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Estilo:</span>
+                  <span className="text-muted-foreground">{tu('gateway.style')}</span>
                   <span className="font-medium">{order.music_style}</span>
                 </div>
               )}
               {order.purpose && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Finalidade:</span>
+                  <span className="text-muted-foreground">{tu('gateway.purpose')}</span>
                   <span className="font-medium">{order.purpose}</span>
                 </div>
               )}
@@ -247,12 +248,12 @@ const PaymentGateway = () => {
             <div className="space-y-2">
               <Label htmlFor="voucher" className="flex items-center gap-2">
                 <Ticket className="w-4 h-4 text-primary" />
-                Possui um voucher?
+                {tu('gateway.voucher')}
               </Label>
               <div className="flex gap-2">
                 <Input
                   id="voucher"
-                  placeholder="Digite o código"
+                  placeholder={tu('gateway.code')}
                   value={voucherCode}
                   onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                   disabled={applyingVoucher}
@@ -268,7 +269,7 @@ const PaymentGateway = () => {
                   ) : (
                     <CheckCircle2 className="w-4 h-4" />
                   )}
-                  <span className="ml-2 hidden sm:inline">Aplicar</span>
+                  <span className="ml-2 hidden sm:inline">{tu('gateway.apply')}</span>
                 </Button>
               </div>
             </div>
@@ -278,7 +279,7 @@ const PaymentGateway = () => {
             {/* Payment options */}
             <div className="space-y-3">
               <p className="text-sm font-medium text-muted-foreground">
-                Ou escolha uma forma de pagamento:
+                {tu('gateway.payment')}
               </p>
 
               <Button
@@ -288,7 +289,7 @@ const PaymentGateway = () => {
                 size="lg"
               >
                 <CreditCard className="w-5 h-5 mr-2" />
-                Pagar com cartão
+                {tu('gateway.card')}
               </Button>
               {!brazilCardAvailable && <p role="status" className="text-sm text-muted-foreground">{t(unavailableReason)}</p>}
 
@@ -299,7 +300,7 @@ const PaymentGateway = () => {
                 variant="outline"
               >
                 <QrCode className="w-5 h-5 mr-2" />
-                Pagar com PIX
+                {tu('gateway.pix')}
               </Button>}
 
               <Button
@@ -309,12 +310,12 @@ const PaymentGateway = () => {
                 variant="ghost"
               >
                 <ShoppingBag className="w-5 h-5 mr-2" />
-                Ver planos e pacotes
+                {tu('gateway.plans')}
               </Button>
             </div>
 
             <p className="text-xs text-center text-muted-foreground pt-2">
-              Seu pedido fica salvo. Você pode voltar e finalizar a qualquer momento pelo dashboard.
+              {tu('gateway.saved')}
             </p>
           </CardContent>
         </Card>

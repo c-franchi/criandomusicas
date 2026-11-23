@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import i18n from "@/lib/i18n";
 import { formatOrderAmount } from "@/lib/order-price-display";
 import { motion } from "framer-motion";
@@ -43,6 +44,7 @@ export const OrderCard = ({
   getStatusText,
   setDeleteOrderId 
 }: OrderCardProps) => {
+  const { t: tu } = useTranslation('uiOrders');
   
   return (
     <motion.div
@@ -57,11 +59,11 @@ export const OrderCard = ({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h3 className="font-semibold text-lg break-words text-foreground group-hover:text-primary transition-colors">
-                  {order.song_title || order.lyric_title || `Música ${order.music_type || 'Personalizada'}`}
+                  {order.song_title || order.lyric_title || tu('OrderCard.text006', { type: order.music_type || tu('OrderCard.text001') })}
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground mb-2">
-                {order.music_style || 'Estilo'} • {order.music_type || 'Tipo'}
+                {order.music_style || tu('OrderCard.text002')} • {order.music_type || tu('OrderCard.text003')}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge className={getStatusColor(order.status || 'DRAFT')}>
@@ -80,7 +82,7 @@ export const OrderCard = ({
                 {order.pix_rejection_reason && (
                   <Badge variant="outline" className="text-xs border-destructive/50 text-destructive bg-destructive/10 gap-1">
                     <AlertTriangle className="w-3 h-3" />
-                    PIX Rejeitado
+                    {tu('OrderCard.text004')}
                   </Badge>
                 )}
                 {order.status === 'AWAITING_PAYMENT' && !order.pix_rejection_reason && (
@@ -92,7 +94,7 @@ export const OrderCard = ({
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Link to={`/pagamento/${order.id}`} onClick={(e) => e.stopPropagation()}>
-                      Continuar pagamento
+                      {tu('OrderCard.text005')}
                     </Link>
                   </Button>
                 )}

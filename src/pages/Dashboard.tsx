@@ -49,6 +49,7 @@ interface Order {
 }
 
 const Dashboard = () => {
+  const { t: tu } = useTranslation('uiOrders');
   const { user, profile, loading } = useAuth();
   const { isAdmin } = useAdminRole(user?.id);
   const { toast } = useToast();
@@ -170,7 +171,7 @@ const Dashboard = () => {
         o.id === deleteOrderId ? { ...o, status: 'CANCELLED' } : o
       ));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : tu('Dashboard.text001');
       toast({
         title: t('toasts.deleteError'),
         description: errorMessage,
@@ -211,7 +212,7 @@ const Dashboard = () => {
 
       setOrders(ordersWithTitles);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : tu('Dashboard.text001');
       toast({
         title: t('toasts.loadError'),
         description: errorMessage,
@@ -260,8 +261,8 @@ const Dashboard = () => {
       
       if (result.success) {
         toast({
-          title: '✅ Letras geradas!',
-          description: 'As letras foram geradas com sucesso.',
+          title: tu('Dashboard.text002'),
+          description: tu('Dashboard.text003'),
         });
         // Remove from stuck set
         setStuckOrderIds(prev => {
@@ -275,16 +276,16 @@ const Dashboard = () => {
         }
       } else {
         toast({
-          title: 'Erro ao reprocessar',
-          description: result.error || 'Tente novamente em alguns instantes.',
+          title: tu('Dashboard.text004'),
+          description: result.error || tu('Dashboard.text005'),
           variant: 'destructive',
         });
       }
     } catch (error) {
       console.error('Retry failed:', error);
       toast({
-        title: 'Erro inesperado',
-        description: 'Não foi possível reprocessar. Tente novamente.',
+        title: tu('Dashboard.text006'),
+        description: tu('Dashboard.text007'),
         variant: 'destructive',
       });
     }
@@ -530,7 +531,7 @@ const Dashboard = () => {
               <Link to="/briefing?type=vocal">
                 <Zap className="w-4 h-4 mr-1.5" />
                 <span className="hidden sm:inline">{t('buttons.quickCreate')}</span>
-                <span className="sm:hidden">Criar</span>
+                <span className="sm:hidden">{tu('Dashboard.text008')}</span>
               </Link>
             </Button>
             <Button variant="outline" size="icon" asChild title={t('buttons.home')} className="hover:scale-105 transition-transform h-8 w-8 sm:h-10 sm:w-10">
@@ -567,7 +568,7 @@ const Dashboard = () => {
               <StyledTabsTrigger value="vocal" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Mic className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.vocal')}</span>
-                <span className="xs:hidden">Vocal</span>
+                <span className="xs:hidden">{tu('Dashboard.text009')}</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {vocalOrders.length}
                 </Badge>
@@ -575,7 +576,7 @@ const Dashboard = () => {
               <StyledTabsTrigger value="instrumental" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Piano className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.instrumental')}</span>
-                <span className="xs:hidden">Instrum.</span>
+                <span className="xs:hidden">{tu('Dashboard.text010')}</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {instrumentalOrders.length}
                 </Badge>
@@ -583,14 +584,14 @@ const Dashboard = () => {
               <StyledTabsTrigger value="custom" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Edit3 className="w-4 h-4" />
                 <span className="hidden xs:inline">{t('tabs.customLyric')}</span>
-                <span className="xs:hidden">Própria</span>
+                <span className="xs:hidden">{tu('Dashboard.text011')}</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {customLyricOrders.length}
                 </Badge>
               </StyledTabsTrigger>
               <StyledTabsTrigger value="audio" className="flex items-center gap-1.5 text-xs sm:text-sm">
                 <Headphones className="w-4 h-4" />
-                <span className="hidden xs:inline">Áudio</span>
+                <span className="hidden xs:inline">{tu('Dashboard.text012')}</span>
                 <span className="xs:hidden">🎤</span>
                 <Badge variant="secondary" className="ml-1 text-xs px-1.5">
                   {audioOrders.length}
@@ -724,12 +725,12 @@ const Dashboard = () => {
               {audioOrders.length === 0 ? (
                 <Card className="p-8 text-center">
                   <Headphones className="w-12 h-12 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold mb-2">🎤 Modo Áudio</h3>
+                  <h3 className="text-xl font-semibold mb-2">{tu('Dashboard.text013')}</h3>
                   <p className="text-muted-foreground mb-4 max-w-md mx-auto">
-                    Grave ou envie um áudio cantando um trecho e nossa IA transcreve e gera uma letra completa com qualidade profissional.
+                    {tu('Dashboard.text014')}
                   </p>
                   <Button asChild>
-                    <Link to="/briefing?mode=audio">Experimentar agora</Link>
+                    <Link to="/briefing?mode=audio">{tu('Dashboard.text015')}</Link>
                   </Button>
                 </Card>
               ) : (

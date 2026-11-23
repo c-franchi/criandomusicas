@@ -1,38 +1,40 @@
+import { useTranslation } from 'react-i18next';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Play, Heart, Clock } from "lucide-react";
 
 const MusicShowcase = () => {
+  const { t: tu } = useTranslation('uiAccount');
   const songs = [
     {
       id: 1,
-      title: "Amor de Pai",
-      occasion: "Aniversário",
-      style: "Sertanejo",
+      title: tu('fatherLove'),
+      occasion: tu('birthday'),
+      style: tu('sertanejo'),
       duration: "3:45",
       likes: 124,
-      description: "Uma homenagem emocionante de pai para filha no seus 15 anos",
+      description: tu('fatherTribute'),
       coverUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=300&fit=crop"
     },
     {
       id: 2,
-      title: "Nossa Jornada",
-      occasion: "Casamento",
-      style: "Pop Romântico",
+      title: tu('ourJourney'),
+      occasion: tu('wedding'),
+      style: tu('romanticPop'),
       duration: "4:12",
       likes: 89,
-      description: "A história de amor do casal desde o primeiro encontro",
+      description: tu('coupleStory'),
       coverUrl: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=300&h=300&fit=crop"
     },
     {
       id: 3,
-      title: "Força da Fé",
-      occasion: "Igreja",
-      style: "Worship",
+      title: tu('faithStrength'),
+      occasion: tu('church'),
+      style: tu('worship'),
       duration: "5:23",
       likes: 156,
-      description: "Louvor personalizado para a igreja celebrar vitórias",
+      description: tu('churchPraise'),
       coverUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop"
     }
   ];
@@ -42,11 +44,11 @@ const MusicShowcase = () => {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">
-            Músicas que{" "}
-            <span className="gradient-text">emocionam</span>
+            {tu('songsThat')}{" "}
+            <span className="gradient-text">{tu('moveYou')}</span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Ouça alguns exemplos de músicas criadas para nossos clientes
+            {tu('listenExamples')}
           </p>
         </div>
         
@@ -93,7 +95,7 @@ const MusicShowcase = () => {
         
         <div className="text-center mt-12">
           <Button variant="hero" size="lg">
-            Criar Minha Música Agora
+            {tu('createMySongNow')}
           </Button>
         </div>
       </div>

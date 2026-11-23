@@ -1,3 +1,5 @@
+import i18n from '@/lib/i18n';
+import { useTranslation } from 'react-i18next';
 import { Share2, Copy, Facebook, Twitter, MessageCircle } from 'lucide-react';
 import { Fragment } from 'react';
 import { Button } from '@/components/ui/button';
@@ -10,26 +12,27 @@ import { canShareInMarket, voucherShareText, voucherShareUrl, voucherShortText, 
 interface VoucherShareMenuProps { voucher: ShareVoucher & { id: string; is_active: boolean } }
 
 const MARKETS: { id: ShareMarket; label: string }[] = [
-  { id: 'BR', label: '🇧🇷 Brasil · português' },
-  { id: 'IT', label: '🇮🇹 Itália · italiano' },
+  { id: 'BR', get label() { return i18n.t('share.brazil', { ns: 'uiPayments' }); } },
+  { id: 'IT', get label() { return i18n.t('share.italy', { ns: 'uiPayments' }); } },
 ];
 
 export function VoucherShareMenu({ voucher }: VoucherShareMenuProps) {
+  const { t: tu } = useTranslation('uiPayments');
   const { toast } = useToast();
   const open = (url: string) => window.open(url, '_blank');
   const copy = async (m: ShareMarket) => {
     try {
       await navigator.clipboard.writeText(voucherShareText(voucher, m));
-      toast({ title: 'Cupom copiado!', description: 'Cole nas suas redes sociais.' });
+      toast({ title: tu('share.copied'), description: tu('share.paste') });
     } catch {
-      toast({ title: 'Erro ao copiar', description: 'Tente novamente.', variant: 'destructive' });
+      toast({ title: tu('share.copyError'), description: tu('tryAgain'), variant: 'destructive' });
     }
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" title="Compartilhar voucher"><Share2 className="w-4 h-4" /></Button>
+        <Button variant="ghost" size="sm" title={tu('share.title')}><Share2 className="w-4 h-4" /></Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-60 bg-card border border-border">
         {MARKETS.map((m, i) => (
@@ -47,10 +50,10 @@ export function VoucherShareMenu({ voucher }: VoucherShareMenuProps) {
                 <Twitter className="w-4 h-4 mr-2 text-sky-500" />Twitter/X
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => copy(m.id)} className="cursor-pointer">
-                <Copy className="w-4 h-4 mr-2" />Copiar texto
+                <Copy className="w-4 h-4 mr-2" />{tu('share.copy')}
               </DropdownMenuItem>
             </>) : (
-              <p className="px-2 pb-2 text-xs text-muted-foreground">Na Itália só valem vouchers de porcentagem para música.</p>
+              <p className="px-2 pb-2 text-xs text-muted-foreground">{tu('share.italyRule')}</p>
             )}
           </Fragment>
         ))}

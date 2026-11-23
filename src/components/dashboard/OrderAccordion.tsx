@@ -50,6 +50,7 @@ export const OrderAccordion = ({
   stuckOrderIds,
   onRetryOrder,
 }: OrderAccordionProps) => {
+  const { t: tu } = useTranslation('uiOrders');
   const gifts = useGiftList();
   const {t: th} = useTranslation("home");
   const [retryingOrderId, setRetryingOrderId] = useState<string | null>(null);
@@ -89,11 +90,11 @@ export const OrderAccordion = ({
                   </div>
                   <div className="text-left min-w-0 flex-1">
                     <p className="font-semibold text-xs sm:text-base truncate">
-                      {order.song_title || order.lyric_title || `${order.music_type || 'Música'}`}
+                      {order.song_title || order.lyric_title || `${order.music_type || tu('OrderAccordion.text001')}`}
                     </p>
                     {gift && <p className="text-xs font-medium text-primary">{th(`gifts.products.${gift.product}.name`)} · {th(`giftFlow.status.${gift.status}`)}</p>}
                     <p className="text-xs text-muted-foreground truncate">
-                      {order.music_style || 'Estilo'} • {new Date(order.created_at || '').toLocaleDateString()}
+                      {order.music_style || tu('OrderAccordion.text002')} • {new Date(order.created_at || '').toLocaleDateString()}
                     </p>
                   </div>
                 </div>

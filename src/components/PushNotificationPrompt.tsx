@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Bell, BellOff, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
 export const PushNotificationPrompt = () => {
+  const { t: tu } = useTranslation('uiAccount');
   const { user } = useAuth();
   const { isSupported, isSubscribed, isLoading, permission, subscribe, unsubscribe } = usePushNotifications();
   const [dismissed, setDismissed] = useState(false);
@@ -51,9 +53,9 @@ export const PushNotificationPrompt = () => {
             <Bell className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm mb-1">Ativar notificações?</h4>
+            <h4 className="font-semibold text-sm mb-1">{tu('enableNotificationsQuestion')}</h4>
             <p className="text-xs text-muted-foreground mb-3">
-              Receba atualizações sobre seus pedidos de música diretamente no seu dispositivo.
+              {tu('orderUpdates')}
             </p>
             <div className="flex gap-2">
               <Button 
@@ -62,7 +64,7 @@ export const PushNotificationPrompt = () => {
                 disabled={isLoading}
                 className="text-xs"
               >
-                {isLoading ? 'Ativando...' : 'Ativar'}
+                {isLoading ? tu('enabling') : tu('enable')}
               </Button>
               <Button 
                 size="sm" 
@@ -70,7 +72,7 @@ export const PushNotificationPrompt = () => {
                 onClick={handleDismiss}
                 className="text-xs"
               >
-                Agora não
+                {tu('notNow')}
               </Button>
             </div>
           </div>
@@ -89,6 +91,7 @@ export const PushNotificationPrompt = () => {
 };
 
 export const NotificationToggle = () => {
+  const { t: tu } = useTranslation('uiAccount');
   const { isSupported, isSubscribed, isLoading, subscribe, unsubscribe } = usePushNotifications();
 
   if (!isSupported) {
@@ -106,12 +109,12 @@ export const NotificationToggle = () => {
       {isSubscribed ? (
         <>
           <Bell className="w-4 h-4" />
-          Notificações Ativas
+          {tu('notificationsActive')}
         </>
       ) : (
         <>
           <BellOff className="w-4 h-4" />
-          Ativar Notificações
+          {tu('enableNotifications')}
         </>
       )}
     </Button>
@@ -120,6 +123,7 @@ export const NotificationToggle = () => {
 
 // Banner component for Dashboard
 export const NotificationBanner = () => {
+  const { t: tu } = useTranslation('uiAccount');
   const { user } = useAuth();
   const { isSupported, isSubscribed, isLoading, permission, subscribe } = usePushNotifications();
   const [dismissed, setDismissed] = useState(false);
@@ -154,9 +158,9 @@ export const NotificationBanner = () => {
           <Bell className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1">
-          <h4 className="font-semibold text-sm">Ative as notificações</h4>
+          <h4 className="font-semibold text-sm">{tu('enableNotificationsHeading')}</h4>
           <p className="text-xs text-muted-foreground">
-            Seja notificado quando sua música estiver pronta!
+            {tu('songReadyAlert')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -165,7 +169,7 @@ export const NotificationBanner = () => {
             onClick={handleSubscribe}
             disabled={isLoading}
           >
-            {isLoading ? 'Ativando...' : 'Ativar'}
+            {isLoading ? tu('enabling') : tu('enable')}
           </Button>
           <Button 
             size="sm" 

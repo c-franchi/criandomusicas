@@ -39,6 +39,7 @@ interface VoucherValidation {
 }
 
 const CreatorCheckout = () => {
+  const { t: tu } = useTranslation('uiPayments');
   const { planId } = useParams<{ planId: string }>();
   const { t, i18n } = useTranslation("pricing");
   const formatPrice = (cents: number) => formatCurrency(cents, i18n.language, { convert: true });
@@ -174,7 +175,7 @@ const CreatorCheckout = () => {
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        throw new Error('URL de checkout não retornada');
+        throw new Error(tu('creator.checkoutUrlError'));
       }
     } catch (err: any) {
       console.error('Error creating subscription:', err);

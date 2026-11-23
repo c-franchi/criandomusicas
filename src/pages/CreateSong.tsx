@@ -109,6 +109,7 @@ const useAutoRedirect = (step: Step, navigate: ReturnType<typeof useNavigate>, d
 };
 
 const CreateSong = () => {
+  const { t: tu } = useTranslation('uiOrders');
   const { t } = useTranslation('dashboard');
   const { t: th } = useTranslation('home');
   const [generationError,setGenerationError]=useState<string | null>(null);
@@ -527,8 +528,8 @@ const CreateSong = () => {
     // Check for forbidden words in edited lyrics
     const forbiddenFound = findForbiddenWords(editedLyric);
     if (forbiddenFound.length > 0) {
-      toast.error('Conteúdo não permitido', {
-        description: `A letra contém termos proibidos que bloquearão a geração da música: "${forbiddenFound.slice(0, 3).join('", "')}". Por favor, remova ou substitua essas palavras.`,
+      toast.error(tu('CreateSong.text001'), {
+        description: tu('CreateSong.text013', { terms: forbiddenFound.slice(0, 3).join('", "') }),
         duration: 8000,
       });
       return;
@@ -537,8 +538,8 @@ const CreateSong = () => {
     // Also check the title
     const titleForbidden = findForbiddenWords(editedTitle);
     if (titleForbidden.length > 0) {
-      toast.error('Título não permitido', {
-        description: `O título contém termos proibidos: "${titleForbidden.slice(0, 3).join('", "')}". Por favor, altere o título.`,
+      toast.error(tu('CreateSong.text002'), {
+        description: tu('CreateSong.text014', { terms: titleForbidden.slice(0, 3).join('", "') }),
         duration: 8000,
       });
       return;
@@ -630,11 +631,11 @@ const CreateSong = () => {
     if (!file) return;
     
     if (!file.type.startsWith('image/')) {
-      toast.error('Selecione uma imagem válida');
+      toast.error(tu('CreateSong.text003'));
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 10MB');
+      toast.error(tu('CreateSong.text004'));
       return;
     }
     
@@ -664,7 +665,7 @@ const CreateSong = () => {
     
     if (error) {
       console.error('Cover upload error:', error);
-      toast.error('Erro ao enviar capa');
+      toast.error(tu('CreateSong.text005'));
       return null;
     }
     
@@ -961,10 +962,10 @@ const CreateSong = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImagePlus className="w-5 h-5" />
-                Capa da música (opcional)
+                {tu('CreateSong.text006')}
               </CardTitle>
               <CardDescription>
-                Envie uma imagem para usar como capa ou deixe a IA gerar automaticamente.
+                {tu('CreateSong.text007')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -984,7 +985,7 @@ const CreateSong = () => {
                 >
                   <ImagePlus className="w-10 h-10 text-muted-foreground" />
                   <div className="text-center">
-                    <p className="text-sm font-medium">Clique para enviar uma imagem</p>
+                    <p className="text-sm font-medium">{tu('CreateSong.text008')}</p>
                     <p className="text-xs text-muted-foreground mt-1">{tc('coverUpload.formats')}</p>
                   </div>
                 </button>
@@ -993,7 +994,7 @@ const CreateSong = () => {
                   <div className="relative w-40 h-40 mx-auto rounded-xl overflow-hidden border border-border">
                     <img
                       src={customCoverPreview}
-                      alt="Capa personalizada"
+                      alt={tu('CreateSong.text009')}
                       className="w-full h-full object-cover"
                     />
                     <button
@@ -1011,7 +1012,7 @@ const CreateSong = () => {
                       className="cursor-pointer"
                       onClick={() => setCoverMode("original")}
                     >
-                      📷 Usar original
+                      {tu('CreateSong.text010')}
                     </Badge>
                     <Badge
                       variant={coverMode === "enhanced" ? "default" : "outline"}
@@ -1019,7 +1020,7 @@ const CreateSong = () => {
                       onClick={() => setCoverMode("enhanced")}
                     >
                       <Wand2 className="w-3 h-3 mr-1" />
-                      Melhorar com IA
+                      {tu('CreateSong.text011')}
                     </Badge>
                   </div>
                   
@@ -1030,7 +1031,7 @@ const CreateSong = () => {
                   </p>
                   
                   <p className="text-xs text-center text-muted-foreground/70">
-                    Ao enviar, você autoriza o uso desta imagem como capa da sua música.
+                    {tu('CreateSong.text012')}
                   </p>
                 </div>
               )}
@@ -1239,10 +1240,10 @@ const CreateSong = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <ImagePlus className="w-5 h-5" />
-                Capa da música (opcional)
+                {tu('CreateSong.text006')}
               </CardTitle>
               <CardDescription>
-                Envie uma imagem para usar como capa ou deixe a IA gerar automaticamente.
+                {tu('CreateSong.text007')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1262,7 +1263,7 @@ const CreateSong = () => {
                 >
                   <ImagePlus className="w-10 h-10 text-muted-foreground" />
                   <div className="text-center">
-                    <p className="text-sm font-medium">Clique para enviar uma imagem</p>
+                    <p className="text-sm font-medium">{tu('CreateSong.text008')}</p>
                     <p className="text-xs text-muted-foreground mt-1">{tc('coverUpload.formats')}</p>
                   </div>
                 </button>
@@ -1271,7 +1272,7 @@ const CreateSong = () => {
                   <div className="relative w-40 h-40 mx-auto rounded-xl overflow-hidden border border-border">
                     <img
                       src={customCoverPreview}
-                      alt="Capa personalizada"
+                      alt={tu('CreateSong.text009')}
                       className="w-full h-full object-cover"
                     />
                     <button
@@ -1289,7 +1290,7 @@ const CreateSong = () => {
                       className="cursor-pointer"
                       onClick={() => setCoverMode("original")}
                     >
-                      📷 Usar original
+                      {tu('CreateSong.text010')}
                     </Badge>
                     <Badge
                       variant={coverMode === "enhanced" ? "default" : "outline"}
@@ -1297,7 +1298,7 @@ const CreateSong = () => {
                       onClick={() => setCoverMode("enhanced")}
                     >
                       <Wand2 className="w-3 h-3 mr-1" />
-                      Melhorar com IA
+                      {tu('CreateSong.text011')}
                     </Badge>
                   </div>
                   
@@ -1308,7 +1309,7 @@ const CreateSong = () => {
                   </p>
                   
                   <p className="text-xs text-center text-muted-foreground/70">
-                    Ao enviar, você autoriza o uso desta imagem como capa da sua música.
+                    {tu('CreateSong.text012')}
                   </p>
                 </div>
               )}

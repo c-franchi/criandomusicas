@@ -1,3 +1,4 @@
+import i18n from '@/lib/i18n';
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
@@ -19,10 +20,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Send, Loader2, Mail, User, MessageSquare } from "lucide-react";
 
 const contactSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").max(100),
-  email: z.string().email("Email inválido").max(255),
-  subject: z.string().min(3, "Assunto deve ter pelo menos 3 caracteres").max(200),
-  message: z.string().min(10, "Mensagem deve ter pelo menos 10 caracteres").max(2000),
+  name: z.string().min(2, i18n.t('nameMin', { ns: 'uiAccount' })).max(100),
+  email: z.string().email(i18n.t('invalidEmail', { ns: 'uiAccount' })).max(255),
+  subject: z.string().min(3, i18n.t('subjectMin', { ns: 'uiAccount' })).max(200),
+  message: z.string().min(10, i18n.t('messageMin', { ns: 'uiAccount' })).max(2000),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
