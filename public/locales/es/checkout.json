@@ -135,7 +135,8 @@
     "verificationFailed": "No se pudo verificar el pago.",
     "somethingWrong": "¡Ups! Algo salió mal",
     "tryAgain": "Intentar de Nuevo",
-    "backToDashboard": "Volver al Dashboard"
+    "backToDashboard": "Volver al Dashboard",
+    "euroPlanUnavailable": "El paquete elegido aún no está disponible en euros. Elige la canción individual. No se ha hecho ningún cargo."
   },
   "toast": {
     "pixKeyCopied": "¡Clave PIX copiada!",

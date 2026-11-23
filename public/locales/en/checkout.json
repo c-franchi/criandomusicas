@@ -135,7 +135,8 @@
     "verificationFailed": "Could not verify payment.",
     "somethingWrong": "Oops! Something went wrong",
     "tryAgain": "Try Again",
-    "backToDashboard": "Back to Dashboard"
+    "backToDashboard": "Back to Dashboard",
+    "euroPlanUnavailable": "The selected package is not available in euros yet. Choose a single song. You were not charged."
   },
   "toast": {
     "pixKeyCopied": "PIX key copied!",

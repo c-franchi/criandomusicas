@@ -135,7 +135,8 @@
     "verificationFailed": "Impossibile verificare il pagamento.",
     "somethingWrong": "Ops! Qualcosa è andato storto",
     "tryAgain": "Riprova",
-    "backToDashboard": "Torna alla Dashboard"
+    "backToDashboard": "Torna alla Dashboard",
+    "euroPlanUnavailable": "Il pacchetto scelto non è ancora disponibile in euro. Scegli la canzone singola. Nessun addebito è stato effettuato."
   },
   "toast": {
     "pixKeyCopied": "Chiave PIX copiata!",

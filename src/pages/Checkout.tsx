@@ -92,7 +92,9 @@ export default function Checkout() {
       window.location.href = data.url;
     } catch (e) {
       console.error('Euro checkout failed:', e);
-      toast.error(t('errors.paymentFailed'));
+      let code = '';
+      try { code = (await (e as { context?: Response }).context?.clone().json())?.error || ''; } catch { /* keep generic */ }
+      toast.error(code === 'plan_unavailable' ? t('errors.euroPlanUnavailable') : t('errors.paymentFailed'));
       setProcessingEuro(false);
     }
   };
