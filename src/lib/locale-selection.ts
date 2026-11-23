@@ -40,24 +40,32 @@ export async function detectAccessCountry(fetcher: typeof fetch, timeoutMs=1500)
   finally {if(timeout)clearTimeout(timeout);}
 }
 
-type Options={ storage?:()=>Pick<Storage,'getItem'|'setItem'|'removeItem'> | undefined; fetcher?:typeof fetch; timezone?:()=>string; languages?:()=>readonly string[] };
+/** Market domains force their region while the visitor has no manual choice. */
+export function domainRegionCode(hostname: string): string | null {
+  const h=hostname.toLowerCase().replace(/\.$/,'');
+  return h==='creandomusica.it'||h.endsWith('.creandomusica.it')?'IT':null;
+}
+type Options={ hostname?:()=>string; storage?:()=>Pick<Storage,'getItem'|'setItem'|'removeItem'> | undefined; fetcher?:typeof fetch; timezone?:()=>string; languages?:()=>readonly string[] };
 export function createLocaleController(options: Options={}) {
   const read=(key:string)=>{try{return options.storage?.()?.getItem(key) || null;}catch{return null;}};
   const write=(key:string,value:string)=>{try{options.storage?.()?.setItem(key,value);}catch{/* In-memory preferences still work. */}};
   const browser=()=>{try{return supportedBrowserLanguage(options.languages?.()||[]) || 'pt-BR';}catch{return 'pt-BR' as const;}};
   const timezone=()=>{try{return options.timezone?detectRegionFromTimezone(options.timezone()):null;}catch{return null;}};
+  const domainRegion=()=>{try{const c=domainRegionCode(options.hostname?.()||'');return regions.find(r=>r.code===c)||null;}catch{return null;}};
   const savedRegion=regions.find(r=>r.code===read(regionKey))||null;
   const savedLanguage=supportedBrowserLanguage([read(languageKey)||'']);
   // Old language-only values were written automatically by the previous detector.
   // A legacy region, in contrast, was saved only after an explicit user selection.
   const manual=read(modeKey)==='manual'||(read(modeKey)!=='auto'&&!!savedRegion);
-  let state: LocaleSnapshot={mode:manual?'manual':'auto',region:manual?savedRegion:timezone(),language:manual?(savedLanguage||savedRegion?.language as LocaleLanguage||browser()):(timezone()?.language as LocaleLanguage||browser())};
+  let state: LocaleSnapshot={mode:manual?'manual':'auto',region:manual?savedRegion:(domainRegion()||timezone()),language:manual?(savedLanguage||savedRegion?.language as LocaleLanguage||browser()):((domainRegion()||timezone())?.language as LocaleLanguage||browser())};
   let revision=0, country: Promise<string|null> | undefined;
   const listeners=new Set<()=>void>();
   const update=(next:LocaleSnapshot)=>{state=next;listeners.forEach(fn=>fn());return state;};
   const resolve=async()=>{
     const current=++revision;
     if(state.mode==='manual')return state;
+    const forced=domainRegion();
+    if(forced)return update({mode:'auto',region:forced,language:forced.language as LocaleLanguage});
     country??=options.fetcher?detectAccessCountry(options.fetcher):Promise.resolve(null);
     const code=await country;
     if(current!==revision || (state as LocaleSnapshot).mode==='manual')return state;
@@ -88,6 +96,7 @@ export function createLocaleController(options: Options={}) {
 export const localeController=createLocaleController({
   storage:()=>typeof window==='undefined'?undefined:window.localStorage,
   fetcher:typeof window==='undefined'?undefined:window.fetch.bind(window),
+  hostname:()=>typeof window==='undefined'?'':window.location.hostname,
   languages:()=>typeof navigator==='undefined'?[]:navigator.languages,
   timezone:()=>Intl.DateTimeFormat().resolvedOptions().timeZone,
 });

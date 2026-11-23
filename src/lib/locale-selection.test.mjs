@@ -59,3 +59,13 @@ test('multiple selectors share one lookup and all receive updates, including sam
 test('storage restrictions do not prevent detection or manual choices within the page',async()=>{
  const f=fixture({storageBlocked:true});assert.equal((await f.controller.resolve()).language,'it');f.controller.selectLanguage('en');assert.equal((await f.controller.resolve()).language,'en');
 });
+
+test('creandomusica.it opens in Italian with EUR region unless user chose manually', async () => {
+  const { createLocaleController: mk, domainRegionCode } = await import('./locale-selection.ts');
+  assert.equal(domainRegionCode('www.creandomusica.it'), 'IT');
+  assert.equal(domainRegionCode('criandomusicas.com.br'), null);
+  const c = mk({ hostname: () => 'creandomusica.it', languages: () => ['pt-BR'], fetcher: async () => new Response('loc=BR\n', { headers: { 'content-type': 'text/plain' } }) });
+  assert.equal(c.getSnapshot().language, 'it');
+  const s = await c.resolve();
+  assert.equal(s.language, 'it'); assert.equal(s.region.currency, 'EUR');
+});
