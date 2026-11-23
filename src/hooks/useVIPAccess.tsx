@@ -53,18 +53,10 @@ export const bypassPaymentForVIP = async (
   userId: string
 ): Promise<boolean> => {
   try {
-    const { error } = await supabase
-      .from('orders')
-      .update({
-        payment_status: 'PAID',
-        status: 'LYRICS_PENDING',
-        voucher_code: 'VIP_ACCESS',
-        discount_applied: 0,
-      })
-      .eq('id', orderId)
-      .eq('user_id', userId);
-
-    return !error;
+    const { data, error } = await supabase.functions.invoke('use-credit', {
+      body: { orderId, vipBypass: true },
+    });
+    return !error && data?.success === true;
   } catch (error) {
     console.error('Error bypassing payment:', error);
     return false;

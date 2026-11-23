@@ -22,7 +22,7 @@ globalThis.__voiceDb = {
       select: () => q, eq: () => q,
       update: data => { updates.push(data); return q; },
       insert: data => { insert = true; inserts.push(...data); return q; },
-      maybeSingle: async () => ({ data: gift, error: null }),
+      maybeSingle: async () => ({ data: table === 'orders' ? { id: 'order', user_id: 'owner', language: globalThis.__orderLanguage } : gift, error: null }),
       single: async () => ({ data: { user_id: 'owner', language: globalThis.__orderLanguage }, error: null }),
       then: resolve => resolve({ data: insert ? [{ id: 'a' }, { id: 'b' }] : null, error: null }),
     };
@@ -35,6 +35,7 @@ let source = readFileSync(new URL('../../supabase/functions/generate-lyrics/inde
   .replace(/^import .*generationLanguage.ts.*$/m, 'const { resolveGenerationLanguage } = globalThis.__generationLanguage;')
   .replace(/^import .*orderLanguageCopy.ts.*$/m, 'const { generationNotificationCopy } = globalThis.__generationLanguage;')
   .replace(/^import .*http\/server.ts.*$/m, 'const serve = callback => { globalThis.__lyricsHandler = callback; };')
+  .replace(/^import .*requestAuth.*$/m, 'const getRequestAuth=async()=>({admin:globalThis.__voiceDb,user:{id:"owner"},isAdmin:false});const canAccessUser=(auth,id)=>auth.isAdmin||auth.user?.id===id;const authError=()=>new Response(null,{status:401});')
   .replace(/^import .*supabase-js.*$/m, 'const createClient = () => globalThis.__voiceDb;');
 await import('data:text/javascript,' + encodeURIComponent(transformSync(source, { loader: 'ts', format: 'esm' }).code));
 

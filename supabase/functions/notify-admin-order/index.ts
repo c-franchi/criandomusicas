@@ -2,6 +2,8 @@ import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { authError, canAccessUser, getRequestAuth } from '../_shared/requestAuth.ts';
+import { escapeHtml } from '../_shared/html.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -27,7 +29,7 @@ async function sendWhatsAppMessage(phone: string, message: string): Promise<bool
     const response = await fetch(url);
     const result = await response.text();
     
-    console.log(`[WhatsApp] Enviado para ${phone}: ${result}`);
+    console.log(`[WhatsApp] Resultado do envio: ${response.status}`);
     return response.ok;
   } catch (error) {
     console.error("[WhatsApp] Erro:", error);
@@ -67,9 +69,9 @@ async function sendAdminEmail(
           </h2>
           
           <div style="background: #f3f0ff; border-radius: 8px; padding: 15px; margin: 20px 0;">
-            <p style="margin: 8px 0;"><strong>👤 Cliente:</strong> ${userName || "Não informado"}</p>
-            <p style="margin: 8px 0;"><strong>🎶 Tipo:</strong> ${typeLabel} (${musicType || "personalizada"})</p>
-            <p style="margin: 8px 0;"><strong>📋 Pedido:</strong> #${orderId.slice(0, 8)}</p>
+            <p style="margin: 8px 0;"><strong>👤 Cliente:</strong> ${escapeHtml(userName || "Não informado")}</p>
+            <p style="margin: 8px 0;"><strong>🎶 Tipo:</strong> ${escapeHtml(typeLabel)} (${escapeHtml(musicType || "personalizada")})</p>
+            <p style="margin: 8px 0;"><strong>📋 Pedido:</strong> #${escapeHtml(orderId.slice(0, 8))}</p>
           </div>
           
           ${isPixReceipt ? '<p style="color: #dc2626; font-weight: bold;">⚠️ Ação necessária: Verificar comprovante e aprovar pagamento</p>' : ''}
@@ -109,7 +111,9 @@ serve(async (req) => {
   }
 
   try {
-    const { orderId, userId, orderType, userName, musicType, isPixReceipt } = await req.json();
+    const { orderId } = await req.json();
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
 
     if (!orderId) {
       return new Response(
@@ -118,10 +122,25 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = auth.admin;
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select('user_id, music_style, music_type, is_instrumental, pix_receipt_url, payment_status')
+      .eq('id', orderId)
+      .single();
+    if (orderError || !order) {
+      return new Response(JSON.stringify({ error: 'Order not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (!canAccessUser(auth, order.user_id)) return authError(corsHeaders, 403);
+    const { data: profile } = await supabase.from('profiles').select('name').eq('user_id', order.user_id).maybeSingle();
+    const userId = order.user_id;
+    const userName = profile?.name || 'Cliente';
+    const musicType = order.music_style || order.music_type || 'personalizada';
+    const orderType = order.is_instrumental ? 'instrumental' : 'vocal';
+    const isPixReceipt = order.payment_status === 'AWAITING_PIX' && Boolean(order.pix_receipt_url);
 
     if(await isItalySandboxOrder(supabase,orderId)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     const isInstrumental = orderType === "instrumental";
@@ -143,7 +162,7 @@ serve(async (req) => {
       .eq("role", "admin");
 
     if (!adminError && adminRoles && adminRoles.length > 0) {
-      const adminUserIds = adminRoles.map((r) => r.user_id);
+      const adminUserIds = adminRoles.map((r: { user_id: string }) => r.user_id);
       
       const { data: subscriptions } = await supabase
         .from("push_subscriptions")
@@ -160,7 +179,7 @@ serve(async (req) => {
           : `${userName || "Cliente"} pediu uma música ${typeLabel} (${musicType || "personalizada"})`;
 
         const pushResults = await Promise.allSettled(
-          subscriptions.map(async (sub) => {
+          subscriptions.map(async (sub: any) => {
             try {
               const { error: pushError } = await supabase.functions.invoke("send-push-notification", {
                 body: {

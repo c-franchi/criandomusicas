@@ -145,17 +145,10 @@ const VideoCheckout = () => {
 
       setVideoOrderId(videoOrder.id);
 
-      // Update payment method
-      await supabase.from('video_orders').update({ payment_status: 'PENDING' }).eq('id', videoOrder.id);
-
-      // Create Stripe checkout session
+      // Create Stripe checkout session using the server-side order quote.
       const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', {
         body: {
           videoOrderId: videoOrder.id,
-          amount: 5000,
-          description: `Vídeo Personalizado - ${orderTitle || 'Música'}`,
-          successUrl: `${window.location.origin}/video-upload/${videoOrder.id}`,
-          cancelUrl: `${window.location.origin}/video-checkout/${orderId}`,
           isVideoOrder: true
         }
       });

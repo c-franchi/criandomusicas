@@ -34,6 +34,13 @@ export async function loadAdminOrders(client: SupabaseClient<Database>, onBase?:
     batch('profiles','user_id,name,whatsapp','user_id',orders.map(o=>o.user_id)),
     batch('audio_inputs','id,storage_path','id',orders.map(o=>o.audio_input_id).filter(Boolean)),
   ]);
+  const receiptPaths = orders.flatMap(o => typeof o.pix_receipt_url === 'string' && o.pix_receipt_url.startsWith('pix-receipts/') ? [o.pix_receipt_url.slice('pix-receipts/'.length)] : []);
+  const receiptUrls = new Map<string,string>();
+  if (receiptPaths.length) {
+    const r = await client.storage.from('pix-receipts').createSignedUrls(receiptPaths, 300);
+    check(r);
+    for (const row of r.data || []) if (row.path && row.signedUrl && !row.error) receiptUrls.set(row.path, row.signedUrl);
+  }
   const signed=new Map<string,string>();
   if(inputs.length) {
     const r=await client.storage.from('audio-inputs').createSignedUrls(inputs.map(i=>i.storage_path),3600);
@@ -50,7 +57,9 @@ export async function loadAdminOrders(client: SupabaseClient<Database>, onBase?:
   return base.map(o=>{
     const chosen=lyricById.get(o.approved_lyric_id), rows=trackMap.get(o.id)||[], profile=profileMap.get(o.user_id);
     const primary=o.gift?rows.find(t=>t.version===o.gift.track_version):rows.find(t=>t.version===1)||rows[0];
-    return {...o,lyric_title:(chosen || latest.get(o.id))?.title || null,
+    return {...o,
+      pix_receipt_url: (typeof o.pix_receipt_url === 'string' && o.pix_receipt_url.startsWith('pix-receipts/') ? receiptUrls.get(o.pix_receipt_url.slice('pix-receipts/'.length)) : null) || o.pix_receipt_url,
+      lyric_title:(chosen || latest.get(o.id))?.title || null,
       lyric_approval_state:lyricApprovalEvidence(o,chosen),
       track_url:primary?.audio_url || null, uploadedVersions:rows.filter(t=>t.audio_url && t.version!==null).map(t=>t.version),
       user_name:profile?.name || null,user_whatsapp:profile?.whatsapp || null,

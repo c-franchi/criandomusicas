@@ -77,7 +77,7 @@ serve(async (req) => {
     }
 
     const userId = user.id;
-    logStep("User authenticated", { userId, email: user.email });
+    logStep("User authenticated", { userId });
 
     // Check if user is admin using service role to bypass RLS
     const { data: roleData, error: roleError } = await supabaseAdmin

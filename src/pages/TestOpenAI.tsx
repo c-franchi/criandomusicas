@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 type HealthOk = { ok: true; text: string };
 type HealthErr = { ok: false; name?: string; message?: string; status?: number; data?: any; error?: string };
@@ -14,12 +15,10 @@ export default function TestOpenAI() {
     setLoading(true);
     setResp(null);
     try {
-      const r = await fetch("/api/openai-health", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ story }),
+      const { data, error } = await supabase.functions.invoke("openai-health", {
+        body: { story },
       });
-      const data = await r.json();
+      if (error) throw error;
       setResp(data);
     } catch (e: any) {
       setResp({ ok: false, message: e?.message || String(e) });

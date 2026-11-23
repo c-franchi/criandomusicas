@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { authError, canAccessUser, getRequestAuth } from "../_shared/requestAuth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,6 +37,9 @@ serve(async (req) => {
       finalPrompt: string;
     };
 
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
+
     console.log("validate-prompt called for orderId:", orderId);
 
     if (!orderId || !briefing || !stylePrompt) {
@@ -45,6 +48,19 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { data: order, error: orderError } = await auth.admin
+      .from("orders")
+      .select("user_id")
+      .eq("id", orderId)
+      .single();
+    if (orderError || !order) {
+      return new Response(JSON.stringify({ ok: false, error: "Order not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!canAccessUser(auth, order.user_id)) return authError(corsHeaders, 403);
 
     const AI_GATEWAY_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!AI_GATEWAY_API_KEY) {
@@ -170,12 +186,8 @@ Provide your analysis as JSON.`;
 
     console.log("Validation result:", validation);
 
-    // Update order with validation score
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const { error: updateError } = await supabase
+    // Update only the order whose ownership was verified above.
+    const { error: updateError } = await auth.admin
       .from('orders')
       .update({
         prompt_validation_score: validation.score,

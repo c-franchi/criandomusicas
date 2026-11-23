@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkoutReturnOrigin } from "../_shared/checkoutOrigin.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -94,7 +95,7 @@ serve(async (req) => {
     
     const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string;
-    logStep("User authenticated", { email: userEmail });
+    logStep("User authenticated", { userId });
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
@@ -127,8 +128,8 @@ serve(async (req) => {
       }
     }
 
-    // Get origin for redirect URLs
-    const origin = req.headers.get("origin") || "https://criandomusicas.lovable.app";
+    // Checkout may return only to an application-owned origin.
+    const origin = checkoutReturnOrigin(req);
 
     // Handle voucher/coupon if provided
     let stripeCouponId: string | undefined;

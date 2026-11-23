@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { generationLanguageEnglishName, resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
+import { authError, getRequestAuth } from '../_shared/requestAuth.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,6 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await getRequestAuth(req);
+    if (!auth.isAdmin) return authError(corsHeaders, auth.user ? 403 : 401);
+
     const { title, style, purpose, story, lyricBody, userName, musicType, language } = await req.json();
     const outputLanguage = generationLanguageEnglishName(resolveGenerationLanguage(language));
 

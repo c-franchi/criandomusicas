@@ -760,12 +760,9 @@ export default function Checkout() {
       
       if (uploadError) throw uploadError;
       
-      // Get signed URL for private bucket (admins access via has_role policy)
-      const { data: urlData } = await supabase.storage
-        .from('pix-receipts')
-        .createSignedUrl(fileName, 60 * 60 * 24 * 30); // 30 days validity
-      
-      const receiptUrl = urlData?.signedUrl || `pix-receipts/${fileName}`;
+      // Store only the private object path. Administrators receive fresh,
+      // short-lived signed URLs instead of a 30-day bearer link.
+      const receiptUrl = `pix-receipts/${fileName}`;
       
       // Update order with receipt URL and status
       const { error: updateError } = await supabase

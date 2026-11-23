@@ -4,6 +4,8 @@ import { Resend } from "https://esm.sh/resend@4.1.2";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
 import { purchaseEmailCopy } from '../_shared/orderLanguageCopy.ts';
+import { authError, getRequestAuth } from '../_shared/requestAuth.ts';
+import { escapeHtml } from '../_shared/html.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -67,7 +69,7 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest, language: unknown
             <strong>${copy.plan}</strong>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-            ${data.planName}
+            ${escapeHtml(data.planName)}
           </td>
         </tr>
         <tr>
@@ -92,7 +94,7 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest, language: unknown
             <strong>${copy.nextRenewal}</strong>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-            ${data.renewalDate}
+            ${escapeHtml(data.renewalDate)}
           </td>
         </tr>
         ` : ''}
@@ -106,7 +108,7 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest, language: unknown
             <strong>${copy.package}</strong>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-            ${data.planName}
+            ${escapeHtml(data.planName)}
           </td>
         </tr>
         <tr>
@@ -135,7 +137,7 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest, language: unknown
             <strong>${copy.service}</strong>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-            ${data.planName}
+            ${escapeHtml(data.planName)}
           </td>
         </tr>
       `;
@@ -148,7 +150,7 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest, language: unknown
             <strong>${copy.product}</strong>
           </td>
           <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">
-            ${data.planName}
+            ${escapeHtml(data.planName)}
           </td>
         </tr>
         <tr>
@@ -192,7 +194,7 @@ const generatePurchaseEmailHtml = (data: PurchaseEmailRequest, language: unknown
             <td style="padding: 40px 30px;">
               <!-- Greeting -->
               <h2 style="margin: 0 0 20px; color: #1f2937; font-size: 22px;">
-                ${copy.greeting.replace('{name}', data.userName || copy.customer)}
+                ${escapeHtml(copy.greeting.replace('{name}', data.userName || copy.customer))}
               </h2>
               
               <p style="margin: 0 0 25px; color: #4b5563; font-size: 16px; line-height: 1.6;">
@@ -314,6 +316,16 @@ serve(async (req) => {
     logStep("Function started");
 
     const data: PurchaseEmailRequest = await req.json();
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
+    if (!auth.isAdmin) {
+      if (data.userId && data.userId !== auth.user?.id) return authError(corsHeaders, 403);
+      if (data.email && data.email.toLowerCase() !== auth.user?.email?.toLowerCase()) {
+        return authError(corsHeaders, 403);
+      }
+      data.userId = auth.user?.id;
+      data.email = auth.user?.email;
+    }
     
     let language=resolveGenerationLanguage(data.language);
     if(data.orderId) {
@@ -356,7 +368,7 @@ serve(async (req) => {
       
       userName = userName || profileData?.name || userData.user?.email?.split('@')[0] || copy.customer;
       
-      logStep("User data fetched", { email, userName });
+      logStep("User data fetched", { userId: data.userId });
     }
     
     // Validate required fields
@@ -365,7 +377,6 @@ serve(async (req) => {
     }
 
     logStep("Sending purchase confirmation email", { 
-      email, 
       purchaseType: data.purchaseType,
       planName: data.planName,
       paymentMethod: data.paymentMethod 

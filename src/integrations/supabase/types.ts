@@ -1390,6 +1390,24 @@ export type Database = {
         }
         Relationships: []
       }
+      scheduled_job_credentials: {
+        Row: {
+          credential: string
+          is_active: boolean
+          job_name: string
+        }
+        Insert: {
+          credential?: string
+          is_active?: boolean
+          job_name: string
+        }
+        Update: {
+          credential?: string
+          is_active?: boolean
+          job_name?: string
+        }
+        Relationships: []
+      }
       seasonal_campaigns: {
         Row: {
           created_at: string | null

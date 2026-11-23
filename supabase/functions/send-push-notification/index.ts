@@ -1,4 +1,5 @@
 import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
+import { authError, canAccessUser, getRequestAuth } from "../_shared/requestAuth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.91.0";
 import {
   buildPushPayload,
@@ -23,6 +24,9 @@ Deno.serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
+
     logStep('Function started');
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -52,6 +56,14 @@ Deno.serve(async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { user_id, order_id, title, body, url, notification_type } = await req.json();
+    if (!user_id || typeof user_id !== "string") {
+      return new Response(JSON.stringify({ error: "user_id is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!canAccessUser(auth, user_id)) return authError(corsHeaders, 403);
+
     if(await isItalySandboxOrder(supabase,order_id)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     if (order_id && (notification_type === 'gift_ready' || (!/letr|lyric/i.test(title || '') && /pront|ready|liberad/i.test(title || '')))) {
       const {data:gift,error}=await supabase.from('musical_gifts').select('owner_id,status,is_test').eq('checkout_order_id',order_id).maybeSingle();
@@ -145,7 +157,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
         const payload = await buildPushPayload(message, subscription, vapid);
 
         // Send the push notification
-        const response = await fetch(subscription.endpoint, payload);
+        const response = await fetch(subscription.endpoint, payload as unknown as RequestInit);
 
         if (response.status === 201 || response.status === 200) {
           successCount++;

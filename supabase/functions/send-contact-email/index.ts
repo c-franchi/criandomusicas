@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { escapeHtml } from '../_shared/html.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -41,12 +42,17 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Mensagem inválida");
     }
 
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message);
+
     // Send email to support
     const emailResponse = await resend.emails.send({
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
       to: ["contato@criandomusicas.com.br"],
-      replyTo: email,
-      subject: `[Contato Site] ${subject}`,
+      reply_to: email,
+      subject: `[Contato Site] ${safeSubject}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -66,23 +72,23 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
                 <h2 style="color: #333; margin: 0 0 15px 0; font-size: 18px;">Dados do Contato</h2>
                 <p style="margin: 8px 0; color: #555;">
-                  <strong>Nome:</strong> ${name}
+                  <strong>Nome:</strong> ${safeName}
                 </p>
                 <p style="margin: 8px 0; color: #555;">
-                  <strong>Email:</strong> <a href="mailto:${email}" style="color: #9b59b6;">${email}</a>
+                  <strong>Email:</strong> <a href="mailto:${safeEmail}" style="color: #9b59b6;">${safeEmail}</a>
                 </p>
                 <p style="margin: 8px 0; color: #555;">
-                  <strong>Assunto:</strong> ${subject}
+                  <strong>Assunto:</strong> ${safeSubject}
                 </p>
               </div>
               
               <div style="background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px;">
                 <h3 style="color: #333; margin: 0 0 15px 0; font-size: 16px;">Mensagem:</h3>
-                <p style="color: #555; line-height: 1.6; white-space: pre-wrap; margin: 0;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+                <p style="color: #555; line-height: 1.6; white-space: pre-wrap; margin: 0;">${safeMessage}</p>
               </div>
               
               <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
-                <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject)}" 
+                <a href="mailto:${safeEmail}?subject=Re: ${encodeURIComponent(subject)}"
                    style="display: inline-block; background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
                   Responder Email
                 </a>
@@ -107,7 +113,7 @@ const handler = async (req: Request): Promise<Response> => {
     await resend.emails.send({
       from: "Criando Músicas <noreply@criandomusicas.com.br>",
       to: [email],
-      replyTo: "contato@criandomusicas.com.br",
+      reply_to: "contato@criandomusicas.com.br",
       subject: "Recebemos sua mensagem! 🎵",
       html: `
         <!DOCTYPE html>
@@ -125,10 +131,10 @@ const handler = async (req: Request): Promise<Response> => {
             
             <!-- Content -->
             <div style="padding: 30px;">
-              <h2 style="color: #333; margin: 0 0 20px 0;">Olá, ${name}! 👋</h2>
+              <h2 style="color: #333; margin: 0 0 20px 0;">Olá, ${safeName}! 👋</h2>
               
               <p style="color: #555; line-height: 1.6;">
-                Recebemos sua mensagem sobre <strong>"${subject}"</strong> e responderemos em breve!
+                Recebemos sua mensagem sobre <strong>"${safeSubject}"</strong> e responderemos em breve!
               </p>
               
               <p style="color: #555; line-height: 1.6;">
@@ -138,7 +144,7 @@ const handler = async (req: Request): Promise<Response> => {
               <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin: 25px 0;">
                 <p style="color: #666; font-size: 14px; margin: 0;">
                   <strong>Sua mensagem:</strong><br>
-                  <span style="color: #888; white-space: pre-wrap;">${message.substring(0, 200).replace(/</g, '&lt;').replace(/>/g, '&gt;')}${message.length > 200 ? '...' : ''}</span>
+                  <span style="color: #888; white-space: pre-wrap;">${escapeHtml(message.substring(0, 200))}${message.length > 200 ? '...' : ''}</span>
                 </p>
               </div>
               

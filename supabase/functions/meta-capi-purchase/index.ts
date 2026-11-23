@@ -1,4 +1,5 @@
 import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
+import { authError, getRequestAuth } from "../_shared/requestAuth.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
@@ -64,6 +65,11 @@ serve(async (req) => {
       phone,
       user_id,
     } = body || {};
+
+    const auth = await getRequestAuth(req);
+    if (!auth.isAdmin && (!user_id || auth.user?.id !== user_id)) {
+      return authError(corsHeaders, auth.user ? 403 : 401);
+    }
 
     if(await isItalySandboxOrder(supabase,transaction_id)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     // If email not supplied but user_id is, resolve via auth admin

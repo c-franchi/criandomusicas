@@ -2,11 +2,14 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { generationNotificationCopy } from '../_shared/orderLanguageCopy.ts';
+import { isCreatorSubscriptionForUser } from '../_shared/stripeSubscription.ts';
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
+
+const VIP_EMAILS = new Set(['neizao.franchi@gmail.com', 'gleicifranchi@gmail.com']);
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -26,7 +29,7 @@ serve(async (req) => {
   try {
     logStep("Function started");
 
-    const { orderId } = await req.json();
+    const { orderId, vipBypass = false } = await req.json();
     if (!orderId) throw new Error("Order ID is required");
 
     // Retrieve authenticated user
@@ -90,6 +93,35 @@ serve(async (req) => {
       });
     }
     
+    if (vipBypass) {
+      const { data: adminRole } = await supabaseClient
+        .from('user_roles')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('role', 'admin')
+        .maybeSingle();
+      if (!adminRole && !VIP_EMAILS.has(userEmail?.toLowerCase() || '')) {
+        return new Response(JSON.stringify({ success: false, error: 'VIP access required' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const { error: vipError } = await supabaseClient
+        .from('orders')
+        .update({
+          payment_status: 'PAID',
+          status: 'LYRICS_PENDING',
+          voucher_code: 'VIP_ACCESS',
+          discount_applied: 0,
+        })
+        .eq('id', orderId)
+        .eq('user_id', userId);
+      if (vipError) throw vipError;
+      return new Response(JSON.stringify({ success: true, source: 'vip' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Get user profile for notification
     const { data: profileData } = await supabaseClient
       .from('profiles')
@@ -159,7 +191,7 @@ serve(async (req) => {
             });
             
             const creatorSub = subscriptions.data.find(
-              (sub: any) => sub.metadata?.plan_type === 'creator'
+              (sub: any) => isCreatorSubscriptionForUser(sub, userId)
             );
             
             if (creatorSub) {

@@ -16,9 +16,9 @@ globalThis.__styleDb = {
       eq: () => q,
       update: data => { if (table === 'orders') globalThis.__styleUpdates.push(data); return q; },
       insert: () => q,
-      maybeSingle: async () => ({ data: null, error: null }),
+      maybeSingle: async () => ({ data: table === 'orders' ? { id: 'order', user_id: 'owner', language: 'it' } : null, error: null }),
       single: async () => table === 'orders'
-        ? { data: { language: 'it', style_prompt: null, song_title: null, has_custom_lyric: false }, error: null }
+        ? { data: { user_id: 'owner', language: 'it', style_prompt: null, song_title: null, has_custom_lyric: false }, error: null }
         : { data: null, error: null },
       then: resolve => resolve({ data: null, error: null }),
     };
@@ -34,6 +34,7 @@ let source = readFileSync(new URL('../../supabase/functions/generate-style-promp
     vocalLanguageInstruction, withVocalLanguage,
   } = globalThis.__styleLanguage;`)
   .replace(/^import .*http\/server.ts.*$/m, 'const serve = callback => { globalThis.__styleHandler = callback; };')
+  .replace(/^import .*requestAuth.*$/m, 'const getRequestAuth=async()=>({admin:globalThis.__styleDb,user:{id:"owner"},isAdmin:false});const canAccessUser=(auth,id)=>auth.isAdmin||auth.user?.id===id;const authError=()=>new Response(null,{status:401});')
   .replace(/^import .*supabase-js.*$/m, 'const createClient = () => globalThis.__styleDb;');
 await import('data:text/javascript,' + encodeURIComponent(transformSync(source, { loader: 'ts', format: 'esm' }).code));
 
@@ -50,7 +51,7 @@ async function generate(isInstrumental) {
     return Response.json({ choices: [{ message: { content } }] });
   };
   const response = await globalThis.__styleHandler(new Request('https://fixture.invalid', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer fixture-key' },
     body: JSON.stringify({
       orderId: 'order', language: 'pt-BR', isInstrumental,
       lyricId: isInstrumental ? undefined : '123e4567-e89b-12d3-a456-426614174000',

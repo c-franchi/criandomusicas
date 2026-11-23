@@ -53,7 +53,7 @@ Deno.serve(async (req) => {
 
     // If test mode, send only to testEmail
     if (testEmail) {
-      logStep('Sending test email', { to: testEmail });
+      logStep('Sending test email');
       const result = await resend.emails.send({
         from: 'Criando Músicas <noreply@criandomusicas.com.br>',
         replyTo: 'contato@criandomusicas.com.br',
@@ -141,16 +141,16 @@ Deno.serve(async (req) => {
         });
 
         if (result.error) {
-          logStep('Send error', { email, error: result.error });
+          logStep('Send error', { error: result.error });
           failed++;
           failedEmails.push(email);
         } else {
-          logStep('Send success', { email, id: result.data?.id });
+          logStep('Send success', { id: result.data?.id });
           sent++;
           sentEmails.push(email);
         }
       } catch (err) {
-        logStep('Failed to send', { email, error: String(err) });
+        logStep('Failed to send', { error: String(err) });
         failed++;
         failedEmails.push(email);
       }
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
       },
     });
 
-    logStep('Campaign complete', { sent, failed, failedEmails });
+    logStep('Campaign complete', { sent, failed });
 
     return new Response(JSON.stringify({ success: true, sent, failed, sentEmails, failedEmails, total: targetEmails.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

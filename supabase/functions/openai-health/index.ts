@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { authError, getRequestAuth } from "../_shared/requestAuth.ts";
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
@@ -13,6 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await getRequestAuth(req);
+    if (!auth.isAdmin) return authError(corsHeaders, auth.user ? 403 : 401);
+
     console.log('AI Health Check - Starting...');
 
     if (!LOVABLE_API_KEY) {

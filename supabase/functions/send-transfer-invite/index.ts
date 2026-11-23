@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.1.2";
+import { authError, getRequestAuth } from '../_shared/requestAuth.ts';
+import { escapeHtml } from '../_shared/html.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -25,10 +27,12 @@ const generateInviteEmailHtml = (
   transferCode: string, 
   message?: string | null
 ): string => {
+  const safeFromUserName = escapeHtml(fromUserName);
+  const safeTransferCode = escapeHtml(transferCode);
   const personalMessage = message 
     ? `<div style="background-color: #fef3c7; border-radius: 12px; padding: 16px; margin-bottom: 25px; border-left: 4px solid #f59e0b;">
-        <p style="margin: 0 0 8px; color: #92400e; font-size: 12px; font-weight: 600;">💌 Mensagem de ${fromUserName}:</p>
-        <p style="margin: 0; color: #78350f; font-size: 14px; font-style: italic;">"${message}"</p>
+        <p style="margin: 0 0 8px; color: #92400e; font-size: 12px; font-weight: 600;">💌 Mensagem de ${safeFromUserName}:</p>
+        <p style="margin: 0; color: #78350f; font-size: 14px; font-style: italic;">"${escapeHtml(message)}"</p>
       </div>` 
     : '';
 
@@ -63,7 +67,7 @@ const generateInviteEmailHtml = (
             <td style="padding: 40px 30px;">
               <!-- Greeting -->
               <p style="margin: 0 0 20px; color: #1f2937; font-size: 18px; line-height: 1.6;">
-                <strong>${fromUserName}</strong> te enviou um crédito para criar uma música personalizada no <strong>Criando Músicas</strong>! 🎵
+                <strong>${safeFromUserName}</strong> te enviou um crédito para criar uma música personalizada no <strong>Criando Músicas</strong>! 🎵
               </p>
 
               ${personalMessage}
@@ -75,7 +79,7 @@ const generateInviteEmailHtml = (
                 </p>
                 <div style="background-color: #ffffff; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
                   <code style="font-size: 28px; font-weight: bold; color: #7c3aed; letter-spacing: 2px;">
-                    ${transferCode}
+                    ${safeTransferCode}
                   </code>
                 </div>
                 <p style="margin: 0; color: #7c3aed; font-size: 12px;">
@@ -134,7 +138,7 @@ const generateInviteEmailHtml = (
                 © ${new Date().getFullYear()} Criando Músicas. Todos os direitos reservados.
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 11px;">
-                Você recebeu este email porque ${fromUserName} te enviou um presente.
+                Você recebeu este email porque ${safeFromUserName} te enviou um presente.
               </p>
             </td>
           </tr>
@@ -153,6 +157,9 @@ serve(async (req) => {
   }
 
   try {
+    const auth = await getRequestAuth(req);
+    if (!auth.isServiceRole) return authError(corsHeaders, auth.user ? 403 : 401);
+
     logStep("Function started");
 
     const data: TransferInviteRequest = await req.json();
@@ -162,11 +169,7 @@ serve(async (req) => {
       throw new Error("Missing required fields: toEmail, fromUserName, transferCode");
     }
 
-    logStep("Sending transfer invite email", { 
-      toEmail: data.toEmail, 
-      fromUserName: data.fromUserName,
-      transferCode: data.transferCode 
-    });
+    logStep("Sending transfer invite email");
 
     const html = generateInviteEmailHtml(data.fromUserName, data.transferCode, data.message);
 

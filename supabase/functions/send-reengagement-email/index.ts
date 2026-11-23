@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authError, getRequestAuth } from '../_shared/requestAuth.ts';
+import { hasScheduledJobCredential } from '../_shared/scheduledJobAuth.ts';
 import { Resend } from "https://esm.sh/resend@4.1.2";
 
 const corsHeaders = {
@@ -140,11 +141,12 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const resendApiKey = Deno.env.get('RESEND_API_KEY')!;
+    const auth = await getRequestAuth(req);
+    const isScheduledJob = await hasScheduledJobCredential(req, auth.admin, 'send-reengagement-email');
+    if (!auth.isAdmin && !isScheduledJob) return authError(corsHeaders, auth.user ? 403 : 401);
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const resendApiKey = Deno.env.get('RESEND_API_KEY')!;
+    const supabase = auth.admin;
     const resend = new Resend(resendApiKey);
 
     logStep('Starting reengagement check');
@@ -216,7 +218,7 @@ Deno.serve(async (req) => {
             });
 
             totalSent++;
-            logStep('Sent reengagement email', { email: user.email });
+            logStep('Sent reengagement email', { userId: profile.user_id });
           }
         } catch (e) {
           logStep('Error sending to user', { userId: profile.user_id, error: String(e) });

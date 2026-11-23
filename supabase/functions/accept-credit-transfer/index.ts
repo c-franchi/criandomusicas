@@ -49,7 +49,7 @@ serve(async (req) => {
     const userEmail = (claimsData.claims.email as string | undefined)?.toLowerCase();
     const { transferId, transferCode, action }: ActionRequest = await req.json();
 
-    console.log('[ACCEPT-CREDIT-TRANSFER] Request:', { userId, transferId, transferCode, action });
+    console.log('[ACCEPT-CREDIT-TRANSFER] Request:', { userId, transferId, hasTransferCode: Boolean(transferCode), action });
 
     if ((!transferId && !transferCode) || !action || !['accept', 'reject'].includes(action)) {
       return new Response(

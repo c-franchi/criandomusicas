@@ -3,8 +3,10 @@ globalThis.__sandboxCheck=isItalySandboxOrder;
 import { emailFetch } from '../../supabase/functions/_shared/emailRetry.ts';
 import { resolveGenerationLanguage } from '../../supabase/functions/_shared/generationLanguage.ts';
 import { musicReadyEmailCopy } from '../../supabase/functions/_shared/orderLanguageCopy.ts';
+import { escapeHtml } from '../../supabase/functions/_shared/html.ts';
 globalThis.__emailFetch=emailFetch;
 globalThis.__emailLanguage={resolveGenerationLanguage,musicReadyEmailCopy};
+globalThis.__notificationSecurity={escapeHtml,getRequestAuth:async()=>({admin:globalThis.__readyDb,user:{id:'owner',email:'owner@example.invalid'},isAdmin:true,isServiceRole:false}),canAccessUser:()=>true,authError:()=>new Response(null,{status:401})};
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
@@ -17,7 +19,7 @@ globalThis.__readyDb={
  from:table=>{
   tables.push(table);
   const q={select:()=>q,eq:()=>q,limit:()=>q,
-   maybeSingle:async()=>({data:table==='orders'?{sandbox_market:sandbox?'IT_TEST':null,language:orderLanguage}:table==='musical_gifts'?gift:table==='profiles'?{name:'Buyer'}:sent?{id:'sent'}:null,error:null}),
+   maybeSingle:async()=>({data:table==='orders'?{user_id:'owner',sandbox_market:sandbox?'IT_TEST':null,language:orderLanguage}:table==='musical_gifts'?gift:table==='profiles'?{name:'Buyer'}:sent?{id:'sent'}:null,error:null}),
    insert:async()=>{if(table==='musical_gift_events')sent=true;return {error:null};},
    then:resolve=>resolve({data:[],error:null}),
   };return q;
@@ -32,11 +34,14 @@ const emailSource=readFileSync(new URL('../../supabase/functions/send-music-read
  .replace(/^import .*emailFetch.*$/m,'const emailFetch=globalThis.__emailFetch;')
  .replace(/^import .*generationLanguage.*$/m,'const {resolveGenerationLanguage}=globalThis.__emailLanguage;')
  .replace(/^import .*orderLanguageCopy.*$/m,'const {musicReadyEmailCopy}=globalThis.__emailLanguage;')
+ .replace(/^import .*requestAuth.*$/m,'const {getRequestAuth,canAccessUser,authError}=globalThis.__notificationSecurity;')
+ .replace(/^import .*html.*$/m,'const {escapeHtml}=globalThis.__notificationSecurity;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__readyDb;');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(emailSource,{loader:'ts',format:'esm'}).code));
 const pushSource=readFileSync(new URL('../../supabase/functions/send-push-notification/index.ts',import.meta.url),'utf8')
  .replace(/^import .*sandboxOrder.*$/m,'const isItalySandboxOrder=globalThis.__sandboxCheck;')
  .replace(/^import .*emailFetch.*$/m,'const emailFetch=globalThis.__emailFetch;')
+ .replace(/^import .*requestAuth.*$/m,'const {getRequestAuth,canAccessUser,authError}=globalThis.__notificationSecurity;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__readyDb;')
  .replace(/import \{[\s\S]*?\} from "https:\/\/esm.sh\/@block65[^;]+;/,'const buildPushPayload=()=>{throw Error("No real push in tests");};');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(pushSource,{loader:'ts',format:'esm'}).code));

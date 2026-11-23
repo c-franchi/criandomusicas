@@ -1,4 +1,5 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { authError, getRequestAuth } from '../_shared/requestAuth.ts';
+import { hasScheduledJobCredential } from '../_shared/scheduledJobAuth.ts';
 import { resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
 import { generationNotificationCopy } from '../_shared/orderLanguageCopy.ts';
 
@@ -72,12 +73,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const auth = await getRequestAuth(req);
+    const isScheduledJob = await hasScheduledJobCredential(req, auth.admin, 'send-review-reminder');
+    if (!auth.isAdmin && !isScheduledJob) return authError(corsHeaders, auth.user ? 403 : 401);
+
     const vapidPublicKey = Deno.env.get('VAPID_PUBLIC_KEY')!;
     const vapidPrivateKey = Deno.env.get('VAPID_PRIVATE_KEY')!;
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = auth.admin;
 
     console.log('🔔 Starting review reminder check...');
 

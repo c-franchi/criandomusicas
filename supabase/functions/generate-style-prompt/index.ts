@@ -8,6 +8,7 @@ import {
 } from "../_shared/generationLanguage.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { authError, canAccessUser, getRequestAuth } from "../_shared/requestAuth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -334,25 +335,32 @@ serve(async (req) => {
       );
     }
 
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
+
     // Verificar se o pedido já tem um style_prompt customizado (fornecido pelo usuário)
-    const supabaseUrlCheck = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKeyCheck = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabaseCheck = createClient(supabaseUrlCheck, supabaseKeyCheck);
+    const supabaseCheck = auth.admin;
+    const { data: existingOrder, error: orderError } = await supabaseCheck
+      .from('orders')
+      .select('user_id, style_prompt, song_title, has_custom_lyric, language')
+      .eq('id', orderId)
+      .single();
+    if (orderError || !existingOrder) {
+      return new Response(JSON.stringify({ ok: false, error: "Order not found" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!canAccessUser(auth, existingOrder.user_id)) return authError(corsHeaders, 403);
 
     const {data: giftContext,error: giftError}=await supabaseCheck.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,photo_data,details').eq('production_order_id',orderId).maybeSingle();
     if(giftError) throw giftError;
     if(giftContext){
       if(!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
       if(isInstrumental) throw Error('gift_lyrics_approval_required');
-      const internal=req.headers.get('Authorization')===`Bearer ${supabaseKeyCheck}`;
-      if(!internal){const {data:{user},error}=await supabaseCheck.auth.getUser((req.headers.get('Authorization')||'').replace('Bearer ',''));if(error||!user||user.id!==giftContext.owner_id) throw Error('gift_forbidden');}
+      if(!canAccessUser(auth, giftContext.owner_id)) return authError(corsHeaders, 403);
       if(!!giftContext.duration_seconds && !inspectShortLyric(approvedLyrics||'',giftContext.duration_seconds||30).valid) throw Error('gift_lyric_too_long');
     }
-    const { data: existingOrder, error: orderError } = await supabaseCheck
-      .from('orders')
-      .select('style_prompt, song_title, has_custom_lyric, language')
-      .eq('id', orderId)
-      .single();
 
     language = resolveGenerationLanguage(giftContext?.details?.language, existingOrder?.language, language);
     console.log("Resolved generation language:", language);

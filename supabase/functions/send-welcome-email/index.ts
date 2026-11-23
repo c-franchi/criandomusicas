@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.1.2";
+import { escapeHtml } from '../_shared/html.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -49,7 +50,7 @@ const generateWelcomeEmailHtml = (userName: string): string => {
             <td style="padding: 40px 30px;">
               <!-- Greeting -->
               <h2 style="margin: 0 0 20px; color: #1f2937; font-size: 22px;">
-                Olá, ${userName}! 🎉
+                Olá, ${escapeHtml(userName)}! 🎉
               </h2>
               
               <p style="margin: 0 0 25px; color: #4b5563; font-size: 16px; line-height: 1.6;">
@@ -159,7 +160,7 @@ serve(async (req) => {
       throw new Error("Missing required fields: email, userName");
     }
 
-    logStep("Sending welcome email", { email: data.email, userName: data.userName });
+    logStep("Sending welcome email");
 
     const html = generateWelcomeEmailHtml(data.userName);
 

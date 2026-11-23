@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import {
   Dialog,
   DialogContent,
@@ -146,7 +147,7 @@ const VideoOrdersManager = () => {
 
   const updateVideoOrderStatus = async (id: string, newStatus: string) => {
     try {
-      const updateData: Record<string, any> = { status: newStatus };
+      const updateData: Database['public']['Tables']['video_orders']['Update'] = { status: newStatus };
       if (newStatus === 'COMPLETED') {
         updateData.completed_at = new Date().toISOString();
       }

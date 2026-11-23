@@ -12,7 +12,8 @@ test('sample description generation requires Italian output',async()=>{
  const source=readFileSync(new URL('../../supabase/functions/generate-audio-description/index.ts',import.meta.url),'utf8')
   .replace(/^import ["']https:\/\/deno.land\/x\/xhr[^\n]+\n/m,'')
   .replace(/^import .*http\/server.ts.*$/m,'const serve=handler=>{globalThis.__descriptionHandler=handler;};')
-  .replace(/^import .*generationLanguage.*$/m,'const {generationLanguageEnglishName,resolveGenerationLanguage}=globalThis.__descriptionLanguage;');
+  .replace(/^import .*generationLanguage.*$/m,'const {generationLanguageEnglishName,resolveGenerationLanguage}=globalThis.__descriptionLanguage;')
+  .replace(/^import .*requestAuth.*$/m,'const getRequestAuth=async()=>({isAdmin:true});const authError=()=>new Response(null,{status:401});');
  await import('data:text/javascript,'+encodeURIComponent(transformSync(source,{loader:'ts',format:'esm'}).code));
  const response=await globalThis.__descriptionHandler(new Request('https://fixture.invalid',{method:'POST',body:JSON.stringify({title:'Per Te',style:'pop',language:'it'})}));
  assert.equal(response.status,200);assert.match(aiBody.messages[0].content,/Write only in Italian/);assert.match(aiBody.messages[1].content,/IDIOMA OBRIGATÓRIO DA DESCRIÇÃO: Italian/);

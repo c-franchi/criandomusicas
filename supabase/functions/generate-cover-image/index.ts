@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { authError, canAccessUser, getRequestAuth } from "../_shared/requestAuth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -164,8 +164,9 @@ serve(async (req) => {
       );
     }
 
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
+
     const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
 
     if (!lovableApiKey) {
@@ -175,12 +176,12 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = auth.admin;
 
-    // Fetch order data
+    // Fetch order data only after authenticating the caller.
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .select('id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental, story, approved_lyric_id, atmosphere, cover_url')
+      .select('id, user_id, style_prompt, music_style, music_type, emotion, tone, purpose, song_title, is_instrumental, story, approved_lyric_id, atmosphere, cover_url')
       .eq('id', orderId)
       .single();
 
@@ -191,6 +192,8 @@ serve(async (req) => {
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    if (!canAccessUser(auth, order.user_id)) return authError(corsHeaders, 403);
 
     // Handle enhance mode - enhance an existing custom cover
     if (enhanceMode && order.cover_url) {

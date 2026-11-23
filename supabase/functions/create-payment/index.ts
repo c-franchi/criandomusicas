@@ -3,6 +3,7 @@ import {closeGiftCheckout} from "../_shared/giftCheckout.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { checkoutReturnOrigin } from "../_shared/checkoutOrigin.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,14 +34,14 @@ serve(async (req) => {
 
     // Get request body
     const requestBody = await req.json();
-    const { orderId, planId = "single", isVideoOrder, videoOrderId, amount: videoAmount, description: videoDescription, successUrl: customSuccessUrl, cancelUrl: customCancelUrl } = requestBody;
+    const { orderId, planId = "single", isVideoOrder, videoOrderId } = requestBody;
     
     // Validate required fields based on order type
     if (isVideoOrder) {
       if (!videoOrderId) {
         throw new Error("Video Order ID is required for video orders");
       }
-      logStep("Video order received", { videoOrderId, amount: videoAmount });
+      logStep("Video order received", { videoOrderId });
     } else {
       if (!orderId) {
         throw new Error("Order ID is required");
@@ -71,7 +72,7 @@ serve(async (req) => {
     
     const userId = claimsData.claims.sub as string;
     const userEmail = claimsData.claims.email as string;
-    logStep("User authenticated", { email: userEmail });
+    logStep("User authenticated", { userId });
 
     if (!isVideoOrder && await isItalySandboxOrder(supabaseClient, orderId)) return new Response(JSON.stringify({error:'Pedidos de teste Itália não aceitam pagamentos reais.'}),{status:409,headers:{...corsHeaders,'Content-Type':'application/json'}});
     // Handle video order payment
@@ -83,7 +84,16 @@ serve(async (req) => {
       const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
       const customerId = customers.data.length > 0 ? customers.data[0].id : undefined;
 
-      const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
+      const { data: videoOrder, error: videoOrderError } = await supabaseClient
+        .from("video_orders")
+        .select("id, user_id, amount, payment_status")
+        .eq("id", videoOrderId)
+        .eq("user_id", userId)
+        .single();
+      if (videoOrderError || !videoOrder) throw new Error("Video order not found");
+      if (videoOrder.payment_status === "PAID") throw new Error("Video order is already paid");
+
+      const origin = checkoutReturnOrigin(req);
 
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
@@ -92,16 +102,16 @@ serve(async (req) => {
           price_data: {
             currency: 'brl',
             product_data: {
-              name: videoDescription || 'Vídeo Personalizado',
+              name: 'Vídeo Personalizado',
               description: 'Edição profissional do seu vídeo com sua música'
             },
-            unit_amount: videoAmount || 5000,
+            unit_amount: videoOrder.amount,
           },
           quantity: 1,
         }],
         mode: "payment",
-        success_url: customSuccessUrl || `${origin}/video-upload/${videoOrderId}`,
-        cancel_url: customCancelUrl || `${origin}/video-checkout/${videoOrderId}`,
+        success_url: `${origin}/video-upload/${videoOrderId}`,
+        cancel_url: `${origin}/video-checkout/${videoOrderId}`,
         metadata: {
           video_order_id: videoOrderId,
           user_id: userId,
@@ -213,8 +223,8 @@ serve(async (req) => {
       logStep("Existing customer found", { customerId });
     }
 
-    // Get origin for redirect URLs
-    const origin = req.headers.get("origin") || "https://id-preview--8b44c89b-d4bc-4aa8-b6fd-85522e79ace9.lovable.app";
+    // Checkout may return only to an application-owned origin.
+    const origin = checkoutReturnOrigin(req);
 
     // Use existing stripe_price_id if available in pricing config
     let lineItems;

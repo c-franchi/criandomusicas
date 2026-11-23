@@ -50,6 +50,20 @@
       "when": 1795440238128,
       "tag": "0006_universal_credit_vouchers_include_cards",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795441155235,
+      "tag": "0007_secure_selected_customer_and_scheduled_job_actions",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795441519938,
+      "tag": "0008_restrict_public_media_directory_listing",
+      "breakpoints": true
     }
   ]
 }

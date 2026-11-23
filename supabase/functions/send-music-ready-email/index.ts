@@ -5,6 +5,8 @@ import { Resend } from "https://esm.sh/resend@4.1.2";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { resolveGenerationLanguage } from '../_shared/generationLanguage.ts';
 import { musicReadyEmailCopy } from '../_shared/orderLanguageCopy.ts';
+import { authError, canAccessUser, getRequestAuth } from '../_shared/requestAuth.ts';
+import { escapeHtml } from '../_shared/html.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -68,7 +70,7 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
               <div style="text-align: center; margin-bottom: 30px;">
                 <div style="font-size: 64px; line-height: 1;">🎉</div>
                 <h2 style="margin: 16px 0 8px; color: #1f2937; font-size: 24px;">
-                  ${copy.greeting.replace('{name}', userName)}
+                  ${escapeHtml(copy.greeting.replace('{name}', userName))}
                 </h2>
                 <p style="margin: 0; color: #6b7280; font-size: 16px;">
                   ${copy.finished}
@@ -80,10 +82,10 @@ const generateMusicReadyEmailHtml = (userName: string, orderId: string, songTitl
                 <div style="text-align: center;">
                   <div style="font-size: 48px; margin-bottom: 12px;">🎶</div>
                   <h3 style="margin: 0 0 8px; color: #7c3aed; font-size: 20px; font-weight: 600;">
-                    ${songTitle}
+                    ${escapeHtml(songTitle)}
                   </h3>
                   <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                    ${musicTypeLabel} • ${copy.order} #${orderIdShort}
+                    ${escapeHtml(musicTypeLabel)} • ${copy.order} #${escapeHtml(orderIdShort)}
                   </p>
                 </div>
               </div>
@@ -171,30 +173,32 @@ serve(async (req) => {
     logStep("Function started");
 
     const data: MusicReadyEmailRequest = await req.json();
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const admin = createClient(Deno.env.get('SUPABASE_URL') ?? '', serviceKey);
+    const admin = auth.admin;
     if(await isItalySandboxOrder(admin,data.orderId)) return new Response(JSON.stringify({success:true,skipped:'italy_sandbox'}),{headers:{...corsHeaders,'Content-Type':'application/json'}});
     const {data:gift,error:giftError} = await admin.from('musical_gifts')
       .select('id,owner_id,status,is_test,available_from,details').eq('checkout_order_id',data.orderId).maybeSingle();
     if (giftError) throw giftError;
     const {data:order,error:orderError}=await admin.from('orders')
-      .select('language,song_title,music_type,is_instrumental').eq('id',data.orderId).maybeSingle();
+      .select('user_id,language,song_title,music_type,is_instrumental').eq('id',data.orderId).maybeSingle();
     if(orderError) throw orderError;
+    if (!order) return new Response(JSON.stringify({ error: 'Order not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     const language=resolveGenerationLanguage(gift?.details?.language,order?.language);
     const copy=musicReadyEmailCopy(language);
     if (gift) {
       // Cached/older admin screens may still call this endpoint during upload.
       if (gift.status !== 'ACTIVE' || gift.is_test) return Response.json({success:true,skipped:'gift_not_released'},{headers:corsHeaders});
-      const token=(req.headers.get('Authorization')||'').replace('Bearer ','');
-      if (token !== serviceKey) {
-        const {data:{user},error}=await admin.auth.getUser(token);
-        const {data:allowed}=user?await admin.rpc('has_role',{_user_id:user.id,_role:'admin'}):{data:false};
-        if(error||!allowed) return Response.json({error:'Forbidden'},{status:403,headers:corsHeaders});
-      }
+      if (!auth.isAdmin) return authError(corsHeaders, 403);
       data.userId=gift.owner_id;data.email=undefined;
       const {data:sent,error}=await admin.from('musical_gift_events').select('id').eq('gift_id',gift.id).eq('event','ready_email_sent').limit(1).maybeSingle();
       if(error) throw error;
       if(sent) return Response.json({success:true,skipped:'already_sent'},{headers:corsHeaders});
+    } else {
+      if (!canAccessUser(auth, order.user_id)) return authError(corsHeaders, 403);
+      data.userId = order.user_id;
+      data.email = undefined;
     }
     
     // Validate required fields
@@ -207,7 +211,7 @@ serve(async (req) => {
       throw new Error("Missing required field: email or userId");
     }
 
-    let email = data.email;
+    let email: string | undefined = data.email;
     let userName = data.userName || copy.customer;
 
     // If userId provided, fetch email from Supabase auth
@@ -245,7 +249,7 @@ serve(async (req) => {
         userName = profileData.name;
       }
       
-      logStep("User data fetched", { email, userName });
+      logStep("User data fetched", { userId: data.userId });
     }
 
     if (!email) {
@@ -253,14 +257,12 @@ serve(async (req) => {
     }
 
     logStep("Sending music ready email", { 
-      email, 
       orderId: data.orderId,
       songTitle: data.songTitle 
     });
 
     const songTitle = data.songTitle || order?.song_title || copy.defaultSongTitle;
-    const escape = (s:string) => s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
-    const html = gift ? `<!doctype html><html lang="${language}"><body style="font-family:Arial,sans-serif;padding:24px;color:#222"><h1>${copy.giftTitle}</h1><p>${copy.giftGreeting.replace('{name}',escape(userName))} ${copy.giftReleased}</p><p>${gift.available_from?copy.giftSchedule:''}</p><p><a href="https://criandomusicas.com.br/presentes/${gift.id}">${copy.giftCta}</a></p><p>Criando Músicas</p></body></html>` : generateMusicReadyEmailHtml(
+    const html = gift ? `<!doctype html><html lang="${language}"><body style="font-family:Arial,sans-serif;padding:24px;color:#222"><h1>${copy.giftTitle}</h1><p>${escapeHtml(copy.giftGreeting.replace('{name}',userName))} ${copy.giftReleased}</p><p>${gift.available_from?copy.giftSchedule:''}</p><p><a href="https://criandomusicas.com.br/presentes/${gift.id}">${copy.giftCta}</a></p><p>Criando Músicas</p></body></html>` : generateMusicReadyEmailHtml(
       userName, 
       data.orderId, 
       songTitle, 

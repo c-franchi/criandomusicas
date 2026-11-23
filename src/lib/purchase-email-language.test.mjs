@@ -4,10 +4,12 @@ import { readFileSync } from 'node:fs';
 import { transformSync } from 'esbuild';
 import { resolveGenerationLanguage } from '../../supabase/functions/_shared/generationLanguage.ts';
 import { purchaseEmailCopy } from '../../supabase/functions/_shared/orderLanguageCopy.ts';
+import { escapeHtml } from '../../supabase/functions/_shared/html.ts';
 
 const requests=[];
 globalThis.Deno={env:{get:()=> 'fixture'},serve:handler=>{globalThis.__purchaseHandler=handler;}};
 globalThis.__purchaseLanguage={resolveGenerationLanguage,purchaseEmailCopy};
+globalThis.__purchaseSecurity={escapeHtml,getRequestAuth:async()=>({admin:globalThis.__purchaseDb,user:{id:'owner',email:'buyer@example.invalid'},isAdmin:false}),canAccessUser:()=>true,authError:()=>new Response(null,{status:401})};
 globalThis.__purchaseDb={from:table=>{const q={select:()=>q,eq:()=>q,maybeSingle:async()=>({data:table==='orders'?{language:'it'}:null,error:null})};return q;}};
 globalThis.__PurchaseResend=class{emails={send:async payload=>{requests.push(payload);return{data:{id:'fake-email'},error:null};}}};
 const source=readFileSync(new URL('../../supabase/functions/send-purchase-email/index.ts',import.meta.url),'utf8')
@@ -16,7 +18,9 @@ const source=readFileSync(new URL('../../supabase/functions/send-purchase-email/
  .replace(/^import .*resend@.*$/m,'const Resend=globalThis.__PurchaseResend;')
  .replace(/^import .*supabase-js.*$/m,'const createClient=()=>globalThis.__purchaseDb;')
  .replace(/^import .*generationLanguage.*$/m,'const {resolveGenerationLanguage}=globalThis.__purchaseLanguage;')
- .replace(/^import .*orderLanguageCopy.*$/m,'const {purchaseEmailCopy}=globalThis.__purchaseLanguage;');
+ .replace(/^import .*orderLanguageCopy.*$/m,'const {purchaseEmailCopy}=globalThis.__purchaseLanguage;')
+ .replace(/^import .*requestAuth.*$/m,'const {getRequestAuth,canAccessUser,authError}=globalThis.__purchaseSecurity;')
+ .replace(/^import .*html.*$/m,'const {escapeHtml}=globalThis.__purchaseSecurity;');
 await import('data:text/javascript,'+encodeURIComponent(transformSync(source,{loader:'ts',format:'esm'}).code));
 
 test('purchase confirmation renders in the language stored on the order',async()=>{

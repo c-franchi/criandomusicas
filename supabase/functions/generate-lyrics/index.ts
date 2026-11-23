@@ -4,6 +4,7 @@ import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
 import { generationNotificationCopy } from "../_shared/orderLanguageCopy.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { authError, canAccessUser, getRequestAuth } from "../_shared/requestAuth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -356,6 +357,9 @@ serve(async (req) => {
       );
     }
 
+    const auth = await getRequestAuth(req);
+    if (!auth.user && !auth.isServiceRole) return authError(corsHeaders);
+
     const AI_GATEWAY_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!AI_GATEWAY_API_KEY) {
       return new Response(
@@ -366,37 +370,34 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    
-    const { data: giftContext, error: giftError } = orderId ? await supabase.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,details,sender_name,recipient_name').eq('production_order_id',orderId).maybeSingle() : {data:null,error:null};
-    if (giftError) throw giftError;
-    if (giftContext) {
-      if (!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
-      const internal = req.headers.get('Authorization') === `Bearer ${supabaseKey}`;
-      if (!internal) {
-        const {data:{user},error:authError} = await supabase.auth.getUser((req.headers.get('Authorization')||'').replace('Bearer ',''));
-        if (authError || !user) throw Error('gift_forbidden');
-        const {data:admin} = await supabase.rpc('has_role',{_user_id:user.id,_role:'admin'});
-        if (user.id!==giftContext.owner_id && !admin) throw Error('gift_forbidden');
-      }
-      autoApprove=false;
-      language=giftContext.details?.language || language;
-    }
-    const shortSeconds = !!giftContext?.duration_seconds ? Math.min(giftContext.duration_seconds || 30,40) : null;
+    const supabase = auth.admin;
     let orderInfo: { is_preview?: boolean; plan_id?: string; user_id?: string; language?: string | null } | null = null;
-    
+
     if (!isStandaloneMode) {
       const { data: fetchedOrder, error: orderFetchError } = await supabase
         .from('orders')
         .select('is_preview, plan_id, user_id, language')
         .eq('id', orderId!)
         .single();
-      
-      if (orderFetchError) {
-        console.error("Error fetching order:", orderFetchError);
+      if (orderFetchError || !fetchedOrder) {
+        return new Response(JSON.stringify({ ok: false, error: "Order not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
       }
+      if (!canAccessUser(auth, fetchedOrder.user_id)) return authError(corsHeaders, 403);
       orderInfo = fetchedOrder;
     }
+
+    const { data: giftContext, error: giftError } = orderId ? await supabase.from('musical_gifts').select('owner_id,product,duration_seconds,is_test,payment_confirmed_at,details,sender_name,recipient_name').eq('production_order_id',orderId).maybeSingle() : {data:null,error:null};
+    if (giftError) throw giftError;
+    if (giftContext) {
+      if (!giftContext.is_test && !giftContext.payment_confirmed_at) throw Error('gift_invalid_payment');
+      if (!canAccessUser(auth, giftContext.owner_id)) return authError(corsHeaders, 403);
+      autoApprove=false;
+      language=giftContext.details?.language || language;
+    }
+    const shortSeconds = !!giftContext?.duration_seconds ? Math.min(giftContext.duration_seconds || 30,40) : null;
 
     language = resolveGenerationLanguage(giftContext?.details?.language, orderInfo?.language, language);
     console.log("Resolved generation language:", language);
