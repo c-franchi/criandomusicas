@@ -558,8 +558,8 @@ const AdminSettings = () => {
           {/* VOUCHERS TAB */}
           <TabsContent value="vouchers" className="space-y-4">
             <Card className="p-4 sm:p-6 border-primary/30">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="font-semibold text-lg flex items-center gap-2">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+                <h2 className="font-semibold text-lg flex items-center gap-2 min-w-0">
                   <Gift className="w-5 h-5 text-primary" />
                   Cupons de Desconto
                 </h2>
@@ -753,41 +753,41 @@ const AdminSettings = () => {
               ) : (
                 <div className="space-y-3">
                   {vouchers.map((voucher) => (
-                    <Card key={voucher.id} className={`p-4 ${!voucher.is_active ? 'opacity-50' : ''}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Card key={voucher.id} className={`p-3 sm:p-4 ${!voucher.is_active ? 'opacity-50' : ''}`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
                             {voucher.discount_type === 'percent' ? (
                               <Percent className="w-6 h-6 text-primary" />
                             ) : (
                               <DollarSign className="w-6 h-6 text-primary" />
                             )}
                           </div>
-                          <div>
-                            <p className="font-mono font-bold text-lg">{voucher.code}</p>
+                          <div className="min-w-0">
+                            <p className="font-mono font-bold text-lg break-all">{voucher.code}</p>
                             <p className="text-sm text-muted-foreground">
                               {voucher.discount_type === 'percent' 
                                 ? `${voucher.discount_value}% de desconto`
                                 : `R$ ${(voucher.discount_value / 100).toFixed(2).replace('.', ',')} de desconto`}
                             </p>
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="flex flex-wrap items-center gap-2 mt-1">
                               {voucher.max_uses ? (
-                                <Badge variant={voucher.current_uses >= voucher.max_uses ? 'destructive' : 'outline'} className="text-xs">
+                                <Badge variant={voucher.current_uses >= voucher.max_uses ? 'destructive' : 'outline'} className="text-xs whitespace-nowrap">
                                   {voucher.current_uses}/{voucher.max_uses} usos
                                 </Badge>
                               ) : (
                                 <Badge variant="outline" className="text-xs">Ilimitado</Badge>
                               )}
                               {voucher.valid_until && (
-                                <Badge variant="outline" className="text-xs">
+                                <Badge variant="outline" className="text-xs whitespace-nowrap">
                                   até {new Date(voucher.valid_until).toLocaleDateString('pt-BR')}
                                 </Badge>
                               )}
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={voucher.is_active ? 'default' : 'secondary'}>
+                        <div className="flex items-center justify-end gap-1 sm:gap-2 border-t border-border/50 pt-2 sm:border-0 sm:pt-0">
+                          <Badge variant={voucher.is_active ? 'default' : 'secondary'} className="mr-auto sm:mr-0 whitespace-nowrap">
                             {voucher.is_active ? 'Ativo' : 'Inativo'}
                           </Badge>
                           <VoucherShareMenu voucher={voucher} />

@@ -209,7 +209,7 @@ const ReviewsManager = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h3 className="font-semibold">Avaliações dos Clientes ({reviews.length})</h3>
       </div>
 

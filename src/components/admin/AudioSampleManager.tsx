@@ -471,7 +471,7 @@ const AudioSampleManager = ({
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-center gap-3">
         <h3 className="font-semibold">Áudios de Exemplo</h3>
         <Button size="sm" onClick={() => openDialog()}>
           <Plus className="w-4 h-4 mr-1" />
