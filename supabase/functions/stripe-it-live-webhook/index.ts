@@ -1,7 +1,7 @@
 // Live Italian EUR webhook. Only a signed, re-verified paid session marks an order paid.
 import Stripe from "npm:stripe@23.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { IT_LIVE_MUSIC_FULL, IT_LIVE_KEY_NAME, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, livePaidSessionValid } from "../_shared/itLiveCheckout.ts";
+import { IT_LIVE_MUSIC_FULL, IT_LIVE_PACKAGE_3, itLiveItemByPlanId, IT_LIVE_KEY_NAME, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, livePaidSessionValid } from "../_shared/itLiveCheckout.ts";
 import { isHandledEvent, isUuid } from "../_shared/itTestCheckout.ts";
 import { resolveGenerationLanguage } from "../_shared/generationLanguage.ts";
 import { generationNotificationCopy } from "../_shared/orderLanguageCopy.ts";
@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     }
     if (session.payment_status !== "paid") { await finish("not_paid"); return json({ received: true, result: "not_paid" }); }
     const lines = await stripe.checkout.sessions.listLineItems(session.id, { limit: 5 });
-    if (lines.data.length !== 1 || !(lines.data[0].price?.id === pay.price_id || (pay.voucher_id && lines.data[0].price?.product === IT_LIVE_MUSIC_FULL.product_id)) || lines.data[0].quantity !== 1 || !livePaidSessionValid(session as any, pay.amount_cents)) throw Error("amount_mismatch");
+    if (lines.data.length !== 1 || !(lines.data[0].price?.id === pay.price_id || (pay.voucher_id && lines.data[0].price?.product === itLiveItemByPlanId(pay.plan_id)?.product_id)) || lines.data[0].quantity !== 1 || !livePaidSessionValid(session as any, pay.amount_cents)) throw Error("amount_mismatch");
     if (pay.status === "paid") { await finish("already_paid"); return json({ received: true, result: "already_paid" }); }
 
     const { error: payErr } = await admin.from("it_live_payments").update({ status: "paid", paid_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", pay.id).neq("status", "paid");
@@ -52,6 +52,11 @@ Deno.serve(async (req) => {
     if (orderErr) throw orderErr;
     const o = updated?.[0];
     if (o && pay.voucher_id) await recordVoucher(admin, pay);
+    // A paid 3-song package gives the remaining songs as credits; this order uses the first one.
+    if (o && pay.plan_id === IT_LIVE_PACKAGE_3.plan_id) {
+      const { error: credErr } = await admin.from("user_credits").insert({ user_id: pay.user_id, plan_id: o.plan_id || "package", total_credits: IT_LIVE_PACKAGE_3.credits, used_credits: 1, stripe_session_id: session.id, is_active: true });
+      if (credErr) console.error("[IT-LIVE-WEBHOOK] credits failed", credErr.message);
+    }
     if (o) await startProduction(admin, o, pay.user_id, session);
     await finish("paid");
     return json({ received: true, result: "paid" });

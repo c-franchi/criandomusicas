@@ -106,7 +106,7 @@ export const OrderCard = ({
             
             <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 pt-2 sm:pt-0 border-t sm:border-t-0">
               <div className="text-xl sm:text-2xl font-bold text-primary">
-                {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
               </div>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" className="pointer-events-none">

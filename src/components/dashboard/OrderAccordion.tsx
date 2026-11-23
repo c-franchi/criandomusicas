@@ -109,7 +109,7 @@ export const OrderAccordion = ({
                     </Badge>
                   )}
                   <span className="font-bold text-primary text-xs sm:text-sm hidden sm:block">
-                    {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                    {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
                   </span>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export const OrderAccordion = ({
                     </Badge>
                   )}
                   <span className="text-xs text-muted-foreground sm:hidden font-bold">
-                    {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                    {formatOrderAmount(order.amount || 0, i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
                   </span>
                 </div>
 

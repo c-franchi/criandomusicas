@@ -2,7 +2,7 @@
 import Stripe from "npm:stripe@23.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { isItalySandboxOrder } from "../_shared/sandboxOrder.ts";
-import { IT_LIVE_ACCOUNT_ID, IT_LIVE_ALLOWED_ORDER_PLANS, IT_LIVE_KEY_NAME, IT_LIVE_MUSIC_FULL, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, itLiveReturnOrigin, livePriceMatches } from "../_shared/itLiveCheckout.ts";
+import { IT_LIVE_ACCOUNT_ID, IT_LIVE_ALLOWED_ORDER_PLANS, IT_LIVE_KEY_NAME, IT_LIVE_MUSIC_FULL, IT_LIVE_WEBHOOK_NAME, isLiveStripeKey, itLiveReturnOrigin, livePriceMatches, itLiveItemForOrderPlan, IT_LIVE_PACKAGE_3 } from "../_shared/itLiveCheckout.ts";
 import { isUuid } from "../_shared/itTestCheckout.ts";
 import { itVoucherMessage, quoteItLiveVoucher } from "../_shared/itLiveVoucher.ts";
 
@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
   const key = Deno.env.get(IT_LIVE_KEY_NAME);
   const configured = isLiveStripeKey(key) && !!Deno.env.get(IT_LIVE_WEBHOOK_NAME)?.startsWith("whsec_");
   let body: any; try { body = await req.json(); } catch { return json({ error: "invalid_body" }, 400); }
-  if (body?.action === "status") return json({ configured, amount_cents: IT_LIVE_MUSIC_FULL.unit_amount, currency: "eur" });
+  if (body?.action === "status") return json({ configured, amount_cents: IT_LIVE_MUSIC_FULL.unit_amount, package_amount_cents: IT_LIVE_PACKAGE_3.unit_amount, currency: "eur" });
   if (!configured) return json({ error: "not_configured", code: "it_live_not_configured" }, 503);
   if (!isUuid(body?.orderId)) return json({ error: "invalid_order" }, 400);
   const orderId = body.orderId as string;
@@ -37,10 +37,11 @@ Deno.serve(async (req) => {
   if (order.payment_status === "PAID" || ["PAID", "CANCELLED", "COMPLETED"].includes(String(order.status))) return json({ error: "not_payable", code: "it_live_not_payable" }, 409);
   const { data: gift } = await admin.from("musical_gifts").select("id").eq("checkout_order_id", orderId).maybeSingle();
   if (gift) return json({ error: "gift_unavailable", code: "it_live_unavailable" }, 409);
-  if (order.plan_id && !IT_LIVE_ALLOWED_ORDER_PLANS.includes(order.plan_id)) return json({ error: "plan_unavailable", code: "it_live_unavailable" }, 409);
+  const item = itLiveItemForOrderPlan(order.plan_id);
+  if (!item || (order.plan_id && !IT_LIVE_ALLOWED_ORDER_PLANS.includes(order.plan_id))) return json({ error: "plan_unavailable", code: "it_live_unavailable" }, 409);
 
   // Vouchers are re-validated on the server for every quote and checkout; the client never sends an amount.
-  const base = IT_LIVE_MUSIC_FULL.unit_amount;
+  const base = item.unit_amount;
   let voucher: { id: string; code: string; discount: number; final: number } | null = null;
   const rawCode = typeof body?.voucherCode === "string" ? body.voucherCode.trim().toUpperCase().slice(0, 64) : "";
   if (rawCode) {
@@ -60,10 +61,10 @@ Deno.serve(async (req) => {
 
   try {
     const stripe = new Stripe(key!, { apiVersion: "2026-09-30.endive" });
-    const price = await stripe.prices.retrieve(IT_LIVE_MUSIC_FULL.price_id);
-    if (!livePriceMatches(price as any)) throw Error("price_mismatch");
+    const price = await stripe.prices.retrieve(item.price_id);
+    if (!livePriceMatches(price as any, item)) throw Error("price_mismatch");
     const { data: row, error: insErr } = await admin.from("it_live_payments").insert({
-      order_id: orderId, user_id: userId, plan_id: IT_LIVE_MUSIC_FULL.plan_id, price_id: price.id,
+      order_id: orderId, user_id: userId, plan_id: item.plan_id, price_id: price.id,
       amount_cents: amount, account_id: IT_LIVE_ACCOUNT_ID,
       original_amount_cents: base, discount_cents: voucher?.discount ?? 0, voucher_id: voucher?.id ?? null, voucher_code: voucher?.code ?? null,
     }).select("id").single();
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
       managed_payments: { enabled: false },
       adaptive_pricing: { enabled: false },
       line_items: [voucher
-        ? { price_data: { currency: "eur", product: IT_LIVE_MUSIC_FULL.product_id, unit_amount: amount, tax_behavior: price.tax_behavior ?? undefined }, quantity: 1 }
+        ? { price_data: { currency: "eur", product: item.product_id, unit_amount: amount, tax_behavior: price.tax_behavior ?? undefined }, quantity: 1 }
         : { price: price.id, quantity: 1 }],
       success_url: `${origin}/pagamento-sucesso?order_id=${orderId}&it_payment=${row.id}`,
       cancel_url: `${origin}/checkout/${orderId}`,

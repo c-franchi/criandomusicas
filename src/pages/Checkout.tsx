@@ -1,3 +1,4 @@
+import { euroAmountForPlan } from "@/lib/order-price-display";
 import type { MusicalGift } from "@/lib/gifts";
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -82,6 +83,7 @@ export default function Checkout() {
   }, [accessLoading, accessCountry, brazilCardAvailable, user]);
   // Euro vouchers are quoted and re-checked by the Italian checkout itself; BRL voucher flows are never used abroad.
   const [euroVoucher, setEuroVoucher] = useState<{ code: string; discount: number; final: number } | null>(null);
+  const euroBaseFor = (o: unknown) => euroAmountForPlan((o as { plan_id?: string | null } | null)?.plan_id);
   const formatEuro = (cents: number) => new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format(cents / 100);
   const handleEuroCardPayment = async () => {
     if (!order || giftOrder) return;
@@ -1328,8 +1330,8 @@ export default function Checkout() {
                 </span>
                 <div className="text-right">
                   {euroMode ? (<>
-                    {euroVoucher && <p className="text-sm text-muted-foreground line-through">{formatEuro(1999)}</p>}
-                    <p className="text-2xl font-bold text-primary">{formatEuro(euroVoucher?.final ?? 1999)}</p>
+                    {euroVoucher && <p className="text-sm text-muted-foreground line-through">{formatEuro(euroBaseFor(order))}</p>}
+                    <p className="text-2xl font-bold text-primary">{formatEuro(euroVoucher?.final ?? euroBaseFor(order))}</p>
                   </>) : (<>
                   {hasDiscount && (
                     <p className="text-sm text-muted-foreground line-through">
@@ -1348,7 +1350,7 @@ export default function Checkout() {
                 <Button onClick={handleEuroCardPayment} disabled={processingEuro} className="w-full h-14 justify-start gap-4" variant="hero">
                   {processingEuro ? <Loader2 className="h-5 w-5 animate-spin" /> : <CreditCard className="h-5 w-5" />}
                   <div className="flex-1 text-left">
-                    <p className="font-medium">{t('payment.euroCard.title', { price: new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format((euroVoucher?.final ?? 1999) / 100) })}</p>
+                    <p className="font-medium">{t('payment.euroCard.title', { price: new Intl.NumberFormat(i18n.resolvedLanguage || 'it', { style: 'currency', currency: 'EUR' }).format((euroVoucher?.final ?? euroBaseFor(order)) / 100) })}</p>
                     <p className="text-xs opacity-80">{t('payment.euroCard.description')}</p>
                   </div>
                 </Button>

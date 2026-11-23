@@ -277,7 +277,7 @@ const Order = () => {
                 <div>
                   <Label className="text-xs text-muted-foreground">{tu('Order.text007')}</Label>
                   <p className="text-2xl font-bold text-primary">
-                    {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                    {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
                   </p>
                 </div>
                 <div>
@@ -313,7 +313,7 @@ const Order = () => {
             <div className="mb-4">
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-3xl font-bold">
-                  {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                  {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
                 </span>
                 <span className="text-sm text-muted-foreground line-through">R$ 47,90</span>
                 <Badge variant="secondary">{tu('Order.text012')}</Badge>
@@ -405,7 +405,7 @@ const Order = () => {
               <div>
                 <p className="text-sm text-muted-foreground">{tu('Order.text024')}</p>
                 <p className="font-medium">
-                  {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                  {formatOrderAmount((order.amount || 1990), i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
                 </p>
               </div>
             </div>

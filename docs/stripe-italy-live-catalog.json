@@ -59,6 +59,13 @@
       "product_id": "prod_VgJ6mYqUSY556Y",
       "price_id": "price_1UewUkPdfOmvIwtRPBetlDV0",
       "unit_amount": 2499
+    },
+    {
+      "plan_id": "music_package_3",
+      "name": "Pacchetto 3 canzoni complete",
+      "product_id": "prod_VgLuYP4YvoNS7e",
+      "price_id": "price_1UezD2PdfOmvIwtR9DtBKQRB",
+      "unit_amount": 4999
     }
   ]
 }

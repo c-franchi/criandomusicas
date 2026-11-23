@@ -947,7 +947,7 @@ const OrderDetails = () => {
               <div>
                 <p className="text-muted-foreground">{t('orderTracking.amount')}</p>
                 <p className="font-medium">
-                  {formatOrderAmount(order.amount, i18n.resolvedLanguage || i18n.language || 'pt-BR')}
+                  {formatOrderAmount(order.amount, i18n.resolvedLanguage || i18n.language || 'pt-BR', (order as { plan_id?: string | null }).plan_id)}
                 </p>
               </div>
             </div>
