@@ -1,0 +1,64 @@
+{
+  "account_id": "acct_1UVwbCPdfOmvIwtR",
+  "country": "IT",
+  "currency": "eur",
+  "livemode": true,
+  "products": [
+    {
+      "plan_id": "gift_short_15",
+      "name": "Canzone breve 15s",
+      "product_id": "prod_VgJ6sZwPoPyOHi",
+      "price_id": "price_1UewUePdfOmvIwtReQRhmIWt",
+      "unit_amount": 499
+    },
+    {
+      "plan_id": "gift_short_30",
+      "name": "Canzone breve 30s",
+      "product_id": "prod_VgJ6vYXphJjJUf",
+      "price_id": "price_1UewUfPdfOmvIwtRNCsbkqcB",
+      "unit_amount": 799
+    },
+    {
+      "plan_id": "music_full",
+      "name": "Canzone completa",
+      "product_id": "prod_VgJ6jrRVEKqjwd",
+      "price_id": "price_1UewUgPdfOmvIwtRtFOUAAuJ",
+      "unit_amount": 1999
+    },
+    {
+      "plan_id": "gift_short_card",
+      "name": "Biglietto digitale (aggiunta canzone breve)",
+      "product_id": "prod_VgJ6f8fQVQIUr9",
+      "price_id": "price_1UewUhPdfOmvIwtRJeFG4HH2",
+      "unit_amount": 499
+    },
+    {
+      "plan_id": "gift_digital_existing",
+      "name": "Biglietto digitale con canzone esistente",
+      "product_id": "prod_VgJ6lfK3oxVgKY",
+      "price_id": "price_1UewUiPdfOmvIwtRd2BPh0GY",
+      "unit_amount": 499
+    },
+    {
+      "plan_id": "gift_digital_new_15",
+      "name": "Biglietto digitale + canzone 15s",
+      "product_id": "prod_VgJ67ZVUf29t0V",
+      "price_id": "price_1UewUjPdfOmvIwtRbbqHacGn",
+      "unit_amount": 999
+    },
+    {
+      "plan_id": "gift_digital_new_30",
+      "name": "Biglietto digitale + canzone 30s",
+      "product_id": "prod_VgJ6qAhnpXSJT9",
+      "price_id": "price_1UewUkPdfOmvIwtRSyYbZfra",
+      "unit_amount": 1299
+    },
+    {
+      "plan_id": "gift_digital_new",
+      "name": "Biglietto digitale + canzone completa",
+      "product_id": "prod_VgJ6mYqUSY556Y",
+      "price_id": "price_1UewUkPdfOmvIwtRPBetlDV0",
+      "unit_amount": 2499
+    }
+  ]
+}
