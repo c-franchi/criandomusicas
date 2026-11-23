@@ -376,7 +376,7 @@ serve(async (req) => {
     if (!isStandaloneMode) {
       const { data: fetchedOrder, error: orderFetchError } = await supabase
         .from('orders')
-        .select('is_preview, plan_id, user_id, language')
+        .select('is_preview, plan_id, user_id, language, payment_status')
         .eq('id', orderId!)
         .single();
       if (orderFetchError || !fetchedOrder) {
@@ -396,6 +396,9 @@ serve(async (req) => {
       if (!canAccessUser(auth, giftContext.owner_id)) return authError(corsHeaders, 403);
       autoApprove=false;
       language=giftContext.details?.language || language;
+    }
+    if (orderInfo && !giftContext && !auth.isAdmin && !orderInfo.is_preview && (orderInfo as any).payment_status !== 'PAID') {
+      return new Response(JSON.stringify({ ok: false, error: "payment_required" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const shortSeconds = !!giftContext?.duration_seconds ? Math.min(giftContext.duration_seconds || 30,40) : null;
 

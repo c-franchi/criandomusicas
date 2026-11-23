@@ -342,7 +342,7 @@ serve(async (req) => {
     const supabaseCheck = auth.admin;
     const { data: existingOrder, error: orderError } = await supabaseCheck
       .from('orders')
-      .select('user_id, style_prompt, song_title, has_custom_lyric, language')
+      .select('user_id, style_prompt, song_title, has_custom_lyric, language, payment_status, is_preview')
       .eq('id', orderId)
       .single();
     if (orderError || !existingOrder) {
@@ -362,6 +362,9 @@ serve(async (req) => {
       if(!!giftContext.duration_seconds && !inspectShortLyric(approvedLyrics||'',giftContext.duration_seconds||30).valid) throw Error('gift_lyric_too_long');
     }
 
+    if(!giftContext && !auth.isAdmin && !existingOrder.is_preview && existingOrder.payment_status !== 'PAID'){
+      return new Response(JSON.stringify({ ok: false, error: "payment_required" }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     language = resolveGenerationLanguage(giftContext?.details?.language, existingOrder?.language, language);
     console.log("Resolved generation language:", language);
 

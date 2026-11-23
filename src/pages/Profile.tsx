@@ -166,11 +166,19 @@ const Profile = () => {
     }
   };
 
+  const isBRPhone = (i18n.language || 'pt').toLowerCase().startsWith('pt');
+  const phonePlaceholder = isBRPhone ? "(00) 00000-0000" : (i18n.language || '').startsWith('it') ? "+39 3762365705" : "+00 0000000000";
   const formatWhatsApp = (value: string) => {
-    // Remove tudo que não é número
     const numbers = value.replace(/\D/g, '');
-    
-    // Aplica máscara (XX) XXXXX-XXXX
+    if (!isBRPhone) {
+      // International: +<country code> <up to 10 digits> (e.g. +39 3762365705)
+      if (!numbers) return '';
+      const cc = (i18n.language || '').startsWith('it') && !value.trim().startsWith('+') && !numbers.startsWith('39') ? '39' : '';
+      const all = cc + numbers;
+      const ccLen = all.startsWith('39') || all.startsWith('34') || all.startsWith('44') ? 2 : all.startsWith('1') ? 1 : 2;
+      return `+${all.slice(0, ccLen)}${all.length > ccLen ? ' ' + all.slice(ccLen, ccLen + 10) : ''}`;
+    }
+    // Brazil mask (XX) XXXXX-XXXX
     if (numbers.length <= 2) {
       return numbers;
     } else if (numbers.length <= 7) {
@@ -313,13 +321,13 @@ const Profile = () => {
                   </Label>
                   <Input
                     id="phone"
-                    placeholder="(00) 00000-0000"
+                    placeholder={phonePlaceholder}
                     value={formData.phone}
                     onChange={(e) => setFormData(prev => ({ 
                       ...prev, 
                       phone: formatWhatsApp(e.target.value) 
                     }))}
-                    maxLength={15}
+                    maxLength={16}
                   />
                 </div>
 
@@ -333,13 +341,13 @@ const Profile = () => {
                   </Label>
                   <Input
                     id="whatsapp"
-                    placeholder="(00) 00000-0000"
+                    placeholder={phonePlaceholder}
                     value={formData.whatsapp}
                     onChange={(e) => setFormData(prev => ({ 
                       ...prev, 
                       whatsapp: formatWhatsApp(e.target.value) 
                     }))}
-                    maxLength={15}
+                    maxLength={16}
                   />
                   <p className="text-xs text-muted-foreground">
                     {t('profile.fields.whatsappContactHint', 'Número para comunicações e suporte')}

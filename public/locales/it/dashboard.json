@@ -113,7 +113,9 @@
       "whatsapp": "WhatsApp per ricevere la tua musica",
       "whatsappHint": "La tua musica sarà inviata a questo numero quando pronta",
       "region": "Paese/Regione",
-      "regionHint": "Seleziona il tuo paese per regolare lingua e valuta automaticamente"
+      "regionHint": "Seleziona il tuo paese per regolare lingua e valuta automaticamente",
+      "whatsappLabel": "WhatsApp per i contatti",
+      "whatsappContactHint": "Numero per comunicazioni e assistenza"
     },
     "success": {
       "updated": "Profilo aggiornato!",
