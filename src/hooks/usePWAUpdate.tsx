@@ -1,13 +1,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { shouldBlockUpdate, subscribeFlowBusy } from '@/lib/flowGuard';
 import { watchAppVersion } from '@/lib/pwa-version-monitor';
+// Module-level so the hook list stays unchanged across hot reloads.
+let nextEntry: string | undefined;
 export const usePWAUpdate = () => {
  const [updateAvailable,setUpdateAvailable]=useState(false);
  const [dismissed,setDismissed]=useState(false);
  const [isUpdating,setIsUpdating]=useState(false);
  const [blocked,setBlocked]=useState(()=>shouldBlockUpdate(window.location.pathname));
- const [nextEntry,setNextEntry]=useState<string>();
- useEffect(()=>watchAppVersion((entry)=>{setNextEntry(entry);setUpdateAvailable(true);setDismissed(localStorage.getItem('dismissed-app-entry')===entry);}),[]);
+ useEffect(()=>watchAppVersion((entry)=>{nextEntry=entry;setUpdateAvailable(true);setDismissed(localStorage.getItem('dismissed-app-entry')===entry);}),[]);
  useEffect(()=>{
   const check=()=>setBlocked(shouldBlockUpdate(window.location.pathname));check();
   const interval=setInterval(check,1000),unsubscribe=subscribeFlowBusy(check);
@@ -29,5 +30,5 @@ export const usePWAUpdate = () => {
    }
   } finally {window.location.reload();}
  },[]);
- return {showUpdateBanner:updateAvailable&&!dismissed&&!blocked,updateAvailable,isUpdating,forceUpdate,dismissBanner:useCallback(()=>{if(nextEntry)localStorage.setItem('dismissed-app-entry',nextEntry);setDismissed(true);},[nextEntry])};
+ return {showUpdateBanner:updateAvailable&&!dismissed&&!blocked,updateAvailable,isUpdating,forceUpdate,dismissBanner:useCallback(()=>{if(nextEntry)localStorage.setItem('dismissed-app-entry',nextEntry);setDismissed(true);},[])};
 };
